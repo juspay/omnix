@@ -9,39 +9,24 @@
   outputs = inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       systems = import inputs.systems;
-      imports = [ inputs.treefmt-nix.flakeModule ];
+      imports = [
+        inputs.treefmt-nix.flakeModule
+        ./backend
+      ];
 
-      perSystem = { self', pkgs, lib, ... }:
-        let
-          src = lib.sourceFilesBySuffices inputs.self [ ".rs" ".toml" "Cargo.lock" ];
-          inherit (lib.importTOML (src + "/Cargo.toml")) package;
-        in
-        {
-          packages = {
-            ${package.name} = pkgs.rustPlatform.buildRustPackage {
-              pname = package.name;
-              inherit (package) version;
-              inherit src;
-              cargoLock.lockFile = (src + "/Cargo.lock");
-            };
-            default = self'.packages.${package.name};
-          };
-
-          devShells.default = pkgs.mkShell {
-            inherit (package) name;
-            inputsFrom = [ self'.packages.${package.name} ];
-            packages = with pkgs; [
-              rust-analyzer
-              nil
-            ];
-          };
-
-          # Run `nix fmt` to format the source tree.
-          treefmt = {
-            projectRootFile = "flake.nix";
-            programs.nixpkgs-fmt.enable = true;
-            programs.rustfmt.enable = true;
-          };
+      perSystem = { self', pkgs, lib, ... }: {
+        devShells.default = pkgs.mkShell {
+          inputsFrom = [
+            self'.devShells.backend
+          ];
         };
+
+        # Run `nix fmt` to format the source tree.
+        treefmt = {
+          projectRootFile = "flake.nix";
+          programs.nixpkgs-fmt.enable = true;
+          programs.rustfmt.enable = true;
+        };
+      };
     };
 }
