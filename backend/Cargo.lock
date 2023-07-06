@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "nix-browser"
+name = "nix-browser-backend"
 version = "0.1.0"

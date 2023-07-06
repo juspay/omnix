@@ -13,7 +13,7 @@
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       systems = import inputs.systems;
       imports = [
-      	inputs.dream2nix.flakeModuleBeta
+        inputs.dream2nix.flakeModuleBeta
         inputs.treefmt-nix.flakeModule
         ./backend
       ];
