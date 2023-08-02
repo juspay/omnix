@@ -38,14 +38,14 @@ fn Home(cx: Scope) -> impl IntoView {
                 <Header1 text="Welcome to nix-browser" />
                 <div class="items-left">
                     <Header2 text="Nix Info" />
-                    <p class="my-1">
+                    <p class="my-1"><pre>
                         <Await
                             future=|_| nix::nix_info()
                             bind:data
                         >
                             {format!("{data:?}")}
                         </Await>
-                    </p>
+                    </pre></p>
                 </div>
             </div>
         </div>
