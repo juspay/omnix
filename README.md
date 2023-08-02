@@ -4,9 +4,9 @@
 
 ## Getting Started
 
-1. Install Nix
-1. [Setup `direnv`](https://haskell.flake.page/direnv)
-1. Clone this repo, and `cd` to it. 
+1. [Install Nix](https://zero-to-flakes.com/install)
+1. [Setup `direnv`](https://zero-to-flakes.com/direnv)
+1. Clone this repo, `cd` to it, and run `direnv allow`.
 
 This will automatically activate the nix develop shell. Open VSCode and install recommended extensions, making sure direnv activates in VSCode as well.
 
@@ -20,7 +20,7 @@ just watch
 
 ## Nix workflows
 
-Inside the nix develop shell (activated by direnv) you can use any of the `cargo` or `rustc` commands. Nix specific commands can also be used to work with the project:
+Inside the nix develop shell (activated by direnv) you can use any of the `cargo` or `rustc` commands, as well as [`just`](https://just.systems/) workflows. Nix specific commands can also be used to work with the project:
 
 ```sh
 # Full nix build
