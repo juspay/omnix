@@ -1,5 +1,5 @@
 mod app;
-mod thing;
+mod nix;
 #[cfg(feature = "hydrate")]
 use wasm_bindgen::prelude::wasm_bindgen;
 
