@@ -1,2 +1,5 @@
-result
+/target
+/result
+/result-lib
+/dist
 .direnv

@@ -10,6 +10,14 @@
 
 This will automatically activate the nix develop shell. Open VSCode and install recommended extensions, making sure direnv activates in VSCode as well.
 
+## Running locally
+
+In nix shell,
+
+```
+just watch
+```
+
 ## Nix workflows
 
 Inside the nix develop shell (activated by direnv) you can use any of the `cargo` or `rustc` commands. Nix specific commands can also be used to work with the project:
@@ -20,7 +28,4 @@ nix build
 
 # Build and run
 nix run
-
-# Run flake checks
-nix flake check
 ```
