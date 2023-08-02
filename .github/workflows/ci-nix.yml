@@ -1,0 +1,13 @@
+name: "CI Nix"
+on:
+  pull_request:
+  push:
+jobs:
+  build:
+    name: All flake outputs
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install Nix
+      uses: DeterminateSystems/nix-installer-action@main
+    - run: nix run nixpkgs#nixci
