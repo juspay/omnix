@@ -1,7 +1,7 @@
 mod app;
+mod nix;
 #[cfg(feature = "ssr")]
 mod server;
-mod thing;
 
 #[cfg(feature = "ssr")]
 #[tokio::main]
