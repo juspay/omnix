@@ -1,6 +1,7 @@
 {
     "recommendations": [
         "rust-lang.rust-analyzer",
+        "mkhl.direnv",
         "jnoortheen.nix-ide",
         "bradlc.vscode-tailwindcss"
     ]

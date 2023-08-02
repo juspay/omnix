@@ -3,11 +3,11 @@ on:
   pull_request:
   push:
 jobs:
-  check:
-    name: Rust project
+  build:
+    name: All flake outputs
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
     - name: Install Nix
       uses: DeterminateSystems/nix-installer-action@main
-    - run: nix build
+    - run: nix run nixpkgs#nixci
