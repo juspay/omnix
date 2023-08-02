@@ -8,6 +8,9 @@
     crane.url = "github:ipetkov/crane";
     crane.inputs.nixpkgs.follows = "nixpkgs";
     treefmt-nix.url = "github:numtide/treefmt-nix";
+
+    leptos-fullstack.url = "github:srid/leptos-fullstack";
+    leptos-fullstack.flake = false;
   };
 
   outputs = inputs:
@@ -15,7 +18,7 @@
       systems = import inputs.systems;
       imports = [
         inputs.treefmt-nix.flakeModule
-        ./nix/flake-module.nix
+        (inputs.leptos-fullstack + /nix/flake-module.nix)
       ];
       perSystem = { config, self', pkgs, lib, system, ... }: {
         _module.args.pkgs = import inputs.nixpkgs {

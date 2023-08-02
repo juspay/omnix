@@ -93,6 +93,22 @@
         "type": "github"
       }
     },
+    "leptos-fullstack": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1690995177,
+        "narHash": "sha256-5BZlcW3llJo3KZsSY/HFRIg43a/bylVHln9c4my2zNY=",
+        "owner": "srid",
+        "repo": "leptos-fullstack",
+        "rev": "d76465079a20775d020c1215f5151ac386bbb0e3",
+        "type": "github"
+      },
+      "original": {
+        "owner": "srid",
+        "repo": "leptos-fullstack",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1690031011,
@@ -163,6 +179,7 @@
       "inputs": {
         "crane": "crane",
         "flake-parts": "flake-parts",
+        "leptos-fullstack": "leptos-fullstack",
         "nixpkgs": "nixpkgs",
         "rust-overlay": "rust-overlay_2",
         "systems": "systems_3",
