@@ -3,5 +3,13 @@
     "rust-analyzer.cargo.features": "all",
     "editor.formatOnSave": true,
     // https://twitter.com/sridca/status/1674947342607216641
-    "editor.inlayHints.enabled": "offUnlessPressed"
+    "editor.inlayHints.enabled": "offUnlessPressed",
+    "emmet.includeLanguages": {
+        "rust": "html",
+        "*.rs": "html"
+    },
+    "tailwindCSS.includeLanguages": {
+        "rust": "html",
+        "*.rs": "html"
+    }
 }
