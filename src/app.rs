@@ -30,14 +30,16 @@ pub fn App(cx: Scope) -> impl IntoView {
     }
 }
 
+/// Home page
 #[component]
 fn Home(cx: Scope) -> impl IntoView {
     view! { cx,
-        <div class="flex flex-col items-center justify-center min-h-screen bg-blue-300">
-            <div class="flex flex-col items-center justify-start px-4 py-8 mx-auto bg-white border-4 rounded-lg">
-                <Header1 text="Welcome to nix-browser" />
-                <div class="items-left">
-                    <Header2 text="Nix Info" />
+        <div class="grid w-full min-h-screen bg-center bg-cover bg-base-200 place-items-center">
+            <div class="z-0 flex items-center justify-center col-start-1 row-start-1 text-center">
+              <div class="flex flex-col space-y-3">
+                <h1 class="text-5xl font-bold">Welcome to nix-browser</h1>
+                <p class="py-6">
+                    <h2 class="text-3xl font-bold text-gray-500">"Nix Info"</h2>
                     <p class="my-1"><pre>
                         <Await
                             future=|_| nix::nix_info()
@@ -46,12 +48,15 @@ fn Home(cx: Scope) -> impl IntoView {
                             {format!("{data:?}")}
                         </Await>
                     </pre></p>
-                </div>
+                </p>
+                <Link link="https://github.com/juspay/nix-browser" text="Source Code" rel="external" />
+              </div>
             </div>
         </div>
     }
 }
 
+/// <a> link
 #[component]
 fn Link(
     cx: Scope,
@@ -60,27 +65,15 @@ fn Link(
     #[prop(optional)] rel: Option<&'static str>,
 ) -> impl IntoView {
     view! {cx,
-        <a href=link class="text-red-500 underline hover:no-underline" rel=rel>{text}</a>
+        <a href=link class="underline text-primary-500 hover:no-underline" rel=rel>{text}</a>
     }
 }
 
-#[component]
-fn Header1(cx: Scope, text: &'static str) -> impl IntoView {
-    view! {cx,
-        <h1 class="my-3 text-3xl font-bold">{text}</h1>
-    }
-}
-#[component]
-fn Header2(cx: Scope, text: &'static str) -> impl IntoView {
-    view! {cx,
-        <h2 class="my-2 text-2xl font-bold text-gray-600">{text}</h2>
-    }
-}
-
+/// 404 page
 #[component]
 fn NotFound(cx: Scope) -> impl IntoView {
     view! { cx,
-        <div class="flex flex-row justify-center text-3xl text-red-500">
+        <div class="flex flex-row justify-center text-3xl text-error-500">
             "404: Page not found"
         </div>
     }
