@@ -41,17 +41,13 @@ fn Home(cx: Scope) -> impl IntoView {
                 <h1 class="text-5xl font-bold">Welcome to nix-browser</h1>
                 <p class="py-6">
                     <h2 class="text-3xl font-bold text-gray-500">"Nix Info"</h2>
-                    <p class="my-1"><pre>
+                    <div class="my-1">
                         <Suspense fallback=move || view! {cx, <p>"Loading nix-info"</p> }>
-                            <ErrorBoundary
-                                fallback=|cx, errors| view! { cx,
-                                    <ErrorMessage message=format!("Error loading nix-info: {:?}", errors) />
-                                }
-                            >
-                            <div>{nix_info.read(cx)}</div>
+                            <ErrorBoundary fallback=|cx, errors| view! { cx, <Errors errors=errors.get() /> } >
+                                {nix_info.read(cx)}
                             </ErrorBoundary>
                         </Suspense>
-                    </pre></p>
+                    </div>
                 </p>
                 <Link link="https://github.com/juspay/nix-browser" text="Source Code" rel="external" />
               </div>
@@ -93,11 +89,20 @@ fn NotFound(cx: Scope) -> impl IntoView {
     }
 }
 
+/// Display errors to the user
 #[component]
-fn ErrorMessage<S: Into<String>>(cx: Scope, message: S) -> impl IntoView {
+fn Errors(cx: Scope, errors: Errors) -> impl IntoView {
     view! { cx,
-        <div class="flex flex-row justify-center text-3xl text-white bg-error-500">
-            {message.into()}
+        <div class="flex flex-row justify-center overflow-auto text-xl text-white bg-error-500">
+            <div class="font-mono whitespace-pre-wrap">
+                <ul>
+                    {errors
+                        .into_iter()
+                        .map(|(_, e)| view! { cx, <li>{e.to_string()}</li>})
+                        .collect_view(cx)
+                    }
+                </ul>
+            </div>
         </div>
     }
 }
