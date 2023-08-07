@@ -1,4 +1,4 @@
-use crate::nix;
+use crate::nix::info::get_nix_info;
 use cfg_if::cfg_if;
 #[cfg(feature = "ssr")]
 use http::status::StatusCode;
@@ -33,6 +33,7 @@ pub fn App(cx: Scope) -> impl IntoView {
 /// Home page
 #[component]
 fn Home(cx: Scope) -> impl IntoView {
+    let nix_info = create_resource(cx, || (), |_| async { get_nix_info().await });
     view! { cx,
         <div class="grid w-full min-h-screen bg-center bg-cover bg-base-200 place-items-center">
             <div class="z-0 flex items-center justify-center col-start-1 row-start-1 text-center">
@@ -41,12 +42,15 @@ fn Home(cx: Scope) -> impl IntoView {
                 <p class="py-6">
                     <h2 class="text-3xl font-bold text-gray-500">"Nix Info"</h2>
                     <p class="my-1"><pre>
-                        <Await
-                            future=|_| nix::nix_info()
-                            bind:data
-                        >
-                            {format!("{data:?}")}
-                        </Await>
+                        <Suspense fallback=move || view! {cx, <p>"Loading nix-info"</p> }>
+                            <ErrorBoundary
+                                fallback=|cx, errors| view! { cx,
+                                    <ErrorMessage message=format!("Error loading nix-info: {:?}", errors) />
+                                }
+                            >
+                            <div>{nix_info.read(cx)}</div>
+                            </ErrorBoundary>
+                        </Suspense>
                     </pre></p>
                 </p>
                 <Link link="https://github.com/juspay/nix-browser" text="Source Code" rel="external" />
@@ -72,9 +76,16 @@ fn Link(
 /// 404 page
 #[component]
 fn NotFound(cx: Scope) -> impl IntoView {
+    view! {cx,
+        <ErrorMessage message="404: Page not found" />
+    }
+}
+
+#[component]
+fn ErrorMessage<S: Into<String>>(cx: Scope, message: S) -> impl IntoView {
     view! { cx,
-        <div class="flex flex-row justify-center text-3xl text-error-500">
-            "404: Page not found"
+        <div class="flex flex-row justify-center text-3xl text-white bg-error-500">
+            {message.into()}
         </div>
     }
 }
