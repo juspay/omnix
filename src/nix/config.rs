@@ -1,8 +1,5 @@
-use std::collections::HashMap;
-
 use leptos::*;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 
 /// Nix configuration spit out by `nix show-config`
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -14,11 +11,8 @@ pub struct NixConfig {
     pub extra_platforms: ConfigVal<Vec<String>>,
     pub flake_registry: ConfigVal<String>,
     pub max_jobs: ConfigVal<i32>,
-    pub max_substitution_jobs: ConfigVal<i32>,
     pub substituters: ConfigVal<Vec<String>>,
     pub system: ConfigVal<String>,
-    #[serde(flatten)]
-    pub other: HashMap<String, ConfigVal<Value>>,
 }
 
 /// The value for each 'nix show-config --json' key.
@@ -75,7 +69,7 @@ pub async fn run_nix_show_config() -> Result<NixConfig, ServerFnError> {
         Ok(v)
     } else {
         Err(ServerFnError::ServerError(
-            "Unable to determine nix version".into(),
+            "'nix show-config' failed".into(),
         ))
     }
 }

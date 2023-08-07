@@ -38,7 +38,11 @@
           };
         };
 
-        packages.default = self'.packages.nix-browser;
+        packages.default = self'.packages.nix-browser.overrideAttrs (oa: {
+          buildInputs = oa.buildInputs ++ [
+            pkgs.nix # cargo tests need nix
+          ];
+        });
 
         devShells.default = pkgs.mkShell {
           inputsFrom = [
