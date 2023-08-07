@@ -21,6 +21,8 @@ In nix shell,
 just watch
 ```
 
+When you are done with your changes, run `just fmt` to autoformat the source tree; the CI checks for this.
+
 ## Nix workflows
 
 Inside the nix develop shell (activated by direnv) you can use any of the `cargo` or `rustc` commands, as well as [`just`](https://just.systems/) workflows. Nix specific commands can also be used to work with the project:
