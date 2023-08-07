@@ -41,7 +41,7 @@ fn Home(cx: Scope) -> impl IntoView {
                 <h1 class="text-5xl font-bold">Welcome to nix-browser</h1>
                 <p class="py-6">
                     <h2 class="text-3xl font-bold text-gray-500">"Nix Info"</h2>
-                    <div class="my-1">
+                    <div class="my-1 text-left">
                         <Suspense fallback=move || view! {cx, <Spinner /> }>
                             <ErrorBoundary fallback=|cx, errors| view! { cx, <Errors errors=errors.get() /> } >
                                 {nix_info.read(cx)}
