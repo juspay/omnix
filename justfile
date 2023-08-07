@@ -9,6 +9,6 @@ fmt:
 watch *ARGS:
     cargo leptos watch
 
-# Run tests (backend)
+# Run tests (backend & frontend)
 test:
-    cargo watch -x test --features=ssr
+    cargo watch -- cargo leptos test
