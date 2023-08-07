@@ -8,6 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Install Nix
-      uses: DeterminateSystems/nix-installer-action@main
-    - run: nix run nixpkgs#nixci
+    - uses: DeterminateSystems/nix-installer-action@main
+    - uses: yaxitech/nix-install-pkgs-action@v3
+      with:
+        packages: "nixpkgs#nixci"
+    - run: nixci
