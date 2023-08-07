@@ -11,11 +11,17 @@ pub struct NixInfo {
 #[server(GetNixInfo, "/api")]
 pub async fn get_nix_info() -> Result<NixInfo, ServerFnError> {
     use tokio::process::Command;
-    let out = Command::new("nix").arg("--version").output().await?.stdout;
-    // TODO: Parse the version string
-    let nix_version = String::from_utf8(out)
-        .map_err(|e| <std::string::FromUtf8Error as Into<ServerFnError>>::into(e))?;
-    Ok(NixInfo { nix_version })
+    let out = Command::new("nix").arg("--version").output().await?;
+    if out.status.success() {
+        // TODO: Parse the version string
+        let nix_version = String::from_utf8(out.stdout)
+            .map_err(|e| <std::string::FromUtf8Error as Into<ServerFnError>>::into(e))?;
+        Ok(NixInfo { nix_version })
+    } else {
+        Err(ServerFnError::ServerError(
+            "Unable to determine nix version".into(),
+        ))
+    }
 }
 
 impl IntoView for NixInfo {
