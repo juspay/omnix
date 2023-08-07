@@ -4,6 +4,7 @@ use leptos::*;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+/// Nix configuration spit out by `nix show-config`
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 /// Information about the user's Nix installation
 #[serde(rename_all = "kebab-case")]
@@ -20,7 +21,7 @@ pub struct NixConfig {
     pub other: HashMap<String, ConfigVal<Value>>,
 }
 
-/// The JSON value for a 'nix show-config' key.
+/// The value for each 'nix show-config --json' key.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ConfigVal<T> {
@@ -30,6 +31,30 @@ pub struct ConfigVal<T> {
     pub default_value: T,
     /// Description of this config item.
     pub description: String,
+}
+
+impl IntoView for ConfigVal<Vec<String>> {
+    fn into_view(self, cx: Scope) -> View {
+        view! {cx,
+            // Render a list of T items in the list 'self'
+            <div class="flex flex-col space-y-4">
+                {self.value.into_iter().map(|item| view! {cx, <div>{item}</div>}).collect_view(cx)}
+            </div>
+        }
+        .into_view(cx)
+    }
+}
+
+impl IntoView for ConfigVal<i32> {
+    fn into_view(self, cx: Scope) -> View {
+        self.value.into_view(cx)
+    }
+}
+
+impl IntoView for ConfigVal<String> {
+    fn into_view(self, cx: Scope) -> View {
+        self.value.into_view(cx)
+    }
 }
 
 /// Get the output of `nix show-config`
@@ -57,19 +82,16 @@ pub async fn run_nix_show_config() -> Result<NixConfig, ServerFnError> {
 
 impl IntoView for NixConfig {
     fn into_view(self, cx: Scope) -> View {
-        fn mk_row<T: IntoView>(
-            cx: Scope,
-            key: impl IntoView,
-            value: ConfigVal<T>,
-        ) -> impl IntoView {
+        fn mk_row<T: IntoView>(cx: Scope, key: impl IntoView, value: ConfigVal<T>) -> impl IntoView
+        where
+            ConfigVal<T>: IntoView,
+        {
             view! {cx,
                 // TODO: Use a nice Tailwind tooltip here, instead of "title"
                 // attribute.
-                <tr title=value.description>
+                <tr title=&value.description>
                     <td class="px-4 py-2 font-bold">{key}</td>
-                    // FIXME: The ImplView for Vec<T> renders them side by side.
-                    // We should render them as list.
-                    <td class="px-4 py-2 text-left">{value.value}</td>
+                    <td class="px-4 py-2 text-left">{value}</td>
                 </tr>
             }
         }
