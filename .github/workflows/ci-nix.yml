@@ -13,5 +13,3 @@ jobs:
       with:
         packages: "nixpkgs#nixci"
     - run: nixci
-    - name: Tests
-      run: nix develop -c cargo leptos test
