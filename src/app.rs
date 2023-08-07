@@ -42,7 +42,7 @@ fn Home(cx: Scope) -> impl IntoView {
                 <p class="py-6">
                     <h2 class="text-3xl font-bold text-gray-500">"Nix Info"</h2>
                     <div class="my-1">
-                        <Suspense fallback=move || view! {cx, <p>"Loading nix-info"</p> }>
+                        <Suspense fallback=move || view! {cx, <Spinner /> }>
                             <ErrorBoundary fallback=|cx, errors| view! { cx, <Errors errors=errors.get() /> } >
                                 {nix_info.read(cx)}
                             </ErrorBoundary>
@@ -53,6 +53,16 @@ fn Home(cx: Scope) -> impl IntoView {
               </div>
             </div>
         </div>
+    }
+}
+
+// A loading spinner
+#[component]
+fn Spinner(cx: Scope) -> impl IntoView {
+    view! {cx,
+      <div class="animate-spin inline-block w-6 h-6 border-[3px] border-current border-t-transparent text-blue-600 rounded-full" role="status" aria-label="loading">
+        <span class="sr-only">Loading...</span>
+      </div>
     }
 }
 
