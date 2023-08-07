@@ -77,7 +77,19 @@ fn Link(
 #[component]
 fn NotFound(cx: Scope) -> impl IntoView {
     view! {cx,
-        <ErrorMessage message="404: Page not found" />
+        // The HTML for 404 not found
+        <div class="grid w-full min-h-screen bg-center bg-cover bg-base-200 place-items-center">
+            <div class="z-0 flex items-center justify-center col-start-1 row-start-1 text-center">
+              <div class="flex flex-col space-y-3">
+                <h1 class="text-5xl font-bold">404</h1>
+                <p class="py-6">
+                    <h2 class="text-3xl font-bold text-gray-500">"Page not found"</h2>
+                    <p class="my-1">The page you are looking for does not exist.</p>
+                </p>
+                <Link link="/" text="Go to home page" />
+              </div>
+            </div>
+        </div>
     }
 }
 
