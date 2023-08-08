@@ -20,10 +20,11 @@ pub fn App(cx: Scope) -> impl IntoView {
         <Router fallback=|cx| { view! { cx, <NotFound /> } }>
             <Title formatter=|s| format!("{s} - nix-browser") />
             <div class="flex justify-center w-full min-h-screen bg-center bg-cover bg-base-200">
-              <div class="flex flex-col my-4">
-                <nav class="flex flex-row w-full p-2 my-3 space-x-8 rounded shadow bg-primary-200">
+              <div class="container flex flex-col items-center mx-auto my-4 max-w-prose">
+                <nav class="flex flex-row w-full p-2 my-3 space-x-8 text-white rounded shadow bg-primary-800">
                     <Link link="/" text="Dashboard" />
                     <Link link="/about" text="About" />
+                    <div class="flex-grow font-bold text-end">"🌍 nix-browser"</div>
                 </nav>
                 <div class="z-0 flex col-start-1 row-start-1 text-center">
                 <div class="flex flex-col space-y-3">
@@ -46,7 +47,7 @@ fn Home(cx: Scope) -> impl IntoView {
     tracing::debug!("Rendering Home page");
     view! { cx,
         <Title text="Dashboard"/>
-                <h1 class="text-5xl font-bold">Dashboard - nix-browser</h1>
+                <h1 class="text-5xl font-bold">Dashboard</h1>
                     <h2 class="text-3xl font-bold text-gray-500">"Nix Info"</h2>
                     <Suspense fallback=move || view! {cx, <Spinner /> }>
                         <ErrorBoundary fallback=|cx, errors| view! { cx, <Errors errors=errors.get() /> } >
@@ -63,7 +64,7 @@ fn Home(cx: Scope) -> impl IntoView {
 fn About(cx: Scope) -> impl IntoView {
     view! {cx,
         <Title text="About"/>
-        <h1 class="text-5xl font-bold">About nix-browser</h1>
+        <h1 class="text-5xl font-bold">About</h1>
         <p>nix-browser is still work in progress. Track its development
         <LinkExternal link="https://github.com/juspay/nix-browser" text="on Github" />.</p>
     }
@@ -84,7 +85,7 @@ fn Spinner(cx: Scope) -> impl IntoView {
 #[component]
 fn Link(cx: Scope, link: &'static str, text: &'static str) -> impl IntoView {
     view! {cx,
-        <a href=link class="underline text-primary-500 hover:no-underline">{text}</a>
+        <A exact=true href=link class="text-primary-100 hover:no-underline">{text}</A>
     }
 }
 
