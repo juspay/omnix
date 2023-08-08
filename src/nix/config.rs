@@ -61,7 +61,12 @@ pub async fn get_nix_config() -> Result<NixConfig, ServerFnError> {
 pub async fn run_nix_show_config() -> Result<NixConfig, ServerFnError> {
     use tokio::process::Command;
     let out = Command::new("nix")
-        .args(vec!["--extra-experimental-features", "nix-command", "show-config", "--json"])
+        .args(vec![
+            "--extra-experimental-features",
+            "nix-command",
+            "show-config",
+            "--json",
+        ])
         .output()
         .await?;
     if out.status.success() {
