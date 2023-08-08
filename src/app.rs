@@ -67,7 +67,7 @@ fn About(cx: Scope) -> impl IntoView {
     view! {cx,
         <Title text="About"/>
         <h1 class="text-5xl font-bold">About nix-browser</h1>
-        <Link link="https://github.com/juspay/nix-browser" text="nix-browser" rel="external" />
+        <LinkExternal link="https://github.com/juspay/nix-browser" text="nix-browser" />
         // FIXME: Switching back doesn't load data!
         <Link link="/" text="Back to Home" />
     }
@@ -86,14 +86,16 @@ fn Spinner(cx: Scope) -> impl IntoView {
 /// <a> link
 /// TODO: Rename, and wrap, this to avoid conflict with leptos' <Link/>
 #[component]
-fn Link(
-    cx: Scope,
-    link: &'static str,
-    text: &'static str,
-    #[prop(optional)] rel: Option<&'static str>,
-) -> impl IntoView {
+fn Link(cx: Scope, link: &'static str, text: &'static str) -> impl IntoView {
     view! {cx,
-        <a href=link class="underline text-primary-500 hover:no-underline" rel=rel>{text}</a>
+        <a href=link class="underline text-primary-500 hover:no-underline">{text}</a>
+    }
+}
+
+#[component]
+fn LinkExternal(cx: Scope, link: &'static str, text: &'static str) -> impl IntoView {
+    view! {cx,
+        <a href=link class="underline text-primary-500 hover:no-underline" rel="external" target="_blank">{text}</a>
     }
 }
 
