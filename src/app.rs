@@ -21,18 +21,14 @@ pub fn App(cx: Scope) -> impl IntoView {
             <Title formatter=|s| format!("{s} - nix-browser") />
             <div class="flex justify-center w-full min-h-screen bg-center bg-cover bg-base-200">
               <div class="container flex flex-col items-center mx-auto my-4 max-w-prose">
-                <nav class="flex flex-row w-full p-2 my-3 space-x-8 text-white rounded shadow bg-primary-800">
-                    <Link link="/" text="Dashboard" />
-                    <Link link="/about" text="About" />
-                    <div class="flex-grow font-bold text-end">"🌍 nix-browser"</div>
-                </nav>
+                <Nav />
                 <div class="z-0 flex col-start-1 row-start-1 text-center">
-                <div class="flex flex-col space-y-3">
+                  <div class="flex flex-col space-y-3">
                     <Routes>
-                        <Route path="" view=Home />
+                        <Route path="" view=Dashboard />
                         <Route path="/about" view=About />
                     </Routes>
-                </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -40,11 +36,23 @@ pub fn App(cx: Scope) -> impl IntoView {
     }
 }
 
+/// Navigation bar
+#[component]
+fn Nav(cx: Scope) -> impl IntoView {
+    view! {cx,
+        <nav class="flex flex-row w-full p-2 my-3 space-x-8 text-white rounded shadow bg-primary-800">
+            <Link link="/" text="Dashboard" />
+            <Link link="/about" text="About" />
+            <div class="flex-grow font-bold text-end">"🌍 nix-browser"</div>
+        </nav>
+    }
+}
+
 /// Home page
 #[component]
-fn Home(cx: Scope) -> impl IntoView {
+fn Dashboard(cx: Scope) -> impl IntoView {
     let nix_info = create_resource(cx, move || (), move |_| get_nix_info());
-    tracing::debug!("Rendering Home page");
+    tracing::debug!("Rendering Dashboard page");
     view! { cx,
         <Title text="Dashboard"/>
         <h1 class="text-5xl font-bold">Dashboard</h1>
