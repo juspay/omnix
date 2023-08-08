@@ -74,8 +74,11 @@ pub async fn run_nix_show_config() -> Result<NixConfig, ServerFnError> {
         let v = serde_json::from_slice::<NixConfig>(&out.stdout)?;
         Ok(v)
     } else {
+        // A variable that has UTF8 decoded out.stderr into a String
+        let stderr = String::from_utf8(out.stderr)
+            .map_err(|e| <std::string::FromUtf8Error as Into<ServerFnError>>::into(e))?;
         Err(ServerFnError::ServerError(
-            "'nix show-config' failed".into(),
+            format!("'nix show-config' failed: {}", stderr).into(),
         ))
     }
 }
