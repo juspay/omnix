@@ -39,7 +39,7 @@
         };
 
         packages.default = self'.packages.nix-browser.overrideAttrs (oa: {
-          buildInputs = oa.buildInputs ++ [
+          nativeBuildInputs = oa.nativeBuildInputs ++ [
             pkgs.nix # cargo tests need nix
           ];
         });
