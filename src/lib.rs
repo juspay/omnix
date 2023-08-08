@@ -23,6 +23,7 @@ pub fn hydrate() {
 }
 
 /// Setup browser console logging using tracing_subscriber_wasm
+#[cfg(feature = "hydrate")]
 fn setup_logging() {
     use tracing_subscriber::fmt;
     use tracing_subscriber_wasm::MakeConsoleWriter;
