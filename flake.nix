@@ -38,11 +38,13 @@
           };
         };
 
-        packages.default = self'.packages.nix-browser.overrideAttrs (oa: {
-          nativeBuildInputs = oa.nativeBuildInputs ++ [
+        leptos-fullstack.overrideCraneArgs = oa: {
+          nativeBuildInputs = (oa.nativeBuildInputs or [ ]) ++ [
             pkgs.nix # cargo tests need nix
           ];
-        });
+        };
+
+        packages.default = self'.packages.nix-browser;
 
         devShells.default = pkgs.mkShell {
           inputsFrom = [
