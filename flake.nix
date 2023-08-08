@@ -42,6 +42,9 @@
           nativeBuildInputs = (oa.nativeBuildInputs or [ ]) ++ [
             pkgs.nix # cargo tests need nix
           ];
+          # Disable tests on macOS for https://github.com/garnix-io/issues/issues/69
+          # If/when we move to Jenkins, this won't be necessary.
+          doCheck = !pkgs.stdenc.isDarwin; 
         };
 
         packages.default = self'.packages.nix-browser;
