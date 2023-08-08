@@ -1,3 +1,4 @@
+//! Axum server
 use std::convert::Infallible;
 
 use crate::app::App;
@@ -8,6 +9,7 @@ use leptos::*;
 use leptos_axum::{generate_route_list, LeptosRoutes};
 use tower_http::services::ServeDir;
 
+/// Axum server main entry point
 pub async fn main() {
     let conf = get_configuration(None).await.unwrap();
     let routes = generate_route_list(|cx| view! { cx, <App/> }).await;
@@ -31,8 +33,10 @@ pub async fn main() {
         .unwrap();
 }
 
-// On missing routes, just delegate to the leptos app, which has a route
-// fallback rendering 404 response.
+/// Handler for missing routes
+///
+/// On missing routes, just delegate to the leptos app, which has a route
+/// fallback rendering 404 response.
 pub async fn not_found_handler(
     options: LeptosOptions,
     req: Request<Body>,

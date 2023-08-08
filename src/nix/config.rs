@@ -1,3 +1,4 @@
+//! Rust module for `nix show-config`
 use leptos::*;
 use serde::{Deserialize, Serialize};
 

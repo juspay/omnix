@@ -1,3 +1,4 @@
+//! Frontend UI entry point
 use crate::nix::info::get_nix_info;
 use cfg_if::cfg_if;
 #[cfg(feature = "ssr")]
@@ -8,6 +9,7 @@ use leptos_axum::ResponseOptions;
 use leptos_meta::*;
 use leptos_router::*;
 
+/// Main frontend application container
 #[component]
 pub fn App(cx: Scope) -> impl IntoView {
     provide_meta_context(cx);

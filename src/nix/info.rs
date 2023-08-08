@@ -1,8 +1,10 @@
+//! Information about the user's Nix installation
 use leptos::*;
 use serde::{Deserialize, Serialize};
 
 use crate::nix::config::NixConfig;
 
+/// All the information about the user's Nix installation
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 /// Information about the user's Nix installation
 pub struct NixInfo {
@@ -11,6 +13,7 @@ pub struct NixInfo {
     pub nix_config: NixConfig,
 }
 
+/// Determine [NixInfo] on the user's system
 #[server(GetNixInfo, "/api")]
 pub async fn get_nix_info() -> Result<NixInfo, ServerFnError> {
     use super::config::get_nix_config;

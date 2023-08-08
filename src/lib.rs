@@ -1,8 +1,14 @@
-mod app;
-mod nix;
+//! nix-browser crate; see GitHub [README] for details.
+//!
+//! [README]: https://github.com/juspay/nix-browser
+pub mod app;
+pub mod nix;
 #[cfg(feature = "hydrate")]
 use wasm_bindgen::prelude::wasm_bindgen;
+#[cfg(feature = "ssr")]
+pub mod server;
 
+/// Main entry point for the WASM frontend
 #[cfg(feature = "hydrate")]
 #[wasm_bindgen]
 pub fn hydrate() {
