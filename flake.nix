@@ -38,6 +38,12 @@
           };
         };
 
+        leptos-fullstack.overrideCraneArgs = oa: {
+          nativeBuildInputs = (oa.nativeBuildInputs or [ ]) ++ [
+            pkgs.nix # cargo tests need nix
+          ];
+        };
+
         packages.default = self'.packages.nix-browser;
 
         devShells.default = pkgs.mkShell {
@@ -47,6 +53,7 @@
           ];
           nativeBuildInputs = with pkgs; [
             just
+            cargo-watch
           ];
         };
       };
