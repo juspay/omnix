@@ -48,7 +48,7 @@ fn Home(cx: Scope) -> impl IntoView {
                     <div class="my-1 text-left">
                         <Suspense fallback=move || view! {cx, <Spinner /> }>
                             <ErrorBoundary fallback=|cx, errors| view! { cx, <Errors errors=errors.get() /> } >
-                                {nix_info.read(cx)}
+                                {move || nix_info.read(cx)}
                             </ErrorBoundary>
                         </Suspense>
                     </div>
