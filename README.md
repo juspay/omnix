@@ -21,8 +21,6 @@ In nix shell,
 just watch
 ```
 
-When you are done with your changes, run `just fmt` to autoformat the source tree; the CI checks for this.
-
 ## Nix workflows
 
 Inside the nix develop shell (activated by direnv) you can use any of the `cargo` or `rustc` commands, as well as [`just`](https://just.systems/) workflows. Nix specific commands can also be used to work with the project:
@@ -34,6 +32,12 @@ nix build
 # Build and run
 nix run
 ```
+
+## Contributing
+
+- When you are done with your changes, run `just fmt` to **autoformat** the source tree; the CI checks for this.
+- Add tests if relevant. Run `just test` to run the tests.
+- Add documentation wherever useful. To view the **docs**, run `just doc` and then open http://localhost:8008/nix_browser/
 
 ## Frontend tech
 

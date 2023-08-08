@@ -54,6 +54,7 @@
           nativeBuildInputs = with pkgs; [
             just
             cargo-watch
+            nodePackages.browser-sync
           ];
         };
       };
