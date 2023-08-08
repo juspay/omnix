@@ -25,10 +25,17 @@ pub fn App(cx: Scope) -> impl IntoView {
             }}
             view! { cx, <NotFound /> }.into_view(cx)
         }>
-            <Routes>
-                <Route path="" view=Home />
-                <Route path="/about" view=About />
-            </Routes>
+        <Title formatter=|s| format!("{s} - nix-browser") />
+        <div class="grid w-full min-h-screen bg-center bg-cover bg-base-200 place-items-center">
+            <div class="z-0 flex items-center justify-center col-start-1 row-start-1 text-center">
+              <div class="flex flex-col space-y-3">
+                <Routes>
+                    <Route path="" view=Home />
+                    <Route path="/about" view=About />
+                </Routes>
+              </div>
+            </div>
+        </div>
         </Router>
     }
 }
@@ -39,24 +46,17 @@ fn Home(cx: Scope) -> impl IntoView {
     let nix_info = create_resource(cx, move || (), move |_| get_nix_info());
     tracing::debug!("Rendering Home page");
     view! { cx,
-        <div class="grid w-full min-h-screen bg-center bg-cover bg-base-200 place-items-center">
-            <div class="z-0 flex items-center justify-center col-start-1 row-start-1 text-center">
-              <div class="flex flex-col space-y-3">
-                <h1 class="text-5xl font-bold">Welcome to nix-browser</h1>
-                <p class="py-6">
+        <Title text="Dashboard"/>
+                <h1 class="text-5xl font-bold">Dashboard - nix-browser</h1>
                     <h2 class="text-3xl font-bold text-gray-500">"Nix Info"</h2>
-                    <div class="my-1 text-left">
-                        <Suspense fallback=move || view! {cx, <Spinner /> }>
-                            <ErrorBoundary fallback=|cx, errors| view! { cx, <Errors errors=errors.get() /> } >
-                                {move || nix_info.read(cx)}
-                            </ErrorBoundary>
-                        </Suspense>
-                    </div>
-                </p>
+                    <Suspense fallback=move || view! {cx, <Spinner /> }>
+                        <ErrorBoundary fallback=|cx, errors| view! { cx, <Errors errors=errors.get() /> } >
+                        <div class="my-1 text-left">
+                            {move || nix_info.read(cx)}
+                        </div>
+                        </ErrorBoundary>
+                    </Suspense>
                 <Link link="/about" text="About" />
-              </div>
-            </div>
-        </div>
     }
 }
 
@@ -65,7 +65,8 @@ fn Home(cx: Scope) -> impl IntoView {
 fn About(cx: Scope) -> impl IntoView {
     // TODO: Implement Layout component, and share with pages
     view! {cx,
-        <h1>About</h1>
+        <Title text="About"/>
+        <h1 class="text-5xl font-bold">About nix-browser</h1>
         <Link link="https://github.com/juspay/nix-browser" text="nix-browser" rel="external" />
         // FIXME: Switching back doesn't load data!
         <Link link="/" text="Back to Home" />
@@ -83,6 +84,7 @@ fn Spinner(cx: Scope) -> impl IntoView {
 }
 
 /// <a> link
+/// TODO: Rename, and wrap, this to avoid conflict with leptos' <Link/>
 #[component]
 fn Link(
     cx: Scope,
