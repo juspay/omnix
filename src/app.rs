@@ -26,8 +26,13 @@ pub fn App(cx: Scope) -> impl IntoView {
             view! { cx, <NotFound /> }.into_view(cx)
         }>
         <Title formatter=|s| format!("{s} - nix-browser") />
-        <div class="grid w-full min-h-screen bg-center bg-cover bg-base-200 place-items-center">
-            <div class="z-0 flex items-center justify-center col-start-1 row-start-1 text-center">
+        <div class="flex justify-center w-full min-h-screen bg-center bg-cover bg-base-200">
+          <div class="flex flex-col my-4">
+            <nav class="flex flex-row w-full p-2 my-3 space-x-8 rounded shadow bg-primary-200">
+                <Link link="/" text="Dashboard" />
+                <Link link="/about" text="About" />
+            </nav>
+            <div class="z-0 flex col-start-1 row-start-1 text-center">
               <div class="flex flex-col space-y-3">
                 <Routes>
                     <Route path="" view=Home />
@@ -35,6 +40,7 @@ pub fn App(cx: Scope) -> impl IntoView {
                 </Routes>
               </div>
             </div>
+          </div>
         </div>
         </Router>
     }
@@ -56,7 +62,6 @@ fn Home(cx: Scope) -> impl IntoView {
                         </div>
                         </ErrorBoundary>
                     </Suspense>
-                <Link link="/about" text="About" />
     }
 }
 
@@ -67,9 +72,8 @@ fn About(cx: Scope) -> impl IntoView {
     view! {cx,
         <Title text="About"/>
         <h1 class="text-5xl font-bold">About nix-browser</h1>
-        <LinkExternal link="https://github.com/juspay/nix-browser" text="nix-browser" />
-        // FIXME: Switching back doesn't load data!
-        <Link link="/" text="Back to Home" />
+        <p>nix-browser is still work in progress. Track its development
+        <LinkExternal link="https://github.com/juspay/nix-browser" text="on Github" />.</p>
     }
 }
 
@@ -95,7 +99,7 @@ fn Link(cx: Scope, link: &'static str, text: &'static str) -> impl IntoView {
 #[component]
 fn LinkExternal(cx: Scope, link: &'static str, text: &'static str) -> impl IntoView {
     view! {cx,
-        <a href=link class="underline text-primary-500 hover:no-underline" rel="external" target="_blank">{text}</a>
+        <a href=link class="underline text-primary-300 hover:no-underline" rel="external" target="_blank">{text}</a>
     }
 }
 
