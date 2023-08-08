@@ -36,7 +36,7 @@ pub fn App(cx: Scope) -> impl IntoView {
 /// Home page
 #[component]
 fn Home(cx: Scope) -> impl IntoView {
-    let nix_info = create_resource(cx, || (), |_| async { get_nix_info().await });
+    let nix_info = create_resource(cx, move || (), move |_| get_nix_info());
     tracing::debug!("Rendering Home page");
     view! { cx,
         <div class="grid w-full min-h-screen bg-center bg-cover bg-base-200 place-items-center">
