@@ -11,7 +11,11 @@ use tower_http::services::ServeDir;
 
 /// Axum server main entry point
 pub async fn main() {
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::INFO) // TODO: --verbose should use DEBUG
+        .init();
     let conf = get_configuration(None).await.unwrap();
+    tracing::debug!("Firing up Leptos app with config: {:?}", conf);
     let routes = generate_route_list(|cx| view! { cx, <App/> }).await;
     let client_dist = ServeDir::new(conf.leptos_options.site_root.clone());
     let leptos_options = conf.leptos_options.clone(); // A copy to move to the closure below.
@@ -26,7 +30,7 @@ pub async fn main() {
         // error handler)
         .fallback_service(client_dist.clone().not_found_service(not_found_service))
         .with_state(conf.leptos_options.clone());
-    println!("Launching http://{}", &conf.leptos_options.site_addr);
+    tracing::info!("App launched at http://{}", &conf.leptos_options.site_addr);
     axum::Server::bind(&conf.leptos_options.site_addr)
         .serve(app.into_make_service())
         .await

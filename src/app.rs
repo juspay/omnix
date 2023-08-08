@@ -27,6 +27,7 @@ pub fn App(cx: Scope) -> impl IntoView {
         }>
             <Routes>
                 <Route path="" view=  move |cx| view! { cx, <Home/> }/>
+                <Route path="/about" view=  move |cx| view! { cx, <About/> }/>
             </Routes>
         </Router>
     }
@@ -36,6 +37,7 @@ pub fn App(cx: Scope) -> impl IntoView {
 #[component]
 fn Home(cx: Scope) -> impl IntoView {
     let nix_info = create_resource(cx, || (), |_| async { get_nix_info().await });
+    tracing::debug!("Rendering Home page");
     view! { cx,
         <div class="grid w-full min-h-screen bg-center bg-cover bg-base-200 place-items-center">
             <div class="z-0 flex items-center justify-center col-start-1 row-start-1 text-center">
@@ -51,10 +53,22 @@ fn Home(cx: Scope) -> impl IntoView {
                         </Suspense>
                     </div>
                 </p>
-                <Link link="https://github.com/juspay/nix-browser" text="Source Code" rel="external" />
+                <Link link="/about" text="About" />
               </div>
             </div>
         </div>
+    }
+}
+
+/// About page
+#[component]
+fn About(cx: Scope) -> impl IntoView {
+    // TODO: Implement Layout component, and share with pages
+    view! {cx,
+        <h1>About</h1>
+        <Link link="https://github.com/juspay/nix-browser" text="nix-browser" rel="external" />
+        // FIXME: Switching back doesn't load data!
+        <Link link="/" text="Back to Home" />
     }
 }
 
