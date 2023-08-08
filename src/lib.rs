@@ -14,9 +14,18 @@ pub mod server;
 pub fn hydrate() {
     use crate::app::*;
     use leptos::*;
+
+    setup_logging();
+    tracing::info!("Hydrating app");
+    leptos::mount_to_body(move |cx| {
+        view! { cx, <App/> }
+    });
+}
+
+/// Setup browser console logging using tracing_subscriber_wasm
+fn setup_logging() {
     use tracing_subscriber::fmt;
     use tracing_subscriber_wasm::MakeConsoleWriter;
-
     fmt()
         .with_writer(
             // To avoide trace events in the browser from showing their
@@ -28,10 +37,4 @@ pub fn hydrate() {
         // a runtime error.
         .without_time()
         .init();
-
-    tracing::info!("Hydrating app");
-
-    leptos::mount_to_body(move |cx| {
-        view! { cx, <App/> }
-    });
 }

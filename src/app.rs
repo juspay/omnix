@@ -47,15 +47,15 @@ fn Home(cx: Scope) -> impl IntoView {
     tracing::debug!("Rendering Home page");
     view! { cx,
         <Title text="Dashboard"/>
-                <h1 class="text-5xl font-bold">Dashboard</h1>
-                    <h2 class="text-3xl font-bold text-gray-500">"Nix Info"</h2>
-                    <Suspense fallback=move || view! {cx, <Spinner /> }>
-                        <ErrorBoundary fallback=|cx, errors| view! { cx, <Errors errors=errors.get() /> } >
-                        <div class="my-1 text-left">
-                            {move || nix_info.read(cx)}
-                        </div>
-                        </ErrorBoundary>
-                    </Suspense>
+        <h1 class="text-5xl font-bold">Dashboard</h1>
+        <h2 class="text-3xl font-bold text-gray-500">"Nix Info"</h2>
+        <Suspense fallback=move || view! {cx, <Spinner /> }>
+            <ErrorBoundary fallback=|cx, errors| view! { cx, <Errors errors=errors.get() /> } >
+            <div class="my-1 text-left">
+                {move || nix_info.read(cx)}
+            </div>
+            </ErrorBoundary>
+        </Suspense>
     }
 }
 
@@ -81,7 +81,6 @@ fn Spinner(cx: Scope) -> impl IntoView {
 }
 
 /// <a> link
-/// TODO: Rename, and wrap, this to avoid conflict with leptos' <Link/>
 #[component]
 fn Link(cx: Scope, link: &'static str, text: &'static str) -> impl IntoView {
     view! {cx,
