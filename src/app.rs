@@ -26,8 +26,8 @@ pub fn App(cx: Scope) -> impl IntoView {
             view! { cx, <NotFound /> }.into_view(cx)
         }>
             <Routes>
-                <Route path="" view=  move |cx| view! { cx, <Home/> }/>
-                <Route path="/about" view=  move |cx| view! { cx, <About/> }/>
+                <Route path="" view=Home />
+                <Route path="/about" view=About />
             </Routes>
         </Router>
     }
