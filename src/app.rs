@@ -17,31 +17,24 @@ pub fn App(cx: Scope) -> impl IntoView {
     view! {
         cx,
         <Stylesheet id="leptos" href="/pkg/nix-browser.css"/>
-        <Router fallback=|cx| {
-            cfg_if! { if #[cfg(feature="ssr")] {
-                if let Some(response) = use_context::<ResponseOptions>(cx) {
-                    response.set_status(StatusCode::NOT_FOUND);
-                }
-            }}
-            view! { cx, <NotFound /> }.into_view(cx)
-        }>
-        <Title formatter=|s| format!("{s} - nix-browser") />
-        <div class="flex justify-center w-full min-h-screen bg-center bg-cover bg-base-200">
-          <div class="flex flex-col my-4">
-            <nav class="flex flex-row w-full p-2 my-3 space-x-8 rounded shadow bg-primary-200">
-                <Link link="/" text="Dashboard" />
-                <Link link="/about" text="About" />
-            </nav>
-            <div class="z-0 flex col-start-1 row-start-1 text-center">
-              <div class="flex flex-col space-y-3">
-                <Routes>
-                    <Route path="" view=Home />
-                    <Route path="/about" view=About />
-                </Routes>
+        <Router fallback=|cx| { view! { cx, <NotFound /> } }>
+            <Title formatter=|s| format!("{s} - nix-browser") />
+            <div class="flex justify-center w-full min-h-screen bg-center bg-cover bg-base-200">
+              <div class="flex flex-col my-4">
+                <nav class="flex flex-row w-full p-2 my-3 space-x-8 rounded shadow bg-primary-200">
+                    <Link link="/" text="Dashboard" />
+                    <Link link="/about" text="About" />
+                </nav>
+                <div class="z-0 flex col-start-1 row-start-1 text-center">
+                <div class="flex flex-col space-y-3">
+                    <Routes>
+                        <Route path="" view=Home />
+                        <Route path="/about" view=About />
+                    </Routes>
+                </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
         </Router>
     }
 }
@@ -68,7 +61,6 @@ fn Home(cx: Scope) -> impl IntoView {
 /// About page
 #[component]
 fn About(cx: Scope) -> impl IntoView {
-    // TODO: Implement Layout component, and share with pages
     view! {cx,
         <Title text="About"/>
         <h1 class="text-5xl font-bold">About nix-browser</h1>
@@ -106,6 +98,11 @@ fn LinkExternal(cx: Scope, link: &'static str, text: &'static str) -> impl IntoV
 /// 404 page
 #[component]
 fn NotFound(cx: Scope) -> impl IntoView {
+    cfg_if! { if #[cfg(feature="ssr")] {
+        if let Some(response) = use_context::<ResponseOptions>(cx) {
+            response.set_status(StatusCode::NOT_FOUND);
+        }
+    }}
     view! {cx,
         // The HTML for 404 not found
         <div class="grid w-full min-h-screen bg-center bg-cover bg-base-200 place-items-center">
