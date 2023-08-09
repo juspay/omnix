@@ -6,6 +6,8 @@ pub mod nix;
 #[cfg(feature = "hydrate")]
 use wasm_bindgen::prelude::wasm_bindgen;
 #[cfg(feature = "ssr")]
+pub mod command;
+#[cfg(feature = "ssr")]
 pub mod server;
 
 /// Main entry point for the WASM frontend

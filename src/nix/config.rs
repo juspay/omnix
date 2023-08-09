@@ -60,28 +60,18 @@ impl IntoView for ConfigVal<String> {
 #[cfg(feature = "ssr")]
 pub async fn run_nix_show_config() -> Result<NixConfig, ServerFnError> {
     use tokio::process::Command;
-    let out = Command::new("nix")
-        .args(vec![
-            "--extra-experimental-features",
-            "nix-command",
-            "show-config",
-            "--json",
-        ])
-        .output()
-        .await?;
-    if out.status.success() {
-        let v = serde_json::from_slice::<NixConfig>(&out.stdout)?;
-        Ok(v)
-    } else {
-        // TODO: We need to setup proper logging, including command logging.
-        // TODO: Also use anyhow crate or something for non-leptos error
-        // handling in non-server-fns.
-        let stderr = String::from_utf8(out.stderr)
-            .map_err(|e| <std::string::FromUtf8Error as Into<ServerFnError>>::into(e))?;
-        Err(ServerFnError::ServerError(
-            format!("'nix show-config' failed: {}", stderr).into(),
-        ))
-    }
+    use tracing::info_span;
+    let _span = info_span!("run_nix_show_config").entered();
+    let mut cmd = Command::new("nix");
+    cmd.args(vec![
+        "--extra-experimental-features",
+        "nix-command",
+        "show-config",
+        "--json",
+    ]);
+    let stdout: Vec<u8> = crate::command::run_command_in_server_fn(&mut cmd).await?;
+    let v = serde_json::from_slice::<NixConfig>(&stdout)?;
+    Ok(v)
 }
 
 impl IntoView for NixConfig {
