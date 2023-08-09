@@ -1,3 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+[aria-current]:not([aria-current="false"]) {
+    @apply font-bold bg-base-200 text-primary-600;
+}

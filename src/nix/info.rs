@@ -22,8 +22,10 @@ pub async fn get_nix_info() -> Result<NixInfo, ServerFnError> {
     if out.status.success() {
         // TODO: Parse the version string
         let nix_version = String::from_utf8(out.stdout)
+            .map(|s| s.trim().to_string())
             .map_err(|e| <std::string::FromUtf8Error as Into<ServerFnError>>::into(e))?;
         let nix_config = get_nix_config().await?;
+        tracing::info!("Got nix info. Version = {}", nix_version);
         Ok(NixInfo {
             nix_version,
             nix_config,
@@ -38,7 +40,7 @@ pub async fn get_nix_info() -> Result<NixInfo, ServerFnError> {
 impl IntoView for NixInfo {
     fn into_view(self, cx: Scope) -> View {
         view! {cx,
-            <div class="flex flex-col p-4 space-y-8 bg-blue-100 border-2 border-black rounded shadow-md">
+            <div class="flex flex-col p-4 space-y-8 border-2 border-black rounded shadow-md bg-primary-100">
                 <div>
                 <b>Nix Version</b>
                 <pre>{self.nix_version}</pre>
