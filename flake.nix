@@ -74,7 +74,12 @@
           doCheck = !pkgs.stdenv.isDarwin;
         };
 
-        packages.default = self'.packages.nix-browser;
+        packages.default = self'.packages.nix-browser.overrideAttrs (oa: {
+          installPhase = (oa.installPhase or "") + ''
+            wrapProgram $out/bin/${oa.pname} \
+                    --set LEPTOS_SITE_ADDR 127.0.0.1:0
+          '';
+        });
 
         devShells.default = pkgs.mkShell {
           inputsFrom = [
