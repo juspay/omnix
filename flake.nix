@@ -8,6 +8,7 @@
     crane.url = "github:ipetkov/crane";
     crane.inputs.nixpkgs.follows = "nixpkgs";
     treefmt-nix.url = "github:numtide/treefmt-nix";
+    process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
 
     leptos-fullstack.url = "github:srid/leptos-fullstack";
     leptos-fullstack.flake = false;
@@ -18,6 +19,7 @@
       systems = import inputs.systems;
       imports = [
         inputs.treefmt-nix.flakeModule
+        inputs.process-compose-flake.flakeModule
         (inputs.leptos-fullstack + /nix/flake-module.nix)
       ];
       perSystem = { config, self', pkgs, lib, system, ... }: {
@@ -38,6 +40,30 @@
           };
         };
 
+        process-compose.cargo-docs-server =
+          let
+            port = builtins.toString 8008;
+            browser-sync = lib.getExe pkgs.nodePackages.browser-sync;
+            crateName = builtins.replaceStrings [ "-" ] [ "_" ]
+              ((lib.trivial.importTOML ./Cargo.toml).package.name);
+          in
+          {
+            tui = false;
+            settings.processes = {
+              cargo-doc.command = builtins.toString (pkgs.writeShellScript "cargo-doc" ''
+                run-cargo-doc() {
+                  cargo doc --document-private-items --all-features
+                  ${browser-sync} reload --port ${port}  # Trigger reload in browser
+                }; export -f run-cargo-doc
+                cargo watch -s run-cargo-doc
+              '');
+              browser-sync.command = ''
+                ${browser-sync} start --port ${port} --ss target/doc -s target/doc \
+                  --startPath /${crateName}/
+              '';
+            };
+          };
+
         leptos-fullstack.overrideCraneArgs = oa: {
           nativeBuildInputs = (oa.nativeBuildInputs or [ ]) ++ [
             pkgs.nix # cargo tests need nix
@@ -54,10 +80,11 @@
             config.treefmt.build.devShell
             self'.devShells.nix-browser
           ];
-          nativeBuildInputs = with pkgs; [
+          packages = with pkgs; [
             just
             cargo-watch
             nodePackages.browser-sync
+            config.process-compose.cargo-docs-server.outputs.package
           ];
         };
       };

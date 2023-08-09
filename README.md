@@ -37,7 +37,7 @@ nix run
 
 - When you are done with your changes, run `just fmt` to **autoformat** the source tree; the CI checks for this.
 - Add tests if relevant. Run `just test` to run the **tests**.
-- Add documentation wherever useful. To preview the **docs**, run `just doc` and then open http://localhost:8008/nix_browser/
+- Add documentation wherever useful. To preview the **docs**, run `just doc`.
 
 ## Frontend tech
 
