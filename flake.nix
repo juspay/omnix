@@ -3,6 +3,7 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";
     systems.url = "github:nix-systems/default";
+    nixpkgs-leptosfmt.url = "github:nixos/nixpkgs/697d536087725659f0e047918b57082dcc5e258a"; # TODO: remove after https://nixpk.gs/pr-tracker.html?pr=248148
 
     rust-overlay.url = "github:oxalica/rust-overlay";
     crane.url = "github:ipetkov/crane";
@@ -91,6 +92,7 @@
             cargo-watch
             nodePackages.browser-sync
             config.process-compose.cargo-docs-server.outputs.package
+            inputs.nixpkgs-leptosfmt.legacyPackages.${system}.leptosfmt
           ];
         };
       };

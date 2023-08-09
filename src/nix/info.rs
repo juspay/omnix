@@ -37,15 +37,19 @@ pub async fn get_nix_info() -> Result<NixInfo, ServerFnError> {
 
 impl IntoView for NixInfo {
     fn into_view(self, cx: Scope) -> View {
-        view! {cx,
+        view! { cx,
             <div class="flex flex-col p-4 space-y-8 border-2 border-black rounded shadow-md bg-primary-100">
                 <div>
-                <b>Nix Version</b>
-                <pre>{self.nix_version}</pre>
+                    <b>
+                        Nix Version
+                    </b>
+                    <pre>{self.nix_version}</pre>
                 </div>
                 <div>
-                <b>Nix Config</b>
-                {self.nix_config}
+                    <b>
+                        Nix Config
+                    </b>
+                    {self.nix_config}
                 </div>
             </div>
         }

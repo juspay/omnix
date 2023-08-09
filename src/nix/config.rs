@@ -30,10 +30,14 @@ pub struct ConfigVal<T> {
 /// The HTML view for config values that are lists; rendered as HTML lists.
 impl IntoView for ConfigVal<Vec<String>> {
     fn into_view(self, cx: Scope) -> View {
-        view! {cx,
+        view! { cx,
             // Render a list of T items in the list 'self'
             <div class="flex flex-col space-y-4">
-                {self.value.into_iter().map(|item| view! {cx, <div>{item}</div>}).collect_view(cx)}
+                {self
+                    .value
+                    .into_iter()
+                    .map(|item| view! { cx, <div>{item}</div> })
+                    .collect_view(cx)}
             </div>
         }
         .into_view(cx)
@@ -86,7 +90,7 @@ impl IntoView for NixConfig {
         where
             ConfigVal<T>: IntoView,
         {
-            view! {cx,
+            view! { cx,
                 // TODO: Use a nice Tailwind tooltip here, instead of "title"
                 // attribute.
                 <tr title=&value.description>
@@ -95,12 +99,11 @@ impl IntoView for NixConfig {
                 </tr>
             }
         }
-        view! {cx,
+        view! { cx,
             <div class="py-1 my-1 rounded bg-blue-50">
                 <table class="text-right">
                     <tbody>
-                        {mk_row(cx, "System", self.system)}
-                        {mk_row(cx, "Max Jobs", self.max_jobs)}
+                        {mk_row(cx, "System", self.system)} {mk_row(cx, "Max Jobs", self.max_jobs)}
                         {mk_row(cx, "Cores per build", self.cores)}
                         {mk_row(cx, "Nix Caches", self.substituters)}
                     </tbody>

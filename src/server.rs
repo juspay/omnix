@@ -44,6 +44,6 @@ async fn not_found_handler(
     req: Request<Body>,
 ) -> Result<AxumResponse, Infallible> {
     let handler =
-        leptos_axum::render_app_to_stream(options.to_owned(), move |cx| view! {cx, <App/>});
+        leptos_axum::render_app_to_stream(options.to_owned(), move |cx| view! { cx, <App/> });
     Ok(handler(req).await.into_response())
 }

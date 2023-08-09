@@ -125,6 +125,22 @@
         "type": "github"
       }
     },
+    "nixpkgs-leptosfmt": {
+      "locked": {
+        "lastModified": 1691613791,
+        "narHash": "sha256-69hNnmTfNKVYhqqHRVQMGK7RaeFy7nsEkaeTHrearEs=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "697d536087725659f0e047918b57082dcc5e258a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "697d536087725659f0e047918b57082dcc5e258a",
+        "type": "github"
+      }
+    },
     "nixpkgs-lib": {
       "locked": {
         "dir": "lib",
@@ -196,6 +212,7 @@
         "flake-parts": "flake-parts",
         "leptos-fullstack": "leptos-fullstack",
         "nixpkgs": "nixpkgs",
+        "nixpkgs-leptosfmt": "nixpkgs-leptosfmt",
         "process-compose-flake": "process-compose-flake",
         "rust-overlay": "rust-overlay_2",
         "systems": "systems_3",
