@@ -16,23 +16,21 @@ pub struct NixInfo {
 #[server(GetNixInfo, "/api")]
 pub async fn get_nix_info() -> Result<NixInfo, ServerFnError> {
     use tokio::process::Command;
-    let out = Command::new("nix").arg("--version").output().await?;
-    if out.status.success() {
-        // TODO: Parse the version string
-        let nix_version = String::from_utf8(out.stdout)
-            .map(|s| s.trim().to_string())
-            .map_err(|e| <std::string::FromUtf8Error as Into<ServerFnError>>::into(e))?;
-        let nix_config = super::config::run_nix_show_config().await?;
-        tracing::info!("Got nix info. Version = {}", nix_version);
-        Ok(NixInfo {
-            nix_version,
-            nix_config,
-        })
-    } else {
-        Err(ServerFnError::ServerError(
-            "Unable to determine nix version".into(),
-        ))
-    }
+    use tracing::info_span;
+    let _span = info_span!("get_nix_info").entered();
+    let mut cmd = Command::new("nix");
+    cmd.arg("--version");
+    let stdout = crate::command::run_command_in_server_fn(&mut cmd).await?;
+    // TODO: Parse the version string
+    let nix_version = String::from_utf8(stdout)
+        .map(|s| s.trim().to_string())
+        .map_err(|e| <std::string::FromUtf8Error as Into<ServerFnError>>::into(e))?;
+    let nix_config = super::config::run_nix_show_config().await?;
+    tracing::info!("Got nix info. Version = {}", nix_version);
+    Ok(NixInfo {
+        nix_version,
+        nix_config,
+    })
 }
 
 impl IntoView for NixInfo {

@@ -8,6 +8,7 @@ use axum::{routing::post, Router};
 use leptos::*;
 use leptos_axum::{generate_route_list, LeptosRoutes};
 use tower_http::services::ServeDir;
+use tracing::info_span;
 
 /// Axum server main entry point
 pub async fn main() {
@@ -15,6 +16,7 @@ pub async fn main() {
         .with_max_level(tracing::Level::INFO) // TODO: --verbose should use DEBUG
         .init();
     let conf = get_configuration(None).await.unwrap();
+    let _span = info_span!("server").entered();
     tracing::debug!("Firing up Leptos app with config: {:?}", conf);
     let routes = generate_route_list(|cx| view! { cx, <App/> }).await;
     let client_dist = ServeDir::new(conf.leptos_options.site_root.clone());
