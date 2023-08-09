@@ -5,8 +5,11 @@ use crate::app::App;
 use axum::response::Response as AxumResponse;
 use axum::{body::Body, http::Request, response::IntoResponse};
 use axum::{routing::post, Router};
+use get_port::tcp::TcpPort;
+use get_port::{Ops, Range};
 use leptos::*;
 use leptos_axum::{generate_route_list, LeptosRoutes};
+use std::net::SocketAddr;
 use tower_http::services::ServeDir;
 
 /// Axum server main entry point
@@ -30,11 +33,29 @@ pub async fn main() {
         // error handler)
         .fallback_service(client_dist.clone().not_found_service(not_found_service))
         .with_state(conf.leptos_options.clone());
-    tracing::info!("App launched at http://{}", &conf.leptos_options.site_addr);
-    axum::Server::bind(&conf.leptos_options.site_addr)
+    let site_address = handle_port_zero(conf.leptos_options.site_addr);
+    tracing::info!("App is running at http://{}", &site_address);
+    axum::Server::bind(&site_address)
         .serve(app.into_make_service())
         .await
+        .unwrap()
+}
+
+/// It takes a address and checks if port is 0, it tries to get a free port from 3000 to 4000.
+fn handle_port_zero(address: SocketAddr) -> SocketAddr {
+    let mut site_address = address.clone();
+    if site_address.port() == u16::min_value() {
+        let tcp_port = TcpPort::in_range(
+            &address.ip().to_string(),
+            Range {
+                min: 3000,
+                max: 4000,
+            },
+        )
         .unwrap();
+        site_address.set_port(tcp_port);
+    }
+    site_address
 }
 
 /// Handler for missing routes

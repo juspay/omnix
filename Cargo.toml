@@ -32,6 +32,7 @@ http = { version = "0.2", optional = true }
 tracing = "0.1"
 tracing-subscriber = "0.3"
 tracing-subscriber-wasm = "0.1"
+get-port = { version = "4.0.0", optional = true }
 
 [features]
 hydrate = ["leptos/hydrate", "leptos_meta/hydrate", "leptos_router/hydrate"]
@@ -46,6 +47,7 @@ ssr = [
     "dep:tower-http",
     "dep:axum-macros",
     "dep:http",
+    "dep:get-port",
 ]
 
 # Defines a size-optimized profile for the WASM bundle in release mode
