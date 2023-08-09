@@ -4,7 +4,6 @@ use serde::{Deserialize, Serialize};
 
 /// Nix configuration spit out by `nix show-config`
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-/// Information about the user's Nix installation
 #[serde(rename_all = "kebab-case")]
 pub struct NixConfig {
     pub cores: ConfigVal<i32>,
@@ -28,6 +27,7 @@ pub struct ConfigVal<T> {
     pub description: String,
 }
 
+/// The HTML view for config values that are lists; rendered as HTML lists.
 impl IntoView for ConfigVal<Vec<String>> {
     fn into_view(self, cx: Scope) -> View {
         view! {cx,
@@ -54,11 +54,6 @@ impl IntoView for ConfigVal<String> {
 
 /// Get the output of `nix show-config`
 #[cfg(feature = "ssr")]
-pub async fn get_nix_config() -> Result<NixConfig, ServerFnError> {
-    run_nix_show_config().await
-}
-
-#[cfg(feature = "ssr")]
 pub async fn run_nix_show_config() -> Result<NixConfig, ServerFnError> {
     use tokio::process::Command;
     let out = Command::new("nix")
@@ -75,6 +70,8 @@ pub async fn run_nix_show_config() -> Result<NixConfig, ServerFnError> {
         Ok(v)
     } else {
         // TODO: We need to setup proper logging, including command logging.
+        // TODO: Also use anyhow crate or something for non-leptos error
+        // handling in non-server-fns.
         let stderr = String::from_utf8(out.stderr)
             .map_err(|e| <std::string::FromUtf8Error as Into<ServerFnError>>::into(e))?;
         Err(ServerFnError::ServerError(

@@ -6,7 +6,6 @@ use crate::nix::config::NixConfig;
 
 /// All the information about the user's Nix installation
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-/// Information about the user's Nix installation
 pub struct NixInfo {
     /// Nix version string
     pub nix_version: String,
@@ -16,7 +15,6 @@ pub struct NixInfo {
 /// Determine [NixInfo] on the user's system
 #[server(GetNixInfo, "/api")]
 pub async fn get_nix_info() -> Result<NixInfo, ServerFnError> {
-    use super::config::get_nix_config;
     use tokio::process::Command;
     let out = Command::new("nix").arg("--version").output().await?;
     if out.status.success() {
@@ -24,7 +22,7 @@ pub async fn get_nix_info() -> Result<NixInfo, ServerFnError> {
         let nix_version = String::from_utf8(out.stdout)
             .map(|s| s.trim().to_string())
             .map_err(|e| <std::string::FromUtf8Error as Into<ServerFnError>>::into(e))?;
-        let nix_config = get_nix_config().await?;
+        let nix_config = super::config::run_nix_show_config().await?;
         tracing::info!("Got nix info. Version = {}", nix_version);
         Ok(NixInfo {
             nix_version,

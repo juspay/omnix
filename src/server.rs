@@ -41,7 +41,7 @@ pub async fn main() {
 ///
 /// On missing routes, just delegate to the leptos app, which has a route
 /// fallback rendering 404 response.
-pub async fn not_found_handler(
+async fn not_found_handler(
     options: LeptosOptions,
     req: Request<Body>,
 ) -> Result<AxumResponse, Infallible> {
