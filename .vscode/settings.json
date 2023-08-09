@@ -11,5 +11,8 @@
     "tailwindCSS.includeLanguages": {
         "rust": "html",
         "*.rs": "html"
+    },
+    "files.associations": {
+        "*.css": "tailwindcss"
     }
 }
