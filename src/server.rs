@@ -33,21 +33,21 @@ pub async fn main() {
         // error handler)
         .fallback_service(client_dist.clone().not_found_service(not_found_service))
         .with_state(conf.leptos_options.clone());
-    let server = axum::Server::bind(&handle_port_zero(conf.leptos_options.site_addr))
+    let server = axum::Server::bind(&resolve_port_zero(conf.leptos_options.site_addr, 3000))
         .serve(app.into_make_service());
     tracing::info!("App is running at http://{}", server.local_addr());
     server.await.unwrap()
 }
 
-/// It takes a address and checks if port is 0, it tries to get a free port from 3000 to 4000.
-fn handle_port_zero(address: SocketAddr) -> SocketAddr {
+/// Resolve port 0 to an available port (using the given defaut + 1000 range).
+fn resolve_port_zero(address: SocketAddr, default: u16) -> SocketAddr {
     let mut site_address = address.clone();
     if site_address.port() == u16::min_value() {
         let tcp_port = TcpPort::in_range(
             &address.ip().to_string(),
             Range {
-                min: 3000,
-                max: 4000,
+                min: default,
+                max: default + 1000,
             },
         )
         .unwrap();
