@@ -49,6 +49,7 @@
           in
           {
             tui = false;
+            port = 8974; # process-compose exits silently if port is in use; set this to something uniqiue (hopefully)
             settings.processes = {
               cargo-doc.command = builtins.toString (pkgs.writeShellScript "cargo-doc" ''
                 run-cargo-doc() {
