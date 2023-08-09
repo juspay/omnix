@@ -3,6 +3,7 @@ edition = "2021"
 # If you change the name here, you must also do it in flake.nix (and run `cargo generate-lockfile` afterwards)
 name = "nix-browser"
 version = "0.1.0"
+homepage = "https://github.com/juspay/nix-browser"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -32,6 +33,7 @@ http = { version = "0.2", optional = true }
 tracing = "0.1"
 tracing-subscriber = "0.3"
 tracing-subscriber-wasm = "0.1"
+human-panic = "1.1.5"
 
 [features]
 hydrate = ["leptos/hydrate", "leptos_meta/hydrate", "leptos_router/hydrate"]
