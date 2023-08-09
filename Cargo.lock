@@ -731,12 +731,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "get-port"
-version = "4.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "888123007db34fbff15b5a347d46364dfbad531d6cb43de52cc0b62558f570e2"
-
-[[package]]
 name = "getrandom"
 version = "0.2.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1530,7 +1524,6 @@ dependencies = [
  "cfg-if",
  "console_error_panic_hook",
  "console_log",
- "get-port",
  "http",
  "leptos",
  "leptos_axum",
