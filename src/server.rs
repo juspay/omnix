@@ -51,6 +51,8 @@ fn resolve_port_zero(address: SocketAddr, default: u16) -> SocketAddr {
             },
         )
         .unwrap();
+        // TODO: This should be debug
+        tracing::info!("Resolved port 0 to {}", tcp_port);
         site_address.set_port(tcp_port);
     }
     site_address
