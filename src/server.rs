@@ -30,11 +30,9 @@ pub async fn main() {
         // error handler)
         .fallback_service(client_dist.clone().not_found_service(not_found_service))
         .with_state(conf.leptos_options.clone());
-    tracing::info!("App launched at http://{}", &conf.leptos_options.site_addr);
-    axum::Server::bind(&conf.leptos_options.site_addr)
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
+    let server = axum::Server::bind(&conf.leptos_options.site_addr).serve(app.into_make_service());
+    tracing::info!("App is running at http://{}", server.local_addr());
+    server.await.unwrap()
 }
 
 /// Handler for missing routes
