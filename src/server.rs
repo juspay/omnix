@@ -8,7 +8,8 @@ use axum::{routing::post, Router};
 use leptos::*;
 use leptos_axum::{generate_route_list, LeptosRoutes};
 use tower_http::services::ServeDir;
-use tracing::info_span;
+use tower_http::trace::{self, TraceLayer};
+use tracing::{info_span, Level};
 
 /// Axum server main entry point
 pub async fn main() {
@@ -31,6 +32,12 @@ pub async fn main() {
         // static files are served as fallback (but *before* falling back to
         // error handler)
         .fallback_service(client_dist.clone().not_found_service(not_found_service))
+        // enable HTTP request logging
+        .layer(
+            TraceLayer::new_for_http()
+                .make_span_with(trace::DefaultMakeSpan::new().level(Level::INFO))
+                .on_response(trace::DefaultOnResponse::new().level(Level::INFO)),
+        )
         .with_state(conf.leptos_options.clone());
     let server = axum::Server::bind(&conf.leptos_options.site_addr).serve(app.into_make_service());
     tracing::info!("App is running at http://{}", server.local_addr());
