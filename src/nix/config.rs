@@ -1,6 +1,7 @@
 //! Rust module for `nix show-config`
 use leptos::*;
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "ssr")]
 use tracing::instrument;
 
 /// Nix configuration spit out by `nix show-config`
