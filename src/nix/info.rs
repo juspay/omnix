@@ -22,9 +22,7 @@ pub async fn get_nix_info() -> Result<NixInfo, ServerFnError> {
     cmd.arg("--version");
     let stdout = crate::command::run_command_in_server_fn(&mut cmd).await?;
     // TODO: Parse the version string
-    let nix_version = String::from_utf8(stdout)
-        .map(|s| s.trim().to_string())
-        .map_err(|e| <std::string::FromUtf8Error as Into<ServerFnError>>::into(e))?;
+    let nix_version = String::from_utf8_lossy(&stdout).to_string();
     let nix_config = super::config::run_nix_show_config().await?;
     tracing::info!("Got nix info. Version = {}", nix_version);
     Ok(NixInfo {
