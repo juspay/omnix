@@ -9,16 +9,17 @@ use leptos::*;
 use leptos_axum::{generate_route_list, LeptosRoutes};
 use tower_http::services::ServeDir;
 use tower_http::trace::{self, TraceLayer};
-use tracing::{info_span, Level};
+use tracing::{instrument, Level};
 
 /// Axum server main entry point
 pub async fn main() {
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO) // TODO: --verbose should use DEBUG
-        .compact()
-        .init();
+    setup_logging();
+    run_server().await
+}
+
+#[instrument(name = "server")]
+async fn run_server() {
     let conf = get_configuration(None).await.unwrap();
-    let _span = info_span!("server").entered();
     tracing::debug!("Firing up Leptos app with config: {:?}", conf);
     let routes = generate_route_list(|cx| view! { cx, <App/> }).await;
     let client_dist = ServeDir::new(conf.leptos_options.site_root.clone());
@@ -43,6 +44,13 @@ pub async fn main() {
     let server = axum::Server::bind(&conf.leptos_options.site_addr).serve(app.into_make_service());
     tracing::info!("App is running at http://{}", server.local_addr());
     server.await.unwrap()
+}
+
+fn setup_logging() {
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::INFO) // TODO: --verbose should use DEBUG
+        .compact()
+        .init();
 }
 
 /// Handler for missing routes
