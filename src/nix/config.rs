@@ -1,6 +1,7 @@
 //! Rust module for `nix show-config`
 use leptos::*;
 use serde::{Deserialize, Serialize};
+use tracing::instrument;
 
 /// Nix configuration spit out by `nix show-config`
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -58,10 +59,9 @@ impl IntoView for ConfigVal<String> {
 
 /// Get the output of `nix show-config`
 #[cfg(feature = "ssr")]
+#[instrument(name = "show-config")]
 pub async fn run_nix_show_config() -> Result<NixConfig, ServerFnError> {
     use tokio::process::Command;
-    use tracing::info_span;
-    let _span = info_span!("show-config").entered();
     let mut cmd = Command::new("nix");
     cmd.args(vec![
         "--extra-experimental-features",

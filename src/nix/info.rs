@@ -1,6 +1,7 @@
 //! Information about the user's Nix installation
 use leptos::*;
 use serde::{Deserialize, Serialize};
+use tracing::instrument;
 
 use crate::nix::config::NixConfig;
 
@@ -13,11 +14,10 @@ pub struct NixInfo {
 }
 
 /// Determine [NixInfo] on the user's system
+#[instrument(name = "nix-info")]
 #[server(GetNixInfo, "/api")]
 pub async fn get_nix_info() -> Result<NixInfo, ServerFnError> {
     use tokio::process::Command;
-    use tracing::info_span;
-    let _span = info_span!("nix-info").entered();
     let mut cmd = Command::new("nix");
     cmd.arg("--version");
     let stdout = crate::command::run_command_in_server_fn(&mut cmd).await?;
