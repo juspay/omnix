@@ -21,9 +21,9 @@ pub fn App(cx: Scope) -> impl IntoView {
         }>
             <Title formatter=|s| format!("{s} - nix-browser")/>
             <div class="flex justify-center w-full min-h-screen bg-center bg-cover bg-base-200">
-                <div class="container flex flex-col items-center mx-auto my-4 max-w-prose">
+                <div class="container flex flex-col items-center mx-auto max-w-prose">
                     <Nav/>
-                    <div class="z-0 flex col-start-1 row-start-1 text-center">
+                    <div class="z-0 flex col-start-1 row-start-1 px-2 text-center">
                         <div class="flex flex-col space-y-3">
                             <Routes>
                                 <Route path="" view=Dashboard/>
@@ -40,11 +40,12 @@ pub fn App(cx: Scope) -> impl IntoView {
 /// Navigation bar
 #[component]
 fn Nav(cx: Scope) -> impl IntoView {
+    let class = "px-3 py-2";
     view! { cx,
-        <nav class="flex flex-row w-full p-2 my-3 space-x-8 text-white rounded shadow bg-primary-800">
-            <Link link="/" text="Dashboard"/>
-            <Link link="/about" text="About"/>
-            <div class="flex-grow font-bold text-end">"🌍 nix-browser"</div>
+        <nav class="flex flex-row w-full mb-3 text-white md:rounded-b bg-primary-800">
+            <A exact=true href="/" class=class>"Dashboard"</A>
+            <A exact=true href="/about" class=class>"About"</A>
+            <div class={format!("flex-grow font-bold text-end {}", class)}>"🌍 nix-browser"</div>
         </nav>
     }
 }
@@ -57,7 +58,7 @@ fn Dashboard(cx: Scope) -> impl IntoView {
     view! { cx,
         <Title text="Dashboard"/>
         <h1 class="text-5xl font-bold">"Dashboard"</h1>
-        <h2 class="text-3xl font-bold text-gray-500">"Nix Info"</h2>
+        <h2 class="text-3xl font-bold text-base-500">"Nix Info"</h2>
         <Suspense fallback=move || view! { cx, <Spinner/> }>
             <ErrorBoundary fallback=|cx, errors| view! { cx, <Errors errors=errors.get()/> }>
                 <div class="my-1 text-left">{move || nix_info.read(cx)}</div>
@@ -97,7 +98,7 @@ fn Spinner(cx: Scope) -> impl IntoView {
 #[component]
 fn Link(cx: Scope, link: &'static str, text: &'static str) -> impl IntoView {
     view! { cx,
-        <A exact=true href=link class="text-primary-100 hover:no-underline">
+        <A href=link class="text-primary-100 hover:no-underline">
             {text}
         </A>
     }
@@ -108,7 +109,7 @@ fn LinkExternal(cx: Scope, link: &'static str, text: &'static str) -> impl IntoV
     view! { cx,
         <a
             href=link
-            class="underline text-primary-300 hover:no-underline"
+            class="underline text-primary-500 hover:no-underline"
             rel="external"
             target="_blank"
         >
@@ -127,7 +128,7 @@ fn NotFound(cx: Scope) -> impl IntoView {
     }}
     view! { cx,
         // The HTML for 404 not found
-        <div class="grid w-full min-h-screen bg-center bg-cover bg-base-200 place-items-center">
+        <div class="grid w-full min-h-screen bg-center bg-cover bg-base-100 place-items-center">
             <div class="z-0 flex items-center justify-center col-start-1 row-start-1 text-center">
                 <div class="flex flex-col space-y-3">
                     <h1 class="text-5xl font-bold">"404"</h1>

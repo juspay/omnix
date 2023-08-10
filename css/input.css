@@ -2,6 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-[aria-current]:not([aria-current="false"]) {
-    @apply font-bold bg-base-200 text-primary-600;
+a[aria-current="page"] {
+    @apply font-bold bg-white text-primary-600;
 }

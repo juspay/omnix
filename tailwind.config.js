@@ -10,8 +10,8 @@ module.exports = {
             // Our application colour palette is defined here.
             colors: {
                 'base': colors.gray,
-                'primary': colors.pink,
-                'secondary': colors.blue,
+                'primary': colors.blue,
+                'secondary': colors.yellow,
                 'error': colors.red
             }
         }

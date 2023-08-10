@@ -85,13 +85,13 @@ impl IntoView for NixConfig {
                 // TODO: Use a nice Tailwind tooltip here, instead of "title"
                 // attribute.
                 <tr title=&value.description>
-                    <td class="px-4 py-2 font-bold">{key}</td>
-                    <td class="px-4 py-2 text-left">{value}</td>
+                    <td class="px-4 py-2 font-semibold text-base-700">{key}</td>
+                    <td class="px-4 py-2 text-left"><code>{value}</code></td>
                 </tr>
             }
         }
         view! { cx,
-            <div class="py-1 my-1 rounded bg-blue-50">
+            <div class="py-1 my-1 rounded bg-primary-50">
                 <table class="text-right">
                     <tbody>
                         {mk_row(cx, "System", self.system)} {mk_row(cx, "Max Jobs", self.max_jobs)}
