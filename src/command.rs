@@ -5,10 +5,8 @@ use tokio::process::Command;
 use tracing::instrument;
 
 /// Run the given command, returning its stdout.
-///
-/// Failures are wrapped in Leptos [ServerFnError]s.
 #[instrument(name = "run-command", err)]
-pub async fn run_command_in_server_fn(cmd: &mut Command) -> Result<Vec<u8>, CommandError> {
+pub async fn run_command(cmd: &mut Command) -> Result<Vec<u8>, CommandError> {
     tracing::info!("Running command");
     let out = cmd.output().await?;
     if out.status.success() {
@@ -24,8 +22,8 @@ pub async fn run_command_in_server_fn(cmd: &mut Command) -> Result<Vec<u8>, Comm
 
 #[derive(Error, Debug)]
 pub enum CommandError {
-    #[error("Failed to run command")]
-    RunFailed(#[from] std::io::Error),
+    #[error("Child process error: {0}")]
+    ChildProcessError(#[from] std::io::Error),
     #[error(
         "Process exited unsuccessfully. exit_code={:?} stderr={}",
         exit_code,

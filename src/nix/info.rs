@@ -20,7 +20,7 @@ pub async fn get_nix_info() -> Result<NixInfo, ServerFnError> {
     use tokio::process::Command;
     let mut cmd = Command::new("nix");
     cmd.arg("--version");
-    let stdout = crate::command::run_command_in_server_fn(&mut cmd).await?;
+    let stdout = crate::command::run_command(&mut cmd).await?;
     // TODO: Parse the version string
     let nix_version = String::from_utf8_lossy(&stdout).to_string();
     let nix_config = super::config::run_nix_show_config().await?;

@@ -70,7 +70,7 @@ pub async fn run_nix_show_config() -> Result<NixConfig, ServerFnError> {
         "show-config",
         "--json",
     ]);
-    let stdout: Vec<u8> = crate::command::run_command_in_server_fn(&mut cmd).await?;
+    let stdout: Vec<u8> = crate::command::run_command(&mut cmd).await?;
     let v = serde_json::from_slice::<NixConfig>(&stdout)?;
     Ok(v)
 }
