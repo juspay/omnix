@@ -90,7 +90,6 @@
           packages = with pkgs; [
             just
             cargo-watch
-            nodePackages.browser-sync
             config.process-compose.cargo-docs-server.outputs.package
             inputs.nixpkgs-leptosfmt.legacyPackages.${system}.leptosfmt
           ];
