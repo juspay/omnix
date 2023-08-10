@@ -17,7 +17,7 @@ pub struct NixInfo {
 pub async fn get_nix_info() -> Result<NixInfo, ServerFnError> {
     use tokio::process::Command;
     use tracing::info_span;
-    let _span = info_span!("get_nix_info").entered();
+    let _span = info_span!("nix-info").entered();
     let mut cmd = Command::new("nix");
     cmd.arg("--version");
     let stdout = crate::command::run_command_in_server_fn(&mut cmd).await?;

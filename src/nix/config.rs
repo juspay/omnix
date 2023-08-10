@@ -61,7 +61,7 @@ impl IntoView for ConfigVal<String> {
 pub async fn run_nix_show_config() -> Result<NixConfig, ServerFnError> {
     use tokio::process::Command;
     use tracing::info_span;
-    let _span = info_span!("run_nix_show_config").entered();
+    let _span = info_span!("show-config").entered();
     let mut cmd = Command::new("nix");
     cmd.args(vec![
         "--extra-experimental-features",

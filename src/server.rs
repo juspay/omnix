@@ -15,6 +15,7 @@ use tracing::{info_span, Level};
 pub async fn main() {
     tracing_subscriber::fmt()
         .with_max_level(tracing::Level::INFO) // TODO: --verbose should use DEBUG
+        .compact()
         .init();
     let conf = get_configuration(None).await.unwrap();
     let _span = info_span!("server").entered();
