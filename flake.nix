@@ -7,7 +7,8 @@
     rust-overlay.url = "github:oxalica/rust-overlay";
     crane.url = "github:ipetkov/crane";
     crane.inputs.nixpkgs.follows = "nixpkgs";
-    treefmt-nix.url = "github:numtide/treefmt-nix";
+    treefmt-nix.url = "github:srid/treefmt-nix/leptosfmt"; # https://github.com/numtide/treefmt-nix/pull/108
+    treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
     process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
 
     leptos-fullstack.url = "github:srid/leptos-fullstack";
@@ -37,6 +38,7 @@
           programs = {
             nixpkgs-fmt.enable = true;
             rustfmt.enable = true;
+            leptosfmt.enable = true;
           };
         };
 
@@ -89,7 +91,6 @@
           packages = with pkgs; [
             just
             cargo-watch
-            leptosfmt
             config.process-compose.cargo-docs-server.outputs.package
           ];
         };
