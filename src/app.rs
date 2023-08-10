@@ -27,6 +27,7 @@ pub fn App(cx: Scope) -> impl IntoView {
                         <div class="flex flex-col space-y-3">
                             <Routes>
                                 <Route path="" view=Dashboard/>
+                                <Route path="/health" view=NixHealth/>
                                 <Route path="/about" view=About/>
                             </Routes>
                         </div>
@@ -46,6 +47,9 @@ fn Nav(cx: Scope) -> impl IntoView {
             <A exact=true href="/" class=class>
                 "Dashboard"
             </A>
+            <A exact=true href="/health" class=class>
+                "Nix Health"
+            </A>
             <A exact=true href="/about" class=class>
                 "About"
             </A>
@@ -57,12 +61,39 @@ fn Nav(cx: Scope) -> impl IntoView {
 /// Home page
 #[component]
 fn Dashboard(cx: Scope) -> impl IntoView {
-    let nix_info = create_resource(cx, move || (), move |_| get_nix_info());
+    // A Card component
+    #[component]
+    fn Card(cx: Scope, href: &'static str, children: Children) -> impl IntoView {
+        view! { cx,
+            <A
+                href=href
+                class="flex items-center justify-center w-64 h-48 p-2 m-2 rounded-lg bg-secondary-100 hover:bg-secondary-200"
+            >
+                <span class="text-4xl text-base-800">{children(cx)}</span>
+            </A>
+        }
+    }
     tracing::debug!("Rendering Dashboard page");
     view! { cx,
         <Title text="Dashboard"/>
         <h1 class="text-5xl font-bold">"Dashboard"</h1>
-        <h2 class="text-3xl font-bold text-base-500">"Nix Info"</h2>
+        <div id="cards" class="flex flex-row">
+            // TODO: This should show green or red depending on the health check status
+            <Card href="/health">"Nix Health Check 🩺"</Card>
+        </div>
+    }
+}
+
+/// Nix health checks
+#[component]
+fn NixHealth(cx: Scope) -> impl IntoView {
+    // TODO: Create a NixHealth type, and write IntoView for it.
+    let nix_info = create_resource(cx, move || (), move |_| get_nix_info());
+    let title = "Nix Health";
+    view! { cx,
+        <Title text=title/>
+        <h1 class="text-5xl font-bold">{title}</h1>
+        <p>"TODO: Implement this"</p>
         <Suspense fallback=move || view! { cx, <Spinner/> }>
             <ErrorBoundary fallback=|cx, errors| view! { cx, <Errors errors=errors.get()/> }>
                 <div class="my-1 text-left">{move || nix_info.read(cx)}</div>
