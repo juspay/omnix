@@ -86,7 +86,9 @@ impl IntoView for NixConfig {
                 // attribute.
                 <tr title=&value.description>
                     <td class="px-4 py-2 font-semibold text-base-700">{key}</td>
-                    <td class="px-4 py-2 text-left"><code>{value}</code></td>
+                    <td class="px-4 py-2 text-left">
+                        <code>{value}</code>
+                    </td>
                 </tr>
             }
         }

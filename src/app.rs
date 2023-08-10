@@ -43,9 +43,13 @@ fn Nav(cx: Scope) -> impl IntoView {
     let class = "px-3 py-2";
     view! { cx,
         <nav class="flex flex-row w-full mb-3 text-white md:rounded-b bg-primary-800">
-            <A exact=true href="/" class=class>"Dashboard"</A>
-            <A exact=true href="/about" class=class>"About"</A>
-            <div class={format!("flex-grow font-bold text-end {}", class)}>"🌍 nix-browser"</div>
+            <A exact=true href="/" class=class>
+                "Dashboard"
+            </A>
+            <A exact=true href="/about" class=class>
+                "About"
+            </A>
+            <div class=format!("flex-grow font-bold text-end {}", class)>"🌍 nix-browser"</div>
         </nav>
     }
 }

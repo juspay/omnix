@@ -40,7 +40,7 @@ impl IntoView for NixInfo {
                         Nix Version
                     </b>
                     <div class="p-1 my-1 rounded bg-primary-50">
-                    <pre>{self.nix_version}</pre>
+                        <pre>{self.nix_version}</pre>
                     </div>
                 </div>
                 <div>
