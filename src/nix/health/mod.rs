@@ -43,6 +43,8 @@ pub trait Check {
     where
         Self: Sized;
 
+    fn name(&self) -> &'static str;
+
     fn report(&self) -> Report;
 }
 
@@ -56,8 +58,32 @@ pub async fn get_health_checks() -> Result<NixHealth, ServerFnError> {
 impl IntoView for NixHealth {
     fn into_view(self, cx: Scope) -> View {
         let checks = self.as_list();
-        // TODO: list
-        let check0 = checks[0].report();
-        view! { cx, <pre>{format!("{:?}", check0)}</pre> }.into_view(cx)
+        view! { cx,
+            {checks
+                .into_iter()
+                .map(|check| {
+                    view! { cx,
+                        <b>{check.name()}</b>
+                        {match check.report() {
+                            Report::Green => {
+                                view! { cx, <span class="text-green-500">{"✓"}</span> }
+                                    .into_view(cx)
+                            }
+                            Report::Red { msg, suggestion } => {
+
+                                view! { cx,
+                                    <span class="text-red-500">{"✗"}</span>
+                                    <div class="red">{msg}</div>
+                                    <div class="red">"Suggestion: " {suggestion}</div>
+                                }
+                                    .into_view(cx)
+                            }
+                        }}
+                    }
+                        .into_view(cx)
+                })
+                .collect::<Vec<_>>()}
+        }
+        .into_view(cx)
     }
 }

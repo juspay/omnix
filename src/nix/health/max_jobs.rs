@@ -12,8 +12,11 @@ impl Check for MaxJobs {
     fn check(info: info::NixInfo) -> Self {
         MaxJobs(info.nix_config.max_jobs.value)
     }
+    fn name(&self) -> &'static str {
+        "Max Jobs"
+    }
     fn report(&self) -> Report {
-        if self > &MaxJobs(1) {
+        if self > &MaxJobs(12) {
             Report::Green
         } else {
             Report::Red {
