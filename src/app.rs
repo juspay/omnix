@@ -1,5 +1,5 @@
 //! Frontend UI entry point
-use crate::nix::info::get_nix_info;
+use crate::nix::{health::get_health_checks, info::get_nix_info};
 use cfg_if::cfg_if;
 #[cfg(feature = "ssr")]
 use http::status::StatusCode;
@@ -87,16 +87,14 @@ fn Dashboard(cx: Scope) -> impl IntoView {
 /// Nix health checks
 #[component]
 fn NixHealth(cx: Scope) -> impl IntoView {
-    // TODO: Create a NixHealth type, and write IntoView for it.
-    let nix_info = create_resource(cx, move || (), move |_| get_nix_info());
+    let health_check = create_resource(cx, move || (), move |_| get_health_checks());
     let title = "Nix Health";
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
-        <p>"TODO: Implement this"</p>
         <Suspense fallback=move || view! { cx, <Spinner/> }>
             <ErrorBoundary fallback=|cx, errors| view! { cx, <Errors errors=errors.get()/> }>
-                <div class="my-1 text-left">{move || nix_info.read(cx)}</div>
+                <div class="my-1 text-left">{move || health_check.read(cx)}</div>
             </ErrorBoundary>
         </Suspense>
     }
