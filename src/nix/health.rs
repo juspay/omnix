@@ -64,7 +64,6 @@ impl IntoView for HealthCheck {
     fn into_view(self, cx: Scope) -> View {
         let HealthCheck(checks) = self;
         let check0 = checks[0].report();
-        view! { cx, <pre>{format!("{:?}", check0)}</pre> }
-        .into_view(cx)
+        view! { cx, <pre>{format!("{:?}", check0)}</pre> }.into_view(cx)
     }
 }
