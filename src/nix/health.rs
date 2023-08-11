@@ -7,6 +7,22 @@ use tracing::instrument;
 use super::info;
 
 #[derive(Debug, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize, Clone)]
+pub struct NixHealthChecks {
+    max_jobs: MaxJobs,
+}
+
+impl NixHealthChecks {
+    pub fn new(info: info::NixInfo) -> Self {
+        NixHealthChecks {
+            max_jobs: MaxJobs::check(info),
+        }
+    }
+    pub fn as_list(&self) -> Vec<Box<&dyn Check>> {
+        vec![Box::new(&self.max_jobs)]
+    }
+}
+
+#[derive(Debug, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize, Clone)]
 pub enum Report {
     Green,
     Red {
@@ -15,8 +31,7 @@ pub enum Report {
     }, // TODO: Should this be Markdown?
 }
 
-#[typetag::serde(tag = "type")]
-pub trait Check: dyn_clone::DynClone {
+pub trait Check {
     fn check(info: info::NixInfo) -> Self
     where
         Self: Sized;
@@ -24,12 +39,9 @@ pub trait Check: dyn_clone::DynClone {
     fn report(&self) -> Report;
 }
 
-dyn_clone::clone_trait_object!(Check);
-
 #[derive(Debug, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize, Clone)]
 pub struct MaxJobs(i32);
 
-#[typetag::serde]
 impl Check for MaxJobs {
     fn check(info: info::NixInfo) -> Self {
         MaxJobs(info.nix_config.max_jobs.value)
@@ -46,23 +58,16 @@ impl Check for MaxJobs {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone)]
-pub struct HealthCheck(Vec<Box<dyn Check>>);
-
-pub fn run_checks(info: info::NixInfo) -> Vec<Box<dyn Check>> {
-    vec![Box::new(MaxJobs::check(info))]
-}
-
 #[instrument(name = "nix-health")]
 #[server(GetHealthChecks, "/api")]
-pub async fn get_health_checks() -> Result<HealthCheck, ServerFnError> {
+pub async fn get_health_checks() -> Result<NixHealthChecks, ServerFnError> {
     let info = info::get_nix_info().await?;
-    Ok(HealthCheck(run_checks(info)))
+    Ok(NixHealthChecks::new(info))
 }
 
-impl IntoView for HealthCheck {
+impl IntoView for NixHealthChecks {
     fn into_view(self, cx: Scope) -> View {
-        let HealthCheck(checks) = self;
+        let checks = self.as_list();
         let check0 = checks[0].report();
         view! { cx, <pre>{format!("{:?}", check0)}</pre> }.into_view(cx)
     }

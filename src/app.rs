@@ -1,5 +1,6 @@
 //! Frontend UI entry point
-use crate::nix::{health::get_health_checks, info::get_nix_info};
+use crate::nix::health::*;
+use crate::nix::info::get_nix_info;
 use cfg_if::cfg_if;
 #[cfg(feature = "ssr")]
 use http::status::StatusCode;
@@ -28,6 +29,7 @@ pub fn App(cx: Scope) -> impl IntoView {
                             <Routes>
                                 <Route path="" view=Dashboard/>
                                 <Route path="/health" view=NixHealth/>
+                                <Route path="/info" view=NixInfo/>
                                 <Route path="/about" view=About/>
                             </Routes>
                         </div>
@@ -49,6 +51,9 @@ fn Nav(cx: Scope) -> impl IntoView {
             </A>
             <A exact=true href="/health" class=class>
                 "Nix Health"
+            </A>
+            <A exact=true href="/info" class=class>
+                "Nix Info"
             </A>
             <A exact=true href="/about" class=class>
                 "About"
@@ -80,7 +85,24 @@ fn Dashboard(cx: Scope) -> impl IntoView {
         <div id="cards" class="flex flex-row">
             // TODO: This should show green or red depending on the health check status
             <Card href="/health">"Nix Health Check 🩺"</Card>
+            <Card href="/info">"Nix Info ℹ️"</Card>
         </div>
+    }
+}
+
+/// Nix information
+#[component]
+fn NixInfo(cx: Scope) -> impl IntoView {
+    let nix_info = create_resource(cx, move || (), move |_| get_nix_info());
+    let title = "Nix Info";
+    view! { cx,
+        <Title text=title/>
+        <h1 class="text-5xl font-bold">{title}</h1>
+        <Suspense fallback=move || view! { cx, <Spinner/> }>
+            <ErrorBoundary fallback=|cx, errors| view! { cx, <Errors errors=errors.get()/> }>
+                <div class="my-1 text-left">{move || nix_info.read(cx)}</div>
+            </ErrorBoundary>
+        </Suspense>
     }
 }
 
