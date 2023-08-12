@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::nix::{config::ConfigVal, info};
 
-use super::{Check, Report};
+use super::{Check, Report, ViewCheck};
 
 // [NixConfig::max_job]]
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -35,6 +35,10 @@ impl Check for Caches {
 
 impl IntoView for Caches {
     fn into_view(self, cx: Scope) -> View {
-        self.0.into_view(cx)
+        view! { cx,
+            <ViewCheck check=self.clone()>
+                <div>{self.0.into_view(cx)}</div>
+            </ViewCheck>
+        }
     }
 }

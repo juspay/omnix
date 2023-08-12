@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::nix::{config::ConfigVal, info};
 
-use super::{Check, Report};
+use super::{Check, Report, ViewCheck};
 
 // [NixConfig::max_job]]
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -31,9 +31,10 @@ impl Check for MaxJobs {
 
 impl IntoView for MaxJobs {
     fn into_view(self, cx: Scope) -> View {
-        view! {cx,
-            <span>{self.0} " Cores"</span>
+        view! { cx,
+            <ViewCheck check=self.clone()>
+                <span>{self.0} " Cores"</span>
+            </ViewCheck>
         }
-        .into_view(cx)
     }
 }

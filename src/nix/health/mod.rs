@@ -36,6 +36,7 @@ impl NixHealth {
         }
     }
     pub fn is_healthy(&self) -> bool {
+        // TODO: refactor
         let checks: Vec<Box<&dyn Check>> = vec![Box::new(&self.max_jobs), Box::new(&self.caches)];
         checks.iter().all(|check| check.report() == Report::Green)
     }
@@ -50,6 +51,28 @@ pub enum Report {
     }, // TODO: Should this be Markdown?
 }
 
+impl IntoView for Report {
+    fn into_view(self, cx: Scope) -> View {
+        view! { cx,
+            {match self {
+                Report::Green => {
+                    view! { cx, <div class="text-green-500">{"✓"}</div> }.into_view(cx)
+                }
+                Report::Red { msg, suggestion } => {
+
+                    view! { cx,
+                        <div class="text-3xl text-red-500">{"✗"}</div>
+                        <div class="bg-red-400 rounded bg-border">{msg}</div>
+                        <div class="bg-blue-400 rounded bg-border">"Suggestion: " {suggestion}</div>
+                    }
+                        .into_view(cx)
+                }
+            }}
+        }
+        .into_view(cx)
+    }
+}
+
 pub trait Check: IntoView {
     fn check(info: &info::NixInfo) -> Self
     where
@@ -62,18 +85,13 @@ pub trait Check: IntoView {
 
 impl IntoView for NixHealth {
     fn into_view(self, cx: Scope) -> View {
-        view! { cx,
-            <div class="flex justify-start space-x-8">
-                <ViewCheck check=self.max_jobs/>
-                <ViewCheck check=self.caches/>
-            </div>
-        }
-        .into_view(cx)
+        view! { cx, <div class="flex justify-start space-x-8">{self.max_jobs} {self.caches}</div> }
+            .into_view(cx)
     }
 }
 
 #[component]
-fn ViewCheck<C>(cx: Scope, check: C) -> impl IntoView
+pub fn ViewCheck<C>(cx: Scope, check: C, children: Children) -> impl IntoView
 where
     C: Check + Clone,
 {
@@ -81,26 +99,8 @@ where
         <div class="bg-white border-2 rounded">
             <h2 class="p-2 text-xl font-bold ">{(&check).name()}</h2>
             <div class="p-2">
-                <div class="py-2 bg-base-50">{check.clone().into_view(cx)}</div>
-                <div class="flex flex-col justify-start space-y-8">
-                    {match (&check).report() {
-                        Report::Green => {
-                            view! { cx, <div class="text-green-500">{"✓"}</div> }.into_view(cx)
-                        }
-                        Report::Red { msg, suggestion } => {
-
-                            view! { cx,
-                                <div class="text-3xl text-red-500">{"✗"}</div>
-                                <div class="bg-red-400 rounded bg-border">{msg}</div>
-                                <div class="bg-blue-400 rounded bg-border">
-                                    "Suggestion: " {suggestion}
-                                </div>
-                            }
-                                .into_view(cx)
-                        }
-                    }}
-
-                </div>
+                <div class="py-2 bg-base-50">{children(cx)}</div>
+                <div class="flex flex-col justify-start space-y-8">{(&check).report()}</div>
             </div>
         </div>
     }
