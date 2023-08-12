@@ -66,6 +66,7 @@ fn Nav(cx: Scope) -> impl IntoView {
 /// Home page
 #[component]
 fn Dashboard(cx: Scope) -> impl IntoView {
+    let health_check = create_resource(cx, move || (), move |_| get_health_checks());
     // A Card component
     #[component]
     fn Card(cx: Scope, href: &'static str, children: Children) -> impl IntoView {
@@ -84,7 +85,32 @@ fn Dashboard(cx: Scope) -> impl IntoView {
         <h1 class="text-5xl font-bold">"Dashboard"</h1>
         <div id="cards" class="flex flex-row">
             // TODO: This should show green or red depending on the health check status
-            <Card href="/health">"Nix Health Check 🩺"</Card>
+            <Card href="/health">
+                "Nix Health Check " <Suspense fallback=move || view! { cx, <Spinner/> }>
+                    <ErrorBoundary fallback=|cx, errors| {
+                        view! { cx, <Errors errors=errors.get()/> }
+                    }>
+                        {move || {
+                            health_check
+                                .read(cx)
+                                .map(|r| {
+                                    r
+                                        .map(|v| {
+                                            if v.is_healthy() {
+                                                view! { cx, <span class="text-green-500">{"✓"}</span> }
+                                                    .into_view(cx)
+                                            } else {
+                                                view! { cx, <span class="text-red-500">{"✗"}</span> }
+                                                    .into_view(cx)
+                                            }
+                                        })
+                                })
+                        }}
+
+                    </ErrorBoundary>
+                </Suspense>
+
+            </Card>
             <Card href="/info">"Nix Info ℹ️"</Card>
         </div>
     }
