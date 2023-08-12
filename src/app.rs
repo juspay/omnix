@@ -225,8 +225,10 @@ fn Errors(cx: Scope, errors: Errors) -> impl IntoView {
 fn SuspenseWithErrorHandling(cx: Scope, children: ChildrenFn) -> impl IntoView {
     let children = store_value(cx, children);
     view! { cx,
-        <SuspenseWithErrorHandling>
-            <span>{children.with_value(|c| c(cx))}</span>
-        </SuspenseWithErrorHandling>
+        <Suspense fallback=move || view! { cx, <Spinner/> }>
+            <ErrorBoundary fallback=|cx, errors| view! { cx, <Errors errors=errors.get()/> }>
+                <span>{children.with_value(|c| c(cx))}</span>
+            </ErrorBoundary>
+        </Suspense>
     }
 }
