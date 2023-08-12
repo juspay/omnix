@@ -1,24 +1,23 @@
 //! Health checks for the user's Nix install
 
 mod check;
-mod report;
-mod traits;
+pub mod report;
+pub mod traits;
 
 use leptos::*;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
 
-use self::check::caches::Caches;
-use self::check::max_jobs::MaxJobs;
-use self::report::Report;
+use self::check::{caches::Caches, max_jobs::MaxJobs};
+use self::report::{NoDetails, Report, WithDetails};
 use self::traits::Check;
 use super::info;
 
 #[instrument(name = "nix-health")]
-#[server(GetHealthChecks, "/api")]
-pub async fn get_health_checks() -> Result<NixHealth, ServerFnError> {
+#[server(GetNixHealth, "/api")]
+pub async fn get_nix_health() -> Result<NixHealth, ServerFnError> {
     let info = info::get_nix_info().await?;
-    Ok(NixHealth::new(&info))
+    Ok(NixHealth::check(&info))
 }
 
 /// Nix Health check information
@@ -31,17 +30,26 @@ pub struct NixHealth {
     caches: Caches,
 }
 
-impl NixHealth {
-    pub fn new(info: &info::NixInfo) -> Self {
+impl Check for NixHealth {
+    type Report = Report<NoDetails>;
+    fn check(info: &info::NixInfo) -> Self {
         NixHealth {
             max_jobs: MaxJobs::check(info),
             caches: Caches::check(info),
         }
     }
-    pub fn is_healthy(&self) -> bool {
+    fn name(&self) -> &'static str {
+        "Nix Health"
+    }
+    fn report(&self) -> Report<NoDetails> {
         // TODO: refactor
-        let checks: Vec<Box<&dyn Check>> = vec![Box::new(&self.max_jobs), Box::new(&self.caches)];
-        checks.iter().all(|check| check.report() == Report::Green)
+        let checks: Vec<Box<&dyn Check<Report = Report<WithDetails>>>> =
+            vec![Box::new(&self.max_jobs), Box::new(&self.caches)];
+        if checks.iter().all(|check| check.report() == Report::Green) {
+            Report::Green
+        } else {
+            Report::Red(NoDetails)
+        }
     }
 }
 

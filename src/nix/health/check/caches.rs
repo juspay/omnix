@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use crate::nix::{
     config::ConfigVal,
     health::{
-        report::Report,
+        report::{Report, WithDetails},
         traits::{Check, ViewCheck},
     },
     info,
@@ -15,13 +15,14 @@ use crate::nix::{
 pub struct Caches(ConfigVal<Vec<String>>);
 
 impl Check for Caches {
+    type Report = Report<WithDetails>;
     fn check(info: &info::NixInfo) -> Self {
         Caches(info.nix_config.substituters.clone())
     }
     fn name(&self) -> &'static str {
         "Nix Caches in use"
     }
-    fn report(&self) -> Report {
+    fn report(&self) -> Report<WithDetails> {
         // TODO: This should use lenient URL match
         if self
             .0
@@ -30,10 +31,10 @@ impl Check for Caches {
         {
             Report::Green
         } else {
-            Report::Red {
+            Report::Red(WithDetails {
                 msg: "You are missing the official cache",
                 suggestion: "Try looking in /etc/nix/nix.conf",
-            }
+            })
         }
     }
 }

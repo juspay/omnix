@@ -1,4 +1,5 @@
 //! Frontend UI entry point
+use crate::nix::health::traits::Check;
 use crate::nix::health::*;
 use crate::nix::info::get_nix_info;
 use cfg_if::cfg_if;
@@ -66,7 +67,7 @@ fn Nav(cx: Scope) -> impl IntoView {
 /// Home page
 #[component]
 fn Dashboard(cx: Scope) -> impl IntoView {
-    let health_check = create_resource(cx, move || (), move |_| get_health_checks());
+    let health_check = create_resource(cx, move || (), move |_| get_nix_health());
     // A Card component
     #[component]
     fn Card(cx: Scope, href: &'static str, children: Children) -> impl IntoView {
@@ -89,24 +90,7 @@ fn Dashboard(cx: Scope) -> impl IntoView {
                 "Nix Health Check " <Suspense fallback=move || view! { cx, <Spinner/> }>
                     <ErrorBoundary fallback=|cx, errors| {
                         view! { cx, <Errors errors=errors.get()/> }
-                    }>
-                        {move || {
-                            health_check
-                                .read(cx)
-                                .map(|r| {
-                                    r
-                                        .map(|v| {
-                                            if v.is_healthy() {
-                                                view! { cx, <span class="text-green-500">{"✓"}</span> }
-                                                    .into_view(cx)
-                                            } else {
-                                                view! { cx, <span class="text-red-500">{"✗"}</span> }
-                                                    .into_view(cx)
-                                            }
-                                        })
-                                })
-                        }}
-
+                    }>{move || { health_check.read(cx).map(|r| { r.map(|v| { v.report() }) }) }}
                     </ErrorBoundary>
                 </Suspense>
 
@@ -135,7 +119,7 @@ fn NixInfo(cx: Scope) -> impl IntoView {
 /// Nix health checks
 #[component]
 fn NixHealth(cx: Scope) -> impl IntoView {
-    let health_check = create_resource(cx, move || (), move |_| get_health_checks());
+    let health_check = create_resource(cx, move || (), move |_| get_nix_health());
     let title = "Nix Health";
     view! { cx,
         <Title text=title/>

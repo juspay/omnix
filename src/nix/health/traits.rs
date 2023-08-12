@@ -1,21 +1,28 @@
 use leptos::*;
 
-use super::{info, report::Report};
+use super::{
+    info,
+    report::{Report, WithDetails},
+};
 
+/// Types that implement health check with reports
 pub trait Check: IntoView {
+    /// The type of the report produced by this health check
+    type Report;
+    /// Run and create the health check
     fn check(info: &info::NixInfo) -> Self
     where
         Self: Sized;
-
+    /// User-facing name for this health check
     fn name(&self) -> &'static str;
-
-    fn report(&self) -> Report;
+    /// Return the health report
+    fn report(&self) -> Self::Report;
 }
 
 #[component]
 pub fn ViewCheck<C>(cx: Scope, check: C, children: Children) -> impl IntoView
 where
-    C: Check + Clone,
+    C: Check<Report = Report<WithDetails>> + Clone,
 {
     view! { cx,
         <div class="bg-white border-2 rounded">
