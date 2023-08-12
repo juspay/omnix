@@ -90,7 +90,8 @@ fn Dashboard(cx: Scope) -> impl IntoView {
                 "Nix Health Check " <Suspense fallback=move || view! { cx, <Spinner/> }>
                     <ErrorBoundary fallback=|cx, errors| {
                         view! { cx, <Errors errors=errors.get()/> }
-                    }>{move || { health_check.read(cx).map(|r| { r.map(|v| { v.report() }) }) }}
+                    }>
+                        {move || { health_check.read(cx).map(|r| { r.map(|v| { v.report() }) }) }}
                     </ErrorBoundary>
                 </Suspense>
 
