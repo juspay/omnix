@@ -38,7 +38,7 @@ impl IntoView for ConfigVal<Vec<String>> {
                 {self
                     .value
                     .into_iter()
-                    .map(|item| view! { cx, <div>{item}</div> })
+                    .map(|item| view! { cx, <li class="list-disc">{item}</li> })
                     .collect_view(cx)}
             </div>
         }

@@ -1,22 +1,24 @@
+use leptos::*;
 use serde::{Deserialize, Serialize};
 
-use crate::nix::info;
+use crate::nix::{config::ConfigVal, info};
 
 use super::{Check, Report};
 
 // [NixConfig::max_job]]
-#[derive(Debug, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize, Clone)]
-pub struct MaxJobs(i32);
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct MaxJobs(ConfigVal<i32>);
 
 impl Check for MaxJobs {
     fn check(info: &info::NixInfo) -> Self {
-        MaxJobs(info.nix_config.max_jobs.value)
+        MaxJobs(info.nix_config.max_jobs.clone())
     }
     fn name(&self) -> &'static str {
         "Max Jobs"
     }
     fn report(&self) -> Report {
-        if self > &MaxJobs(12) {
+        // NOTE: Testing Red view, so this is inverted
+        if self.0.value < 1 {
             Report::Green
         } else {
             Report::Red {
@@ -24,5 +26,14 @@ impl Check for MaxJobs {
                 suggestion: "Try editing /etc/nix/nix.conf",
             }
         }
+    }
+}
+
+impl IntoView for MaxJobs {
+    fn into_view(self, cx: Scope) -> View {
+        view! {cx,
+            <span>{self.0} " Cores"</span>
+        }
+        .into_view(cx)
     }
 }

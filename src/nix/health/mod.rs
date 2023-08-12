@@ -11,11 +11,18 @@ use self::caches::Caches;
 use self::max_jobs::MaxJobs;
 use super::info;
 
+#[instrument(name = "nix-health")]
+#[server(GetHealthChecks, "/api")]
+pub async fn get_health_checks() -> Result<NixHealth, ServerFnError> {
+    let info = info::get_nix_info().await?;
+    Ok(NixHealth::new(&info))
+}
+
 /// Nix Health check information
 ///
 /// This struct is isomorphic to Vec<Box<&dyn Check>>. We cannot use the latter
 /// due to (wasm) serialization limitation with dyn trait objects.
-#[derive(Debug, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct NixHealth {
     max_jobs: MaxJobs,
     caches: Caches,
@@ -28,8 +35,9 @@ impl NixHealth {
             caches: Caches::check(info),
         }
     }
-    pub fn as_list(&self) -> Vec<Box<&dyn Check>> {
-        vec![Box::new(&self.max_jobs), Box::new(&self.caches)]
+    pub fn is_healthy(&self) -> bool {
+        let checks: Vec<Box<&dyn Check>> = vec![Box::new(&self.max_jobs), Box::new(&self.caches)];
+        checks.iter().all(|check| check.report() == Report::Green)
     }
 }
 
@@ -42,7 +50,7 @@ pub enum Report {
     }, // TODO: Should this be Markdown?
 }
 
-pub trait Check {
+pub trait Check: IntoView {
     fn check(info: &info::NixInfo) -> Self
     where
         Self: Sized;
@@ -52,52 +60,48 @@ pub trait Check {
     fn report(&self) -> Report;
 }
 
-#[instrument(name = "nix-health")]
-#[server(GetHealthChecks, "/api")]
-pub async fn get_health_checks() -> Result<NixHealth, ServerFnError> {
-    let info = info::get_nix_info().await?;
-    Ok(NixHealth::new(&info))
-}
-
 impl IntoView for NixHealth {
     fn into_view(self, cx: Scope) -> View {
-        let checks = self.as_list();
         view! { cx,
             <div class="flex justify-start space-x-8">
-                {checks
-                    .into_iter()
-                    .map(|check| {
-                        view! { cx,
-                            <div class="p-2 border-2 rounded bg-primary-50">
-                                <b>{check.name()}</b>
-                                <div class="flex flex-col justify-start space-y-8">
-                                    {match check.report() {
-                                        Report::Green => {
-                                            view! { cx, <div class="text-green-500">{"✓"}</div> }
-                                                .into_view(cx)
-                                        }
-                                        Report::Red { msg, suggestion } => {
-
-                                            view! { cx,
-                                                <div class="text-red-500">{"✗"}</div>
-                                                <div class="bg-red-400 rounded bg-border">{msg}</div>
-                                                <div class="bg-blue-400 rounded bg-border">
-                                                    "Suggestion: " {suggestion}
-                                                </div>
-                                            }
-                                                .into_view(cx)
-                                        }
-                                    }}
-
-                                </div>
-                            </div>
-                        }
-                            .into_view(cx)
-                    })
-                    .collect_view(cx)}
-
+                <ViewCheck check=self.max_jobs/>
+                <ViewCheck check=self.caches/>
             </div>
         }
         .into_view(cx)
+    }
+}
+
+#[component]
+fn ViewCheck<C>(cx: Scope, check: C) -> impl IntoView
+where
+    C: Check + Clone,
+{
+    view! { cx,
+        <div class="bg-white border-2 rounded">
+            <h2 class="p-2 text-xl font-bold ">{(&check).name()}</h2>
+            <div class="p-2">
+                <div class="py-2 bg-base-50">{check.clone().into_view(cx)}</div>
+                <div class="flex flex-col justify-start space-y-8">
+                    {match (&check).report() {
+                        Report::Green => {
+                            view! { cx, <div class="text-green-500">{"✓"}</div> }.into_view(cx)
+                        }
+                        Report::Red { msg, suggestion } => {
+
+                            view! { cx,
+                                <div class="text-3xl text-red-500">{"✗"}</div>
+                                <div class="bg-red-400 rounded bg-border">{msg}</div>
+                                <div class="bg-blue-400 rounded bg-border">
+                                    "Suggestion: " {suggestion}
+                                </div>
+                            }
+                                .into_view(cx)
+                        }
+                    }}
+
+                </div>
+            </div>
+        </div>
     }
 }
