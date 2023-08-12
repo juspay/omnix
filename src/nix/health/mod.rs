@@ -1,14 +1,13 @@
 //! Health checks for the user's Nix install
 
-mod caches;
-mod max_jobs;
+mod check;
 
 use leptos::*;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
 
-use self::caches::Caches;
-use self::max_jobs::MaxJobs;
+use self::check::caches::Caches;
+use self::check::max_jobs::MaxJobs;
 use super::info;
 
 #[instrument(name = "nix-health")]

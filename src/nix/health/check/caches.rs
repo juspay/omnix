@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::nix::{config::ConfigVal, info};
 
-use super::{Check, Report, ViewCheck};
+use super::super::{Check, Report, ViewCheck};
 
 // [NixConfig::max_job]]
 #[derive(Debug, Serialize, Deserialize, Clone)]
