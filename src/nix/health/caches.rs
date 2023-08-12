@@ -6,22 +6,23 @@ use super::{Check, Report};
 
 // [NixConfig::max_job]]
 #[derive(Debug, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize, Clone)]
-pub struct MaxJobs(i32);
+pub struct Caches(Vec<String>);
 
-impl Check for MaxJobs {
+impl Check for Caches {
     fn check(info: &info::NixInfo) -> Self {
-        MaxJobs(info.nix_config.max_jobs.value)
+        Caches(info.nix_config.substituters.value.clone())
     }
     fn name(&self) -> &'static str {
-        "Max Jobs"
+        "Nix Caches in use"
     }
     fn report(&self) -> Report {
-        if self > &MaxJobs(12) {
+        // TODO: This should use lenient URL match
+        if self.0.contains(&"https://cache.nixos.org/".to_string()) {
             Report::Green
         } else {
             Report::Red {
-                msg: "You are using only 1 core for nix builds",
-                suggestion: "Try editing /etc/nix/nix.conf",
+                msg: "You are missing the official cache",
+                suggestion: "Try doing something",
             }
         }
     }
