@@ -1,4 +1,5 @@
 //! Frontend UI entry point
+
 use crate::nix::health::traits::Check;
 use crate::nix::health::*;
 use crate::nix::info::get_nix_info;
@@ -85,15 +86,11 @@ fn Dashboard(cx: Scope) -> impl IntoView {
         <Title text="Dashboard"/>
         <h1 class="text-5xl font-bold">"Dashboard"</h1>
         <div id="cards" class="flex flex-row">
-            // TODO: This should show green or red depending on the health check status
             <Card href="/health">
-                "Nix Health Check " <Suspense fallback=move || view! { cx, <Spinner/> }>
-                    <ErrorBoundary fallback=|cx, errors| {
-                        view! { cx, <Errors errors=errors.get()/> }
-                    }>
-                        {move || { health_check.read(cx).map(|r| { r.map(|v| { v.report() }) }) }}
-                    </ErrorBoundary>
-                </Suspense>
+                "Nix Health Check "
+                <SuspenseWithErrorHandling>
+                    {move || { health_check.read(cx).map(|r| { r.map(|v| { v.report() }) }) }}
+                </SuspenseWithErrorHandling>
 
             </Card>
             <Card href="/info">"Nix Info ℹ️"</Card>
@@ -109,11 +106,9 @@ fn NixInfo(cx: Scope) -> impl IntoView {
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
-        <Suspense fallback=move || view! { cx, <Spinner/> }>
-            <ErrorBoundary fallback=|cx, errors| view! { cx, <Errors errors=errors.get()/> }>
-                <div class="my-1 text-left">{move || nix_info.read(cx)}</div>
-            </ErrorBoundary>
-        </Suspense>
+        <SuspenseWithErrorHandling>
+            <div class="my-1 text-left">{move || nix_info.read(cx)}</div>
+        </SuspenseWithErrorHandling>
     }
 }
 
@@ -125,11 +120,9 @@ fn NixHealth(cx: Scope) -> impl IntoView {
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
-        <Suspense fallback=move || view! { cx, <Spinner/> }>
-            <ErrorBoundary fallback=|cx, errors| view! { cx, <Errors errors=errors.get()/> }>
-                <div class="my-1 text-left">{move || health_check.read(cx)}</div>
-            </ErrorBoundary>
-        </Suspense>
+        <SuspenseWithErrorHandling>
+            <div class="my-1 text-left">{move || health_check.read(cx)}</div>
+        </SuspenseWithErrorHandling>
     }
 }
 
@@ -224,5 +217,16 @@ fn Errors(cx: Scope, errors: Errors) -> impl IntoView {
                 </ul>
             </div>
         </div>
+    }
+}
+
+/// Like [Suspense] but also handles errors using [ErrorBoundary]
+#[component]
+fn SuspenseWithErrorHandling(cx: Scope, children: ChildrenFn) -> impl IntoView {
+    let children = store_value(cx, children);
+    view! { cx,
+        <SuspenseWithErrorHandling>
+            <span>{children.with_value(|c| c(cx))}</span>
+        </SuspenseWithErrorHandling>
     }
 }
