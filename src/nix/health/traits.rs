@@ -8,7 +8,7 @@ use super::{
 /// Types that implement health check with reports
 pub trait Check: IntoView {
     /// The type of the report produced by this health check
-    type Report;
+    type Report = Report<WithDetails>;
     /// Run and create the health check
     fn check(info: &info::NixInfo) -> Self
     where

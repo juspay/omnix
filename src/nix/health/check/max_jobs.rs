@@ -15,7 +15,6 @@ use crate::nix::{
 pub struct MaxJobs(ConfigVal<i32>);
 
 impl Check for MaxJobs {
-    type Report = Report<WithDetails>;
     fn check(info: &info::NixInfo) -> Self {
         MaxJobs(info.nix_config.max_jobs.clone())
     }

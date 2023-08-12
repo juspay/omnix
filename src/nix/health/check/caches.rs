@@ -15,7 +15,6 @@ use crate::nix::{
 pub struct Caches(ConfigVal<Vec<String>>);
 
 impl Check for Caches {
-    type Report = Report<WithDetails>;
     fn check(info: &info::NixInfo) -> Self {
         Caches(info.nix_config.substituters.clone())
     }

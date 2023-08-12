@@ -1,3 +1,4 @@
+#![feature(associated_type_defaults)]
 //! nix-browser crate; see GitHub [README] for details.
 //!
 //! [README]: https://github.com/juspay/nix-browser
