@@ -1,6 +1,8 @@
 //! Health checks for the user's Nix install
 
 mod check;
+mod report;
+mod traits;
 
 use leptos::*;
 use serde::{Deserialize, Serialize};
@@ -8,6 +10,8 @@ use tracing::instrument;
 
 use self::check::caches::Caches;
 use self::check::max_jobs::MaxJobs;
+use self::report::Report;
+use self::traits::Check;
 use super::info;
 
 #[instrument(name = "nix-health")]
@@ -41,66 +45,9 @@ impl NixHealth {
     }
 }
 
-#[derive(Debug, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize, Clone)]
-pub enum Report {
-    Green,
-    Red {
-        msg: &'static str,
-        suggestion: &'static str,
-    }, // TODO: Should this be Markdown?
-}
-
-impl IntoView for Report {
-    fn into_view(self, cx: Scope) -> View {
-        view! { cx,
-            {match self {
-                Report::Green => {
-                    view! { cx, <div class="text-green-500">{"✓"}</div> }.into_view(cx)
-                }
-                Report::Red { msg, suggestion } => {
-
-                    view! { cx,
-                        <div class="text-3xl text-red-500">{"✗"}</div>
-                        <div class="bg-red-400 rounded bg-border">{msg}</div>
-                        <div class="bg-blue-400 rounded bg-border">"Suggestion: " {suggestion}</div>
-                    }
-                        .into_view(cx)
-                }
-            }}
-        }
-        .into_view(cx)
-    }
-}
-
-pub trait Check: IntoView {
-    fn check(info: &info::NixInfo) -> Self
-    where
-        Self: Sized;
-
-    fn name(&self) -> &'static str;
-
-    fn report(&self) -> Report;
-}
-
 impl IntoView for NixHealth {
     fn into_view(self, cx: Scope) -> View {
         view! { cx, <div class="flex justify-start space-x-8">{self.max_jobs} {self.caches}</div> }
             .into_view(cx)
-    }
-}
-
-#[component]
-pub fn ViewCheck<C>(cx: Scope, check: C, children: Children) -> impl IntoView
-where
-    C: Check + Clone,
-{
-    view! { cx,
-        <div class="bg-white border-2 rounded">
-            <h2 class="p-2 text-xl font-bold ">{(&check).name()}</h2>
-            <div class="p-2">
-                <div class="py-2 bg-base-50">{children(cx)}</div>
-                <div class="flex flex-col justify-start space-y-8">{(&check).report()}</div>
-            </div>
-        </div>
     }
 }

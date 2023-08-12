@@ -1,9 +1,14 @@
 use leptos::*;
 use serde::{Deserialize, Serialize};
 
-use crate::nix::{config::ConfigVal, info};
-
-use super::super::{Check, Report, ViewCheck};
+use crate::nix::{
+    config::ConfigVal,
+    health::{
+        report::Report,
+        traits::{Check, ViewCheck},
+    },
+    info,
+};
 
 // [NixConfig::max_job]]
 #[derive(Debug, Serialize, Deserialize, Clone)]
