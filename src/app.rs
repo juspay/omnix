@@ -1,4 +1,7 @@
 //! Frontend UI entry point
+
+use crate::nix::health::traits::Check;
+use crate::nix::health::*;
 use crate::nix::info::get_nix_info;
 use cfg_if::cfg_if;
 #[cfg(feature = "ssr")]
@@ -28,6 +31,7 @@ pub fn App(cx: Scope) -> impl IntoView {
                             <Routes>
                                 <Route path="" view=Dashboard/>
                                 <Route path="/health" view=NixHealth/>
+                                <Route path="/info" view=NixInfo/>
                                 <Route path="/about" view=About/>
                             </Routes>
                         </div>
@@ -50,6 +54,9 @@ fn Nav(cx: Scope) -> impl IntoView {
             <A exact=true href="/health" class=class>
                 "Nix Health"
             </A>
+            <A exact=true href="/info" class=class>
+                "Nix Info"
+            </A>
             <A exact=true href="/about" class=class>
                 "About"
             </A>
@@ -61,6 +68,7 @@ fn Nav(cx: Scope) -> impl IntoView {
 /// Home page
 #[component]
 fn Dashboard(cx: Scope) -> impl IntoView {
+    let health_check = create_resource(cx, move || (), move |_| get_nix_health());
     // A Card component
     #[component]
     fn Card(cx: Scope, href: &'static str, children: Children) -> impl IntoView {
@@ -78,27 +86,43 @@ fn Dashboard(cx: Scope) -> impl IntoView {
         <Title text="Dashboard"/>
         <h1 class="text-5xl font-bold">"Dashboard"</h1>
         <div id="cards" class="flex flex-row">
-            // TODO: This should show green or red depending on the health check status
-            <Card href="/health">"Nix Health Check 🩺"</Card>
+            <Card href="/health">
+                "Nix Health Check "
+                <SuspenseWithErrorHandling>
+                    {move || { health_check.read(cx).map(|r| { r.map(|v| { v.report() }) }) }}
+                </SuspenseWithErrorHandling>
+
+            </Card>
+            <Card href="/info">"Nix Info ℹ️"</Card>
         </div>
+    }
+}
+
+/// Nix information
+#[component]
+fn NixInfo(cx: Scope) -> impl IntoView {
+    let nix_info = create_resource(cx, move || (), move |_| get_nix_info());
+    let title = "Nix Info";
+    view! { cx,
+        <Title text=title/>
+        <h1 class="text-5xl font-bold">{title}</h1>
+        <SuspenseWithErrorHandling>
+            <div class="my-1 text-left">{move || nix_info.read(cx)}</div>
+        </SuspenseWithErrorHandling>
     }
 }
 
 /// Nix health checks
 #[component]
 fn NixHealth(cx: Scope) -> impl IntoView {
-    // TODO: Create a NixHealth type, and write IntoView for it.
-    let nix_info = create_resource(cx, move || (), move |_| get_nix_info());
+    let health_check = create_resource(cx, move || (), move |_| get_nix_health());
     let title = "Nix Health";
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
-        <p>"TODO: Implement this"</p>
-        <Suspense fallback=move || view! { cx, <Spinner/> }>
-            <ErrorBoundary fallback=|cx, errors| view! { cx, <Errors errors=errors.get()/> }>
-                <div class="my-1 text-left">{move || nix_info.read(cx)}</div>
-            </ErrorBoundary>
-        </Suspense>
+        <SuspenseWithErrorHandling>
+            <div class="my-1 text-left">{move || health_check.read(cx)}</div>
+        </SuspenseWithErrorHandling>
     }
 }
 
@@ -193,5 +217,18 @@ fn Errors(cx: Scope, errors: Errors) -> impl IntoView {
                 </ul>
             </div>
         </div>
+    }
+}
+
+/// Like [Suspense] but also handles errors using [ErrorBoundary]
+#[component]
+fn SuspenseWithErrorHandling(cx: Scope, children: ChildrenFn) -> impl IntoView {
+    let children = store_value(cx, children);
+    view! { cx,
+        <Suspense fallback=move || view! { cx, <Spinner/> }>
+            <ErrorBoundary fallback=|cx, errors| view! { cx, <Errors errors=errors.get()/> }>
+                <span>{children.with_value(|c| c(cx))}</span>
+            </ErrorBoundary>
+        </Suspense>
     }
 }
