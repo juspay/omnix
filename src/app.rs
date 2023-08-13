@@ -43,11 +43,13 @@ pub fn App(cx: Scope) -> impl IntoView {
 }
 
 /// Navigation bar
+///
+/// TODO Switch to breadcrumbs, as it simplifes the design overall.
 #[component]
 fn Nav(cx: Scope) -> impl IntoView {
     let class = "px-3 py-2";
     view! { cx,
-        <nav class="flex flex-row w-full mb-3 text-white md:rounded-b bg-primary-800">
+        <nav class="flex flex-row w-full mb-8 text-white md:rounded-b bg-primary-800">
             <A exact=true href="/" class=class>
                 "Dashboard"
             </A>
@@ -68,6 +70,7 @@ fn Nav(cx: Scope) -> impl IntoView {
 /// Home page
 #[component]
 fn Dashboard(cx: Scope) -> impl IntoView {
+    tracing::debug!("Rendering Dashboard page");
     let health_check = create_resource(cx, move || (), move |_| get_nix_health());
     // A Card component
     #[component]
@@ -75,13 +78,12 @@ fn Dashboard(cx: Scope) -> impl IntoView {
         view! { cx,
             <A
                 href=href
-                class="flex items-center justify-center w-64 h-48 p-2 m-2 rounded-lg bg-secondary-100 hover:bg-secondary-200"
+                class="flex items-center justify-center w-64 h-48 p-2 m-2 border-2 border-base-400 shadow active:shadow-none rounded-lg bg-base-100 hover:bg-primary-200"
             >
                 <span class="text-4xl text-base-800">{children(cx)}</span>
             </A>
         }
     }
-    tracing::debug!("Rendering Dashboard page");
     view! { cx,
         <Title text="Dashboard"/>
         <h1 class="text-5xl font-bold">"Dashboard"</h1>

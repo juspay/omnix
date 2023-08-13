@@ -75,11 +75,12 @@ impl IntoView for NixHealth {
         {
             let report = (&check).report();
             view! { cx,
-                <div class="bg-white border-2 rounded">
-                    <h2 class="p-2 text-xl font-bold ">
+                // TODO: Collapse green reports by default. Open them if the user clicks on them.
+                <div class="bg-white border-2 rounded-lg">
+                    <h2 class="p-4 text-xl font-bold ">
                         {report.without_details()} {" "} {(&check).name()}
                     </h2>
-                    <div class="p-2">
+                    <div class="p-4">
                         <div class="py-2 my-2 bg-base-50">{children(cx)}</div>
                         <div class="flex flex-col justify-start space-y-4">
                             {report.get_red_details()}
@@ -89,7 +90,7 @@ impl IntoView for NixHealth {
             }
         }
         view! { cx,
-            <div class="flex justify-start space-x-8">
+            <div class="flex flex-col justify-start space-y-4">
                 // TODO: Make this use [NixHealth::all_checks]
                 <ViewCheck check=self.max_jobs.clone()>{self.max_jobs}</ViewCheck>
                 <ViewCheck check=self.caches.clone()>{self.caches}</ViewCheck>
