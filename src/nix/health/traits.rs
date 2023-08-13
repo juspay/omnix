@@ -20,6 +20,6 @@ pub trait Check: IntoView {
     /// User-facing name for this health check
     fn name(&self) -> &'static str;
 
-    /// Return the health report
+    /// Return the health report for this health check
     fn report(&self) -> Self::Report;
 }

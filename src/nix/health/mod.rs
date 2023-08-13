@@ -21,7 +21,9 @@ pub async fn get_nix_health() -> Result<NixHealth, ServerFnError> {
     Ok(NixHealth::check(&info))
 }
 
-/// Nix Health check information
+/// Nix Health check information for user's install
+///
+/// Each field represents an individual check which satisfies the [Check] trait.
 ///
 /// NOTE: This struct is isomorphic to [Vec<Box<&dyn Check>>]. We cannot use the
 /// latter due to (wasm) serialization limitation with dyn trait objects.
