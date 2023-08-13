@@ -4,7 +4,6 @@ use serde::{Deserialize, Serialize};
 use crate::nix::{
     config::ConfigVal,
     health::{
-        check::ViewCheck,
         report::{Report, WithDetails},
         traits::Check,
     },
@@ -37,9 +36,8 @@ impl Check for MaxJobs {
 impl IntoView for MaxJobs {
     fn into_view(self, cx: Scope) -> View {
         view! { cx,
-            <ViewCheck check=self.clone()>
                 <span>{self.0} " Cores"</span>
-            </ViewCheck>
         }
+        .into_view(cx)
     }
 }

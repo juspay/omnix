@@ -4,7 +4,6 @@ use serde::{Deserialize, Serialize};
 use crate::nix::{
     config::ConfigVal,
     health::{
-        check::ViewCheck,
         report::{Report, WithDetails},
         traits::Check,
     },
@@ -46,9 +45,8 @@ impl Check for Caches {
 impl IntoView for Caches {
     fn into_view(self, cx: Scope) -> View {
         view! { cx,
-            <ViewCheck check=self.clone()>
                 <div>{self.0.into_view(cx)}</div>
-            </ViewCheck>
         }
+        .into_view(cx)
     }
 }

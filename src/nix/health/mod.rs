@@ -56,7 +56,32 @@ impl Check for NixHealth {
 
 impl IntoView for NixHealth {
     fn into_view(self, cx: Scope) -> View {
-        view! { cx, <div class="flex justify-start space-x-8">{self.max_jobs} {self.caches}</div> }
-            .into_view(cx)
+        #[component]
+        fn ViewCheck<C>(cx: Scope, check: C, children: Children) -> impl IntoView
+        where
+            C: Check<Report = Report<WithDetails>>,
+        {
+            let report = (&check).report();
+            view! { cx,
+                <div class="bg-white border-2 rounded">
+                    <h2 class="p-2 text-xl font-bold ">
+                        {report.without_details()} {" "} {(&check).name()}
+                    </h2>
+                    <div class="p-2 ">
+                        <div class="py-2 my-2 bg-base-50">{children(cx)}</div>
+                        <div class="flex flex-col justify-start space-y-4">
+                            {report.get_red_details()}
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        view! { cx,
+            <div class="flex justify-start space-x-8">
+                <ViewCheck check=self.max_jobs.clone()>{self.max_jobs}</ViewCheck>
+                <ViewCheck check=self.caches.clone()>{self.caches}</ViewCheck>
+            </div>
+        }
+        .into_view(cx)
     }
 }
