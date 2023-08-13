@@ -35,9 +35,6 @@ impl Check for MaxJobs {
 
 impl IntoView for MaxJobs {
     fn into_view(self, cx: Scope) -> View {
-        view! { cx,
-                <span>{self.0} " Cores"</span>
-        }
-        .into_view(cx)
+        view! { cx, <span>{self.0} " Cores"</span> }.into_view(cx)
     }
 }

@@ -31,6 +31,12 @@ pub struct NixHealth {
     caches: Caches,
 }
 
+impl NixHealth {
+    pub fn all_checks(&self) -> Vec<&dyn Check<Report = Report<WithDetails>>> {
+        vec![&self.max_jobs, &self.caches]
+    }
+}
+
 impl Check for NixHealth {
     type Report = Report<NoDetails>;
     fn check(info: &info::NixInfo) -> Self {
@@ -43,10 +49,11 @@ impl Check for NixHealth {
         "Nix Health"
     }
     fn report(&self) -> Report<NoDetails> {
-        // TODO: refactor
-        let checks: Vec<Box<&dyn Check<Report = Report<WithDetails>>>> =
-            vec![Box::new(&self.max_jobs), Box::new(&self.caches)];
-        if checks.iter().all(|check| check.report() == Report::Green) {
+        if self
+            .all_checks()
+            .iter()
+            .all(|c| c.report() == Report::Green)
+        {
             Report::Green
         } else {
             Report::Red(NoDetails)
