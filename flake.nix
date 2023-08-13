@@ -10,6 +10,7 @@
     treefmt-nix.url = "github:srid/treefmt-nix/leptosfmt"; # https://github.com/numtide/treefmt-nix/pull/108
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
     process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
+    cargo-doc-live.url = "github:srid/cargo-doc-live";
 
     leptos-fullstack.url = "github:srid/leptos-fullstack";
     leptos-fullstack.flake = false;
@@ -21,6 +22,7 @@
       imports = [
         inputs.treefmt-nix.flakeModule
         inputs.process-compose-flake.flakeModule
+        inputs.cargo-doc-live.flakeModule
         (inputs.leptos-fullstack + /nix/flake-module.nix)
       ];
       perSystem = { config, self', pkgs, lib, system, ... }: {
@@ -41,31 +43,6 @@
             leptosfmt.enable = true;
           };
         };
-
-        process-compose.cargo-docs-server =
-          let
-            port = builtins.toString 8008;
-            browser-sync = lib.getExe pkgs.nodePackages.browser-sync;
-            crateName = builtins.replaceStrings [ "-" ] [ "_" ]
-              ((lib.trivial.importTOML ./Cargo.toml).package.name);
-          in
-          {
-            tui = false;
-            port = 8974; # process-compose exits silently if port is in use; set this to something uniqiue (hopefully)
-            settings.processes = {
-              cargo-doc.command = builtins.toString (pkgs.writeShellScript "cargo-doc" ''
-                run-cargo-doc() {
-                  cargo doc --document-private-items --all-features
-                  ${browser-sync} reload --port ${port}  # Trigger reload in browser
-                }; export -f run-cargo-doc
-                cargo watch -s run-cargo-doc
-              '');
-              browser-sync.command = ''
-                ${browser-sync} start --port ${port} --ss target/doc -s target/doc \
-                  --startPath /${crateName}/
-              '';
-            };
-          };
 
         leptos-fullstack.overrideCraneArgs = oa: {
           nativeBuildInputs = (oa.nativeBuildInputs or [ ]) ++ [
@@ -91,7 +68,7 @@
           packages = with pkgs; [
             just
             cargo-watch
-            config.process-compose.cargo-docs-server.outputs.package
+            config.process-compose.cargo-doc-live.outputs.package
           ];
         };
       };

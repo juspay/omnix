@@ -1,5 +1,20 @@
 {
   "nodes": {
+    "cargo-doc-live": {
+      "locked": {
+        "lastModified": 1691889760,
+        "narHash": "sha256-SCFld4dRFGbkgEgxxB05UfeS1LdYIB/qEJAWT03/sJk=",
+        "owner": "srid",
+        "repo": "cargo-doc-live",
+        "rev": "b9f4be4e7b5941c80d1bd2a03def5fdb4acdfd6a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "srid",
+        "repo": "cargo-doc-live",
+        "type": "github"
+      }
+    },
     "crane": {
       "inputs": {
         "flake-compat": "flake-compat",
@@ -176,6 +191,7 @@
     },
     "root": {
       "inputs": {
+        "cargo-doc-live": "cargo-doc-live",
         "crane": "crane",
         "flake-parts": "flake-parts",
         "leptos-fullstack": "leptos-fullstack",

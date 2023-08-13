@@ -14,4 +14,4 @@ test:
     cargo watch -- cargo leptos test
 
 doc:
-    cargo-docs-server
+    cargo-doc-live
