@@ -8,7 +8,7 @@ use leptos::*;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
 
-use self::check::{caches::Caches, max_jobs::MaxJobs};
+use self::check::{caches::Caches, flake_enabled::FlakeEnabled, max_jobs::MaxJobs};
 use self::report::{NoDetails, Report, WithDetails};
 use self::traits::Check;
 use super::info;
@@ -31,12 +31,13 @@ pub async fn get_nix_health() -> Result<NixHealth, ServerFnError> {
 pub struct NixHealth {
     max_jobs: MaxJobs,
     caches: Caches,
+    flake_enabled: FlakeEnabled,
 }
 
 impl NixHealth {
     // Return all the fields of the [NixHealth] struct
     pub fn all_checks(&self) -> Vec<&dyn Check<Report = Report<WithDetails>>> {
-        vec![&self.max_jobs, &self.caches]
+        vec![&self.max_jobs, &self.caches, &self.flake_enabled]
     }
 }
 
@@ -46,6 +47,7 @@ impl Check for NixHealth {
         NixHealth {
             max_jobs: MaxJobs::check(info),
             caches: Caches::check(info),
+            flake_enabled: FlakeEnabled::check(info),
         }
     }
     fn name(&self) -> &'static str {
@@ -91,6 +93,7 @@ impl IntoView for NixHealth {
                 // TODO: Make this use [NixHealth::all_checks]
                 <ViewCheck check=self.max_jobs.clone()>{self.max_jobs}</ViewCheck>
                 <ViewCheck check=self.caches.clone()>{self.caches}</ViewCheck>
+                <ViewCheck check=self.flake_enabled.clone()>{self.flake_enabled}</ViewCheck>
             </div>
         }
         .into_view(cx)
