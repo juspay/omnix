@@ -32,6 +32,7 @@ pub struct NixHealth {
 }
 
 impl NixHealth {
+    // Return all the fields of the [NixHealth] struct
     pub fn all_checks(&self) -> Vec<&dyn Check<Report = Report<WithDetails>>> {
         vec![&self.max_jobs, &self.caches]
     }
@@ -74,7 +75,7 @@ impl IntoView for NixHealth {
                     <h2 class="p-2 text-xl font-bold ">
                         {report.without_details()} {" "} {(&check).name()}
                     </h2>
-                    <div class="p-2 ">
+                    <div class="p-2">
                         <div class="py-2 my-2 bg-base-50">{children(cx)}</div>
                         <div class="flex flex-col justify-start space-y-4">
                             {report.get_red_details()}
@@ -85,6 +86,7 @@ impl IntoView for NixHealth {
         }
         view! { cx,
             <div class="flex justify-start space-x-8">
+                // TODO: Make this use [NixHealth::all_checks]
                 <ViewCheck check=self.max_jobs.clone()>{self.max_jobs}</ViewCheck>
                 <ViewCheck check=self.caches.clone()>{self.caches}</ViewCheck>
             </div>
