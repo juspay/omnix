@@ -298,11 +298,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1691691332,
-        "narHash": "sha256-cyHPkX9VyITAx1RqUMLc/v62BLA5BxYHiVlxiNufExY=",
+        "lastModified": 1691938955,
+        "narHash": "sha256-L5pbeych2GAASy/SHgbwjLKtTLjpAHCnlgqFWD8iEfU=",
         "owner": "srid",
         "repo": "treefmt-nix",
-        "rev": "d4b35f252f921095ec4a2975e54c8887a20722da",
+        "rev": "28f521755a60441b42b87349b854db6fc2643c93",
         "type": "github"
       },
       "original": {
