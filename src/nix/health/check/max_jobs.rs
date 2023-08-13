@@ -4,13 +4,14 @@ use serde::{Deserialize, Serialize};
 use crate::nix::{
     config::ConfigVal,
     health::{
+        check::ViewCheck,
         report::{Report, WithDetails},
-        traits::{Check, ViewCheck},
+        traits::Check,
     },
     info,
 };
 
-// [NixConfig::max_job]]
+/// Check that [crate::nix::config::NixConfig::max_jobs] is set to a good value.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MaxJobs(ConfigVal<i32>);
 
@@ -22,8 +23,7 @@ impl Check for MaxJobs {
         "Max Jobs"
     }
     fn report(&self) -> Report<WithDetails> {
-        // NOTE: Testing Red view, so this is inverted
-        if self.0.value < 1 {
+        if self.0.value > 1 {
             Report::Green
         } else {
             Report::Red(WithDetails {

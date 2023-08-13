@@ -4,13 +4,14 @@ use serde::{Deserialize, Serialize};
 use crate::nix::{
     config::ConfigVal,
     health::{
+        check::ViewCheck,
         report::{Report, WithDetails},
-        traits::{Check, ViewCheck},
+        traits::Check,
     },
     info,
 };
 
-// [NixConfig::max_job]]
+/// Check that [crate::nix::config::NixConfig::substituters] is set to a good value.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Caches(ConfigVal<Vec<String>>);
 
@@ -22,13 +23,17 @@ impl Check for Caches {
         "Nix Caches in use"
     }
     fn report(&self) -> Report<WithDetails> {
-        // TODO: This should use lenient URL match
-        if self
-            .0
-            .value
-            .contains(&"https://cache.nixos.org/".to_string())
-        {
-            Report::Green
+        let val = &self.0.value;
+        if val.contains(&"https://cache.nixos.org/".to_string()) {
+            // TODO: Hardcoding this to test failed reports
+            if val.contains(&"https://nammayatri.cachix.org/".to_string()) {
+                Report::Green
+            } else {
+                Report::Red(WithDetails {
+                    msg: "You are missing the nammayatri cache",
+                    suggestion: "Run 'nix run nixpkgs#cachix use nammayatri",
+                })
+            }
         } else {
             Report::Red(WithDetails {
                 msg: "You are missing the official cache",

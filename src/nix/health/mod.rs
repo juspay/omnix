@@ -13,6 +13,7 @@ use self::report::{NoDetails, Report, WithDetails};
 use self::traits::Check;
 use super::info;
 
+/// Get [NixHealth] information
 #[instrument(name = "nix-health")]
 #[server(GetNixHealth, "/api")]
 pub async fn get_nix_health() -> Result<NixHealth, ServerFnError> {
@@ -22,8 +23,8 @@ pub async fn get_nix_health() -> Result<NixHealth, ServerFnError> {
 
 /// Nix Health check information
 ///
-/// This struct is isomorphic to Vec<Box<&dyn Check>>. We cannot use the latter
-/// due to (wasm) serialization limitation with dyn trait objects.
+/// NOTE: This struct is isomorphic to [Vec<Box<&dyn Check>>]. We cannot use the
+/// latter due to (wasm) serialization limitation with dyn trait objects.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct NixHealth {
     max_jobs: MaxJobs,
