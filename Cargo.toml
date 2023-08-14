@@ -20,6 +20,7 @@ http = { version = "0.2", optional = true }
 human-panic = "1.1.5"
 leptos = { version = "0.4", features = ["serde"] }
 leptos_axum = { version = "0.4", optional = true }
+leptos_query = "0.2"
 leptos_meta = { version = "0.4" }
 leptos_router = { version = "0.4" }
 log = "0.4"
@@ -36,7 +37,7 @@ uuid = { version = "1.3.0", features = ["serde", "v4", "js"] }
 wasm-bindgen = "=0.2.87"                                                  # The version here must match the pinned stuff in Nix flakes.
 
 [features]
-hydrate = ["leptos/hydrate", "leptos_meta/hydrate", "leptos_router/hydrate"]
+hydrate = ["leptos/hydrate", "leptos_meta/hydrate", "leptos_router/hydrate", "leptos_query/hydrate"]
 ssr = [
     "dep:axum-macros",
     "dep:axum",
@@ -46,6 +47,7 @@ ssr = [
     "dep:tower-http",
     "dep:tower",
     "leptos_meta/ssr",
+    "leptos_query/ssr",
     "leptos_router/ssr",
     "leptos/ssr",
 ]

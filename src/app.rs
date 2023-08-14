@@ -2,7 +2,7 @@
 
 use crate::nix::health::traits::Check;
 use crate::nix::health::*;
-use crate::nix::info::get_nix_info;
+use crate::nix::info::{get_nix_info, NixInfo};
 use cfg_if::cfg_if;
 #[cfg(feature = "ssr")]
 use http::status::StatusCode;
@@ -10,12 +10,14 @@ use leptos::*;
 #[cfg(feature = "ssr")]
 use leptos_axum::ResponseOptions;
 use leptos_meta::*;
+use leptos_query::*;
 use leptos_router::*;
 
 /// Main frontend application container
 #[component]
 pub fn App(cx: Scope) -> impl IntoView {
     provide_meta_context(cx);
+    provide_query_client(cx);
 
     view! { cx,
         <Stylesheet id="leptos" href="/pkg/nix-browser.css"/>
@@ -71,7 +73,6 @@ fn Nav(cx: Scope) -> impl IntoView {
 #[component]
 fn Dashboard(cx: Scope) -> impl IntoView {
     tracing::debug!("Rendering Dashboard page");
-    let health_check = create_resource(cx, move || (), move |_| get_nix_health());
     // A Card component
     #[component]
     fn Card(cx: Scope, href: &'static str, children: Children) -> impl IntoView {
@@ -91,7 +92,12 @@ fn Dashboard(cx: Scope) -> impl IntoView {
             <Card href="/health">
                 "Nix Health Check "
                 <SuspenseWithErrorHandling>
-                    {move || { health_check.read(cx).map(|r| { r.map(|v| { v.report() }) }) }}
+
+                    {
+                        let QueryResult { data, .. } = use_nix_health_query(cx);
+                        move || data.get().map(|r| { r.map(|v| { v.report() }) })
+                    }
+
                 </SuspenseWithErrorHandling>
 
             </Card>
@@ -103,29 +109,61 @@ fn Dashboard(cx: Scope) -> impl IntoView {
 /// Nix information
 #[component]
 fn NixInfo(cx: Scope) -> impl IntoView {
-    let nix_info = create_resource(cx, move || (), move |_| get_nix_info());
     let title = "Nix Info";
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
         <SuspenseWithErrorHandling>
-            <div class="my-1 text-left">{move || nix_info.read(cx)}</div>
+            <div class="my-1 text-left">
+
+                {
+                    let QueryResult { data, .. } = use_nix_info_query(cx);
+                    move || data.get()
+                }
+
+            </div>
         </SuspenseWithErrorHandling>
     }
+}
+
+fn use_nix_info_query(cx: Scope) -> QueryResult<Result<NixInfo, ServerFnError>, impl RefetchFn> {
+    leptos_query::use_query(
+        cx,
+        || (),
+        |()| async move { get_nix_info().await },
+        QueryOptions::default(),
+    )
 }
 
 /// Nix health checks
 #[component]
 fn NixHealth(cx: Scope) -> impl IntoView {
-    let health_check = create_resource(cx, move || (), move |_| get_nix_health());
     let title = "Nix Health";
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
         <SuspenseWithErrorHandling>
-            <div class="my-1">{move || health_check.read(cx)}</div>
+            <div class="my-1">
+
+                {
+                    let QueryResult { data, .. } = use_nix_health_query(cx);
+                    move || data.get()
+                }
+
+            </div>
         </SuspenseWithErrorHandling>
     }
+}
+
+fn use_nix_health_query(
+    cx: Scope,
+) -> QueryResult<Result<NixHealth, ServerFnError>, impl RefetchFn> {
+    leptos_query::use_query(
+        cx,
+        || (),
+        |()| async move { get_nix_health().await },
+        QueryOptions::default(),
+    )
 }
 
 /// About page
