@@ -9,6 +9,8 @@ module.exports = {
   theme: {
     fontFamily: {
       sans: ['Proxima Nova', ...defaultTheme.fontFamily.sans],
+      mono: [...defaultTheme.fontFamily.mono],
+      serif: [...defaultTheme.fontFamily.serif]
     },
     extend: {
       // Our application colour palette is defined here.

@@ -44,6 +44,7 @@ impl Check for Caches {
 
 impl IntoView for Caches {
     fn into_view(self, cx: Scope) -> View {
-        view! { cx, <div>{self.0.into_view(cx)}</div> }.into_view(cx)
+        view! { cx, <div>"The following caches are in use:" {self.0.into_view(cx)}</div> }
+            .into_view(cx)
     }
 }

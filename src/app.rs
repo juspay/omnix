@@ -123,7 +123,7 @@ fn NixHealth(cx: Scope) -> impl IntoView {
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
         <SuspenseWithErrorHandling>
-            <div class="my-1 text-left">{move || health_check.read(cx)}</div>
+            <div class="my-1">{move || health_check.read(cx)}</div>
         </SuspenseWithErrorHandling>
     }
 }
@@ -228,9 +228,9 @@ fn SuspenseWithErrorHandling(cx: Scope, children: ChildrenFn) -> impl IntoView {
     let children = store_value(cx, children);
     view! { cx,
         <Suspense fallback=move || view! { cx, <Spinner/> }>
-            <ErrorBoundary fallback=|cx, errors| view! { cx, <Errors errors=errors.get()/> }>
-                <span>{children.with_value(|c| c(cx))}</span>
-            </ErrorBoundary>
+            <ErrorBoundary fallback=|cx, errors| {
+                view! { cx, <Errors errors=errors.get()/> }
+            }>{children.with_value(|c| c(cx))}</ErrorBoundary>
         </Suspense>
     }
 }

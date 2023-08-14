@@ -75,22 +75,28 @@ impl IntoView for NixHealth {
         {
             let report = (&check).report();
             view! { cx,
-                // TODO: Collapse green reports by default. Open them if the user clicks on them.
-                <div class="bg-white border-2 rounded-lg">
-                    <h2 class="p-4 text-xl font-bold ">
-                        {report.without_details()} {" "} {(&check).name()}
-                    </h2>
-                    <div class="p-4">
-                        <div class="py-2 my-2 bg-base-50">{children(cx)}</div>
-                        <div class="flex flex-col justify-start space-y-4">
-                            {report.get_red_details()}
+                <div class="contents">
+                    <details
+                        open=report != Report::Green
+                        class="bg-white border-2 my-2 rounded-lg cursor-pointer hover:bg-primary-100 border-2 border-base-300"
+                    >
+                        <summary class="p-4 text-xl font-bold">
+                            {report.without_details()} {" "} {(&check).name()}
+                        </summary>
+                        <div class="p-4">
+                            <div class="p-2 my-2 bg-black text-base-100 font-mono text-sm">
+                                {children(cx)}
+                            </div>
+                            <div class="flex flex-col justify-start space-y-4">
+                                {report.get_red_details()}
+                            </div>
                         </div>
-                    </div>
+                    </details>
                 </div>
             }
         }
         view! { cx,
-            <div class="flex flex-col justify-start space-y-4">
+            <div class="flex flex-col items-stretch justify-start text-left space-y-8">
                 // TODO: Make this use [NixHealth::all_checks]
                 <ViewCheck check=self.max_jobs.clone()>{self.max_jobs}</ViewCheck>
                 <ViewCheck check=self.caches.clone()>{self.caches}</ViewCheck>
