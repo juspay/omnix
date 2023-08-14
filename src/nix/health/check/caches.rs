@@ -11,7 +11,7 @@ use crate::nix::{
 };
 
 /// Check that [crate::nix::config::NixConfig::substituters] is set to a good value.
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct Caches(ConfigVal<Vec<String>>);
 
 impl Check for Caches {
