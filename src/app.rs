@@ -12,6 +12,7 @@ use leptos_axum::ResponseOptions;
 use leptos_meta::*;
 use leptos_query::*;
 use leptos_router::*;
+use std::hash::Hash;
 
 /// Main frontend application container
 #[component]
@@ -77,7 +78,7 @@ fn Dashboard(cx: Scope) -> impl IntoView {
     let report = Signal::derive(cx, move || res.data.get().map(|r| r.map(|v| v.report())));
     // A Card component
     #[component]
-    fn Card(cx: Scope, href: &'static str, children: ChildrenFn) -> impl IntoView {
+    fn Card(cx: Scope, href: &'static str, children: Children) -> impl IntoView {
         view! { cx,
             <A
                 href=href
@@ -112,6 +113,7 @@ fn NixInfo(cx: Scope) -> impl IntoView {
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
+        <RefetchQueryButton res=res.clone() k=()/>
         <div class="my-1 text-left">
             <Suspense fallback=move || view! { cx, <Spinner/> }>
                 <ErrorBoundary fallback=|cx, errors| {
@@ -139,6 +141,7 @@ fn NixHealth(cx: Scope) -> impl IntoView {
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
+        <RefetchQueryButton res=res.clone() k=()/>
         <div class="my-1">
             <Suspense fallback=move || view! { cx, <Spinner/> }>
                 <ErrorBoundary fallback=|cx, errors| {
@@ -147,6 +150,28 @@ fn NixHealth(cx: Scope) -> impl IntoView {
             </Suspense>
 
         </div>
+    }
+}
+
+/// Button to refresh the given leptos_query query.
+#[component]
+fn RefetchQueryButton<K, V, R>(cx: Scope, res: QueryResult<V, R>, k: K) -> impl IntoView
+where
+    K: Hash + Eq + Clone + 'static,
+    V: Clone + Serializable + 'static,
+    R: RefetchFn,
+{
+    view! { cx,
+        <button
+            class="border-1 shadow bg-primary-700 disabled:bg-base-400 disabled:text-black text-white p-1"
+            disabled=move || res.is_fetching.get()
+            on:click=move |_| {
+                tracing::debug!("Invalidating query");
+                use_query_client(cx).invalidate_query::<K, V>(k.clone());
+            }
+        >
+            {move || if res.is_fetching.get() { "Fetching..." } else { "Re-fetch" }}
+        </button>
     }
 }
 
