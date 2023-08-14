@@ -73,9 +73,11 @@ fn Nav(cx: Scope) -> impl IntoView {
 #[component]
 fn Dashboard(cx: Scope) -> impl IntoView {
     tracing::debug!("Rendering Dashboard page");
+    let res = use_nix_health_query(cx);
+    let report = Signal::derive(cx, move || res.data.get().map(|r| r.map(|v| v.report())));
     // A Card component
     #[component]
-    fn Card(cx: Scope, href: &'static str, children: Children) -> impl IntoView {
+    fn Card(cx: Scope, href: &'static str, children: ChildrenFn) -> impl IntoView {
         view! { cx,
             <A
                 href=href
@@ -89,18 +91,14 @@ fn Dashboard(cx: Scope) -> impl IntoView {
         <Title text="Dashboard"/>
         <h1 class="text-5xl font-bold">"Dashboard"</h1>
         <div id="cards" class="flex flex-row">
-            <Card href="/health">
-                "Nix Health Check "
-                <SuspenseWithErrorHandling>
-
-                    {
-                        let QueryResult { data, .. } = use_nix_health_query(cx);
-                        move || data.get().map(|r| { r.map(|v| { v.report() }) })
-                    }
-
-                </SuspenseWithErrorHandling>
-
-            </Card>
+            <Suspense fallback=move || view! { cx, <Spinner/> }>
+                <Card href="/health">
+                    "Nix Health Check "
+                    <ErrorBoundary fallback=|cx, errors| {
+                        view! { cx, <Errors errors=errors.get()/> }
+                    }>{report}</ErrorBoundary>
+                </Card>
+            </Suspense>
             <Card href="/info">"Nix Info ℹ️"</Card>
         </div>
     }
@@ -110,19 +108,17 @@ fn Dashboard(cx: Scope) -> impl IntoView {
 #[component]
 fn NixInfo(cx: Scope) -> impl IntoView {
     let title = "Nix Info";
+    let res = use_nix_info_query(cx);
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
-        <SuspenseWithErrorHandling>
-            <div class="my-1 text-left">
-
-                {
-                    let QueryResult { data, .. } = use_nix_info_query(cx);
-                    move || data.get()
-                }
-
-            </div>
-        </SuspenseWithErrorHandling>
+        <div class="my-1 text-left">
+            <Suspense fallback=move || view! { cx, <Spinner/> }>
+                <ErrorBoundary fallback=|cx, errors| {
+                    view! { cx, <Errors errors=errors.get()/> }
+                }>{res.data}</ErrorBoundary>
+            </Suspense>
+        </div>
     }
 }
 
@@ -139,19 +135,18 @@ fn use_nix_info_query(cx: Scope) -> QueryResult<Result<NixInfo, ServerFnError>, 
 #[component]
 fn NixHealth(cx: Scope) -> impl IntoView {
     let title = "Nix Health";
+    let res = use_nix_health_query(cx);
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
-        <SuspenseWithErrorHandling>
-            <div class="my-1">
+        <div class="my-1">
+            <Suspense fallback=move || view! { cx, <Spinner/> }>
+                <ErrorBoundary fallback=|cx, errors| {
+                    view! { cx, <Errors errors=errors.get()/> }
+                }>{res.data}</ErrorBoundary>
+            </Suspense>
 
-                {
-                    let QueryResult { data, .. } = use_nix_health_query(cx);
-                    move || data.get()
-                }
-
-            </div>
-        </SuspenseWithErrorHandling>
+        </div>
     }
 }
 
@@ -257,18 +252,5 @@ fn Errors(cx: Scope, errors: Errors) -> impl IntoView {
                 </ul>
             </div>
         </div>
-    }
-}
-
-/// Like [Suspense] but also handles errors using [ErrorBoundary]
-#[component]
-fn SuspenseWithErrorHandling(cx: Scope, children: ChildrenFn) -> impl IntoView {
-    let children = store_value(cx, children);
-    view! { cx,
-        <Suspense fallback=move || view! { cx, <Spinner/> }>
-            <ErrorBoundary fallback=|cx, errors| {
-                view! { cx, <Errors errors=errors.get()/> }
-            }>{children.with_value(|c| c(cx))}</ErrorBoundary>
-        </Suspense>
     }
 }
