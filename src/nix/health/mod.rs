@@ -74,7 +74,7 @@ impl IntoView for NixHealth {
         where
             C: Check<Report = Report<WithDetails>>,
         {
-            let report = (&check).report();
+            let report = check.report();
             view! { cx,
                 <div class="contents">
                     <details
@@ -82,7 +82,7 @@ impl IntoView for NixHealth {
                         class="bg-white border-2 my-2 rounded-lg cursor-pointer hover:bg-primary-100 border-2 border-base-300"
                     >
                         <summary class="p-4 text-xl font-bold">
-                            {report.without_details()} {" "} {(&check).name()}
+                            {report.without_details()} {" "} {check.name()}
                         </summary>
                         <div class="p-4">
                             <div class="p-2 my-2 bg-black text-base-100 font-mono text-sm">
@@ -98,10 +98,10 @@ impl IntoView for NixHealth {
         }
         view! { cx,
             <div class="flex flex-col items-stretch justify-start text-left space-y-8">
-                // TODO: Make this use [NixHealth::all_checks]
-                <ViewCheck check=self.max_jobs.clone() />
-                <ViewCheck check=self.caches.clone() />
-                <ViewCheck check=self.flake_enabled.clone() />
+                // TODO: Make this use [NixHealth::into_iter]
+                <ViewCheck check=self.max_jobs/>
+                <ViewCheck check=self.caches/>
+                <ViewCheck check=self.flake_enabled/>
             </div>
         }
         .into_view(cx)
