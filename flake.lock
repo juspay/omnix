@@ -2,11 +2,11 @@
   "nodes": {
     "cargo-doc-live": {
       "locked": {
-        "lastModified": 1691890364,
-        "narHash": "sha256-UK1LSj/Te0eHMwO8UQO//lWpwWZheoH8yFRuitEy/tQ=",
+        "lastModified": 1692019595,
+        "narHash": "sha256-YkqLvLCAA/24XxCNF9e2RU5KzrfKqcvdNI4XkGVzT7w=",
         "owner": "srid",
         "repo": "cargo-doc-live",
-        "rev": "ac78ab2b4de27c1d2cbea73cb195e035dd7db736",
+        "rev": "fb1d4439d847f01ce4ccf1905d1630c1994569b0",
         "type": "github"
       },
       "original": {
