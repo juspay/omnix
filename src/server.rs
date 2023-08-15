@@ -79,7 +79,6 @@ async fn not_found_handler(
 }
 
 /// Open a http address in the user's web browser
-#[instrument(name = "server")]
 async fn open_http_app(addr: SocketAddr) {
     let url = format!("http://{}", &addr);
     if let Err(err) = open::that(url) {
