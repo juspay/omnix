@@ -79,13 +79,13 @@ impl IntoView for NixHealth {
                 <div class="contents">
                     <details
                         open=report != Report::Green
-                        class="bg-white border-2 my-2 rounded-lg cursor-pointer hover:bg-primary-100 border-2 border-base-300"
+                        class="my-2 bg-white border-2 rounded-lg cursor-pointer hover:bg-primary-100 border-base-300"
                     >
                         <summary class="p-4 text-xl font-bold">
                             {report.without_details()} {" "} {check.name()}
                         </summary>
                         <div class="p-4">
-                            <div class="p-2 my-2 bg-black text-base-100 font-mono text-sm">
+                            <div class="p-2 my-2 font-mono text-sm bg-black text-base-100">
                                 {check}
                             </div>
                             <div class="flex flex-col justify-start space-y-4">
@@ -97,7 +97,7 @@ impl IntoView for NixHealth {
             }
         }
         view! { cx,
-            <div class="flex flex-col items-stretch justify-start text-left space-y-8">
+            <div class="flex flex-col items-stretch justify-start space-y-8 text-left">
                 // TODO: Make this use [NixHealth::into_iter]
                 <ViewCheck check=self.max_jobs/>
                 <ViewCheck check=self.caches/>

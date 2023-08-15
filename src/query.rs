@@ -52,7 +52,7 @@ where
 {
     view! { cx,
         <button
-            class="border-1 shadow bg-primary-700 disabled:bg-base-400 disabled:text-black text-white p-1"
+            class="p-1 text-white shadow border-1 bg-primary-700 disabled:bg-base-400 disabled:text-black"
             disabled=move || res.is_fetching.get()
             on:click=move |_| {
                 tracing::debug!("Invalidating query");

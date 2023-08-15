@@ -77,7 +77,7 @@ fn Dashboard(cx: Scope) -> impl IntoView {
         view! { cx,
             <A
                 href=href
-                class="flex items-center justify-center w-64 h-48 p-2 m-2 border-2 border-base-400 shadow active:shadow-none rounded-lg bg-base-100 hover:bg-primary-200"
+                class="flex items-center justify-center w-64 h-48 p-2 m-2 border-2 rounded-lg shadow border-base-400 active:shadow-none bg-base-100 hover:bg-primary-200"
             >
                 <span class="text-4xl text-base-800">{children(cx)}</span>
             </A>
