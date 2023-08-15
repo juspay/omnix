@@ -5,6 +5,7 @@
 pub mod app;
 pub mod nix;
 pub mod query;
+pub mod widget;
 #[cfg(feature = "hydrate")]
 use wasm_bindgen::prelude::wasm_bindgen;
 #[cfg(feature = "ssr")]
