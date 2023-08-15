@@ -4,7 +4,7 @@
 /// https://github.com/nicoburniske/leptos_query/issues/7
 use leptos::*;
 use leptos_query::*;
-use std::hash::Hash;
+use std::{hash::Hash, time::Duration};
 
 use crate::nix::{
     health::{get_nix_health, NixHealth},
@@ -14,13 +14,21 @@ use crate::nix::{
 /// Type alias for [QueryResult] specialized for Leptos [server] functions
 type ServerQueryResult<T, R> = QueryResult<Result<T, ServerFnError>, R>;
 
+fn query_options<V>() -> QueryOptions<V> {
+    QueryOptions {
+        // Disable staleness so the query is not refetched on every route switch.
+        stale_time: None,
+        ..Default::default()
+    }
+}
+
 /// Query [get_nix_info]
 pub fn use_nix_info_query(cx: Scope) -> ServerQueryResult<NixInfo, impl RefetchFn> {
     leptos_query::use_query(
         cx,
         || (),
         |()| async move { get_nix_info().await },
-        QueryOptions::default(),
+        query_options(),
     )
 }
 
@@ -30,7 +38,7 @@ pub fn use_nix_health_query(cx: Scope) -> ServerQueryResult<NixHealth, impl Refe
         cx,
         || (),
         |()| async move { get_nix_health().await },
-        QueryOptions::default(),
+        query_options(),
     )
 }
 
