@@ -1,8 +1,5 @@
 //! Frontend UI entry point
 
-use crate::nix::health::traits::Check;
-use crate::nix::health::*;
-use crate::nix::info::{get_nix_info, NixInfo};
 use cfg_if::cfg_if;
 #[cfg(feature = "ssr")]
 use http::status::StatusCode;
@@ -12,7 +9,9 @@ use leptos_axum::ResponseOptions;
 use leptos_meta::*;
 use leptos_query::*;
 use leptos_router::*;
-use std::hash::Hash;
+
+use crate::nix::health::traits::Check;
+use crate::query::{self, RefetchQueryButton};
 
 /// Main frontend application container
 #[component]
@@ -74,7 +73,7 @@ fn Nav(cx: Scope) -> impl IntoView {
 #[component]
 fn Dashboard(cx: Scope) -> impl IntoView {
     tracing::debug!("Rendering Dashboard page");
-    let res = use_nix_health_query(cx);
+    let res = query::use_nix_health_query(cx);
     let report = Signal::derive(cx, move || res.data.get().map(|r| r.map(|v| v.report())));
     // A Card component
     #[component]
@@ -104,7 +103,7 @@ fn Dashboard(cx: Scope) -> impl IntoView {
 #[component]
 fn NixInfo(cx: Scope) -> impl IntoView {
     let title = "Nix Info";
-    let res = use_nix_info_query(cx);
+    let res = query::use_nix_info_query(cx);
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
@@ -115,20 +114,11 @@ fn NixInfo(cx: Scope) -> impl IntoView {
     }
 }
 
-fn use_nix_info_query(cx: Scope) -> QueryResult<Result<NixInfo, ServerFnError>, impl RefetchFn> {
-    leptos_query::use_query(
-        cx,
-        || (),
-        |()| async move { get_nix_info().await },
-        QueryOptions::default(),
-    )
-}
-
 /// Nix health checks
 #[component]
 fn NixHealth(cx: Scope) -> impl IntoView {
     let title = "Nix Health";
-    let res = use_nix_health_query(cx);
+    let res = query::use_nix_health_query(cx);
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
@@ -138,40 +128,6 @@ fn NixHealth(cx: Scope) -> impl IntoView {
 
         </div>
     }
-}
-
-/// Button to refresh the given leptos_query query.
-#[component]
-fn RefetchQueryButton<K, V, R>(cx: Scope, res: QueryResult<V, R>, k: K) -> impl IntoView
-where
-    K: Hash + Eq + Clone + 'static,
-    V: Clone + Serializable + 'static,
-    R: RefetchFn,
-{
-    view! { cx,
-        <button
-            class="border-1 shadow bg-primary-700 disabled:bg-base-400 disabled:text-black text-white p-1"
-            disabled=move || res.is_fetching.get()
-            on:click=move |_| {
-                tracing::debug!("Invalidating query");
-                use_query_client(cx).invalidate_query::<K, V>(k.clone());
-            }
-        >
-
-            {move || if res.is_fetching.get() { "Fetching..." } else { "Re-fetch" }}
-        </button>
-    }
-}
-
-fn use_nix_health_query(
-    cx: Scope,
-) -> QueryResult<Result<NixHealth, ServerFnError>, impl RefetchFn> {
-    leptos_query::use_query(
-        cx,
-        || (),
-        |()| async move { get_nix_health().await },
-        QueryOptions::default(),
-    )
 }
 
 /// About page
