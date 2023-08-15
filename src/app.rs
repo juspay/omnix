@@ -92,14 +92,9 @@ fn Dashboard(cx: Scope) -> impl IntoView {
         <Title text="Dashboard"/>
         <h1 class="text-5xl font-bold">"Dashboard"</h1>
         <div id="cards" class="flex flex-row">
-            <Suspense fallback=move || view! { cx, <Spinner/> }>
-                <Card href="/health">
-                    "Nix Health Check "
-                    <ErrorBoundary fallback=|cx, errors| {
-                        view! { cx, <Errors errors=errors.get()/> }
-                    }>{report}</ErrorBoundary>
-                </Card>
-            </Suspense>
+            <SuspenseWithErrorHandling>
+                <Card href="/health">"Nix Health Check " {report}</Card>
+            </SuspenseWithErrorHandling>
             <Card href="/info">"Nix Info ℹ️"</Card>
         </div>
     }
@@ -115,11 +110,7 @@ fn NixInfo(cx: Scope) -> impl IntoView {
         <h1 class="text-5xl font-bold">{title}</h1>
         <RefetchQueryButton res=res.clone() k=()/>
         <div class="my-1 text-left">
-            <Suspense fallback=move || view! { cx, <Spinner/> }>
-                <ErrorBoundary fallback=|cx, errors| {
-                    view! { cx, <Errors errors=errors.get()/> }
-                }>{res.data}</ErrorBoundary>
-            </Suspense>
+            <SuspenseWithErrorHandling>{res.data}</SuspenseWithErrorHandling>
         </div>
     }
 }
@@ -143,11 +134,7 @@ fn NixHealth(cx: Scope) -> impl IntoView {
         <h1 class="text-5xl font-bold">{title}</h1>
         <RefetchQueryButton res=res.clone() k=()/>
         <div class="my-1">
-            <Suspense fallback=move || view! { cx, <Spinner/> }>
-                <ErrorBoundary fallback=|cx, errors| {
-                    view! { cx, <Errors errors=errors.get()/> }
-                }>{res.data}</ErrorBoundary>
-            </Suspense>
+            <SuspenseWithErrorHandling>{res.data}</SuspenseWithErrorHandling>
 
         </div>
     }
@@ -278,5 +265,18 @@ fn Errors(cx: Scope, errors: Errors) -> impl IntoView {
                 </ul>
             </div>
         </div>
+    }
+}
+
+/// Like [Suspense] but also handles errors using [ErrorBoundary]
+#[component(transparent)]
+fn SuspenseWithErrorHandling(cx: Scope, children: ChildrenFn) -> impl IntoView {
+    let children = store_value(cx, children);
+    view! { cx,
+        <Suspense fallback=move || view! { cx, <Spinner/> }>
+            <ErrorBoundary fallback=|cx, errors| {
+                view! { cx, <Errors errors=errors.get()/> }
+            }>{children.with_value(|c| c(cx))}</ErrorBoundary>
+        </Suspense>
     }
 }
