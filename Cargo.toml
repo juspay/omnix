@@ -53,6 +53,7 @@ ssr = [
     "dep:axum",
     "dep:http",
     "dep:leptos_axum",
+    "dep:open",
     "dep:tokio",
     "dep:tower-http",
     "dep:tower",
@@ -60,7 +61,6 @@ ssr = [
     "leptos_query/ssr",
     "leptos_router/ssr",
     "leptos/ssr",
-    "dep:open",
 ]
 
 # Defines a size-optimized profile for the WASM bundle in release mode
