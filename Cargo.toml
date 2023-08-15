@@ -18,7 +18,7 @@ console_error_panic_hook = "0.1"
 console_log = { version = "1" }
 http = { version = "0.2", optional = true }
 human-panic = "1.1.5"
-leptos = { version = "0.4", features = ["serde"] }
+leptos = { version = "0.4", features = ["serde", "nightly"] }
 leptos_axum = { version = "0.4", optional = true }
 leptos_query = "0.2"
 leptos_meta = { version = "0.4" }
