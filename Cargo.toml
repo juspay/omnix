@@ -14,6 +14,7 @@ crate-type = ["cdylib", "rlib"]
 axum = { version = "0.6", features = ["json", "tokio"], optional = true }
 axum-macros = { version = "0.3", optional = true }
 cfg-if = "1"
+clap = { version = "4.3", features = ["derive"] }
 console_error_panic_hook = "0.1"
 console_log = { version = "1" }
 http = { version = "0.2", optional = true }
@@ -24,6 +25,7 @@ leptos_query = "0.2"
 leptos_meta = { version = "0.4" }
 leptos_router = { version = "0.4" }
 log = "0.4"
+open = { version = "5.0", optional = true }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 thiserror = "1.0"
@@ -35,8 +37,6 @@ tracing-subscriber = "0.3"
 tracing-subscriber-wasm = "0.1"
 uuid = { version = "1.3.0", features = ["serde", "v4", "js"] }
 wasm-bindgen = "=0.2.87"                                                  # The version here must match the pinned stuff in Nix flakes.
-clap = { version = "4.3.21", features = ["derive"] }
-open = { version = "5.0.0", optional = true }
 
 [features]
 default = [
