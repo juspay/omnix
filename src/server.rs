@@ -7,9 +7,9 @@ use axum::routing::IntoMakeService;
 use axum::{body::Body, http::Request, response::IntoResponse};
 use axum::{routing::post, Router};
 use hyper::server::conn::AddrIncoming;
-use leptos::leptos_config::ConfFile;
 use leptos::*;
 use leptos_axum::{generate_route_list, LeptosRoutes};
+use std::net::SocketAddr;
 use tower_http::services::ServeDir;
 use tower_http::trace::{self, TraceLayer};
 use tracing::{instrument, Level};
@@ -19,28 +19,17 @@ use crate::cli;
 /// Axum server main entry point
 pub async fn main(args: cli::Args) {
     setup_logging();
-    run_server(args).await
-}
-
-#[instrument(name = "server")]
-async fn run_server(args: cli::Args) {
-    let conf = get_configuration(None).await.unwrap();
-    tracing::debug!("Firing up Leptos app with config: {:?}", conf);
-    let server = create_server(conf).await;
-    tracing::info!("App is running at http://{}", server.local_addr());
-    let url = format!("http://{}", &server.local_addr());
+    let server = create_server().await;
     if !args.no_open {
-        if let Err(err) = open::that(&url) {
-            tracing::warn!("Unable to open in web browser: {}", err)
-        }
+        open_http_app(server.local_addr()).await;
     }
     server.await.unwrap()
 }
 
 /// Create an Axum server for the Leptos app
-async fn create_server(
-    conf: ConfFile,
-) -> axum::Server<AddrIncoming, IntoMakeService<axum::Router>> {
+async fn create_server() -> axum::Server<AddrIncoming, IntoMakeService<axum::Router>> {
+    let conf = get_configuration(None).await.unwrap();
+    tracing::debug!("Firing up Leptos app with config: {:?}", conf);
     leptos_query::suppress_query_load(true); // https://github.com/nicoburniske/leptos_query/issues/6
     let routes = generate_route_list(|cx| view! { cx, <App/> }).await;
     leptos_query::suppress_query_load(false);
@@ -63,7 +52,10 @@ async fn create_server(
                 .on_response(trace::DefaultOnResponse::new().level(Level::INFO)),
         )
         .with_state(conf.leptos_options.clone());
-    axum::Server::bind(&conf.leptos_options.site_addr).serve(app.into_make_service())
+
+    let server = axum::Server::bind(&conf.leptos_options.site_addr).serve(app.into_make_service());
+    tracing::info!("App is running at http://{}", server.local_addr());
+    server
 }
 
 fn setup_logging() {
@@ -84,4 +76,13 @@ async fn not_found_handler(
     let handler =
         leptos_axum::render_app_to_stream(options.to_owned(), move |cx| view! { cx, <App/> });
     Ok(handler(req).await.into_response())
+}
+
+/// Open a http address in the user's web browser
+#[instrument(name = "server")]
+async fn open_http_app(addr: SocketAddr) {
+    let url = format!("http://{}", &addr);
+    if let Err(err) = open::that(url) {
+        tracing::warn!("Unable to open in web browser: {}", err)
+    }
 }
