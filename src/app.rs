@@ -1,8 +1,5 @@
 //! Frontend UI entry point
 
-use crate::nix::health::traits::Check;
-use crate::nix::health::*;
-use crate::nix::info::get_nix_info;
 use cfg_if::cfg_if;
 #[cfg(feature = "ssr")]
 use http::status::StatusCode;
@@ -10,12 +7,17 @@ use leptos::*;
 #[cfg(feature = "ssr")]
 use leptos_axum::ResponseOptions;
 use leptos_meta::*;
+use leptos_query::*;
 use leptos_router::*;
+
+use crate::nix::health::traits::Check;
+use crate::query::{self, RefetchQueryButton};
 
 /// Main frontend application container
 #[component]
 pub fn App(cx: Scope) -> impl IntoView {
     provide_meta_context(cx);
+    provide_query_client(cx);
 
     view! { cx,
         <Stylesheet id="leptos" href="/pkg/nix-browser.css"/>
@@ -71,7 +73,8 @@ fn Nav(cx: Scope) -> impl IntoView {
 #[component]
 fn Dashboard(cx: Scope) -> impl IntoView {
     tracing::debug!("Rendering Dashboard page");
-    let health_check = create_resource(cx, move || (), move |_| get_nix_health());
+    let res = query::use_nix_health_query(cx);
+    let report = Signal::derive(cx, move || res.data.get().map(|r| r.map(|v| v.report())));
     // A Card component
     #[component]
     fn Card(cx: Scope, href: &'static str, children: Children) -> impl IntoView {
@@ -88,13 +91,9 @@ fn Dashboard(cx: Scope) -> impl IntoView {
         <Title text="Dashboard"/>
         <h1 class="text-5xl font-bold">"Dashboard"</h1>
         <div id="cards" class="flex flex-row">
-            <Card href="/health">
-                "Nix Health Check "
-                <SuspenseWithErrorHandling>
-                    {move || { health_check.read(cx).map(|r| { r.map(|v| { v.report() }) }) }}
-                </SuspenseWithErrorHandling>
-
-            </Card>
+            <SuspenseWithErrorHandling>
+                <Card href="/health">"Nix Health Check " {report}</Card>
+            </SuspenseWithErrorHandling>
             <Card href="/info">"Nix Info ℹ️"</Card>
         </div>
     }
@@ -103,28 +102,31 @@ fn Dashboard(cx: Scope) -> impl IntoView {
 /// Nix information
 #[component]
 fn NixInfo(cx: Scope) -> impl IntoView {
-    let nix_info = create_resource(cx, move || (), move |_| get_nix_info());
     let title = "Nix Info";
+    let res = query::use_nix_info_query(cx);
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
-        <SuspenseWithErrorHandling>
-            <div class="my-1 text-left">{move || nix_info.read(cx)}</div>
-        </SuspenseWithErrorHandling>
+        <RefetchQueryButton res=res.clone() k=()/>
+        <div class="my-1 text-left">
+            <SuspenseWithErrorHandling>{res.data}</SuspenseWithErrorHandling>
+        </div>
     }
 }
 
 /// Nix health checks
 #[component]
 fn NixHealth(cx: Scope) -> impl IntoView {
-    let health_check = create_resource(cx, move || (), move |_| get_nix_health());
     let title = "Nix Health";
+    let res = query::use_nix_health_query(cx);
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
-        <SuspenseWithErrorHandling>
-            <div class="my-1">{move || health_check.read(cx)}</div>
-        </SuspenseWithErrorHandling>
+        <RefetchQueryButton res=res.clone() k=()/>
+        <div class="my-1">
+            <SuspenseWithErrorHandling>{res.data}</SuspenseWithErrorHandling>
+
+        </div>
     }
 }
 
@@ -223,7 +225,7 @@ fn Errors(cx: Scope, errors: Errors) -> impl IntoView {
 }
 
 /// Like [Suspense] but also handles errors using [ErrorBoundary]
-#[component]
+#[component(transparent)]
 fn SuspenseWithErrorHandling(cx: Scope, children: ChildrenFn) -> impl IntoView {
     let children = store_value(cx, children);
     view! { cx,

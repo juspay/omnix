@@ -21,7 +21,9 @@ pub async fn main() {
 async fn run_server() {
     let conf = get_configuration(None).await.unwrap();
     tracing::debug!("Firing up Leptos app with config: {:?}", conf);
+    leptos_query::suppress_query_load(true); // https://github.com/nicoburniske/leptos_query/issues/6
     let routes = generate_route_list(|cx| view! { cx, <App/> }).await;
+    leptos_query::suppress_query_load(false);
     let client_dist = ServeDir::new(conf.leptos_options.site_root.clone());
     let leptos_options = conf.leptos_options.clone(); // A copy to move to the closure below.
     let not_found_service =

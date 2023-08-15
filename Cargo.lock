@@ -977,6 +977,8 @@ version = "0.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b995a66bb87bebce9a0f4a95aed01daca4872c050bfcb21653361c03bc35e5c"
 dependencies = [
+ "futures-channel",
+ "futures-core",
  "js-sys",
  "wasm-bindgen",
 ]
@@ -1447,6 +1449,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "leptos_query"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e49b2c3d199c091071e14071d9f0c9d87399e00040183234affefa1a4832d7bb"
+dependencies = [
+ "cfg-if",
+ "gloo-timers",
+ "js-sys",
+ "leptos",
+ "tokio",
+]
+
+[[package]]
 name = "leptos_reactive"
 version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1638,6 +1653,7 @@ dependencies = [
  "leptos",
  "leptos_axum",
  "leptos_meta",
+ "leptos_query",
  "leptos_router",
  "log",
  "serde",
