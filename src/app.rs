@@ -170,6 +170,7 @@ where
                 use_query_client(cx).invalidate_query::<K, V>(k.clone());
             }
         >
+
             {move || if res.is_fetching.get() { "Fetching..." } else { "Re-fetch" }}
         </button>
     }
