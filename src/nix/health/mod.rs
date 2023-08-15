@@ -28,7 +28,7 @@ pub async fn get_nix_health() -> Result<NixHealth, ServerFnError> {
 /// NOTE: This struct is isomorphic to [Vec<Box<&dyn Check>>]. We cannot use the
 /// latter due to (wasm) serialization limitation with dyn trait objects. An
 // [IntoIterator] impl is provide towards this end.
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct NixHealth {
     max_jobs: MaxJobs,
     caches: Caches,

@@ -11,7 +11,7 @@ use crate::nix::{
 };
 
 /// Check that [crate::nix::config::NixConfig::max_jobs] is set to a good value.
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MaxJobs(ConfigVal<i32>);
 
 impl Check for MaxJobs {
