@@ -63,8 +63,7 @@ async fn create_server(
                 .on_response(trace::DefaultOnResponse::new().level(Level::INFO)),
         )
         .with_state(conf.leptos_options.clone());
-    let server = axum::Server::bind(&conf.leptos_options.site_addr).serve(app.into_make_service());
-    server
+    axum::Server::bind(&conf.leptos_options.site_addr).serve(app.into_make_service())
 }
 
 fn setup_logging() {

@@ -14,7 +14,7 @@ pub async fn run_command(cmd: &mut Command) -> Result<Vec<u8>, CommandError> {
     } else {
         let stderr = String::from_utf8(out.stderr)?;
         Err(CommandError::ProcessFailed {
-            stderr: stderr,
+            stderr,
             exit_code: out.status.code(),
         })
     }
