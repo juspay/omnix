@@ -1,11 +1,10 @@
-mod cli;
-
 #[cfg(feature = "ssr")]
 #[tokio::main]
 async fn main() {
+    use clap::Parser;
     human_panic::setup_panic!();
-    let args = cli::parse();
-    nix_browser::server::main(args.no_open).await
+    let args = nix_browser::cli::Args::parse();
+    nix_browser::server::main(args).await
 }
 
 #[cfg(not(feature = "ssr"))]

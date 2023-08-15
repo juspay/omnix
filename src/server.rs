@@ -11,14 +11,16 @@ use tower_http::services::ServeDir;
 use tower_http::trace::{self, TraceLayer};
 use tracing::{instrument, Level};
 
+use crate::cli;
+
 /// Axum server main entry point
-pub async fn main(no_open: bool) {
+pub async fn main(args: cli::Args) {
     setup_logging();
-    run_server(no_open).await
+    run_server(args).await
 }
 
 #[instrument(name = "server")]
-async fn run_server(no_open: bool) {
+async fn run_server(args: cli::Args) {
     let conf = get_configuration(None).await.unwrap();
     tracing::debug!("Firing up Leptos app with config: {:?}", conf);
     leptos_query::suppress_query_load(true); // https://github.com/nicoburniske/leptos_query/issues/6
@@ -45,11 +47,10 @@ async fn run_server(no_open: bool) {
         .with_state(conf.leptos_options.clone());
     let server = axum::Server::bind(&conf.leptos_options.site_addr).serve(app.into_make_service());
     tracing::info!("App is running at http://{}", server.local_addr());
-    let path = "http://".to_owned() + &server.local_addr().to_string();
-    if !no_open {
-        match open::that(&path) {
-            Ok(()) => tracing::info!("App launched at {}", &path),
-            Err(err) => eprintln!("An error occurred when opening '{}': {}", &path, err),
+    let url = format!("http://{}", &server.local_addr());
+    if !args.no_open {
+        if let Err(err) = open::that(&url) {
+            tracing::warn!("Unable to open in web browser: {}", err)
         }
     }
     server.await.unwrap()

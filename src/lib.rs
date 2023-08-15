@@ -9,6 +9,8 @@ pub mod widget;
 #[cfg(feature = "hydrate")]
 use wasm_bindgen::prelude::wasm_bindgen;
 #[cfg(feature = "ssr")]
+pub mod cli;
+#[cfg(feature = "ssr")]
 pub mod command;
 #[cfg(feature = "ssr")]
 pub mod server;
