@@ -4,7 +4,7 @@
 /// https://github.com/nicoburniske/leptos_query/issues/7
 use leptos::*;
 use leptos_query::*;
-use std::{hash::Hash, time::Duration};
+use std::hash::Hash;
 
 use crate::nix::{
     health::{get_nix_health, NixHealth},
