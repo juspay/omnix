@@ -28,6 +28,7 @@ pub async fn main(args: cli::Args) {
 
 /// Create an Axum server for the Leptos app
 #[instrument(name = "server")]
+#[allow(clippy::async_yields_async)]
 async fn create_server() -> axum::Server<AddrIncoming, IntoMakeService<axum::Router>> {
     let conf = get_configuration(None).await.unwrap();
     tracing::debug!("Firing up Leptos app with config: {:?}", conf);
