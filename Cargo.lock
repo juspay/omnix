@@ -1711,6 +1711,7 @@ dependencies = [
  "console_log",
  "http",
  "human-panic",
+ "hyper",
  "leptos",
  "leptos_axum",
  "leptos_meta",

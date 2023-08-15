@@ -3,8 +3,11 @@ use std::convert::Infallible;
 
 use crate::app::App;
 use axum::response::Response as AxumResponse;
+use axum::routing::IntoMakeService;
 use axum::{body::Body, http::Request, response::IntoResponse};
 use axum::{routing::post, Router};
+use hyper::server::conn::AddrIncoming;
+use leptos::leptos_config::ConfFile;
 use leptos::*;
 use leptos_axum::{generate_route_list, LeptosRoutes};
 use tower_http::services::ServeDir;
@@ -23,6 +26,21 @@ pub async fn main(args: cli::Args) {
 async fn run_server(args: cli::Args) {
     let conf = get_configuration(None).await.unwrap();
     tracing::debug!("Firing up Leptos app with config: {:?}", conf);
+    let server = create_server(conf).await;
+    tracing::info!("App is running at http://{}", server.local_addr());
+    let url = format!("http://{}", &server.local_addr());
+    if !args.no_open {
+        if let Err(err) = open::that(&url) {
+            tracing::warn!("Unable to open in web browser: {}", err)
+        }
+    }
+    server.await.unwrap()
+}
+
+/// Create an Axum server for the Leptos app
+async fn create_server(
+    conf: ConfFile,
+) -> axum::Server<AddrIncoming, IntoMakeService<axum::Router>> {
     leptos_query::suppress_query_load(true); // https://github.com/nicoburniske/leptos_query/issues/6
     let routes = generate_route_list(|cx| view! { cx, <App/> }).await;
     leptos_query::suppress_query_load(false);
@@ -46,14 +64,7 @@ async fn run_server(args: cli::Args) {
         )
         .with_state(conf.leptos_options.clone());
     let server = axum::Server::bind(&conf.leptos_options.site_addr).serve(app.into_make_service());
-    tracing::info!("App is running at http://{}", server.local_addr());
-    let url = format!("http://{}", &server.local_addr());
-    if !args.no_open {
-        if let Err(err) = open::that(&url) {
-            tracing::warn!("Unable to open in web browser: {}", err)
-        }
-    }
-    server.await.unwrap()
+    server
 }
 
 fn setup_logging() {
