@@ -27,7 +27,7 @@ fn query_options<V>() -> QueryOptions<V> {
 /// Like [use_query] gut for server functions
 pub fn use_server_query<S>(
     cx: Scope,
-    k: ReadSignal<S>,
+    k: impl Fn() -> S + 'static,
 ) -> ServerQueryResult<<S as ServerFn<Scope>>::Output, impl RefetchFn>
 where
     S: Hash + Eq + Clone + ServerFn<Scope> + 'static,
@@ -78,6 +78,8 @@ pub fn use_nix_health_query(cx: Scope) -> ServerQueryResult<NixHealth, impl Refe
 }
 
 /// Button to refresh the given [leptos_query] query.
+///
+/// TODO: Change this to work at server fn level
 #[component]
 pub fn RefetchQueryButton<K, V, R>(cx: Scope, res: QueryResult<V, R>, k: K) -> impl IntoView
 where
