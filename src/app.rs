@@ -23,7 +23,7 @@ fn use_signal<T>(cx: Scope) -> (ReadSignal<T>, WriteSignal<T>) {
 pub fn App(cx: Scope) -> impl IntoView {
     provide_meta_context(cx);
     provide_query_client(cx);
-    provide_signal(cx, FlakeUrl::new("github:nammayatri/nammayatri"));
+    provide_signal::<FlakeUrl>(cx, "github:nammayatri/nammayatri".into());
 
     view! { cx,
         <Stylesheet id="leptos" href="/pkg/nix-browser.css"/>
@@ -127,7 +127,7 @@ fn NixFlake(cx: Scope) -> impl IntoView {
             type="text"
             class="w-full p-1 font-mono"
             on:change=move |ev| {
-                set_flake_url(FlakeUrl::new(event_target_value(&ev)));
+                set_flake_url(event_target_value(&ev).into());
             }
 
             prop:value=move || flake_url().to_string()

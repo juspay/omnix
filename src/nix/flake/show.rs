@@ -134,9 +134,7 @@ impl IntoView for Type {
 #[cfg(feature = "ssr")]
 #[tokio::test]
 async fn test_nix_flake_show() {
-    use super::url::FlakeUrl;
-
     // Test on a flake with IFD
-    let flake_url = FlakeUrl::new("github:srid/haskell-template");
+    let flake_url = "github:srid/haskell-template".into();
     assert!(run_nix_flake_show(&flake_url).await.is_ok());
 }
