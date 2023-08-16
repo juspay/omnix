@@ -142,7 +142,6 @@ impl IntoView for Type {
 
 #[cfg(feature = "ssr")]
 #[tokio::test]
-#[ignore] // Requires network, so won't work in Nix
 async fn test_nix_flake_show() {
     let flake_url = "nixpkgs".into();
     assert!(run_nix_flake_show(&flake_url).await.is_ok());
