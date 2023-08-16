@@ -1,3 +1,4 @@
+//! Command-line interface
 use clap::Parser;
 
 #[derive(Parser, Debug)]

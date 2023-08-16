@@ -1,14 +1,13 @@
-//! [leptos_query] helpers
-///
-/// This module could be simplified after
-/// https://github.com/nicoburniske/leptos_query/issues/7
+//! [leptos_query] helpers for working with [server] fns, and useful widgets.
 use leptos::*;
 use leptos_query::*;
 use std::{fmt::Display, future::Future, hash::Hash, str::FromStr};
 use tracing::instrument;
 
+/// The result type of Leptos [server] function returning a `T`
 pub type ServerFnResult<T> = Result<T, ServerFnError>;
 
+/// Sensible defaults for an app
 fn query_options<V>() -> QueryOptions<V> {
     QueryOptions {
         // Disable staleness so the query is not refetched on every route switch.
@@ -44,9 +43,9 @@ where
     )
 }
 
-/// An input element tied to a [leptos_use::Query]
+/// Input element component to pass arguments to a [leptos_query] query
 #[component]
-pub fn ServerQueryInput<K, V>(
+pub fn QueryInput<K, V>(
     cx: Scope,
     /// Initial suggestions to show in the datalist
     suggestions: Vec<V>,
@@ -95,7 +94,7 @@ where
     }
 }
 
-/// Button to refresh the given [leptos_query] query.
+/// Button component to refresh the given [leptos_query] query.
 #[component]
 pub fn RefetchQueryButton<K, V, R, F>(
     cx: Scope,

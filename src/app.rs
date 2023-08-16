@@ -5,7 +5,7 @@ use leptos_meta::*;
 use leptos_query::*;
 use leptos_router::*;
 
-use crate::leptos_extra::query::{self, RefetchQueryButton, ServerQueryInput};
+use crate::leptos_extra::query::{self, QueryInput, RefetchQueryButton};
 use crate::leptos_extra::signal::{provide_signal, use_signal};
 use crate::nix::flake::get_flake;
 use crate::nix::flake::url::FlakeUrl;
@@ -122,7 +122,7 @@ fn NixFlake(cx: Scope) -> impl IntoView {
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
-        <ServerQueryInput query set_query suggestions/>
+        <QueryInput query set_query suggestions/>
         <RefetchQueryButton result query/>
         <div class="my-1 text-left">
             <SuspenseWithErrorHandling>{data}</SuspenseWithErrorHandling>
