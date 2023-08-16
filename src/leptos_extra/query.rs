@@ -5,7 +5,7 @@
 use leptos::*;
 use leptos_query::*;
 use server_fn::ServerFn;
-use std::{fmt::Display, future::Future, hash::Hash, marker::PhantomData, pin::Pin, str::FromStr};
+use std::{fmt::Display, future::Future, hash::Hash, pin::Pin, str::FromStr};
 use tracing::{info_span, instrument};
 
 /// Type alias for [QueryResult] specialized for Leptos [server] functions
@@ -120,9 +120,8 @@ where
 #[component]
 pub fn RefetchQueryButton<S, R>(
     cx: Scope,
-    res: ServerQueryResult<<S as ServerFn<Scope>>::Output, R>,
-    k: S,
-    #[allow(unused_variables)] serverfn: PhantomData<S>,
+    result: ServerQueryResult<<S as ServerFn<Scope>>::Output, R>,
+    query: ReadSignal<S>,
 ) -> impl IntoView
 where
     S: Hash + Eq + Clone + ServerFn<Scope> + std::fmt::Debug + 'static,
@@ -132,18 +131,18 @@ where
     view! { cx,
         <button
             class="p-1 text-white shadow border-1 bg-primary-700 disabled:bg-base-400 disabled:text-black"
-            disabled=move || res.is_fetching.get()
+            disabled=move || result.is_fetching.get()
             on:click=move |_| {
                 tracing::debug!("Invalidating query");
                 use_query_client(cx)
                     .invalidate_query::<
                         S,
                         ServerQueryVal<<S as ServerFn<Scope>>::Output>,
-                    >(k.clone());
+                    >(query.get_untracked());
             }
         >
 
-            {move || if res.is_fetching.get() { "Fetching..." } else { "Re-fetch" }}
+            {move || if result.is_fetching.get() { "Fetching..." } else { "Re-fetch" }}
         </button>
     }
 }

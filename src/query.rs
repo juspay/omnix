@@ -47,7 +47,7 @@ pub fn use_nix_health_query(cx: Scope) -> ServerQueryResult<NixHealth, impl Refe
 ///
 /// TODO: Change this to work at server fn level
 #[component]
-pub fn RefetchQueryButton<K, V, R>(cx: Scope, result: QueryResult<V, R>, k: K) -> impl IntoView
+pub fn RefetchQueryButtonOld<K, V, R>(cx: Scope, result: QueryResult<V, R>, k: K) -> impl IntoView
 where
     K: Hash + Eq + Clone + 'static,
     V: Clone + Serializable + 'static,

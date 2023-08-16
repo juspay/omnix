@@ -5,11 +5,11 @@ use leptos_meta::*;
 use leptos_query::*;
 use leptos_router::*;
 
-use crate::leptos_extra::query::{self, ServerQueryInput};
+use crate::leptos_extra::query::{self, RefetchQueryButton, ServerQueryInput};
 use crate::leptos_extra::signal::{provide_signal, use_signal};
 use crate::nix::flake::GetNixFlake;
 use crate::nix::health::traits::Check;
-use crate::query::{use_nix_health_query, use_nix_info_query, RefetchQueryButton};
+use crate::query::{use_nix_health_query, use_nix_info_query, RefetchQueryButtonOld};
 use crate::widget::*;
 
 /// Main frontend application container
@@ -125,7 +125,7 @@ fn NixFlake(cx: Scope) -> impl IntoView {
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
         <ServerQueryInput query set_query suggestions/>
-        <RefetchQueryButton result k=()/>
+        <RefetchQueryButton result query/>
         <div class="my-1 text-left">
             // <SuspenseWithErrorHandling>{res.data}</SuspenseWithErrorHandling>
             <Suspense fallback=move || view! { cx, <Spinner/> }>
@@ -145,7 +145,7 @@ fn NixInfo(cx: Scope) -> impl IntoView {
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
-        <RefetchQueryButton result=res.clone() k=()/>
+        <RefetchQueryButtonOld result=res.clone() k=() />
         <div class="my-1 text-left">
             <SuspenseWithErrorHandling>{res.data}</SuspenseWithErrorHandling>
         </div>
@@ -160,7 +160,7 @@ fn NixHealth(cx: Scope) -> impl IntoView {
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
-        <RefetchQueryButton result=res.clone() k=()/>
+        <RefetchQueryButtonOld result=res.clone() k=()/>
         <div class="my-1">
             <SuspenseWithErrorHandling>{res.data}</SuspenseWithErrorHandling>
         </div>
