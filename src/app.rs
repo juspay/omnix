@@ -103,10 +103,35 @@ fn Dashboard(cx: Scope) -> impl IntoView {
 #[component]
 fn NixFlake(cx: Scope) -> impl IntoView {
     let title = "Nix Flake";
-    let res = query::use_flake_query(cx);
+    let default_url = "github:nammayatri/nammayatri";
+    // TODO: make a component
+    let (flake_url, set_flake_url) = create_signal(cx, default_url.to_string());
+    let res = query::use_flake_query(cx, flake_url);
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
+        <label for="flake-url">
+            e-url">Choose or enter a
+        </label>
+        <input
+            list="some-flakes"
+            id="flake-url"
+            type="text"
+            placeholder=default_url
+            class="w-full p-1 font-mono"
+            on:change=move |ev| {
+                set_flake_url(event_target_value(&ev));
+            }
+
+            prop:value=flake_url
+        />
+        // TODO: use local storage, and cache user's inputs
+        <datalist id="some-flakes">
+            <option value="github:nammayatri/nammayatri"></option>
+            <option value="github:srid/haskell-template"></option>
+            <option value="github:juspay/nix-browser"></option>
+            <option value="github:nixos/nixpkgs"></option>
+        </datalist>
         <RefetchQueryButton res=res.clone() k=()/>
         <div class="my-1 text-left">
             // <SuspenseWithErrorHandling>{res.data}</SuspenseWithErrorHandling>

@@ -44,11 +44,14 @@ pub fn use_nix_health_query(cx: Scope) -> ServerQueryResult<NixHealth, impl Refe
 }
 
 /// Query [get_nix_flake_show]
-pub fn use_flake_query(cx: Scope) -> ServerQueryResult<Flake, impl RefetchFn> {
+pub fn use_flake_query(
+    cx: Scope,
+    flake_url: ReadSignal<String>,
+) -> ServerQueryResult<Flake, impl RefetchFn> {
     leptos_query::use_query(
         cx,
-        || (),
-        |()| async move { get_flake().await },
+        flake_url,
+        |url| async move { get_flake(url).await },
         query_options(),
     )
 }
