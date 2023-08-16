@@ -46,6 +46,7 @@ pub struct Leaf {
 pub enum Type {
     NixosModule,
     Derivation,
+    App,
     #[serde(other)]
     Unknown,
 }
@@ -82,8 +83,16 @@ impl IntoView for FlakeOutput {
 
 impl IntoView for Leaf {
     fn into_view(self, cx: Scope) -> View {
-        view! { cx, <span>{self.name} ", " {format!("{:?}", self.type_)} ", " {self.description}</span> }
-        .into_view(cx)
+        view! { cx,
+            <span>
+                <b>{self.name}</b>
+                " ("
+                {self.type_}
+                ") "
+                <em>{self.description}</em>
+            </span>
+        }
+            .into_view(cx)
     }
 }
 
@@ -99,6 +108,23 @@ impl IntoView for FlakeOutputSet {
                     })
                     .collect_view(cx)}
             </ul>
+        }
+        .into_view(cx)
+    }
+}
+
+impl IntoView for Type {
+    fn into_view(self, cx: Scope) -> View {
+        view! { cx,
+            <span>
+                {match self {
+                    Self::NixosModule => "nixosModule ❄️",
+                    Self::Derivation => "derivation 📦",
+                    Self::App => "app 📱",
+                    Self::Unknown => "unknown",
+                }}
+
+            </span>
         }
         .into_view(cx)
     }
