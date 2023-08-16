@@ -7,11 +7,11 @@ use leptos_router::*;
 
 use crate::leptos_extra::query::{self, QueryInput, RefetchQueryButton};
 use crate::leptos_extra::signal::{provide_signal, use_signal};
-use crate::nix::flake::get_flake;
 use crate::nix::flake::url::FlakeUrl;
-use crate::nix::health::get_nix_health;
+use crate::nix::flake::GetFlake;
 use crate::nix::health::traits::Check;
-use crate::nix::info::get_nix_info;
+use crate::nix::health::GetNixHealth;
+use crate::nix::info::GetNixInfo;
 use crate::widget::*;
 
 /// Main frontend application container
@@ -79,7 +79,7 @@ fn Nav(cx: Scope) -> impl IntoView {
 #[component]
 fn Dashboard(cx: Scope) -> impl IntoView {
     tracing::debug!("Rendering Dashboard page");
-    let result = query::use_server_query(cx, || (), move |()| get_nix_health());
+    let result = query::use_server_query(cx, || (), |()| GetNixHealth {});
     let data = result.data;
     let report = Signal::derive(cx, move || data.get().map(|r| r.map(|v| v.report())));
     // A Card component
@@ -117,7 +117,7 @@ fn NixFlake(cx: Scope) -> impl IntoView {
         "github:nixos/nixpkgs".into(),
     ];
     let (query, set_query) = use_signal::<FlakeUrl>(cx);
-    let result = query::use_server_query(cx, query, get_flake);
+    let result = query::use_server_query(cx, query, |url| GetFlake { url });
     let data = result.data;
     view! { cx,
         <Title text=title/>
@@ -134,7 +134,7 @@ fn NixFlake(cx: Scope) -> impl IntoView {
 #[component]
 fn NixInfo(cx: Scope) -> impl IntoView {
     let title = "Nix Info";
-    let result = query::use_server_query(cx, || (), move |()| get_nix_info());
+    let result = query::use_server_query(cx, || (), |()| GetNixInfo {});
     let data = result.data;
     view! { cx,
         <Title text=title/>
@@ -150,7 +150,7 @@ fn NixInfo(cx: Scope) -> impl IntoView {
 #[component]
 fn NixHealth(cx: Scope) -> impl IntoView {
     let title = "Nix Health";
-    let result = query::use_server_query(cx, || (), move |()| get_nix_health());
+    let result = query::use_server_query(cx, || (), |()| GetNixHealth {});
     let data = result.data;
     view! { cx,
         <Title text=title/>
