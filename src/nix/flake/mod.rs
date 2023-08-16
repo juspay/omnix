@@ -14,13 +14,12 @@ pub struct Flake {
     url: FlakeUrl,
     /// `nix flake show` output
     output: FlakeOutput,
+    // TODO: Add higher-level info
 }
 
 #[instrument(name = "flake")]
 #[server(GetFlake, "/api")]
 pub async fn get_flake(url: FlakeUrl) -> Result<Flake, ServerFnError> {
-    // TODO Let the user enter this from UI (input box)
-    // let url = "github:nammayatri/nammayatri".to_string();
     let out = self::show::run_nix_flake_show(&url).await?;
     Ok(Flake { url, output: out })
 }

@@ -6,6 +6,7 @@ use leptos::*;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
+/// Output of `nix flake show` (with IFD)
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum FlakeOutput {
@@ -13,6 +14,7 @@ pub enum FlakeOutput {
     Attrset(FlakeOutputSet),
 }
 
+/// An attrset of flake outputs
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct FlakeOutputSet(BTreeMap<String, FlakeOutput>);
 
@@ -32,6 +34,7 @@ impl FlakeOutput {
     }
 }
 
+/// A flake output that is not an attrset
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Leaf {
@@ -41,7 +44,9 @@ pub struct Leaf {
     pub description: Option<String>,
 }
 
-// https://github.com/NixOS/nix/blob/2.14.1/src/nix/flake.cc#L1105
+/// The type of a flake output
+///
+/// [Nix source ref](https://github.com/NixOS/nix/blob/2.14.1/src/nix/flake.cc#L1105)
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Type {
@@ -53,6 +58,7 @@ pub enum Type {
     Unknown,
 }
 
+/// Run `nix flake show` on the given flake url
 #[cfg(feature = "ssr")]
 pub async fn run_nix_flake_show(flake_url: &FlakeUrl) -> Result<FlakeOutput, ServerFnError> {
     use tokio::process::Command;
@@ -72,6 +78,9 @@ pub async fn run_nix_flake_show(flake_url: &FlakeUrl) -> Result<FlakeOutput, Ser
     Ok(v)
 }
 
+/// The [IntoView] instance for [FlakeOutput] renders it recursively.
+///
+/// WARNING: This may cause performance problems if the tree is large.
 impl IntoView for FlakeOutput {
     fn into_view(self, cx: Scope) -> View {
         match self {
@@ -135,7 +144,6 @@ impl IntoView for Type {
 #[tokio::test]
 #[ignore] // Requires network, so won't work in Nix
 async fn test_nix_flake_show() {
-    // Test on a flake with IFD
-    let flake_url = "github:srid/haskell-template".into();
+    let flake_url = "nixpkgs".into();
     assert!(run_nix_flake_show(&flake_url).await.is_ok());
 }
