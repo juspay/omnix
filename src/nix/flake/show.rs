@@ -64,6 +64,7 @@ pub async fn get_nix_flake_show() -> Result<FlakeOutput, ServerFnError> {
         "--json",
         // TODO: Take arg from user?
         "github:nammayatri/nammayatri",
+        // "github:srid/haskell-template",
     ]);
     let stdout: Vec<u8> = crate::command::run_command(&mut cmd).await?;
     let v = serde_json::from_slice::<FlakeOutput>(&stdout)?;
@@ -81,22 +82,22 @@ impl IntoView for FlakeOutput {
 
 impl IntoView for Leaf {
     fn into_view(self, cx: Scope) -> View {
-        view! {cx,
-            <span >{self.name} ", " {format!("{:?}", self.type_)} ", " {self.description}</span>
-        }
+        view! { cx, <span>{self.name} ", " {format!("{:?}", self.type_)} ", " {self.description}</span> }
         .into_view(cx)
     }
 }
 
 impl IntoView for FlakeOutputSet {
     fn into_view(self, cx: Scope) -> View {
-        view! {cx,
+        view! { cx,
             <ul class="list-disc">
-            {self.0.iter().map(|(k, v)| {
-                view! {cx,
-                    <li class="ml-2">{k}: {v.clone()}</li>
-                }
-            }).collect_view(cx)}
+                {self
+                    .0
+                    .iter()
+                    .map(|(k, v)| {
+                        view! { cx, <li class="ml-2">{k} : {v.clone()}</li> }
+                    })
+                    .collect_view(cx)}
             </ul>
         }
         .into_view(cx)
