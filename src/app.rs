@@ -169,6 +169,13 @@ where
 
                 prop:value=move || query().to_string()
             /> <span class="text-red-500">{input_err}</span>
+            // TODO: use local storage, and cache user's inputs
+            <datalist id="some-flakes">
+                <option value="github:nammayatri/nammayatri"></option>
+                <option value="github:srid/haskell-template"></option>
+                <option value="github:juspay/nix-browser"></option>
+                <option value="github:nixos/nixpkgs"></option>
+            </datalist>
         </label>
     }
 }
@@ -177,20 +184,13 @@ where
 #[component]
 fn NixFlake(cx: Scope) -> impl IntoView {
     let title = "Nix Flake";
-    // TODO: make a component
+    // TODO: Can we introduce struct, ServerQuery?
     let (flake_url, _) = use_signal::<GetNixFlake>(cx);
     let res = query::use_server_query::<GetNixFlake>(cx, flake_url);
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
         <QueryInput serverfn=(PhantomData::<GetNixFlake>)/>
-        // TODO: use local storage, and cache user's inputs
-        <datalist id="some-flakes">
-            <option value="github:nammayatri/nammayatri"></option>
-            <option value="github:srid/haskell-template"></option>
-            <option value="github:juspay/nix-browser"></option>
-            <option value="github:nixos/nixpkgs"></option>
-        </datalist>
         <RefetchQueryButton res=res.clone() k=()/>
         <div class="my-1 text-left">
             // <SuspenseWithErrorHandling>{res.data}</SuspenseWithErrorHandling>

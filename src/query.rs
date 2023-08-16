@@ -5,7 +5,7 @@
 use leptos::*;
 use leptos_query::*;
 use server_fn::ServerFn;
-use std::{future::Future, hash::Hash, pin::Pin};
+use std::{future::Future, hash::Hash, marker::PhantomData, pin::Pin};
 use tracing::{info_span, instrument};
 
 use crate::nix::{
@@ -87,6 +87,39 @@ pub fn use_nix_health_query(cx: Scope) -> ServerQueryResult<NixHealth, impl Refe
         |()| async move { get_nix_health().await },
         query_options(),
     )
+}
+
+/// Button to refresh the given [leptos_query] query.
+/// TODO: Use this, by implement traits for other server functions
+#[component]
+pub fn RefetchQueryButton2<S, R>(
+    cx: Scope,
+    res: ServerQueryResult<<S as ServerFn<Scope>>::Output, R>,
+    k: S,
+    #[allow(unused_variables)] serverfn: PhantomData<S>,
+) -> impl IntoView
+where
+    S: Hash + Eq + Clone + ServerFn<Scope> + std::fmt::Debug + 'static,
+    ServerQueryVal<<S as ServerFn<Scope>>::Output>: Clone + Serializable + 'static,
+    R: RefetchFn,
+{
+    view! { cx,
+        <button
+            class="p-1 text-white shadow border-1 bg-primary-700 disabled:bg-base-400 disabled:text-black"
+            disabled=move || res.is_fetching.get()
+            on:click=move |_| {
+                tracing::debug!("Invalidating query");
+                use_query_client(cx)
+                    .invalidate_query::<
+                        S,
+                        ServerQueryVal<<S as ServerFn<Scope>>::Output>,
+                    >(k.clone());
+            }
+        >
+
+            {move || if res.is_fetching.get() { "Fetching..." } else { "Re-fetch" }}
+        </button>
+    }
 }
 
 /// Button to refresh the given [leptos_query] query.
