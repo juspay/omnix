@@ -5,13 +5,15 @@ use leptos_meta::*;
 use leptos_query::*;
 use leptos_router::*;
 
-use crate::leptos_extra::query::{self, QueryInput, RefetchQueryButton};
-use crate::leptos_extra::signal::{provide_signal, use_signal};
-use crate::nix::flake::url::FlakeUrl;
-use crate::nix::flake::GetFlake;
-use crate::nix::health::traits::Check;
-use crate::nix::health::GetNixHealth;
-use crate::nix::info::GetNixInfo;
+use crate::leptos_extra::{
+    query::{self, QueryInput, RefetchQueryButton},
+    signal::{provide_signal, use_signal},
+};
+use crate::nix::{
+    flake::url::FlakeUrl,
+    health::{traits::Check, GetNixHealth},
+    info::GetNixInfo,
+};
 use crate::widget::*;
 
 /// Main frontend application container
