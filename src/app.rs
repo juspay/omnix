@@ -119,7 +119,8 @@ fn NixFlake(cx: Scope) -> impl IntoView {
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
-        <label for="flake-url">"Choose or enter a flake URL: "</label>
+        // TODO: Replace this with on-click docs
+        <label for="flake-url">"Load a Nix flake: "</label>
         <input
             list="some-flakes"
             id="flake-url"
