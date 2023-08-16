@@ -47,6 +47,7 @@ pub enum Type {
     NixosModule,
     Derivation,
     App,
+    Template,
     #[serde(other)]
     Unknown,
 }
@@ -92,7 +93,7 @@ impl IntoView for Leaf {
                 <em>{self.description}</em>
             </span>
         }
-            .into_view(cx)
+        .into_view(cx)
     }
 }
 
@@ -121,7 +122,8 @@ impl IntoView for Type {
                     Self::NixosModule => "nixosModule ❄️",
                     Self::Derivation => "derivation 📦",
                     Self::App => "app 📱",
-                    Self::Unknown => "unknown",
+                    Self::Template => "template 🏗️",
+                    Self::Unknown => "unknown ❓",
                 }}
 
             </span>
