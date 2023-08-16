@@ -9,33 +9,13 @@ use leptos::*;
 use leptos_meta::*;
 use leptos_query::*;
 use leptos_router::*;
-use tracing::instrument;
 
+use crate::leptos_extra::query;
+use crate::leptos_extra::signal::{provide_signal, use_signal};
 use crate::nix::flake::GetNixFlake;
 use crate::nix::health::traits::Check;
-use crate::query::{self, RefetchQueryButton, ServerQueryVal};
+use crate::query::{use_nix_health_query, use_nix_info_query, RefetchQueryButton, ServerQueryVal};
 use crate::widget::*;
-
-fn provide_signal<T: 'static>(cx: Scope, default: T) {
-    let (get, set) = create_signal(cx, default);
-    provide_context(cx, (get, set));
-}
-
-#[instrument(name = "use_signal")]
-fn use_signal<T>(cx: Scope) -> (ReadSignal<T>, WriteSignal<T>) {
-    use_context(cx)
-        .ok_or_else(|| {
-            // This happens if the dev forgets to call `provide_signal::<T>` in
-            // the parent scope
-            let msg = format!(
-                "no signal provided for type: {}",
-                std::any::type_name::<T>()
-            );
-            tracing::error!(msg);
-            msg
-        })
-        .unwrap()
-}
 
 /// Main frontend application container
 #[component]
@@ -107,7 +87,7 @@ fn Nav(cx: Scope) -> impl IntoView {
 #[component]
 fn Dashboard(cx: Scope) -> impl IntoView {
     tracing::debug!("Rendering Dashboard page");
-    let res = query::use_nix_health_query(cx);
+    let res = use_nix_health_query(cx);
     let report = Signal::derive(cx, move || res.data.get().map(|r| r.map(|v| v.report())));
     // A Card component
     #[component]
@@ -207,7 +187,7 @@ fn NixFlake(cx: Scope) -> impl IntoView {
 #[component]
 fn NixInfo(cx: Scope) -> impl IntoView {
     let title = "Nix Info";
-    let res = query::use_nix_info_query(cx);
+    let res = use_nix_info_query(cx);
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
@@ -222,7 +202,7 @@ fn NixInfo(cx: Scope) -> impl IntoView {
 #[component]
 fn NixHealth(cx: Scope) -> impl IntoView {
     let title = "Nix Health";
-    let res = query::use_nix_health_query(cx);
+    let res = use_nix_health_query(cx);
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>

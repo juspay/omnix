@@ -3,6 +3,7 @@
 //!
 //! [README]: https://github.com/juspay/nix-browser
 pub mod app;
+pub mod leptos_extra;
 pub mod nix;
 pub mod query;
 pub mod widget;
