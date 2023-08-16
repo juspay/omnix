@@ -4,16 +4,17 @@
 /// https://github.com/nicoburniske/leptos_query/issues/7
 use leptos::*;
 use leptos_query::*;
-use std::hash::Hash;
+use server_fn::ServerFn;
+use std::{future::Future, hash::Hash, pin::Pin};
 
 use crate::nix::{
-    flake::{get_flake, url::FlakeUrl, Flake},
     health::{get_nix_health, NixHealth},
     info::{get_nix_info, NixInfo},
 };
 
 /// Type alias for [QueryResult] specialized for Leptos [server] functions
-type ServerQueryResult<T, R> = QueryResult<Result<T, ServerFnError>, R>;
+type ServerQueryResult<T, R> = QueryResult<ServerQueryVal<T>, R>;
+pub type ServerQueryVal<T> = Result<T, ServerFnError>;
 
 fn query_options<V>() -> QueryOptions<V> {
     QueryOptions {
@@ -21,6 +22,39 @@ fn query_options<V>() -> QueryOptions<V> {
         stale_time: None,
         ..Default::default()
     }
+}
+
+/// Like [use_query] gut for server functions
+pub fn use_server_query<S>(
+    cx: Scope,
+    k: ReadSignal<S>,
+) -> ServerQueryResult<<S as ServerFn<Scope>>::Output, impl RefetchFn>
+where
+    S: Hash + Eq + Clone + ServerFn<Scope> + 'static,
+    ServerQueryVal<<S as ServerFn<Scope>>::Output>: Clone + Serializable + 'static,
+{
+    tracing::info!("use_server_query");
+    leptos_query::use_query(
+        cx,
+        k,
+        move |k| call_server_fn::<S>(cx, &k),
+        query_options::<ServerQueryVal<<S as ServerFn<Scope>>::Output>>(),
+    )
+}
+
+pub fn call_server_fn<S>(
+    cx: Scope,
+    args: &S,
+) -> Pin<Box<dyn Future<Output = Result<S::Output, ServerFnError>>>>
+where
+    S: Clone + ServerFn<Scope>,
+{
+    tracing::info!("call_server_fn");
+    #[cfg(feature = "ssr")]
+    let v = S::call_fn(args.clone(), cx);
+    #[cfg(not(feature = "ssr"))]
+    let v = S::call_fn_client(args.clone(), cx);
+    v
 }
 
 /// Query [get_nix_info]
@@ -39,19 +73,6 @@ pub fn use_nix_health_query(cx: Scope) -> ServerQueryResult<NixHealth, impl Refe
         cx,
         || (),
         |()| async move { get_nix_health().await },
-        query_options(),
-    )
-}
-
-/// Query [get_nix_flake_show]
-pub fn use_flake_query(
-    cx: Scope,
-    flake_url: ReadSignal<FlakeUrl>,
-) -> ServerQueryResult<Flake, impl RefetchFn> {
-    leptos_query::use_query(
-        cx,
-        flake_url,
-        |url| async move { get_flake(url).await },
         query_options(),
     )
 }

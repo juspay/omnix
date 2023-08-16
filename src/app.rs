@@ -1,5 +1,8 @@
 //! Frontend UI entry point
 
+use std::fmt::Display;
+use std::hash::Hash;
+use std::marker::PhantomData;
 use std::str::FromStr;
 
 use leptos::*;
@@ -7,9 +10,9 @@ use leptos_meta::*;
 use leptos_query::*;
 use leptos_router::*;
 
-use crate::nix::flake::url::FlakeUrl;
+use crate::nix::flake::GetNixFlake;
 use crate::nix::health::traits::Check;
-use crate::query::{self, RefetchQueryButton};
+use crate::query::{self, RefetchQueryButton, ServerQueryVal};
 use crate::widget::*;
 
 fn provide_signal<T: 'static>(cx: Scope, default: T) {
@@ -25,7 +28,12 @@ fn use_signal<T>(cx: Scope) -> (ReadSignal<T>, WriteSignal<T>) {
 pub fn App(cx: Scope) -> impl IntoView {
     provide_meta_context(cx);
     provide_query_client(cx);
-    provide_signal::<FlakeUrl>(cx, "github:nammayatri/nammayatri".into());
+    provide_signal::<GetNixFlake>(
+        cx,
+        GetNixFlake {
+            url: "github:nammayatri/nammayatri".into(),
+        },
+    );
 
     view! { cx,
         <Stylesheet id="leptos" href="/pkg/nix-browser.css"/>
@@ -111,18 +119,23 @@ fn Dashboard(cx: Scope) -> impl IntoView {
     }
 }
 
-/// Nix flake dashboard
+/// An input element tied to a [leptos_use::Query]
+///
+/// TODO: remove hardcoded stuff
 #[component]
-fn NixFlake(cx: Scope) -> impl IntoView {
-    let title = "Nix Flake";
-    // TODO: make a component
-    let (flake_url, set_flake_url) = use_signal::<FlakeUrl>(cx);
-    let res = query::use_flake_query(cx, flake_url);
+fn QueryInput<S>(
+    cx: Scope,
+    #[allow(unused_variables)] serverfn: std::marker::PhantomData<S>,
+) -> impl IntoView
+where
+    S: ToString + FromStr + Hash + Eq + Clone + leptos::server_fn::ServerFn<leptos::Scope>,
+    <S as std::str::FromStr>::Err: Display,
+    ServerQueryVal<<S as leptos::server_fn::ServerFn<leptos::Scope>>::Output>:
+        Clone + Serializable + 'static,
+{
+    let (query, set_query) = use_signal::<S>(cx);
     let (input_err, set_input_err) = create_signal(cx, None::<String>);
     view! { cx,
-        <Title text=title/>
-        <h1 class="text-5xl font-bold">{title}</h1>
-        // TODO: Replace this with on-click docs
         <label for="flake-url">
             "Load a Nix flake"
             <input
@@ -131,18 +144,33 @@ fn NixFlake(cx: Scope) -> impl IntoView {
                 type="text"
                 class="w-full p-1 font-mono"
                 on:change=move |ev| {
-                    match FlakeUrl::from_str(&event_target_value(&ev)) {
+                    match FromStr::from_str(&event_target_value(&ev)) {
                         Ok(url) => {
-                            set_flake_url(url);
+                            set_query(url);
                             set_input_err(None)
                         }
                         Err(e) => set_input_err(Some(e.to_string())),
                     }
                 }
 
-                prop:value=move || flake_url().to_string()
+                prop:value=move || query().to_string()
             /> <span class="text-red-500">{input_err}</span>
         </label>
+    }
+}
+
+/// Nix flake dashboard
+#[component]
+fn NixFlake(cx: Scope) -> impl IntoView {
+    let title = "Nix Flake";
+    // TODO: make a component
+    let (flake_url, _) = use_signal::<GetNixFlake>(cx);
+    let res = query::use_server_query::<GetNixFlake>(cx, flake_url);
+    tracing::info!("reee");
+    view! { cx,
+        <Title text=title/>
+        <h1 class="text-5xl font-bold">{title}</h1>
+        <QueryInput serverfn=(PhantomData::<GetNixFlake>)/>
         // TODO: use local storage, and cache user's inputs
         <datalist id="some-flakes">
             <option value="github:nammayatri/nammayatri"></option>
