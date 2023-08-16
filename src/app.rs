@@ -9,8 +9,9 @@ use crate::leptos_extra::query::{self, RefetchQueryButton, ServerQueryInput};
 use crate::leptos_extra::signal::{provide_signal, use_signal};
 use crate::nix::flake::get_flake;
 use crate::nix::flake::url::FlakeUrl;
+use crate::nix::health::get_nix_health;
 use crate::nix::health::traits::Check;
-use crate::query::{use_nix_health_query, use_nix_info_query, RefetchQueryButtonOld};
+use crate::nix::info::get_nix_info;
 use crate::widget::*;
 
 /// Main frontend application container
@@ -78,8 +79,9 @@ fn Nav(cx: Scope) -> impl IntoView {
 #[component]
 fn Dashboard(cx: Scope) -> impl IntoView {
     tracing::debug!("Rendering Dashboard page");
-    let res = use_nix_health_query(cx);
-    let report = Signal::derive(cx, move || res.data.get().map(|r| r.map(|v| v.report())));
+    let result = query::use_server_query(cx, || (), move |()| get_nix_health());
+    let data = result.data;
+    let report = Signal::derive(cx, move || data.get().map(|r| r.map(|v| v.report())));
     // A Card component
     #[component]
     fn Card(cx: Scope, href: &'static str, children: Children) -> impl IntoView {
@@ -137,13 +139,14 @@ fn NixFlake(cx: Scope) -> impl IntoView {
 #[component]
 fn NixInfo(cx: Scope) -> impl IntoView {
     let title = "Nix Info";
-    let res = use_nix_info_query(cx);
+    let result = query::use_server_query(cx, || (), move |()| get_nix_info());
+    let data = result.data;
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
-        <RefetchQueryButtonOld result=res.clone() k=()/>
+        <RefetchQueryButton result query=|| ()/>
         <div class="my-1 text-left">
-            <SuspenseWithErrorHandling>{res.data}</SuspenseWithErrorHandling>
+            <SuspenseWithErrorHandling>{data}</SuspenseWithErrorHandling>
         </div>
     }
 }
@@ -152,13 +155,14 @@ fn NixInfo(cx: Scope) -> impl IntoView {
 #[component]
 fn NixHealth(cx: Scope) -> impl IntoView {
     let title = "Nix Health";
-    let res = use_nix_health_query(cx);
+    let result = query::use_server_query(cx, || (), move |()| get_nix_health());
+    let data = result.data;
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
-        <RefetchQueryButtonOld result=res.clone() k=()/>
+        <RefetchQueryButton result query=|| ()/>
         <div class="my-1">
-            <SuspenseWithErrorHandling>{res.data}</SuspenseWithErrorHandling>
+            <SuspenseWithErrorHandling>{data}</SuspenseWithErrorHandling>
         </div>
     }
 }

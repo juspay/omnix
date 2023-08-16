@@ -97,24 +97,25 @@ where
 
 /// Button to refresh the given [leptos_query] query.
 #[component]
-pub fn RefetchQueryButton<K, V, R>(
+pub fn RefetchQueryButton<K, V, R, F>(
     cx: Scope,
     result: QueryResult<ServerFnResult<V>, R>,
-    query: ReadSignal<K>,
+    query: F,
 ) -> impl IntoView
 where
     K: Hash + Eq + Clone + std::fmt::Debug + 'static,
     ServerFnResult<V>: Clone + Serializable + 'static,
     R: RefetchFn,
+    F: Fn() -> K + 'static,
 {
     view! { cx,
         <button
             class="p-1 text-white shadow border-1 bg-primary-700 disabled:bg-base-400 disabled:text-black"
             disabled=move || result.is_fetching.get()
             on:click=move |_| {
+                let k = query();
                 tracing::debug!("Invalidating query");
-                use_query_client(cx)
-                    .invalidate_query::<K, ServerFnResult<V>>(query.get_untracked());
+                use_query_client(cx).invalidate_query::<K, ServerFnResult<V>>(k);
             }
         >
 
