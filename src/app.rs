@@ -125,12 +125,7 @@ fn NixFlake(cx: Scope) -> impl IntoView {
         <ServerQueryInput query set_query suggestions/>
         <RefetchQueryButton result query/>
         <div class="my-1 text-left">
-            // <SuspenseWithErrorHandling>{res.data}</SuspenseWithErrorHandling>
-            <Suspense fallback=move || view! { cx, <Spinner/> }>
-                <ErrorBoundary fallback=|cx, errors| {
-                    view! { cx, <Errors errors=errors.get()/> }
-                }>{data}</ErrorBoundary>
-            </Suspense>
+            <SuspenseWithErrorHandling>{data}</SuspenseWithErrorHandling>
         </div>
     }
 }
