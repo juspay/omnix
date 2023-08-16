@@ -3,8 +3,8 @@
 //!
 //! [README]: https://github.com/juspay/nix-browser
 pub mod app;
+pub mod leptos_extra;
 pub mod nix;
-pub mod query;
 pub mod widget;
 #[cfg(feature = "hydrate")]
 use wasm_bindgen::prelude::wasm_bindgen;

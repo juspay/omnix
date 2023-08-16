@@ -5,15 +5,26 @@ use leptos_meta::*;
 use leptos_query::*;
 use leptos_router::*;
 
-use crate::nix::health::traits::Check;
-use crate::query::{self, RefetchQueryButton};
+use crate::nix::{
+    flake::url::FlakeUrl,
+    health::{traits::Check, GetNixHealth},
+    info::GetNixInfo,
+};
 use crate::widget::*;
+use crate::{
+    leptos_extra::{
+        query::{self, QueryInput, RefetchQueryButton},
+        signal::{provide_signal, use_signal},
+    },
+    nix::flake::GetFlake,
+};
 
 /// Main frontend application container
 #[component]
 pub fn App(cx: Scope) -> impl IntoView {
     provide_meta_context(cx);
     provide_query_client(cx);
+    provide_signal::<FlakeUrl>(cx, "github:srid/haskell-template".into());
 
     view! { cx,
         <Stylesheet id="leptos" href="/pkg/nix-browser.css"/>
@@ -28,6 +39,7 @@ pub fn App(cx: Scope) -> impl IntoView {
                         <div class="flex flex-col space-y-3">
                             <Routes>
                                 <Route path="" view=Dashboard/>
+                                <Route path="/flake" view=NixFlake/>
                                 <Route path="/health" view=NixHealth/>
                                 <Route path="/info" view=NixInfo/>
                                 <Route path="/about" view=About/>
@@ -51,6 +63,9 @@ fn Nav(cx: Scope) -> impl IntoView {
             <A exact=true href="/" class=class>
                 "Dashboard"
             </A>
+            <A exact=true href="/flake" class=class>
+                "Flake"
+            </A>
             <A exact=true href="/health" class=class>
                 "Nix Health"
             </A>
@@ -69,8 +84,9 @@ fn Nav(cx: Scope) -> impl IntoView {
 #[component]
 fn Dashboard(cx: Scope) -> impl IntoView {
     tracing::debug!("Rendering Dashboard page");
-    let res = query::use_nix_health_query(cx);
-    let report = Signal::derive(cx, move || res.data.get().map(|r| r.map(|v| v.report())));
+    let result = query::use_server_query(cx, || (), |()| GetNixHealth {});
+    let data = result.data;
+    let report = Signal::derive(cx, move || data.get().map(|r| r.map(|v| v.report())));
     // A Card component
     #[component]
     fn Card(cx: Scope, href: &'static str, children: Children) -> impl IntoView {
@@ -95,17 +111,42 @@ fn Dashboard(cx: Scope) -> impl IntoView {
     }
 }
 
+/// Nix flake dashboard
+#[component]
+fn NixFlake(cx: Scope) -> impl IntoView {
+    let title = "Nix Flake";
+    let suggestions: Vec<FlakeUrl> = vec![
+        "github:nammayatri/nammayatri".into(),
+        "github:srid/haskell-template".into(),
+        "github:juspay/nix-browser".into(),
+        "github:nixos/nixpkgs".into(),
+    ];
+    let (query, set_query) = use_signal::<FlakeUrl>(cx);
+    let result = query::use_server_query(cx, query, |url| GetFlake { url });
+    let data = result.data;
+    view! { cx,
+        <Title text=title/>
+        <h1 class="text-5xl font-bold">{title}</h1>
+        <QueryInput id="nix-flake-input" query set_query suggestions/>
+        <RefetchQueryButton result query/>
+        <div class="my-1 text-left">
+            <SuspenseWithErrorHandling>{data}</SuspenseWithErrorHandling>
+        </div>
+    }
+}
+
 /// Nix information
 #[component]
 fn NixInfo(cx: Scope) -> impl IntoView {
     let title = "Nix Info";
-    let res = query::use_nix_info_query(cx);
+    let result = query::use_server_query(cx, || (), |()| GetNixInfo {});
+    let data = result.data;
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
-        <RefetchQueryButton res=res.clone() k=()/>
+        <RefetchQueryButton result query=|| ()/>
         <div class="my-1 text-left">
-            <SuspenseWithErrorHandling>{res.data}</SuspenseWithErrorHandling>
+            <SuspenseWithErrorHandling>{data}</SuspenseWithErrorHandling>
         </div>
     }
 }
@@ -114,13 +155,14 @@ fn NixInfo(cx: Scope) -> impl IntoView {
 #[component]
 fn NixHealth(cx: Scope) -> impl IntoView {
     let title = "Nix Health";
-    let res = query::use_nix_health_query(cx);
+    let result = query::use_server_query(cx, || (), |()| GetNixHealth {});
+    let data = result.data;
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
-        <RefetchQueryButton res=res.clone() k=()/>
+        <RefetchQueryButton result query=|| ()/>
         <div class="my-1">
-            <SuspenseWithErrorHandling>{res.data}</SuspenseWithErrorHandling>
+            <SuspenseWithErrorHandling>{data}</SuspenseWithErrorHandling>
         </div>
     }
 }

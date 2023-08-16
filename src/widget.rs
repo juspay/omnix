@@ -22,7 +22,7 @@ pub fn Spinner(cx: Scope) -> impl IntoView {
     }
 }
 
-/// <a> link
+/// A `<a>` link
 #[component]
 pub fn Link(cx: Scope, link: &'static str, text: &'static str) -> impl IntoView {
     view! { cx,
@@ -32,6 +32,7 @@ pub fn Link(cx: Scope, link: &'static str, text: &'static str) -> impl IntoView 
     }
 }
 
+/// A `<a>` link that links to an external site
 #[component]
 pub fn LinkExternal(cx: Scope, link: &'static str, text: &'static str) -> impl IntoView {
     view! { cx,
