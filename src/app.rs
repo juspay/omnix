@@ -9,6 +9,7 @@ use leptos::*;
 use leptos_meta::*;
 use leptos_query::*;
 use leptos_router::*;
+use tracing::instrument;
 
 use crate::nix::flake::GetNixFlake;
 use crate::nix::health::traits::Check;
@@ -19,8 +20,19 @@ fn provide_signal<T: 'static>(cx: Scope, default: T) {
     let (get, set) = create_signal(cx, default);
     provide_context(cx, (get, set));
 }
+
+#[instrument(name = "use_signal")]
 fn use_signal<T>(cx: Scope) -> (ReadSignal<T>, WriteSignal<T>) {
-    use_context(cx).unwrap()
+    use_context(cx)
+        .ok_or_else(|| {
+            let msg = format!(
+                "no signal provided for type: {}",
+                std::any::type_name::<T>()
+            );
+            tracing::error!(msg);
+            msg
+        })
+        .unwrap()
 }
 
 /// Main frontend application container
