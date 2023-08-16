@@ -1,7 +1,7 @@
 //! [leptos_query] helpers for working with [server] fns, and useful widgets.
 use leptos::*;
 use leptos_query::*;
-use std::{fmt::Display, future::Future, hash::Hash, marker::PhantomData, str::FromStr};
+use std::{fmt::Display, future::Future, hash::Hash, str::FromStr};
 use tracing::instrument;
 
 /// The result type of Leptos [server] function returning a `T`
@@ -20,14 +20,11 @@ pub fn query_options<V>() -> QueryOptions<V> {
 /// via [tracing] and uses [query_options] always.
 ///
 /// Arguments
-/// * `_p`: The type `S` which is used in tracing only. You must make sure that
-/// it corresponds to other arguments.
 /// * `k`: The argument to the server fn
 /// * `fetcher`: The server fn to invoke for fetch
 #[instrument(name = "use_server_query", skip(k, fetcher))]
-pub fn use_server_query<S, K, V, Fu>(
+pub fn use_server_query<K, V, Fu>(
     cx: Scope,
-    _p: PhantomData<S>,
     k: impl Fn() -> K + 'static,
     fetcher: impl Fn(K) -> Fu + 'static,
 ) -> QueryResult<ServerFnResult<V>, impl RefetchFn>
@@ -36,13 +33,13 @@ where
     ServerFnResult<V>: Clone + Serializable + 'static,
     Fu: Future<Output = ServerFnResult<V>> + 'static,
 {
-    let type_id = std::any::type_name::<S>();
-    tracing::info!(type_ = type_id, "Using");
+    // TODO: Can we somehow encode the server fn in the logs?
+    tracing::info!("use_query");
     leptos_query::use_query(
         cx,
         k,
         move |k| {
-            tracing::info!(type_ = type_id, "Fetching");
+            tracing::info!("fetching");
             fetcher(k)
         },
         query_options::<ServerFnResult<V>>(),
