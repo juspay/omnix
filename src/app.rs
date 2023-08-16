@@ -110,9 +110,7 @@ fn NixFlake(cx: Scope) -> impl IntoView {
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
-        <label for="flake-url">
-            e-url">Choose or enter a
-        </label>
+        <label for="flake-url">"Choose or enter a flake URL: "</label>
         <input
             list="some-flakes"
             id="flake-url"
