@@ -133,6 +133,7 @@ impl IntoView for Type {
 
 #[cfg(feature = "ssr")]
 #[tokio::test]
+#[ignore] // Requires network, so won't work in Nix
 async fn test_nix_flake_show() {
     // Test on a flake with IFD
     let flake_url = "github:srid/haskell-template".into();
