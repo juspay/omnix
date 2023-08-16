@@ -45,7 +45,7 @@ pub fn App(cx: Scope) -> impl IntoView {
     provide_signal::<GetNixFlake>(
         cx,
         GetNixFlake {
-            url: "github:nammayatri/nammayatri".into(),
+            url: "github:srid/haskell-template".into(),
         },
     );
 

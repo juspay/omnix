@@ -56,8 +56,8 @@ impl Display for GetNixFlake {
 impl IntoView for Flake {
     fn into_view(self, cx: Scope) -> View {
         view! { cx,
-            <div class="flex flex-col">
-                <h3 class="font-bold">{self.url}</h3>
+            <div class="flex flex-col my-4">
+                <h3 class="text-lg font-bold">{self.url}</h3>
                 <div>{self.output}</div>
             </div>
         }
