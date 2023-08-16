@@ -4,13 +4,10 @@
 /// https://github.com/nicoburniske/leptos_query/issues/7
 use leptos::*;
 use leptos_query::*;
-use server_fn::ServerFn;
-use std::{fmt::Display, future::Future, hash::Hash, pin::Pin, str::FromStr};
-use tracing::{info_span, instrument};
+use std::{fmt::Display, future::Future, hash::Hash, str::FromStr};
+use tracing::instrument;
 
-/// Type alias for [QueryResult] specialized for Leptos [server] functions
-type ServerQueryResult<T, R> = QueryResult<ServerQueryVal<T>, R>;
-pub type ServerQueryVal<T> = Result<T, ServerFnError>;
+pub type ServerFnResult<T> = Result<T, ServerFnError>;
 
 fn query_options<V>() -> QueryOptions<V> {
     QueryOptions {
@@ -20,67 +17,50 @@ fn query_options<V>() -> QueryOptions<V> {
     }
 }
 
-/// Like [use_query] gut for server functions
-#[instrument(name = "use_server_query", skip(k))]
-pub fn use_server_query<S>(
+/// Like [use_query] but for server functions
+#[instrument(name = "use_server_query", skip(k, fetcher))]
+pub fn use_server_query<K, V, Fu>(
     cx: Scope,
-    k: impl Fn() -> S + 'static,
-) -> ServerQueryResult<<S as ServerFn<Scope>>::Output, impl RefetchFn>
+    // Argument to the server fn
+    k: impl Fn() -> K + 'static,
+    // The server fn to invoke for fetch
+    fetcher: impl Fn(K) -> Fu + 'static,
+) -> QueryResult<ServerFnResult<V>, impl RefetchFn>
 where
-    S: Hash + Eq + Clone + ServerFn<Scope> + std::fmt::Debug + 'static,
-    ServerQueryVal<<S as ServerFn<Scope>>::Output>: Clone + Serializable + 'static,
+    K: Hash + Eq + Clone + std::fmt::Debug + 'static,
+    ServerFnResult<V>: Clone + Serializable + 'static,
+    Fu: Future<Output = ServerFnResult<V>> + 'static,
 {
-    tracing::info!(type_ = std::any::type_name::<S>());
+    let type_id = std::any::type_name::<(K, V)>();
+    tracing::info!(type_ = type_id, "Using");
     leptos_query::use_query(
         cx,
         k,
-        move |k| call_server_fn::<S>(cx, &k),
-        query_options::<ServerQueryVal<<S as ServerFn<Scope>>::Output>>(),
+        move |k| {
+            tracing::info!(type_ = type_id, "Fetching");
+            fetcher(k)
+        },
+        query_options::<ServerFnResult<V>>(),
     )
-}
-
-#[instrument(name = "call_server_fn")]
-pub fn call_server_fn<S>(
-    cx: Scope,
-    args: &S,
-) -> Pin<Box<dyn Future<Output = Result<S::Output, ServerFnError>>>>
-where
-    S: Clone + std::fmt::Debug + ServerFn<Scope>,
-{
-    #[cfg(feature = "ssr")]
-    let v = {
-        let span = info_span!("ssr");
-        let _enter = span.enter();
-        tracing::info!(type_ = std::any::type_name::<S>());
-        S::call_fn(args.clone(), cx)
-    };
-    #[cfg(not(feature = "ssr"))]
-    let v = {
-        let span = info_span!("hydrate");
-        let _enter = span.enter();
-        tracing::info!(type_ = std::any::type_name::<S>());
-        S::call_fn_client(args.clone(), cx)
-    };
-    v
 }
 
 /// An input element tied to a [leptos_use::Query]
 #[component]
-pub fn ServerQueryInput<S>(
+pub fn ServerQueryInput<K, V>(
     cx: Scope,
     /// Initial suggestions to show in the datalist
-    suggestions: Vec<S>,
-    query: ReadSignal<S>,
-    set_query: WriteSignal<S>,
+    suggestions: Vec<V>,
+    query: ReadSignal<K>,
+    set_query: WriteSignal<K>,
 ) -> impl IntoView
 where
-    S: ToString + FromStr + Hash + Eq + Clone + leptos::server_fn::ServerFn<leptos::Scope>,
-    <S as std::str::FromStr>::Err: Display,
-    ServerQueryVal<<S as leptos::server_fn::ServerFn<leptos::Scope>>::Output>:
-        Clone + Serializable + 'static,
+    K: ToString + FromStr + Hash + Eq + Clone + 'static,
+    <K as std::str::FromStr>::Err: Display,
+    ServerFnResult<V>: Clone + Serializable + 'static,
+    V: Display,
 {
-    let id = &format!("{}-input", std::any::type_name::<S>());
-    let datalist_id = &format!("{}-datalist", std::any::type_name::<S>());
+    let id = &format!("{}-input", std::any::type_name::<(K, V)>());
+    let datalist_id = &format!("{}-datalist", std::any::type_name::<(K, V)>());
     // Input query to the server fn
     // Errors in input element (based on [FromStr::from_str])
     let (input_err, set_input_err) = create_signal(cx, None::<String>);
@@ -116,16 +96,15 @@ where
 }
 
 /// Button to refresh the given [leptos_query] query.
-/// TODO: Use this, by implement traits for other server functions
 #[component]
-pub fn RefetchQueryButton<S, R>(
+pub fn RefetchQueryButton<K, V, R>(
     cx: Scope,
-    result: ServerQueryResult<<S as ServerFn<Scope>>::Output, R>,
-    query: ReadSignal<S>,
+    result: QueryResult<ServerFnResult<V>, R>,
+    query: ReadSignal<K>,
 ) -> impl IntoView
 where
-    S: Hash + Eq + Clone + ServerFn<Scope> + std::fmt::Debug + 'static,
-    ServerQueryVal<<S as ServerFn<Scope>>::Output>: Clone + Serializable + 'static,
+    K: Hash + Eq + Clone + std::fmt::Debug + 'static,
+    ServerFnResult<V>: Clone + Serializable + 'static,
     R: RefetchFn,
 {
     view! { cx,
@@ -135,10 +114,7 @@ where
             on:click=move |_| {
                 tracing::debug!("Invalidating query");
                 use_query_client(cx)
-                    .invalidate_query::<
-                        S,
-                        ServerQueryVal<<S as ServerFn<Scope>>::Output>,
-                    >(query.get_untracked());
+                    .invalidate_query::<K, ServerFnResult<V>>(query.get_untracked());
             }
         >
 

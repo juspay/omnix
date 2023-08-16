@@ -1,10 +1,6 @@
 pub mod show;
 pub mod url;
 
-use std::fmt::Formatter;
-use std::str::FromStr;
-use std::{fmt::Display, hash::Hash};
-
 use leptos::*;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
@@ -27,35 +23,6 @@ pub async fn get_flake(url: FlakeUrl) -> Result<Flake, ServerFnError> {
     // let url = "github:nammayatri/nammayatri".to_string();
     let out = self::show::run_nix_flake_show(&url).await?;
     Ok(Flake { url, output: out })
-}
-impl From<&str> for GetNixFlake {
-    fn from(s: &str) -> Self {
-        GetNixFlake { url: s.into() }
-    }
-}
-// TODO: automate these instances
-impl FromStr for GetNixFlake {
-    type Err = ServerFnError;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let v = FlakeUrl::from_str(s).map_err(|e| ServerFnError::ServerError(e.to_string()))?;
-        Ok(GetNixFlake { url: v })
-    }
-}
-impl Hash for GetNixFlake {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.url.hash(state)
-    }
-}
-impl PartialEq for GetNixFlake {
-    fn eq(&self, other: &Self) -> bool {
-        self.url == other.url
-    }
-}
-impl Eq for GetNixFlake {}
-impl Display for GetNixFlake {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.url)
-    }
 }
 
 impl IntoView for Flake {

@@ -12,8 +12,8 @@ use crate::nix::{
 };
 
 /// Type alias for [QueryResult] specialized for Leptos [server] functions
-type ServerQueryResult<T, R> = QueryResult<ServerQueryVal<T>, R>;
-pub type ServerQueryVal<T> = Result<T, ServerFnError>;
+type ServerQueryResult<T, R> = QueryResult<ServerFnResult<T>, R>;
+pub type ServerFnResult<T> = Result<T, ServerFnError>;
 
 fn query_options<V>() -> QueryOptions<V> {
     QueryOptions {
