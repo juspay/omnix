@@ -28,6 +28,7 @@ pub fn App(cx: Scope) -> impl IntoView {
                         <div class="flex flex-col space-y-3">
                             <Routes>
                                 <Route path="" view=Dashboard/>
+                                <Route path="/flake" view=NixFlake/>
                                 <Route path="/health" view=NixHealth/>
                                 <Route path="/info" view=NixInfo/>
                                 <Route path="/about" view=About/>
@@ -50,6 +51,9 @@ fn Nav(cx: Scope) -> impl IntoView {
         <nav class="flex flex-row w-full mb-8 text-white md:rounded-b bg-primary-800">
             <A exact=true href="/" class=class>
                 "Dashboard"
+            </A>
+            <A exact=true href="/flake" class=class>
+                "Flake"
             </A>
             <A exact=true href="/health" class=class>
                 "Nix Health"
@@ -91,6 +95,26 @@ fn Dashboard(cx: Scope) -> impl IntoView {
                 <Card href="/health">"Nix Health Check " {report}</Card>
             </SuspenseWithErrorHandling>
             <Card href="/info">"Nix Info ℹ️"</Card>
+        </div>
+    }
+}
+
+/// Nix flake dashboard
+#[component]
+fn NixFlake(cx: Scope) -> impl IntoView {
+    let title = "Nix Flake";
+    let res = query::use_nix_flake_show_query(cx);
+    view! { cx,
+        <Title text=title/>
+        <h1 class="text-5xl font-bold">{title}</h1>
+        <RefetchQueryButton res=res.clone() k=()/>
+        <div class="my-1 text-left">
+            // <SuspenseWithErrorHandling>{res.data}</SuspenseWithErrorHandling>
+            <Suspense fallback=move || view! { cx, <Spinner/> }>
+                <ErrorBoundary fallback=|cx, errors| {
+                    view! { cx, <Errors errors=errors.get()/> }
+                }>{res.data}</ErrorBoundary>
+            </Suspense>
         </div>
     }
 }
