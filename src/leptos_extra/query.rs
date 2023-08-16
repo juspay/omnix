@@ -8,8 +8,6 @@ use server_fn::ServerFn;
 use std::{fmt::Display, future::Future, hash::Hash, marker::PhantomData, pin::Pin, str::FromStr};
 use tracing::{info_span, instrument};
 
-use crate::leptos_extra::signal::use_signal;
-
 /// Type alias for [QueryResult] specialized for Leptos [server] functions
 type ServerQueryResult<T, R> = QueryResult<ServerQueryVal<T>, R>;
 pub type ServerQueryVal<T> = Result<T, ServerFnError>;
@@ -72,7 +70,8 @@ pub fn ServerQueryInput<S>(
     cx: Scope,
     /// Initial suggestions to show in the datalist
     suggestions: Vec<S>,
-    #[allow(unused_variables)] serverfn: std::marker::PhantomData<S>,
+    query: ReadSignal<S>,
+    set_query: WriteSignal<S>,
 ) -> impl IntoView
 where
     S: ToString + FromStr + Hash + Eq + Clone + leptos::server_fn::ServerFn<leptos::Scope>,
@@ -81,16 +80,14 @@ where
         Clone + Serializable + 'static,
 {
     let id = &format!("{}-input", std::any::type_name::<S>());
-    let datalistId = &format!("{}-datalist", std::any::type_name::<S>());
+    let datalist_id = &format!("{}-datalist", std::any::type_name::<S>());
     // Input query to the server fn
-    // TODO: If we are using use_signal, we might as well abstract this out at higher level
-    let (query, set_query) = use_signal::<S>(cx);
     // Errors in input element (based on [FromStr::from_str])
     let (input_err, set_input_err) = create_signal(cx, None::<String>);
     view! { cx,
         <label for=id>"Load a Nix flake"</label>
         <input
-            list=datalistId
+            list=datalist_id
             id=id
             type="text"
             class="w-full p-1 font-mono"
@@ -108,7 +105,7 @@ where
         />
         <span class="text-red-500">{input_err}</span>
         // TODO: use local storage, and cache user's inputs
-        <datalist id=datalistId>
+        <datalist id=datalist_id>
             {suggestions
                 .iter()
                 .map(|s| view! { cx, <option value=s.to_string()></option> })

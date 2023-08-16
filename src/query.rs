@@ -47,7 +47,7 @@ pub fn use_nix_health_query(cx: Scope) -> ServerQueryResult<NixHealth, impl Refe
 ///
 /// TODO: Change this to work at server fn level
 #[component]
-pub fn RefetchQueryButton<K, V, R>(cx: Scope, res: QueryResult<V, R>, k: K) -> impl IntoView
+pub fn RefetchQueryButton<K, V, R>(cx: Scope, result: QueryResult<V, R>, k: K) -> impl IntoView
 where
     K: Hash + Eq + Clone + 'static,
     V: Clone + Serializable + 'static,
@@ -56,14 +56,14 @@ where
     view! { cx,
         <button
             class="p-1 text-white shadow border-1 bg-primary-700 disabled:bg-base-400 disabled:text-black"
-            disabled=move || res.is_fetching.get()
+            disabled=move || result.is_fetching.get()
             on:click=move |_| {
                 tracing::debug!("Invalidating query");
                 use_query_client(cx).invalidate_query::<K, V>(k.clone());
             }
         >
 
-            {move || if res.is_fetching.get() { "Fetching..." } else { "Re-fetch" }}
+            {move || if result.is_fetching.get() { "Fetching..." } else { "Re-fetch" }}
         </button>
     }
 }

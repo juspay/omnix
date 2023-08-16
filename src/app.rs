@@ -1,10 +1,5 @@
 //! Frontend UI entry point
 
-use std::fmt::Display;
-use std::hash::Hash;
-use std::marker::PhantomData;
-use std::str::FromStr;
-
 use leptos::*;
 use leptos_meta::*;
 use leptos_query::*;
@@ -14,7 +9,7 @@ use crate::leptos_extra::query::{self, ServerQueryInput};
 use crate::leptos_extra::signal::{provide_signal, use_signal};
 use crate::nix::flake::GetNixFlake;
 use crate::nix::health::traits::Check;
-use crate::query::{use_nix_health_query, use_nix_info_query, RefetchQueryButton, ServerQueryVal};
+use crate::query::{use_nix_health_query, use_nix_info_query, RefetchQueryButton};
 use crate::widget::*;
 
 /// Main frontend application container
@@ -123,19 +118,20 @@ fn NixFlake(cx: Scope) -> impl IntoView {
         "github:juspay/nix-browser".into(),
         "github:nixos/nixpkgs".into(),
     ];
-    let (flake_url, _) = use_signal::<GetNixFlake>(cx);
-    let res = query::use_server_query::<GetNixFlake>(cx, flake_url);
+    let (query, set_query) = use_signal::<GetNixFlake>(cx);
+    let result = query::use_server_query::<GetNixFlake>(cx, query);
+    let data = result.data;
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
-        <ServerQueryInput serverfn=(PhantomData::<GetNixFlake>) suggestions=suggestions/>
-        <RefetchQueryButton res=res.clone() k=()/>
+        <ServerQueryInput query set_query suggestions/>
+        <RefetchQueryButton result k=()/>
         <div class="my-1 text-left">
             // <SuspenseWithErrorHandling>{res.data}</SuspenseWithErrorHandling>
             <Suspense fallback=move || view! { cx, <Spinner/> }>
                 <ErrorBoundary fallback=|cx, errors| {
                     view! { cx, <Errors errors=errors.get()/> }
-                }>{res.data}</ErrorBoundary>
+                }>{data}</ErrorBoundary>
             </Suspense>
         </div>
     }
@@ -149,7 +145,7 @@ fn NixInfo(cx: Scope) -> impl IntoView {
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
-        <RefetchQueryButton res=res.clone() k=()/>
+        <RefetchQueryButton result=res.clone() k=()/>
         <div class="my-1 text-left">
             <SuspenseWithErrorHandling>{res.data}</SuspenseWithErrorHandling>
         </div>
@@ -164,7 +160,7 @@ fn NixHealth(cx: Scope) -> impl IntoView {
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
-        <RefetchQueryButton res=res.clone() k=()/>
+        <RefetchQueryButton result=res.clone() k=()/>
         <div class="my-1">
             <SuspenseWithErrorHandling>{res.data}</SuspenseWithErrorHandling>
         </div>
