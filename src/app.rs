@@ -180,7 +180,6 @@ fn NixFlake(cx: Scope) -> impl IntoView {
     // TODO: make a component
     let (flake_url, _) = use_signal::<GetNixFlake>(cx);
     let res = query::use_server_query::<GetNixFlake>(cx, flake_url);
-    tracing::info!("reee");
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>

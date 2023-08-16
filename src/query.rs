@@ -6,6 +6,7 @@ use leptos::*;
 use leptos_query::*;
 use server_fn::ServerFn;
 use std::{future::Future, hash::Hash, pin::Pin};
+use tracing::{info_span, instrument};
 
 use crate::nix::{
     health::{get_nix_health, NixHealth},
@@ -25,15 +26,16 @@ fn query_options<V>() -> QueryOptions<V> {
 }
 
 /// Like [use_query] gut for server functions
+#[instrument(name = "use_server_query", skip(k))]
 pub fn use_server_query<S>(
     cx: Scope,
     k: impl Fn() -> S + 'static,
 ) -> ServerQueryResult<<S as ServerFn<Scope>>::Output, impl RefetchFn>
 where
-    S: Hash + Eq + Clone + ServerFn<Scope> + 'static,
+    S: Hash + Eq + Clone + ServerFn<Scope> + std::fmt::Debug + 'static,
     ServerQueryVal<<S as ServerFn<Scope>>::Output>: Clone + Serializable + 'static,
 {
-    tracing::info!("use_server_query");
+    tracing::info!(type_ = std::any::type_name::<S>());
     leptos_query::use_query(
         cx,
         k,
@@ -42,18 +44,28 @@ where
     )
 }
 
+#[instrument(name = "call_server_fn")]
 pub fn call_server_fn<S>(
     cx: Scope,
     args: &S,
 ) -> Pin<Box<dyn Future<Output = Result<S::Output, ServerFnError>>>>
 where
-    S: Clone + ServerFn<Scope>,
+    S: Clone + std::fmt::Debug + ServerFn<Scope>,
 {
-    tracing::info!("call_server_fn");
     #[cfg(feature = "ssr")]
-    let v = S::call_fn(args.clone(), cx);
+    let v = {
+        let span = info_span!("ssr");
+        let _enter = span.enter();
+        tracing::info!(type_ = std::any::type_name::<S>());
+        S::call_fn(args.clone(), cx)
+    };
     #[cfg(not(feature = "ssr"))]
-    let v = S::call_fn_client(args.clone(), cx);
+    let v = {
+        let span = info_span!("hydrate");
+        let _enter = span.enter();
+        tracing::info!(type_ = std::any::type_name::<S>());
+        S::call_fn_client(args.clone(), cx)
+    };
     v
 }
 
