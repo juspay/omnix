@@ -17,7 +17,7 @@ pub struct Flake {
 }
 
 #[instrument(name = "flake")]
-#[server(GetNixFlake, "/api")]
+#[server(GetFlake, "/api")]
 pub async fn get_flake(url: FlakeUrl) -> Result<Flake, ServerFnError> {
     // TODO Let the user enter this from UI (input box)
     // let url = "github:nammayatri/nammayatri".to_string();

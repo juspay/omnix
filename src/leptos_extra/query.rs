@@ -1,14 +1,14 @@
 //! [leptos_query] helpers for working with [server] fns, and useful widgets.
 use leptos::*;
 use leptos_query::*;
-use std::{fmt::Display, future::Future, hash::Hash, str::FromStr};
+use std::{fmt::Display, future::Future, hash::Hash, marker::PhantomData, str::FromStr};
 use tracing::instrument;
 
 /// The result type of Leptos [server] function returning a `T`
 pub type ServerFnResult<T> = Result<T, ServerFnError>;
 
-/// Sensible defaults for an app
-fn query_options<V>() -> QueryOptions<V> {
+/// Sensible [QueryOptions] defaults for an app
+pub fn query_options<V>() -> QueryOptions<V> {
     QueryOptions {
         // Disable staleness so the query is not refetched on every route switch.
         stale_time: None,
@@ -16,13 +16,19 @@ fn query_options<V>() -> QueryOptions<V> {
     }
 }
 
-/// Like [use_query] but for server functions
+/// Like [use_query] but specifically meant for server functions, does logging
+/// via [tracing] and uses [query_options] always.
+///
+/// Arguments
+/// * `_p`: The type `S` which is used in tracing only. You must make sure that
+/// it corresponds to other arguments.
+/// * `k`: The argument to the server fn
+/// * `fetcher`: The server fn to invoke for fetch
 #[instrument(name = "use_server_query", skip(k, fetcher))]
-pub fn use_server_query<K, V, Fu>(
+pub fn use_server_query<S, K, V, Fu>(
     cx: Scope,
-    // Argument to the server fn
+    _p: PhantomData<S>,
     k: impl Fn() -> K + 'static,
-    // The server fn to invoke for fetch
     fetcher: impl Fn(K) -> Fu + 'static,
 ) -> QueryResult<ServerFnResult<V>, impl RefetchFn>
 where
@@ -30,7 +36,7 @@ where
     ServerFnResult<V>: Clone + Serializable + 'static,
     Fu: Future<Output = ServerFnResult<V>> + 'static,
 {
-    let type_id = std::any::type_name::<(K, V)>();
+    let type_id = std::any::type_name::<S>();
     tracing::info!(type_ = type_id, "Using");
     leptos_query::use_query(
         cx,
@@ -44,22 +50,24 @@ where
 }
 
 /// Input element component to pass arguments to a [leptos_query] query
+///
+/// A label, input element, and datalist are rendered, as well as error div.
+/// [FromStr::from_str] is used to parse the input value into `K`.
 #[component]
-pub fn QueryInput<K, V>(
+pub fn QueryInput<K>(
     cx: Scope,
     /// Initial suggestions to show in the datalist
-    suggestions: Vec<V>,
+    suggestions: Vec<K>,
     query: ReadSignal<K>,
     set_query: WriteSignal<K>,
 ) -> impl IntoView
 where
-    K: ToString + FromStr + Hash + Eq + Clone + 'static,
+    K: ToString + FromStr + Hash + Eq + Clone + Display + 'static,
     <K as std::str::FromStr>::Err: Display,
-    ServerFnResult<V>: Clone + Serializable + 'static,
-    V: Display,
 {
-    let id = &format!("{}-input", std::any::type_name::<(K, V)>());
-    let datalist_id = &format!("{}-datalist", std::any::type_name::<(K, V)>());
+    // FIXME: bad id
+    let id = &format!("{}-input", std::any::type_name::<K>());
+    let datalist_id = &format!("{}-datalist", std::any::type_name::<K>());
     // Input query to the server fn
     // Errors in input element (based on [FromStr::from_str])
     let (input_err, set_input_err) = create_signal(cx, None::<String>);
@@ -95,6 +103,10 @@ where
 }
 
 /// Button component to refresh the given [leptos_query] query.
+///
+/// Arguments
+/// * `result`: The query result to refresh
+/// * `query`: The value to pass to [invalidate_query]
 #[component]
 pub fn RefetchQueryButton<K, V, R, F>(
     cx: Scope,
