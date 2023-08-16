@@ -52,7 +52,7 @@ pub enum Type {
 }
 
 #[cfg(feature = "ssr")]
-pub async fn run_nix_flake_show() -> Result<FlakeOutput, ServerFnError> {
+pub async fn run_nix_flake_show(flake_url: String) -> Result<FlakeOutput, ServerFnError> {
     use tokio::process::Command;
     let mut cmd = Command::new("nix");
     cmd.args(vec![
@@ -62,9 +62,7 @@ pub async fn run_nix_flake_show() -> Result<FlakeOutput, ServerFnError> {
         "show",
         "--allow-import-from-derivation",
         "--json",
-        // TODO: Take arg from user?
-        "github:nammayatri/nammayatri",
-        // "github:srid/haskell-template",
+        &flake_url,
     ]);
     let stdout: Vec<u8> = crate::command::run_command(&mut cmd).await?;
     let v = serde_json::from_slice::<FlakeOutput>(&stdout)?;
