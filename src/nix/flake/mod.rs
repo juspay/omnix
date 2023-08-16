@@ -28,6 +28,11 @@ pub async fn get_flake(url: FlakeUrl) -> Result<Flake, ServerFnError> {
     let out = self::show::run_nix_flake_show(&url).await?;
     Ok(Flake { url, output: out })
 }
+impl From<&str> for GetNixFlake {
+    fn from(s: &str) -> Self {
+        GetNixFlake { url: s.into() }
+    }
+}
 // TODO: automate these instances
 impl FromStr for GetNixFlake {
     type Err = ServerFnError;

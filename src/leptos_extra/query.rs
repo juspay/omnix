@@ -5,8 +5,10 @@
 use leptos::*;
 use leptos_query::*;
 use server_fn::ServerFn;
-use std::{future::Future, hash::Hash, marker::PhantomData, pin::Pin};
+use std::{fmt::Display, future::Future, hash::Hash, marker::PhantomData, pin::Pin, str::FromStr};
 use tracing::{info_span, instrument};
+
+use crate::leptos_extra::signal::use_signal;
 
 /// Type alias for [QueryResult] specialized for Leptos [server] functions
 type ServerQueryResult<T, R> = QueryResult<ServerQueryVal<T>, R>;
@@ -63,6 +65,59 @@ where
     };
     v
 }
+
+/// An input element tied to a [leptos_use::Query]
+#[component]
+pub fn ServerQueryInput<S>(
+    cx: Scope,
+    /// Initial suggestions to show in the datalist
+    suggestions: Vec<S>,
+    #[allow(unused_variables)] serverfn: std::marker::PhantomData<S>,
+) -> impl IntoView
+where
+    S: ToString + FromStr + Hash + Eq + Clone + leptos::server_fn::ServerFn<leptos::Scope>,
+    <S as std::str::FromStr>::Err: Display,
+    ServerQueryVal<<S as leptos::server_fn::ServerFn<leptos::Scope>>::Output>:
+        Clone + Serializable + 'static,
+{
+    let id = &format!("{}-input", std::any::type_name::<S>());
+    let datalistId = &format!("{}-datalist", std::any::type_name::<S>());
+    // Input query to the server fn
+    // TODO: If we are using use_signal, we might as well abstract this out at higher level
+    let (query, set_query) = use_signal::<S>(cx);
+    // Errors in input element (based on [FromStr::from_str])
+    let (input_err, set_input_err) = create_signal(cx, None::<String>);
+    view! { cx,
+        <label for=id>"Load a Nix flake"</label>
+        <input
+            list=datalistId
+            id=id
+            type="text"
+            class="w-full p-1 font-mono"
+            on:change=move |ev| {
+                match FromStr::from_str(&event_target_value(&ev)) {
+                    Ok(url) => {
+                        set_query(url);
+                        set_input_err(None)
+                    }
+                    Err(e) => set_input_err(Some(e.to_string())),
+                }
+            }
+
+            prop:value=move || query().to_string()
+        />
+        <span class="text-red-500">{input_err}</span>
+        // TODO: use local storage, and cache user's inputs
+        <datalist id=datalistId>
+            {suggestions
+                .iter()
+                .map(|s| view! { cx, <option value=s.to_string()></option> })
+                .collect_view(cx)}
+
+        </datalist>
+    }
+}
+
 /// Button to refresh the given [leptos_query] query.
 /// TODO: Use this, by implement traits for other server functions
 #[component]
