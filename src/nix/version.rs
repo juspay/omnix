@@ -1,5 +1,6 @@
 //! Rust module for `nix --version`
 use leptos::*;
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 #[cfg(feature = "ssr")]
@@ -14,29 +15,27 @@ pub struct NixVersion {
 }
 
 /// Parse the string output of `nix --version` into a [NixVersion]
-pub fn parse_nix_version(version_str: &str) -> Option<NixVersion> {
-    let components: Vec<&str> = version_str.split_whitespace().collect();
+#[cfg(feature = "ssr")]
+fn parse_nix_version(version_string: String) -> Result<NixVersion, ServerFnError> {
+    let re = Regex::new(r"nix \(Nix\) (\d+)\.(\d+)\.(\d+)")?;
 
-    if components.len() >= 2 {
-        let version = components[components.len() - 1];
-        let version_parts: Vec<&str> = version.split('.').collect();
-
-        if version_parts.len() == 3 {
-            let major = version_parts[0].parse().ok()?;
-            let minor = version_parts[1].parse().ok()?;
-            let patch = version_parts[2].parse().ok()?;
-
-            Some(NixVersion {
-                major,
-                minor,
-                patch,
-            })
-        } else {
-            None
+    let captures = match re.captures(&version_string) {
+        Some(captures) => captures,
+        None => {
+            return Err(ServerFnError::ServerError(
+                "Could not parse nix version".to_string(),
+            ))
         }
-    } else {
-        None
-    }
+    };
+    let major = captures[1].parse::<u32>()?;
+    let minor = captures[2].parse::<u32>()?;
+    let patch = captures[3].parse::<u32>()?;
+
+    Ok(NixVersion {
+        major,
+        minor,
+        patch,
+    })
 }
 
 /// Get the output of `nix --version`
@@ -47,19 +46,14 @@ pub async fn run_nix_version() -> Result<NixVersion, ServerFnError> {
     let mut cmd = Command::new("nix");
     cmd.arg("--version");
     let stdout: Vec<u8> = crate::command::run_command(&mut cmd).await?;
-    let v = parse_nix_version(std::str::from_utf8(&stdout).unwrap()).unwrap();
+    let v = parse_nix_version(String::from_utf8_lossy(&stdout).to_string())?;
     Ok(v)
 }
 
 /// The HTML view for [NixVersion]
 impl IntoView for NixVersion {
     fn into_view(self, cx: Scope) -> View {
-        view! { cx,
-            <div class="p-1 my-1 rounded bg-primary-50">
-                <pre>{self.major} . {self.minor} . {self.patch}</pre>
-            </div>
-        }
-        .into_view(cx)
+        view! { cx, <pre>{format!("{}", self)}</pre> }.into_view(cx)
     }
 }
 
@@ -75,4 +69,25 @@ impl fmt::Display for NixVersion {
 async fn test_run_nix_version() {
     let nix_version = run_nix_version().await.unwrap();
     println!("Nix version: {}", nix_version);
+}
+
+#[cfg(feature = "ssr")]
+#[tokio::test]
+async fn test_parse_nix_version() {
+    let parsed_nix_version = parse_nix_version("nix (Nix) 2.13.0".to_string()).unwrap();
+    let parse_error = parse_nix_version("nix 2.4.0".to_string());
+    assert_eq!(
+        parsed_nix_version,
+        NixVersion {
+            major: 2,
+            minor: 13,
+            patch: 0
+        }
+    );
+    assert_eq!(
+        parse_error,
+        Err(ServerFnError::ServerError(
+            "Could not parse nix version".to_string()
+        ))
+    );
 }
