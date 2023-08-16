@@ -6,6 +6,10 @@ use std::{
 use leptos::*;
 use serde::{Deserialize, Serialize};
 
+/// A flake URL
+///
+/// Use `FromStr` to parse a string into a `FlakeUrl`. Or `From` or `Into` if
+/// you know the URL is valid.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct FlakeUrl(String);
 

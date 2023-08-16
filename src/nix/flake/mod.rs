@@ -17,6 +17,7 @@ pub struct Flake {
     // TODO: Add higher-level info
 }
 
+/// Get [Flake] info for the given flake url
 #[instrument(name = "flake")]
 #[server(GetFlake, "/api")]
 pub async fn get_flake(url: FlakeUrl) -> Result<Flake, ServerFnError> {
