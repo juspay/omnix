@@ -7,7 +7,7 @@ use leptos_query::*;
 use std::hash::Hash;
 
 use crate::nix::{
-    flake::{get_flake, Flake},
+    flake::{get_flake, url::FlakeUrl, Flake},
     health::{get_nix_health, NixHealth},
     info::{get_nix_info, NixInfo},
 };
@@ -46,7 +46,7 @@ pub fn use_nix_health_query(cx: Scope) -> ServerQueryResult<NixHealth, impl Refe
 /// Query [get_nix_flake_show]
 pub fn use_flake_query(
     cx: Scope,
-    flake_url: ReadSignal<String>,
+    flake_url: ReadSignal<FlakeUrl>,
 ) -> ServerQueryResult<Flake, impl RefetchFn> {
     leptos_query::use_query(
         cx,

@@ -5,15 +5,25 @@ use leptos_meta::*;
 use leptos_query::*;
 use leptos_router::*;
 
+use crate::nix::flake::url::FlakeUrl;
 use crate::nix::health::traits::Check;
 use crate::query::{self, RefetchQueryButton};
 use crate::widget::*;
+
+fn provide_signal<T: 'static>(cx: Scope, default: T) {
+    let (get, set) = create_signal(cx, default);
+    provide_context(cx, (get, set));
+}
+fn use_signal<T>(cx: Scope) -> (ReadSignal<T>, WriteSignal<T>) {
+    use_context(cx).unwrap()
+}
 
 /// Main frontend application container
 #[component]
 pub fn App(cx: Scope) -> impl IntoView {
     provide_meta_context(cx);
     provide_query_client(cx);
+    provide_signal(cx, FlakeUrl::new("github:nammayatri/nammayatri"));
 
     view! { cx,
         <Stylesheet id="leptos" href="/pkg/nix-browser.css"/>
@@ -103,9 +113,8 @@ fn Dashboard(cx: Scope) -> impl IntoView {
 #[component]
 fn NixFlake(cx: Scope) -> impl IntoView {
     let title = "Nix Flake";
-    let default_url = "github:nammayatri/nammayatri";
     // TODO: make a component
-    let (flake_url, set_flake_url) = create_signal(cx, default_url.to_string());
+    let (flake_url, set_flake_url) = use_signal::<FlakeUrl>(cx);
     let res = query::use_flake_query(cx, flake_url);
     view! { cx,
         <Title text=title/>
@@ -115,13 +124,12 @@ fn NixFlake(cx: Scope) -> impl IntoView {
             list="some-flakes"
             id="flake-url"
             type="text"
-            placeholder=default_url
             class="w-full p-1 font-mono"
             on:change=move |ev| {
-                set_flake_url(event_target_value(&ev));
+                set_flake_url(FlakeUrl::new(event_target_value(&ev)));
             }
 
-            prop:value=flake_url
+            prop:value=move || flake_url().to_string()
         />
         // TODO: use local storage, and cache user's inputs
         <datalist id="some-flakes">
