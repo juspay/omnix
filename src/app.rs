@@ -1,5 +1,7 @@
 //! Frontend UI entry point
 
+use std::str::FromStr;
+
 use leptos::*;
 use leptos_meta::*;
 use leptos_query::*;
@@ -116,22 +118,31 @@ fn NixFlake(cx: Scope) -> impl IntoView {
     // TODO: make a component
     let (flake_url, set_flake_url) = use_signal::<FlakeUrl>(cx);
     let res = query::use_flake_query(cx, flake_url);
+    let (input_err, set_input_err) = create_signal(cx, None::<String>);
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
         // TODO: Replace this with on-click docs
-        <label for="flake-url">"Load a Nix flake: "</label>
-        <input
-            list="some-flakes"
-            id="flake-url"
-            type="text"
-            class="w-full p-1 font-mono"
-            on:change=move |ev| {
-                set_flake_url(event_target_value(&ev).into());
-            }
+        <label for="flake-url">
+            "Load a Nix flake"
+            <input
+                list="some-flakes"
+                id="flake-url"
+                type="text"
+                class="w-full p-1 font-mono"
+                on:change=move |ev| {
+                    match FlakeUrl::from_str(&event_target_value(&ev)) {
+                        Ok(url) => {
+                            set_flake_url(url);
+                            set_input_err(None)
+                        }
+                        Err(e) => set_input_err(Some(e.to_string())),
+                    }
+                }
 
-            prop:value=move || flake_url().to_string()
-        />
+                prop:value=move || flake_url().to_string()
+            /> <span class="text-red-500">{input_err}</span>
+        </label>
         // TODO: use local storage, and cache user's inputs
         <datalist id="some-flakes">
             <option value="github:nammayatri/nammayatri"></option>
