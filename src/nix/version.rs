@@ -46,6 +46,7 @@ pub async fn run_nix_version() -> Result<NixVersion, ServerFnError> {
     let mut cmd = Command::new("nix");
     cmd.arg("--version");
     let stdout: Vec<u8> = crate::command::run_command(&mut cmd).await?;
+    // Utf-8 errors don't matter here because we're just parsing numbers
     let v = parse_nix_version(String::from_utf8_lossy(&stdout).to_string())?;
     Ok(v)
 }
