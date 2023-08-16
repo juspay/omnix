@@ -24,7 +24,7 @@ pub fn query_options<V>() -> QueryOptions<V> {
 /// Arguments
 /// * `k`: The argument to the server fn
 /// * `mk_args`: How to convert `k` into the server fn's argument type
-#[instrument(name = "use_server_query", skip(mk_args, k))]
+#[instrument(name = "use_server_query", skip(cx, mk_args, k))]
 pub fn use_server_query<S, K>(
     cx: Scope,
     k: impl Fn() -> K + 'static,
@@ -50,7 +50,7 @@ where
 }
 
 /// Manually call a [server] fn given its arguments
-#[instrument(name = "call_server_fn")]
+#[instrument(name = "call_server_fn", skip(cx), fields(type_ = std::any::type_name::<S>()))]
 fn call_server_fn<S>(
     cx: Scope,
     args: &S,
@@ -62,14 +62,14 @@ where
     let v = {
         let span = info_span!("ssr");
         let _enter = span.enter();
-        tracing::info!(type_ = std::any::type_name::<S>());
+        tracing::info!("calling server fn from server");
         S::call_fn(args.clone(), cx)
     };
     #[cfg(not(feature = "ssr"))]
     let v = {
         let span = info_span!("hydrate");
         let _enter = span.enter();
-        tracing::info!(type_ = std::any::type_name::<S>());
+        tracing::info!("calling server fn from client");
         S::call_fn_client(args.clone(), cx)
     };
     v
