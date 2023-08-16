@@ -1,4 +1,7 @@
-use std::str::FromStr;
+use std::{
+    fmt::{Display, Formatter},
+    str::FromStr,
+};
 
 use leptos::*;
 use serde::{Deserialize, Serialize};
@@ -18,12 +21,6 @@ impl From<String> for FlakeUrl {
     }
 }
 
-impl ToString for FlakeUrl {
-    fn to_string(&self) -> String {
-        self.0.clone()
-    }
-}
-
 impl FromStr for FlakeUrl {
     type Err = String;
 
@@ -40,5 +37,11 @@ impl FromStr for FlakeUrl {
 impl IntoView for FlakeUrl {
     fn into_view(self, cx: Scope) -> View {
         self.0.into_view(cx)
+    }
+}
+
+impl Display for FlakeUrl {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
