@@ -129,7 +129,7 @@ fn NixFlake(cx: Scope) -> impl IntoView {
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
-        <QueryInput query set_query suggestions/>
+        <QueryInput id="nix-flake-input" query set_query suggestions/>
         <RefetchQueryButton result query/>
         <div class="my-1 text-left">
             <SuspenseWithErrorHandling>{data}</SuspenseWithErrorHandling>

@@ -53,9 +53,16 @@ where
 ///
 /// A label, input element, and datalist are rendered, as well as error div.
 /// [FromStr::from_str] is used to parse the input value into `K`.
+///
+/// Arguments:
+/// * `id`: The id of the input element
+/// * `suggestions`: The initial suggestions to show in the datalist
+/// * `query`: Input element value is initialized with this [ReadSignal]
+/// * `set_query`: Input element will set this [WriteSignal]
 #[component]
 pub fn QueryInput<K>(
     cx: Scope,
+    id: &'static str,
     /// Initial suggestions to show in the datalist
     suggestions: Vec<K>,
     query: ReadSignal<K>,
@@ -65,9 +72,7 @@ where
     K: ToString + FromStr + Hash + Eq + Clone + Display + 'static,
     <K as std::str::FromStr>::Err: Display,
 {
-    // FIXME: bad id
-    let id = &format!("{}-input", std::any::type_name::<K>());
-    let datalist_id = &format!("{}-datalist", std::any::type_name::<K>());
+    let datalist_id = &format!("{}-datalist", id);
     // Input query to the server fn
     // Errors in input element (based on [FromStr::from_str])
     let (input_err, set_input_err) = create_signal(cx, None::<String>);
@@ -75,7 +80,7 @@ where
         <label for=id>"Load a Nix flake"</label>
         <input
             list=datalist_id
-            id=id
+            id=id.to_string()
             type="text"
             class="w-full p-1 font-mono"
             on:change=move |ev| {
