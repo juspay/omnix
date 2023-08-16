@@ -103,7 +103,7 @@ fn Dashboard(cx: Scope) -> impl IntoView {
 #[component]
 fn NixFlake(cx: Scope) -> impl IntoView {
     let title = "Nix Flake";
-    let res = query::use_nix_flake_show_query(cx);
+    let res = query::use_flake_query(cx);
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>

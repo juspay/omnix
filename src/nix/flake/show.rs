@@ -3,7 +3,6 @@
 use leptos::*;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
-use tracing::instrument;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -52,9 +51,8 @@ pub enum Type {
     Unknown,
 }
 
-#[instrument(name = "flake-show")]
-#[server(GetNixFlakeShow, "/api")]
-pub async fn get_nix_flake_show() -> Result<FlakeOutput, ServerFnError> {
+#[cfg(feature = "ssr")]
+pub async fn run_nix_flake_show() -> Result<FlakeOutput, ServerFnError> {
     use tokio::process::Command;
     let mut cmd = Command::new("nix");
     cmd.args(vec![
