@@ -18,7 +18,7 @@ use crate::cli;
 
 /// Axum server main entry point
 pub async fn main(args: cli::Args) {
-    setup_logging();
+    setup_logging(&args);
     let server = create_server().await;
     if !args.no_open {
         open_http_app(server.local_addr()).await;
@@ -60,9 +60,16 @@ async fn create_server() -> axum::Server<AddrIncoming, IntoMakeService<axum::Rou
     server
 }
 
-fn setup_logging() {
+fn setup_logging(args: &cli::Args) {
+    let mut trace_level = tracing::Level::INFO;
+    if args.verbose {
+        trace_level = tracing::Level::DEBUG;
+    }
+    if args.vv {
+        trace_level = tracing::Level::TRACE;
+    }
     tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO) // TODO: --verbose should use DEBUG
+        .with_max_level(trace_level)
         .compact()
         .init();
 }
