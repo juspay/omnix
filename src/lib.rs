@@ -39,7 +39,7 @@ fn setup_logging() {
             tracing_subscriber_wasm::MakeConsoleWriter::default()
                 .map_trace_level_to(tracing::Level::DEBUG),
         )
-        .with_max_level(tracing::Level::DEBUG)
+        .with_max_level(tracing::Level::INFO)
         // For some reason, if we don't do this in the browser, we get
         // a runtime error.
         .without_time()

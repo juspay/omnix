@@ -16,8 +16,8 @@ use super::info;
 /// Get [NixHealth] information
 #[instrument(name = "nix-health")]
 #[server(GetNixHealth, "/api")]
-pub async fn get_nix_health() -> Result<NixHealth, ServerFnError> {
-    let info = info::get_nix_info().await?;
+pub async fn get_nix_health(_unit: ()) -> Result<NixHealth, ServerFnError> {
+    let info = info::get_nix_info(()).await?;
     Ok(NixHealth::check(&info))
 }
 

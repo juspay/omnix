@@ -50,8 +50,8 @@ async fn create_server() -> axum::Server<AddrIncoming, IntoMakeService<axum::Rou
         // enable HTTP request logging
         .layer(
             TraceLayer::new_for_http()
-                .make_span_with(trace::DefaultMakeSpan::new().level(Level::INFO))
-                .on_response(trace::DefaultOnResponse::new().level(Level::INFO)),
+                .make_span_with(trace::DefaultMakeSpan::new().level(Level::DEBUG))
+                .on_response(trace::DefaultOnResponse::new().level(Level::DEBUG)),
         )
         .with_state(conf.leptos_options.clone());
 

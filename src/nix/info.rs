@@ -17,7 +17,7 @@ pub struct NixInfo {
 /// Determine [NixInfo] on the user's system
 #[instrument(name = "nix-info")]
 #[server(GetNixInfo, "/api")]
-pub async fn get_nix_info() -> Result<NixInfo, ServerFnError> {
+pub async fn get_nix_info(_unit: ()) -> Result<NixInfo, ServerFnError> {
     let nix_version = super::version::run_nix_version().await?;
     let nix_config = super::config::run_nix_show_config().await?;
     tracing::info!("Got nix info. Version = {}", nix_version);

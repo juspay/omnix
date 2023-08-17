@@ -1,10 +1,9 @@
 //! [leptos_query] helpers for working with [server] fns, and useful widgets.
-use core::pin::Pin;
-use leptos::server_fn::ServerFn;
+use cfg_if::cfg_if;
 use leptos::*;
 use leptos_query::*;
 use std::{fmt::Display, future::Future, hash::Hash, str::FromStr};
-use tracing::{info_span, instrument};
+use tracing::instrument;
 
 /// The result type of Leptos [server] function returning a `T`
 pub type ServerFnResult<T> = Result<T, ServerFnError>;
@@ -21,59 +20,55 @@ pub fn query_options<V>() -> QueryOptions<V> {
 /// Like [use_query] but specifically meant for server functions, does logging
 /// via [tracing] and uses [query_options] always.
 ///
+/// In order to be able to log the name of the server fns, we unfortunately must
+/// require them to be 1-ary functions taking tuples, due to a limitation with
+/// Rust type system around Fn trait.
+///
 /// Arguments
 /// * `k`: The argument to the server fn
-/// * `mk_args`: How to convert `k` into the server fn's argument type
-#[instrument(name = "use_server_query", skip(cx, mk_args, k))]
-pub fn use_server_query<S, K>(
+/// * `fetcher`: The server fn to call
+#[instrument(
+    name = "use_server_query",
+    skip(cx, k, fetcher),
+    fields(
+        fetcher = std::any::type_name::<F>(),
+        render_mode=LEPTOS_MODE
+    )
+)]
+pub fn use_server_query<K, V, F, Fu>(
     cx: Scope,
     k: impl Fn() -> K + 'static,
-    mk_args: impl Fn(K) -> S + 'static,
-) -> QueryResult<ServerFnResult<<S as ServerFn<Scope>>::Output>, impl RefetchFn>
+    fetcher: F,
+) -> QueryResult<ServerFnResult<V>, impl RefetchFn>
 where
     K: Hash + Eq + Clone + std::fmt::Debug + 'static,
-    ServerFnResult<<S as ServerFn<Scope>>::Output>: Clone + Serializable + 'static,
-    S: Clone + std::fmt::Debug + ServerFn<leptos::Scope>,
+    ServerFnResult<V>: Clone + Serializable + 'static,
+    Fu: Future<Output = ServerFnResult<V>> + 'static,
+    F: Fn(K) -> Fu + 'static,
 {
     let span = tracing::Span::current();
-    tracing::info!("use_query");
+    tracing::debug!("use_query");
     leptos_query::use_query(
         cx,
         k,
         move |k| {
             let _enter = span.enter();
-            let args: S = mk_args(k);
-            call_server_fn::<S>(cx, &args)
+            tracing::info!("calling server fn");
+            fetcher(k)
         },
-        query_options::<ServerFnResult<<S as ServerFn<Scope>>::Output>>(),
+        query_options::<ServerFnResult<V>>(),
     )
 }
 
-/// Manually call a [server] fn given its arguments
-#[instrument(name = "call_server_fn", skip(cx), fields(type_ = std::any::type_name::<S>()))]
-fn call_server_fn<S>(
-    cx: Scope,
-    args: &S,
-) -> Pin<Box<dyn Future<Output = Result<S::Output, ServerFnError>>>>
-where
-    S: Clone + std::fmt::Debug + ServerFn<leptos::Scope>,
-{
-    #[cfg(feature = "ssr")]
-    let v = {
-        let span = info_span!("ssr");
-        let _enter = span.enter();
-        tracing::info!("calling server fn from server");
-        S::call_fn(args.clone(), cx)
-    };
-    #[cfg(not(feature = "ssr"))]
-    let v = {
-        let span = info_span!("hydrate");
-        let _enter = span.enter();
-        tracing::info!("calling server fn from client");
-        S::call_fn_client(args.clone(), cx)
-    };
-    v
-}
+const LEPTOS_MODE: &str = {
+    cfg_if! { if #[cfg(feature="ssr")] {
+        "ssr"
+    } else if #[cfg(feature="hydrate")] {
+        "hydrate"
+    } else {
+        compile_error!("Either ssr or hydrate feature must be enabled");
+    }}
+};
 
 /// Input element component to pass arguments to a [leptos_query] query
 ///
