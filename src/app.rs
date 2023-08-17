@@ -1,21 +1,30 @@
 //! Frontend UI entry point
 
-use crate::nix::health::traits::Check;
-use crate::nix::health::*;
-use crate::nix::info::get_nix_info;
-use cfg_if::cfg_if;
-#[cfg(feature = "ssr")]
-use http::status::StatusCode;
 use leptos::*;
-#[cfg(feature = "ssr")]
-use leptos_axum::ResponseOptions;
 use leptos_meta::*;
+use leptos_query::*;
 use leptos_router::*;
+
+use crate::nix::{
+    flake::url::FlakeUrl,
+    health::{traits::Check, GetNixHealth},
+    info::GetNixInfo,
+};
+use crate::widget::*;
+use crate::{
+    leptos_extra::{
+        query::{self, QueryInput, RefetchQueryButton},
+        signal::{provide_signal, use_signal},
+    },
+    nix::flake::GetFlake,
+};
 
 /// Main frontend application container
 #[component]
 pub fn App(cx: Scope) -> impl IntoView {
     provide_meta_context(cx);
+    provide_query_client(cx);
+    provide_signal::<FlakeUrl>(cx, "github:srid/haskell-template".into());
 
     view! { cx,
         <Stylesheet id="leptos" href="/pkg/nix-browser.css"/>
@@ -30,6 +39,7 @@ pub fn App(cx: Scope) -> impl IntoView {
                         <div class="flex flex-col space-y-3">
                             <Routes>
                                 <Route path="" view=Dashboard/>
+                                <Route path="/flake" view=NixFlake/>
                                 <Route path="/health" view=NixHealth/>
                                 <Route path="/info" view=NixInfo/>
                                 <Route path="/about" view=About/>
@@ -53,6 +63,9 @@ fn Nav(cx: Scope) -> impl IntoView {
             <A exact=true href="/" class=class>
                 "Dashboard"
             </A>
+            <A exact=true href="/flake" class=class>
+                "Flake"
+            </A>
             <A exact=true href="/health" class=class>
                 "Nix Health"
             </A>
@@ -71,14 +84,16 @@ fn Nav(cx: Scope) -> impl IntoView {
 #[component]
 fn Dashboard(cx: Scope) -> impl IntoView {
     tracing::debug!("Rendering Dashboard page");
-    let health_check = create_resource(cx, move || (), move |_| get_nix_health());
+    let result = query::use_server_query(cx, || (), |()| GetNixHealth {});
+    let data = result.data;
+    let report = Signal::derive(cx, move || data.get().map(|r| r.map(|v| v.report())));
     // A Card component
     #[component]
     fn Card(cx: Scope, href: &'static str, children: Children) -> impl IntoView {
         view! { cx,
             <A
                 href=href
-                class="flex items-center justify-center w-64 h-48 p-2 m-2 border-2 border-base-400 shadow active:shadow-none rounded-lg bg-base-100 hover:bg-primary-200"
+                class="flex items-center justify-center w-64 h-48 p-2 m-2 border-2 rounded-lg shadow border-base-400 active:shadow-none bg-base-100 hover:bg-primary-200"
             >
                 <span class="text-4xl text-base-800">{children(cx)}</span>
             </A>
@@ -88,14 +103,34 @@ fn Dashboard(cx: Scope) -> impl IntoView {
         <Title text="Dashboard"/>
         <h1 class="text-5xl font-bold">"Dashboard"</h1>
         <div id="cards" class="flex flex-row">
-            <Card href="/health">
-                "Nix Health Check "
-                <SuspenseWithErrorHandling>
-                    {move || { health_check.read(cx).map(|r| { r.map(|v| { v.report() }) }) }}
-                </SuspenseWithErrorHandling>
-
-            </Card>
+            <SuspenseWithErrorHandling>
+                <Card href="/health">"Nix Health Check " {report}</Card>
+            </SuspenseWithErrorHandling>
             <Card href="/info">"Nix Info ℹ️"</Card>
+        </div>
+    }
+}
+
+/// Nix flake dashboard
+#[component]
+fn NixFlake(cx: Scope) -> impl IntoView {
+    let title = "Nix Flake";
+    let suggestions: Vec<FlakeUrl> = vec![
+        "github:nammayatri/nammayatri".into(),
+        "github:srid/haskell-template".into(),
+        "github:juspay/nix-browser".into(),
+        "github:nixos/nixpkgs".into(),
+    ];
+    let (query, set_query) = use_signal::<FlakeUrl>(cx);
+    let result = query::use_server_query(cx, query, |url| GetFlake { url });
+    let data = result.data;
+    view! { cx,
+        <Title text=title/>
+        <h1 class="text-5xl font-bold">{title}</h1>
+        <QueryInput id="nix-flake-input" query set_query suggestions/>
+        <RefetchQueryButton result query/>
+        <div class="my-1 text-left">
+            <SuspenseWithErrorHandling>{data}</SuspenseWithErrorHandling>
         </div>
     }
 }
@@ -103,28 +138,32 @@ fn Dashboard(cx: Scope) -> impl IntoView {
 /// Nix information
 #[component]
 fn NixInfo(cx: Scope) -> impl IntoView {
-    let nix_info = create_resource(cx, move || (), move |_| get_nix_info());
     let title = "Nix Info";
+    let result = query::use_server_query(cx, || (), |()| GetNixInfo {});
+    let data = result.data;
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
-        <SuspenseWithErrorHandling>
-            <div class="my-1 text-left">{move || nix_info.read(cx)}</div>
-        </SuspenseWithErrorHandling>
+        <RefetchQueryButton result query=|| ()/>
+        <div class="my-1 text-left">
+            <SuspenseWithErrorHandling>{data}</SuspenseWithErrorHandling>
+        </div>
     }
 }
 
 /// Nix health checks
 #[component]
 fn NixHealth(cx: Scope) -> impl IntoView {
-    let health_check = create_resource(cx, move || (), move |_| get_nix_health());
     let title = "Nix Health";
+    let result = query::use_server_query(cx, || (), |()| GetNixHealth {});
+    let data = result.data;
     view! { cx,
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
-        <SuspenseWithErrorHandling>
-            <div class="my-1">{move || health_check.read(cx)}</div>
-        </SuspenseWithErrorHandling>
+        <RefetchQueryButton result query=|| ()/>
+        <div class="my-1">
+            <SuspenseWithErrorHandling>{data}</SuspenseWithErrorHandling>
+        </div>
     }
 }
 
@@ -138,99 +177,5 @@ fn About(cx: Scope) -> impl IntoView {
             "nix-browser is still work in progress. Track its development "
             <LinkExternal link="https://github.com/juspay/nix-browser" text="on Github"/>
         </p>
-    }
-}
-
-// A loading spinner
-#[component]
-fn Spinner(cx: Scope) -> impl IntoView {
-    view! { cx,
-        <div
-            class="animate-spin inline-block w-6 h-6 border-[3px] border-current border-t-transparent text-blue-600 rounded-full"
-            role="status"
-            aria-label="loading"
-        >
-            <span class="sr-only">"Loading..."</span>
-        </div>
-    }
-}
-
-/// <a> link
-#[component]
-fn Link(cx: Scope, link: &'static str, text: &'static str) -> impl IntoView {
-    view! { cx,
-        <A href=link class="text-primary-100 hover:no-underline">
-            {text}
-        </A>
-    }
-}
-
-#[component]
-fn LinkExternal(cx: Scope, link: &'static str, text: &'static str) -> impl IntoView {
-    view! { cx,
-        <a
-            href=link
-            class="underline text-primary-500 hover:no-underline"
-            rel="external"
-            target="_blank"
-        >
-            {text}
-        </a>
-    }
-}
-
-/// 404 page
-#[component]
-fn NotFound(cx: Scope) -> impl IntoView {
-    cfg_if! { if #[cfg(feature="ssr")] {
-        if let Some(response) = use_context::<ResponseOptions>(cx) {
-            response.set_status(StatusCode::NOT_FOUND);
-        }
-    }}
-    view! { cx,
-        // The HTML for 404 not found
-        <div class="grid w-full min-h-screen bg-center bg-cover bg-base-100 place-items-center">
-            <div class="z-0 flex items-center justify-center col-start-1 row-start-1 text-center">
-                <div class="flex flex-col space-y-3">
-                    <h1 class="text-5xl font-bold">"404"</h1>
-                    <p class="py-6">
-                        <h2 class="text-3xl font-bold text-gray-500">"Page not found"</h2>
-                        <p class="my-1">"The page you are looking for does not exist."</p>
-                    </p>
-                    <Link link="/" text="Go to home page"/>
-                </div>
-            </div>
-        </div>
-    }
-}
-
-/// Display errors to the user
-#[component]
-fn Errors(cx: Scope, errors: Errors) -> impl IntoView {
-    view! { cx,
-        <div class="flex flex-row justify-center overflow-auto text-xl text-white bg-error-500">
-            <div class="font-mono whitespace-pre-wrap">
-                <ul>
-                    {errors
-                        .into_iter()
-                        .map(|(_, e)| view! { cx, <li>{e.to_string()}</li> })
-                        .collect_view(cx)}
-
-                </ul>
-            </div>
-        </div>
-    }
-}
-
-/// Like [Suspense] but also handles errors using [ErrorBoundary]
-#[component]
-fn SuspenseWithErrorHandling(cx: Scope, children: ChildrenFn) -> impl IntoView {
-    let children = store_value(cx, children);
-    view! { cx,
-        <Suspense fallback=move || view! { cx, <Spinner/> }>
-            <ErrorBoundary fallback=|cx, errors| {
-                view! { cx, <Errors errors=errors.get()/> }
-            }>{children.with_value(|c| c(cx))}</ErrorBoundary>
-        </Suspense>
     }
 }

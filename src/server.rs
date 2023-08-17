@@ -3,25 +3,38 @@ use std::convert::Infallible;
 
 use crate::app::App;
 use axum::response::Response as AxumResponse;
+use axum::routing::IntoMakeService;
 use axum::{body::Body, http::Request, response::IntoResponse};
 use axum::{routing::post, Router};
+use hyper::server::conn::AddrIncoming;
 use leptos::*;
 use leptos_axum::{generate_route_list, LeptosRoutes};
+use std::net::SocketAddr;
 use tower_http::services::ServeDir;
 use tower_http::trace::{self, TraceLayer};
 use tracing::{instrument, Level};
 
+use crate::cli;
+
 /// Axum server main entry point
-pub async fn main() {
+pub async fn main(args: cli::Args) {
     setup_logging();
-    run_server().await
+    let server = create_server().await;
+    if !args.no_open {
+        open_http_app(server.local_addr()).await;
+    }
+    server.await.unwrap()
 }
 
+/// Create an Axum server for the Leptos app
 #[instrument(name = "server")]
-async fn run_server() {
+#[allow(clippy::async_yields_async)]
+async fn create_server() -> axum::Server<AddrIncoming, IntoMakeService<axum::Router>> {
     let conf = get_configuration(None).await.unwrap();
     tracing::debug!("Firing up Leptos app with config: {:?}", conf);
+    leptos_query::suppress_query_load(true); // https://github.com/nicoburniske/leptos_query/issues/6
     let routes = generate_route_list(|cx| view! { cx, <App/> }).await;
+    leptos_query::suppress_query_load(false);
     let client_dist = ServeDir::new(conf.leptos_options.site_root.clone());
     let leptos_options = conf.leptos_options.clone(); // A copy to move to the closure below.
     let not_found_service =
@@ -41,9 +54,10 @@ async fn run_server() {
                 .on_response(trace::DefaultOnResponse::new().level(Level::INFO)),
         )
         .with_state(conf.leptos_options.clone());
+
     let server = axum::Server::bind(&conf.leptos_options.site_addr).serve(app.into_make_service());
     tracing::info!("App is running at http://{}", server.local_addr());
-    server.await.unwrap()
+    server
 }
 
 fn setup_logging() {
@@ -64,4 +78,12 @@ async fn not_found_handler(
     let handler =
         leptos_axum::render_app_to_stream(options.to_owned(), move |cx| view! { cx, <App/> });
     Ok(handler(req).await.into_response())
+}
+
+/// Open a http address in the user's web browser
+async fn open_http_app(addr: SocketAddr) {
+    let url = format!("http://{}", &addr);
+    if let Err(err) = open::that(url) {
+        tracing::warn!("Unable to open in web browser: {}", err)
+    }
 }

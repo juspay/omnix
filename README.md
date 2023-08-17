@@ -1,7 +1,5 @@
 # WIP: nix-browser
 
-[Project Doc](https://docs.google.com/document/d/1tcpufxKFdaqmyKL0qpK174zexY14LV69C44459h8VmQ/edit#heading=h.5x0d5h95i329)
-
 ## Getting Started
 
 1. [Install Nix](https://zero-to-flakes.com/install)

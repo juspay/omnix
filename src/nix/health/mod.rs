@@ -26,7 +26,8 @@ pub async fn get_nix_health() -> Result<NixHealth, ServerFnError> {
 /// Each field represents an individual check which satisfies the [Check] trait.
 ///
 /// NOTE: This struct is isomorphic to [Vec<Box<&dyn Check>>]. We cannot use the
-/// latter due to (wasm) serialization limitation with dyn trait objects.
+/// latter due to (wasm) serialization limitation with dyn trait objects. An
+// [IntoIterator] impl is provide towards this end.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct NixHealth {
     max_jobs: MaxJobs,
@@ -34,10 +35,14 @@ pub struct NixHealth {
     flake_enabled: FlakeEnabled,
 }
 
-impl NixHealth {
-    // Return all the fields of the [NixHealth] struct
-    pub fn all_checks(&self) -> Vec<&dyn Check<Report = Report<WithDetails>>> {
-        vec![&self.max_jobs, &self.caches, &self.flake_enabled]
+impl<'a> IntoIterator for &'a NixHealth {
+    type Item = &'a dyn Check<Report = Report<WithDetails>>;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    /// Return an iterator to iterate on the fields of [NixHealth]
+    fn into_iter(self) -> Self::IntoIter {
+        let items: Vec<Self::Item> = vec![&self.max_jobs, &self.caches, &self.flake_enabled];
+        items.into_iter()
     }
 }
 
@@ -54,11 +59,7 @@ impl Check for NixHealth {
         "Nix Health"
     }
     fn report(&self) -> Report<NoDetails> {
-        if self
-            .all_checks()
-            .iter()
-            .all(|c| c.report() == Report::Green)
-        {
+        if self.into_iter().all(|c| c.report() == Report::Green) {
             Report::Green
         } else {
             Report::Red(NoDetails)
@@ -69,23 +70,23 @@ impl Check for NixHealth {
 impl IntoView for NixHealth {
     fn into_view(self, cx: Scope) -> View {
         #[component]
-        fn ViewCheck<C>(cx: Scope, check: C, children: Children) -> impl IntoView
+        fn ViewCheck<C>(cx: Scope, check: C) -> impl IntoView
         where
             C: Check<Report = Report<WithDetails>>,
         {
-            let report = (&check).report();
+            let report = check.report();
             view! { cx,
                 <div class="contents">
                     <details
                         open=report != Report::Green
-                        class="bg-white border-2 my-2 rounded-lg cursor-pointer hover:bg-primary-100 border-2 border-base-300"
+                        class="my-2 bg-white border-2 rounded-lg cursor-pointer hover:bg-primary-100 border-base-300"
                     >
                         <summary class="p-4 text-xl font-bold">
-                            {report.without_details()} {" "} {(&check).name()}
+                            {report.without_details()} {" "} {check.name()}
                         </summary>
                         <div class="p-4">
-                            <div class="p-2 my-2 bg-black text-base-100 font-mono text-sm">
-                                {children(cx)}
+                            <div class="p-2 my-2 font-mono text-sm bg-black text-base-100">
+                                {check}
                             </div>
                             <div class="flex flex-col justify-start space-y-4">
                                 {report.get_red_details()}
@@ -96,11 +97,11 @@ impl IntoView for NixHealth {
             }
         }
         view! { cx,
-            <div class="flex flex-col items-stretch justify-start text-left space-y-8">
-                // TODO: Make this use [NixHealth::all_checks]
-                <ViewCheck check=self.max_jobs.clone()>{self.max_jobs}</ViewCheck>
-                <ViewCheck check=self.caches.clone()>{self.caches}</ViewCheck>
-                <ViewCheck check=self.flake_enabled.clone()>{self.flake_enabled}</ViewCheck>
+            <div class="flex flex-col items-stretch justify-start space-y-8 text-left">
+                // TODO: Make this use [NixHealth::into_iter]
+                <ViewCheck check=self.max_jobs/>
+                <ViewCheck check=self.caches/>
+                <ViewCheck check=self.flake_enabled/>
             </div>
         }
         .into_view(cx)

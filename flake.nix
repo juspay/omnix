@@ -68,6 +68,7 @@
           packages = with pkgs; [
             just
             cargo-watch
+            cargo-expand
             config.process-compose.cargo-doc-live.outputs.package
           ];
         };
