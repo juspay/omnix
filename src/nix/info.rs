@@ -4,12 +4,13 @@ use serde::{Deserialize, Serialize};
 use tracing::instrument;
 
 use crate::nix::config::NixConfig;
+use crate::nix::version::NixVersion;
 
 /// All the information about the user's Nix installation
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct NixInfo {
     /// Nix version string
-    pub nix_version: String,
+    pub nix_version: NixVersion,
     pub nix_config: NixConfig,
 }
 
@@ -17,12 +18,7 @@ pub struct NixInfo {
 #[instrument(name = "nix-info")]
 #[server(GetNixInfo, "/api")]
 pub async fn get_nix_info() -> Result<NixInfo, ServerFnError> {
-    use tokio::process::Command;
-    let mut cmd = Command::new("nix");
-    cmd.arg("--version");
-    let stdout = crate::command::run_command(&mut cmd).await?;
-    // TODO: Parse the version string
-    let nix_version = String::from_utf8_lossy(&stdout).to_string();
+    let nix_version = super::version::run_nix_version().await?;
     let nix_config = super::config::run_nix_show_config().await?;
     tracing::info!("Got nix info. Version = {}", nix_version);
     Ok(NixInfo {
@@ -39,9 +35,7 @@ impl IntoView for NixInfo {
                     <b>
                         Nix Version
                     </b>
-                    <div class="p-1 my-1 rounded bg-primary-50">
-                        <pre>{self.nix_version}</pre>
-                    </div>
+                    <div class="p-1 my-1 rounded bg-primary-50">{self.nix_version}</div>
                 </div>
                 <div>
                     <b>
