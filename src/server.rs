@@ -56,7 +56,7 @@ async fn create_server() -> axum::Server<AddrIncoming, IntoMakeService<axum::Rou
         .with_state(conf.leptos_options.clone());
 
     let server = axum::Server::bind(&conf.leptos_options.site_addr).serve(app.into_make_service());
-    tracing::info!("App is running at http://{}", server.local_addr());
+    tracing::info!("nix-browser web 🌀️ http://{}", server.local_addr());
     server
 }
 
