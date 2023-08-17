@@ -32,6 +32,7 @@ pub fn App(cx: Scope) -> impl IntoView {
             view! { cx, <NotFound/> }
         }>
             <Title formatter=|s| format!("{s} - nix-browser")/>
+            <Body class="overflow-y-scroll"/>
             <div class="flex justify-center w-full min-h-screen bg-center bg-cover bg-base-200">
                 <div class="container flex flex-col items-center mx-auto max-w-prose">
                     <Nav/>

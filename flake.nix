@@ -55,6 +55,7 @@
 
         packages.default = self'.packages.nix-browser.overrideAttrs (oa: {
           installPhase = (oa.installPhase or "") + ''
+            # Make the release app use a random port *by default*.
             wrapProgram $out/bin/${oa.pname} \
                     --set LEPTOS_SITE_ADDR 127.0.0.1:0
           '';
