@@ -108,6 +108,8 @@ impl IntoView for NixConfig {
 }
 
 #[cfg(feature = "ssr")]
+// Remove this once we move away from Garnix (say, to Jenkins): https://github.com/garnix-io/issues/issues/69
+#[cfg(not(target_os = "macos"))]
 #[tokio::test]
 async fn test_run_nix_show_config() {
     let nix_config = run_nix_show_config().await.unwrap();
