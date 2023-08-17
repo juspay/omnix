@@ -1,5 +1,6 @@
 //! Rust module for `nix --version`
 use leptos::*;
+#[cfg(feature = "ssr")]
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::fmt;
