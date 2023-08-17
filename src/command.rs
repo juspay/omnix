@@ -5,8 +5,14 @@ use tokio::process::Command;
 use tracing::instrument;
 
 /// Run the given command, returning its stdout.
-#[instrument(name = "run-command", err)]
+#[allow(clippy::needless_pass_by_ref_mut)]
 pub async fn run_command(cmd: &mut Command) -> Result<Vec<u8>, CommandError> {
+    cmd.kill_on_drop(true);
+    run_command_(cmd).await
+}
+
+#[instrument(name = "run-command", err)]
+async fn run_command_(cmd: &mut Command) -> Result<Vec<u8>, CommandError> {
     tracing::info!("Running command");
     let out = cmd.output().await?;
     if out.status.success() {
