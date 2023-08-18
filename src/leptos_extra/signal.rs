@@ -27,3 +27,16 @@ pub fn use_signal<T>(cx: Scope) -> (ReadSignal<T>, WriteSignal<T>) {
         })
         .unwrap()
 }
+
+/// Map the value inside a nested [Option]-of-[Result]
+///
+/// This function is efficient in that the inner value is not cloned.
+pub fn map_option_result_ref<T1, T2, E>(
+    d: &Option<Result<T1, E>>,
+    f: impl Fn(&T1) -> T2 + 'static,
+) -> Option<Result<T2, E>>
+where
+    E: Clone,
+{
+    d.as_ref().map(|r| r.as_ref().map(f).map_err(Clone::clone))
+}

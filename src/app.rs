@@ -7,7 +7,7 @@ use leptos_router::*;
 
 use crate::leptos_extra::{
     query::{self, QueryInput, RefetchQueryButton},
-    signal::{provide_signal, use_signal},
+    signal::{map_option_result_ref, provide_signal, use_signal},
 };
 use crate::nix::{
     flake::{get_flake, url::FlakeUrl},
@@ -84,7 +84,7 @@ fn Dashboard(cx: Scope) -> impl IntoView {
     tracing::debug!("Rendering Dashboard page");
     let result = query::use_server_query(cx, || (), get_nix_health);
     let data = result.data;
-    let report = Signal::derive(cx, move || data.get().map(|r| r.map(|v| v.report())));
+    let report = move || data.with(|d| map_option_result_ref(d, |v| v.report()));
     // A Card component
     #[component]
     fn Card(cx: Scope, href: &'static str, children: Children) -> impl IntoView {
