@@ -3,3 +3,4 @@ pub mod config;
 pub mod flake;
 pub mod health;
 pub mod info;
+pub mod version;

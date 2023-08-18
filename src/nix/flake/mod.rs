@@ -30,7 +30,10 @@ impl IntoView for Flake {
         view! { cx,
             <div class="flex flex-col my-4">
                 <h3 class="text-lg font-bold">{self.url}</h3>
-                <div>{self.output}</div>
+                <p class="my-2">
+                    TODO: Show overview, rather than raw flake output
+                </p>
+                <div class="font-mono text-sm">{self.output}</div>
             </div>
         }
         .into_view(cx)

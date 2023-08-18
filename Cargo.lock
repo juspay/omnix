@@ -1719,6 +1719,7 @@ dependencies = [
  "leptos_router",
  "log",
  "open",
+ "regex",
  "serde",
  "serde_json",
  "thiserror",
