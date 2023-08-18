@@ -31,7 +31,7 @@ pub struct Flake {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SystemOutput {
     packages: BTreeMap<String, Leaf>,
-    dev_shells: BTreeMap<String, Leaf>,
+    devshells: BTreeMap<String, Leaf>,
     checks: BTreeMap<String, Leaf>,
     apps: BTreeMap<String, Leaf>,
 }
@@ -39,23 +39,20 @@ pub struct SystemOutput {
 impl SystemOutput {
     pub fn from(output: &FlakeOutput, system: System) -> Self {
         let lookup_type = move |k: &str| -> BTreeMap<String, Leaf> {
-            match output.lookup_attrset(vec!["packages", system.as_ref()]) {
+            match output.lookup_attrset(vec![k, system.as_ref()]) {
                 None => BTreeMap::new(),
-                Some(packages) => {
-                    let packages: BTreeMap<String, Leaf> = packages
-                        .iter()
-                        .filter_map(|(k, v)| {
-                            let v = v.as_leaf()?;
-                            Some((k.clone(), v.clone()))
-                        })
-                        .collect();
-                    packages
-                }
+                Some(packages) => packages
+                    .iter()
+                    .filter_map(|(k, v)| {
+                        let v = v.as_leaf()?;
+                        Some((k.clone(), v.clone()))
+                    })
+                    .collect(),
             }
         };
         SystemOutput {
             packages: lookup_type("packages"),
-            dev_shells: lookup_type("devShells"),
+            devshells: lookup_type("devShells"),
             checks: lookup_type("checks"),
             apps: lookup_type("apps"),
         }
@@ -68,10 +65,17 @@ impl SystemOutput {
 pub async fn get_flake(url: FlakeUrl) -> Result<Flake, ServerFnError> {
     let output = self::show::run_nix_flake_show(&url).await?;
     let mut per_system = BTreeMap::new();
-    per_system.insert(
-        System::from("aarch64-darwin"),
-        SystemOutput::from(&output, System::from("aarch64-darwin")),
-    );
+    for system in [
+        "x86_64-linux",
+        "x86_64-darwin",
+        "aarch64-linux",
+        "aarch64-darwin",
+    ] {
+        per_system.insert(
+            System::from(system),
+            SystemOutput::from(&output, System::from(system)),
+        );
+    }
     Ok(Flake {
         url,
         output,
@@ -86,6 +90,11 @@ impl IntoView for Flake {
                 <h3 class="text-lg font-bold">{self.url}</h3>
                 <p class="my-2">
                     TODO: Show overview, rather than raw flake output
+                    {self
+                        .per_system
+                        .iter()
+                        .map(|(k, v)| view! { cx, <li>{k.to_string()}</li> })
+                        .collect_view(cx)}
                 </p>
                 <div class="font-mono text-sm">{self.output}</div>
             </div>

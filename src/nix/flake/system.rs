@@ -1,3 +1,5 @@
+use std::fmt::{Display, Formatter};
+
 use serde::{Deserialize, Serialize};
 
 /// The system for which a derivation will build
@@ -44,14 +46,11 @@ impl AsRef<str> for System {
 impl From<System> for String {
     fn from(s: System) -> Self {
         s.as_ref().to_string()
-        /*
-        match s {
-            System::Linux(Arch::Aarch64) => "aarch64-linux".to_string(),
-            System::Linux(Arch::X86_64) => "x86_64-linux".to_string(),
-            System::Darwin(Arch::X86_64) => "x86_64-darwin".to_string(),
-            System::Darwin(Arch::Aarch64) => "aarch64-darwin".to_string(),
-            System::Other(s) => s,
-        }
-        */
+    }
+}
+
+impl Display for System {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_ref())
     }
 }
