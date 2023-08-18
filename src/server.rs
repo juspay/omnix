@@ -18,9 +18,8 @@ use crate::cli;
 
 /// Axum server main entry point
 pub async fn main(args: cli::Args) {
-    let trace_level = cli::Args::log_level(&args);
-    setup_logging(trace_level);
-    let server = create_server(trace_level).await;
+    setup_logging(args.log_level());
+    let server = create_server(args.log_level()).await;
     if !args.no_open {
         open_http_app(server.local_addr()).await;
     }

@@ -18,9 +18,9 @@ pub struct Args {
 impl Args {
     pub fn log_level(&self) -> tracing::Level {
         match self.verbose {
+            0 => tracing::Level::INFO,
             1 => tracing::Level::DEBUG,
-            2 => tracing::Level::TRACE,
-            _ => tracing::Level::INFO,
+            _ => tracing::Level::TRACE,
         }
     }
 }
