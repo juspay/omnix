@@ -93,7 +93,7 @@ impl IntoView for Flake {
                     {self
                         .per_system
                         .iter()
-                        .map(|(k, v)| view! { cx, <li>{k.to_string()}</li> })
+                        .map(|(k, _v)| view! { cx, <li>{k.to_string()}</li> })
                         .collect_view(cx)}
                 </p>
                 <div class="font-mono text-sm">{self.output}</div>
