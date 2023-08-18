@@ -32,6 +32,22 @@ impl FlakeOutput {
             _ => None,
         }
     }
+
+    /// Lookup the given path in the flake output
+    pub fn lookup(&self, path: Vec<&str>) -> Option<&Self> {
+        let mut cur = self;
+        for part in path {
+            match cur {
+                Self::Attrset(v) => cur = v.0.get(part)?,
+                _ => return None,
+            }
+        }
+        Some(cur)
+    }
+
+    pub fn lookup_attrset(&self, path: Vec<&str>) -> Option<&BTreeMap<String, FlakeOutput>> {
+        self.lookup(path)?.as_attrset()
+    }
 }
 
 /// A flake output that is not an attrset
