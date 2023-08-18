@@ -12,8 +12,18 @@ pub struct Args {
     #[arg(long = "vv", default_value_t = in_cargo_leptos())]
     pub vv: bool,
     ///This flag enables the DEBUG level log.
-    #[arg(short = 'v', long = "verbose", default_value_t = in_cargo_leptos())]
-    pub verbose: bool,
+    #[arg(short = 'v', long = "verbose", action = clap::ArgAction::Count , default_value_t = 0)]
+    pub verbose: u8,
+}
+
+impl Args {
+    pub fn log_level(&self) -> tracing::Level {
+        match self.verbose {
+            1 => tracing::Level::DEBUG,
+            2 => tracing::Level::TRACE,
+            _ => tracing::Level::INFO,
+        }
+    }
 }
 
 /// Whether the app is running under `cargo leptos ...`
