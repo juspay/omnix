@@ -12,7 +12,7 @@ use leptos_axum::{generate_route_list, LeptosRoutes};
 use std::net::SocketAddr;
 use tower_http::services::ServeDir;
 use tower_http::trace::{self, TraceLayer};
-use tracing::{instrument, Level};
+use tracing::instrument;
 
 use crate::cli;
 
@@ -20,7 +20,7 @@ use crate::cli;
 pub async fn main(args: cli::Args) {
     let trace_level = cli::Args::log_level(&args);
     setup_logging(trace_level);
-    let server = create_server().await;
+    let server = create_server(trace_level).await;
     if !args.no_open {
         open_http_app(server.local_addr()).await;
     }
@@ -30,7 +30,9 @@ pub async fn main(args: cli::Args) {
 /// Create an Axum server for the Leptos app
 #[instrument(name = "server")]
 #[allow(clippy::async_yields_async)]
-async fn create_server() -> axum::Server<AddrIncoming, IntoMakeService<axum::Router>> {
+async fn create_server(
+    trace_level: tracing::Level,
+) -> axum::Server<AddrIncoming, IntoMakeService<axum::Router>> {
     let conf = get_configuration(None).await.unwrap();
     tracing::debug!("Firing up Leptos app with config: {:?}", conf);
     leptos_query::suppress_query_load(true); // https://github.com/nicoburniske/leptos_query/issues/6
@@ -51,8 +53,8 @@ async fn create_server() -> axum::Server<AddrIncoming, IntoMakeService<axum::Rou
         // enable HTTP request logging
         .layer(
             TraceLayer::new_for_http()
-                .make_span_with(trace::DefaultMakeSpan::new().level(Level::DEBUG))
-                .on_response(trace::DefaultOnResponse::new().level(Level::DEBUG)),
+                .make_span_with(trace::DefaultMakeSpan::new().level(trace_level))
+                .on_response(trace::DefaultOnResponse::new().level(trace_level)),
         )
         .with_state(conf.leptos_options.clone());
 

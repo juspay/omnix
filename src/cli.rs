@@ -8,10 +8,9 @@ pub struct Args {
     /// Enabled by default if the app is running under `cargo leptos ...`
     #[arg(short = 'n', long = "no-open", default_value_t = in_cargo_leptos())]
     pub no_open: bool,
-    ///This flag enables the TRACE and DEBUG level log.
-    #[arg(long = "vv", default_value_t = in_cargo_leptos())]
-    pub vv: bool,
-    ///This flag enables the DEBUG level log.
+    /// This flag alters the level log based on count of arg.
+    ///
+    /// 1 -> DEBUG, 2 -> TRACE, Default -> INFO
     #[arg(short = 'v', long = "verbose", action = clap::ArgAction::Count , default_value_t = 0)]
     pub verbose: u8,
 }
