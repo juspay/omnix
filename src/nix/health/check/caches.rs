@@ -23,9 +23,9 @@ impl Check for Caches {
     }
     fn report(&self) -> Report<WithDetails> {
         let val = &self.0.value;
-        if val.contains(&"https://cache.nixos.org/".to_string()) {
+        if val.contains(&"https://cache.nixos.org".to_string()) {
             // TODO: Hardcoding this to test failed reports
-            if val.contains(&"https://nammayatri.cachix.org/".to_string()) {
+            if val.contains(&"https://nammayatri.cachix.org".to_string()) {
                 Report::Green
             } else {
                 Report::Red(WithDetails {
