@@ -29,14 +29,14 @@ impl Check for Caches {
                 Report::Green
             } else {
                 Report::Red(WithDetails {
-                    msg: "You are missing the nammayatri cache",
-                    suggestion: "Run 'nix run nixpkgs#cachix use nammayatri",
+                    msg: "You are missing the nammayatri cache".into(),
+                    suggestion: "Run 'nix run nixpkgs#cachix use nammayatri".into(),
                 })
             }
         } else {
             Report::Red(WithDetails {
-                msg: "You are missing the official cache",
-                suggestion: "Try looking in /etc/nix/nix.conf",
+                msg: "You are missing the official cache".into(),
+                suggestion: "Try looking in /etc/nix/nix.conf".into(),
             })
         }
     }

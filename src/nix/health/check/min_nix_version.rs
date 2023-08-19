@@ -22,18 +22,17 @@ impl Check for MinNixVersion {
         "Minimum Nix Version"
     }
     fn report(&self) -> Report<WithDetails> {
-        if self.0
-            >= (NixVersion {
-                major: 2,
-                minor: 13,
-                patch: 0,
-            })
-        {
+        let min_required = NixVersion {
+            major: 2,
+            minor: 13,
+            patch: 0,
+        };
+        if self.0 >= min_required {
             Report::Green
         } else {
             Report::Red(WithDetails {
-                msg: "Nix version is too old",
-                suggestion: "See https://nixos.org/manual/nix/stable/command-ref/new-cli/nix3-upgrade-nix.html",
+                msg: format!("Your Nix version ({}) is too old; we require at least {}", self.0, min_required),
+                suggestion: "See https://nixos.org/manual/nix/stable/command-ref/new-cli/nix3-upgrade-nix.html".into(),
             })
         }
     }
