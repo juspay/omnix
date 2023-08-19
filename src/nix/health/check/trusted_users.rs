@@ -21,7 +21,7 @@ impl Check for TrustedUsers {
         TrustedUsers(info.nix_config.trusted_users.clone())
     }
     fn name(&self) -> &'static str {
-        "Nix Caches in use"
+        "Trusted users"
     }
     fn report(&self) -> Report<WithDetails> {
         let val = &self.0.value;
@@ -31,14 +31,14 @@ impl Check for TrustedUsers {
                 Report::Green
             } else {
                 Report::Red(WithDetails {
-                    msg: "You are missing the nammayatri cache",
-                    suggestion: "Run 'nix run nixpkgs#cachix use nammayatri",
+                    msg: "$USER not present in trusted_users",
+                    suggestion: "Run 'echo \"trusted-users = root srid\" | sudo tee -a /etc/nix/nix.conf && sudo pkill nix-daemon'",
                 })
             }
         } else {
             Report::Red(WithDetails {
-                msg: "You are missing the official cache",
-                suggestion: "Try looking in /etc/nix/nix.conf",
+                msg: "$USER environment variable not set",
+                suggestion: "Run 'export USER=$(whoami)'",
             })
         }
     }
@@ -46,7 +46,7 @@ impl Check for TrustedUsers {
 
 impl IntoView for TrustedUsers {
     fn into_view(self, cx: Scope) -> View {
-        view! { cx, <div>"The following caches are in use:" {self.0.into_view(cx)}</div> }
+        view! { cx, <div>"The following trusted_users are present:" {self.0.into_view(cx)}</div> }
             .into_view(cx)
     }
 }
