@@ -61,7 +61,7 @@ pub async fn run_nix_version() -> Result<NixVersion, ServerFnError> {
 /// The HTML view for [NixVersion]
 impl IntoView for NixVersion {
     fn into_view(self, cx: Scope) -> View {
-        view! { cx, <pre>{format!("{}", self)}</pre> }.into_view(cx)
+        view! { cx, <span class="font-mono">{format!("{}", self)}</span> }.into_view(cx)
     }
 }
 
