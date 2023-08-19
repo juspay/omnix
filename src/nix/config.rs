@@ -1,8 +1,11 @@
 //! Rust module for `nix show-config`
+use std::fmt::Display;
+
 use leptos::*;
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "ssr")]
 use tracing::instrument;
+use url::Url;
 
 /// Nix configuration spit out by `nix show-config`
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -13,7 +16,7 @@ pub struct NixConfig {
     pub extra_platforms: ConfigVal<Vec<String>>,
     pub flake_registry: ConfigVal<String>,
     pub max_jobs: ConfigVal<i32>,
-    pub substituters: ConfigVal<Vec<String>>,
+    pub substituters: ConfigVal<Vec<Url>>,
     pub system: ConfigVal<String>,
 }
 
@@ -30,7 +33,10 @@ pub struct ConfigVal<T> {
 }
 
 /// The HTML view for config values that are lists; rendered as HTML lists.
-impl IntoView for ConfigVal<Vec<String>> {
+impl<T> IntoView for ConfigVal<Vec<T>>
+where
+    T: Display,
+{
     fn into_view(self, cx: Scope) -> View {
         view! { cx,
             // Render a list of T items in the list 'self'
@@ -38,7 +44,7 @@ impl IntoView for ConfigVal<Vec<String>> {
                 {self
                     .value
                     .into_iter()
-                    .map(|item| view! { cx, <li class="list-disc">{item}</li> })
+                    .map(|item| view! { cx, <li class="list-disc">{item.to_string()}</li> })
                     .collect_view(cx)}
             </div>
         }
@@ -77,7 +83,7 @@ pub async fn run_nix_show_config() -> Result<NixConfig, ServerFnError> {
 
 impl IntoView for NixConfig {
     fn into_view(self, cx: Scope) -> View {
-        fn mk_row<T: IntoView>(cx: Scope, key: impl IntoView, value: ConfigVal<T>) -> impl IntoView
+        fn mk_row<T>(cx: Scope, key: impl IntoView, value: ConfigVal<T>) -> impl IntoView
         where
             ConfigVal<T>: IntoView,
         {
