@@ -30,7 +30,7 @@ pub async fn main(args: cli::Args) {
 #[instrument(name = "server")]
 #[allow(clippy::async_yields_async)]
 async fn create_server(
-    leptos_site_addr: Option<String>,
+    leptos_site_addr: Option<SocketAddr>,
 ) -> axum::Server<AddrIncoming, IntoMakeService<axum::Router>> {
     let conf = get_configuration(None).await.unwrap();
     tracing::debug!("Firing up Leptos app with config: {:?}", conf);
@@ -57,21 +57,7 @@ async fn create_server(
         )
         .with_state(conf.leptos_options.clone());
 
-    let site_addr = leptos_site_addr
-        .map(|s| s.parse::<SocketAddr>())
-        .map(|s| match s {
-            Ok(site_addr) => site_addr,
-            Err(err) => {
-                tracing::error!(
-                    "{}, defaulting to: {}",
-                    err,
-                    conf.leptos_options.site_addr.to_string()
-                );
-                conf.leptos_options.site_addr
-            }
-        })
-        .unwrap_or(conf.leptos_options.site_addr);
-
+    let site_addr = leptos_site_addr.unwrap_or(conf.leptos_options.site_addr);
     let server = axum::Server::bind(&site_addr).serve(app.into_make_service());
     tracing::info!("nix-browser web 🌀️ http://{}", server.local_addr());
     server

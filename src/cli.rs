@@ -1,5 +1,6 @@
 //! Command-line interface
 use clap::Parser;
+use std::net::SocketAddr;
 
 #[derive(Parser, Debug)]
 pub struct Args {
@@ -11,7 +12,7 @@ pub struct Args {
 
     /// Provides a way to control the address leptos is served from
     #[arg(short = 's', long = "site-addr")]
-    pub leptos_site_addr: Option<String>,
+    pub leptos_site_addr: Option<SocketAddr>,
 }
 
 /// Whether the app is running under `cargo leptos ...`
