@@ -8,7 +8,9 @@ use leptos::*;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
 
-use self::check::{caches::Caches, flake_enabled::FlakeEnabled, max_jobs::MaxJobs, min_nix_version::MinNixVersion};
+use self::check::{
+    caches::Caches, flake_enabled::FlakeEnabled, max_jobs::MaxJobs, min_nix_version::MinNixVersion,
+};
 use self::report::{NoDetails, Report, WithDetails};
 use self::traits::Check;
 use super::info;
@@ -42,7 +44,12 @@ impl<'a> IntoIterator for &'a NixHealth {
 
     /// Return an iterator to iterate on the fields of [NixHealth]
     fn into_iter(self) -> Self::IntoIter {
-        let items: Vec<Self::Item> = vec![&self.max_jobs, &self.caches, &self.flake_enabled, &self.min_nix_version];
+        let items: Vec<Self::Item> = vec![
+            &self.max_jobs,
+            &self.caches,
+            &self.flake_enabled,
+            &self.min_nix_version,
+        ];
         items.into_iter()
     }
 }

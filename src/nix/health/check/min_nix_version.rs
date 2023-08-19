@@ -6,8 +6,8 @@ use crate::nix::{
         report::{Report, WithDetails},
         traits::Check,
     },
-    version::NixVersion,
     info,
+    version::NixVersion,
 };
 
 /// Check that [crate::nix::version::NixVersion] is set to a good value.
@@ -22,7 +22,13 @@ impl Check for MinNixVersion {
         "Minimum Nix Version"
     }
     fn report(&self) -> Report<WithDetails> {
-        if self.0 >= (NixVersion{ major: 2, minor: 13, patch: 0 }) {
+        if self.0
+            >= (NixVersion {
+                major: 2,
+                minor: 13,
+                patch: 0,
+            })
+        {
             Report::Green
         } else {
             Report::Red(WithDetails {
@@ -35,6 +41,6 @@ impl Check for MinNixVersion {
 
 impl IntoView for MinNixVersion {
     fn into_view(self, cx: Scope) -> View {
-        view! { cx, <span> "Nix version: " {self.0} </span> }.into_view(cx)
+        view! { cx, <span>"Nix version: " {self.0}</span> }.into_view(cx)
     }
 }
