@@ -18,6 +18,7 @@ pub struct NixConfig {
     pub max_jobs: ConfigVal<i32>,
     pub substituters: ConfigVal<Vec<Url>>,
     pub system: ConfigVal<String>,
+    pub trusted_users: ConfigVal<Vec<String>>,
 }
 
 /// The value for each 'nix show-config --json' key.
@@ -105,6 +106,7 @@ impl IntoView for NixConfig {
                         {mk_row(cx, "System", self.system)} {mk_row(cx, "Max Jobs", self.max_jobs)}
                         {mk_row(cx, "Cores per build", self.cores)}
                         {mk_row(cx, "Nix Caches", self.substituters)}
+                        {mk_row(cx, "Trusted users", self.trusted_users)}
                     </tbody>
                 </table>
             </div>

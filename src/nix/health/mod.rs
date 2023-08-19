@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use tracing::instrument;
 
 use self::check::{
-    caches::Caches, flake_enabled::FlakeEnabled, max_jobs::MaxJobs, min_nix_version::MinNixVersion,
+    caches::Caches, flake_enabled::FlakeEnabled, max_jobs::MaxJobs, min_nix_version::MinNixVersion, trusted_users::TrustedUsers
 };
 use self::report::{NoDetails, Report, WithDetails};
 use self::traits::Check;
@@ -36,6 +36,7 @@ pub struct NixHealth {
     caches: Caches,
     flake_enabled: FlakeEnabled,
     min_nix_version: MinNixVersion,
+    trusted_users: TrustedUsers,
 }
 
 impl<'a> IntoIterator for &'a NixHealth {
@@ -62,6 +63,7 @@ impl Check for NixHealth {
             caches: Caches::check(info),
             flake_enabled: FlakeEnabled::check(info),
             min_nix_version: MinNixVersion::check(info),
+            trusted_users: TrustedUsers::check(info),
         }
     }
     fn name(&self) -> &'static str {
@@ -112,6 +114,7 @@ impl IntoView for NixHealth {
                 <ViewCheck check=self.max_jobs/>
                 <ViewCheck check=self.caches/>
                 <ViewCheck check=self.flake_enabled/>
+                <ViewCheck check=self.trusted_users/>
             </div>
         }
         .into_view(cx)
