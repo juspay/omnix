@@ -8,11 +8,11 @@ use std::fmt;
 use tracing::instrument;
 
 /// Nix version as parsed from `nix --version`
-#[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize)]
+#[derive(Clone, PartialOrd, PartialEq, Eq, Debug, Serialize, Deserialize)]
 pub struct NixVersion {
-    major: u32,
-    minor: u32,
-    patch: u32,
+    pub major: u32,
+    pub minor: u32,
+    pub patch: u32,
 }
 
 /// Parse the string output of `nix --version` into a [NixVersion]

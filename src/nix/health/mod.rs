@@ -8,7 +8,7 @@ use leptos::*;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
 
-use self::check::{caches::Caches, flake_enabled::FlakeEnabled, max_jobs::MaxJobs};
+use self::check::{caches::Caches, flake_enabled::FlakeEnabled, max_jobs::MaxJobs, min_nix_version::MinNixVersion};
 use self::report::{NoDetails, Report, WithDetails};
 use self::traits::Check;
 use super::info;
@@ -33,6 +33,7 @@ pub struct NixHealth {
     max_jobs: MaxJobs,
     caches: Caches,
     flake_enabled: FlakeEnabled,
+    min_nix_version: MinNixVersion,
 }
 
 impl<'a> IntoIterator for &'a NixHealth {
@@ -41,7 +42,7 @@ impl<'a> IntoIterator for &'a NixHealth {
 
     /// Return an iterator to iterate on the fields of [NixHealth]
     fn into_iter(self) -> Self::IntoIter {
-        let items: Vec<Self::Item> = vec![&self.max_jobs, &self.caches, &self.flake_enabled];
+        let items: Vec<Self::Item> = vec![&self.max_jobs, &self.caches, &self.flake_enabled, &self.min_nix_version];
         items.into_iter()
     }
 }
@@ -53,6 +54,7 @@ impl Check for NixHealth {
             max_jobs: MaxJobs::check(info),
             caches: Caches::check(info),
             flake_enabled: FlakeEnabled::check(info),
+            min_nix_version: MinNixVersion::check(info),
         }
     }
     fn name(&self) -> &'static str {
@@ -102,6 +104,7 @@ impl IntoView for NixHealth {
                 <ViewCheck check=self.max_jobs/>
                 <ViewCheck check=self.caches/>
                 <ViewCheck check=self.flake_enabled/>
+                <ViewCheck check=self.min_nix_version/>
             </div>
         }
         .into_view(cx)
