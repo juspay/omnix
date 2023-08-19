@@ -108,10 +108,10 @@ impl IntoView for NixHealth {
         view! { cx,
             <div class="flex flex-col items-stretch justify-start space-y-8 text-left">
                 // TODO: Make this use [NixHealth::into_iter]
+                <ViewCheck check=self.min_nix_version/>
                 <ViewCheck check=self.max_jobs/>
                 <ViewCheck check=self.caches/>
                 <ViewCheck check=self.flake_enabled/>
-                <ViewCheck check=self.min_nix_version/>
             </div>
         }
         .into_view(cx)
