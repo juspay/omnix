@@ -22,7 +22,7 @@ impl Check for MinNixVersion {
         "Minimum Nix Version"
     }
     fn report(&self) -> Report<WithDetails> {
-        if self.0 >= (NixVersion{ major: 3, minor: 13, patch: 0 }) {
+        if self.0 >= (NixVersion{ major: 2, minor: 13, patch: 0 }) {
             Report::Green
         } else {
             Report::Red(WithDetails {
@@ -35,6 +35,6 @@ impl Check for MinNixVersion {
 
 impl IntoView for MinNixVersion {
     fn into_view(self, cx: Scope) -> View {
-        view! { cx, <span>"experimental-features: " </span> }.into_view(cx)
+        view! { cx, <span> "Nix version: " {self.0} </span> }.into_view(cx)
     }
 }
