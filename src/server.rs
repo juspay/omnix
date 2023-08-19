@@ -19,7 +19,7 @@ use crate::cli;
 /// Axum server main entry point
 pub async fn main(args: cli::Args) {
     setup_logging();
-    let server = create_server(args.leptos_site_addr).await;
+    let server = create_server(&args).await;
     if !args.no_open {
         open_http_app(server.local_addr()).await;
     }
@@ -30,9 +30,9 @@ pub async fn main(args: cli::Args) {
 #[instrument(name = "server")]
 #[allow(clippy::async_yields_async)]
 async fn create_server(
-    leptos_site_addr: Option<SocketAddr>,
+    args: &cli::Args,
 ) -> axum::Server<AddrIncoming, IntoMakeService<axum::Router>> {
-    let conf = get_configuration(None).await.unwrap();
+    let conf = get_leptos_options(args).await;
     tracing::debug!("Firing up Leptos app with config: {:?}", conf);
     leptos_query::suppress_query_load(true); // https://github.com/nicoburniske/leptos_query/issues/6
     let routes = generate_route_list(|cx| view! { cx, <App/> }).await;
@@ -57,10 +57,20 @@ async fn create_server(
         )
         .with_state(conf.leptos_options.clone());
 
-    let site_addr = leptos_site_addr.unwrap_or(conf.leptos_options.site_addr);
-    let server = axum::Server::bind(&site_addr).serve(app.into_make_service());
+    let server = axum::Server::bind(&conf.leptos_options.site_addr).serve(app.into_make_service());
     tracing::info!("nix-browser web 🌀️ http://{}", server.local_addr());
     server
+}
+
+async fn get_leptos_options(args: &cli::Args) -> leptos_config::ConfFile {
+    let conf_file = get_configuration(None).await.unwrap();
+    let leptos_options = leptos_config::LeptosOptions {
+        site_addr: args
+            .leptos_site_addr
+            .unwrap_or(conf_file.leptos_options.site_addr),
+        ..conf_file.leptos_options
+    };
+    leptos_config::ConfFile { leptos_options }
 }
 
 fn setup_logging() {
