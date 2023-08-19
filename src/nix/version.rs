@@ -8,11 +8,11 @@ use thiserror::Error;
 use tracing::instrument;
 
 /// Nix version as parsed from `nix --version`
-#[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize)]
+#[derive(Clone, PartialOrd, PartialEq, Eq, Debug, Serialize, Deserialize)]
 pub struct NixVersion {
-    major: u32,
-    minor: u32,
-    patch: u32,
+    pub major: u32,
+    pub minor: u32,
+    pub patch: u32,
 }
 
 #[derive(Error, Debug, Clone, PartialEq)]
@@ -61,7 +61,7 @@ pub async fn run_nix_version() -> Result<NixVersion, ServerFnError> {
 /// The HTML view for [NixVersion]
 impl IntoView for NixVersion {
     fn into_view(self, cx: Scope) -> View {
-        view! { cx, <pre>{format!("{}", self)}</pre> }.into_view(cx)
+        view! { cx, <span class="font-mono">{format!("{}", self)}</span> }.into_view(cx)
     }
 }
 

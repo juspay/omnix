@@ -26,8 +26,8 @@ impl Check for MaxJobs {
             Report::Green
         } else {
             Report::Red(WithDetails {
-                msg: "You are using only 1 core for nix builds",
-                suggestion: "Try editing /etc/nix/nix.conf",
+                msg: "You are using only 1 core for nix builds".into(),
+                suggestion: "Try editing /etc/nix/nix.conf".into(),
             })
         }
     }

@@ -27,8 +27,8 @@ impl Check for FlakeEnabled {
             Report::Green
         } else {
             Report::Red(WithDetails {
-                msg: "Nix flakes are not enabled",
-                suggestion: "See https://nixos.wiki/wiki/Flakes#Enable_flakes",
+                msg: "Nix flakes are not enabled".into(),
+                suggestion: "See https://nixos.wiki/wiki/Flakes#Enable_flakes".into(),
             })
         }
     }

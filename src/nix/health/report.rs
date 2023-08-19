@@ -23,9 +23,9 @@ pub struct NoDetails;
 #[derive(Debug, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize, Clone)]
 pub struct WithDetails {
     /// A short message describing the problem
-    pub msg: &'static str,
+    pub msg: String,
     /// A suggestion for how to fix the problem
-    pub suggestion: &'static str,
+    pub suggestion: String,
 } // TODO: Should this be Markdown?
 
 impl Report<WithDetails> {
