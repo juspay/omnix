@@ -1729,6 +1729,7 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "tracing-subscriber-wasm",
+ "url",
  "uuid",
  "wasm-bindgen",
 ]
@@ -2824,6 +2825,7 @@ dependencies = [
  "form_urlencoded",
  "idna",
  "percent-encoding",
+ "serde",
 ]
 
 [[package]]
