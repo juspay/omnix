@@ -19,7 +19,8 @@ use crate::cli;
 /// Axum server main entry point
 pub async fn main(args: cli::Args) {
     setup_logging();
-    let server = create_server(&args).await;
+    let leptos_options = get_leptos_options(&args).await;
+    let server = create_server(leptos_options).await;
     if !args.no_open {
         open_http_app(server.local_addr()).await;
     }
@@ -30,9 +31,8 @@ pub async fn main(args: cli::Args) {
 #[instrument(name = "server")]
 #[allow(clippy::async_yields_async)]
 async fn create_server(
-    args: &cli::Args,
+    leptos_options: leptos_config::LeptosOptions,
 ) -> axum::Server<AddrIncoming, IntoMakeService<axum::Router>> {
-    let leptos_options = get_leptos_options(args).await;
     tracing::debug!("Firing up Leptos app with config: {:?}", leptos_options);
     leptos_query::suppress_query_load(true); // https://github.com/nicoburniske/leptos_query/issues/6
     let routes = generate_route_list(|cx| view! { cx, <App/> }).await;
