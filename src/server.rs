@@ -65,9 +65,7 @@ async fn create_server(
 async fn get_leptos_options(args: &cli::Args) -> leptos_config::LeptosOptions {
     let conf_file = get_configuration(None).await.unwrap();
     leptos_config::LeptosOptions {
-        site_addr: args
-            .leptos_site_addr
-            .unwrap_or(conf_file.leptos_options.site_addr),
+        site_addr: args.site_addr.unwrap_or(conf_file.leptos_options.site_addr),
         ..conf_file.leptos_options
     }
 }

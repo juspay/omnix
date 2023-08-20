@@ -10,9 +10,14 @@ pub struct Args {
     #[arg(short = 'n', long = "no-open", default_value_t = in_cargo_leptos())]
     pub no_open: bool,
 
-    /// Provides a way to control the address leptos is served from
+    /// The address to serve the application on
+    ///
+    /// Format: `IP_ADDRESS:PORT`
+    ///
+    /// Uses localhost and random port by default. To use a different port, pass
+    /// `127.0.0.1:8080`
     #[arg(short = 's', long = "site-addr")]
-    pub leptos_site_addr: Option<SocketAddr>,
+    pub site_addr: Option<SocketAddr>,
 }
 
 /// Whether the app is running under `cargo leptos ...`
