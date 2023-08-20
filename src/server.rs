@@ -19,7 +19,8 @@ use crate::cli;
 /// Axum server main entry point
 pub async fn main(args: cli::Args) {
     setup_logging();
-    let server = create_server().await;
+    let leptos_options = get_leptos_options(&args).await;
+    let server = create_server(leptos_options).await;
     if !args.no_open {
         open_http_app(server.local_addr()).await;
     }
@@ -29,21 +30,22 @@ pub async fn main(args: cli::Args) {
 /// Create an Axum server for the Leptos app
 #[instrument(name = "server")]
 #[allow(clippy::async_yields_async)]
-async fn create_server() -> axum::Server<AddrIncoming, IntoMakeService<axum::Router>> {
-    let conf = get_configuration(None).await.unwrap();
-    tracing::debug!("Firing up Leptos app with config: {:?}", conf);
+async fn create_server(
+    leptos_options: leptos_config::LeptosOptions,
+) -> axum::Server<AddrIncoming, IntoMakeService<axum::Router>> {
+    tracing::debug!("Firing up Leptos app with config: {:?}", leptos_options);
     leptos_query::suppress_query_load(true); // https://github.com/nicoburniske/leptos_query/issues/6
     let routes = generate_route_list(|cx| view! { cx, <App/> }).await;
     leptos_query::suppress_query_load(false);
-    let client_dist = ServeDir::new(conf.leptos_options.site_root.clone());
-    let leptos_options = conf.leptos_options.clone(); // A copy to move to the closure below.
+    let client_dist = ServeDir::new(leptos_options.site_root.clone());
+    let leptos_options_clone = leptos_options.clone(); // A copy to move to the closure below.
     let not_found_service =
-        tower::service_fn(move |req| not_found_handler(leptos_options.to_owned(), req));
+        tower::service_fn(move |req| not_found_handler(leptos_options_clone.to_owned(), req));
     let app = Router::new()
         // server functions API routes
         .route("/api/*fn_name", post(leptos_axum::handle_server_fns))
         // application routes
-        .leptos_routes(&conf.leptos_options, routes, |cx| view! { cx, <App/> })
+        .leptos_routes(&leptos_options, routes, |cx| view! { cx, <App/> })
         // static files are served as fallback (but *before* falling back to
         // error handler)
         .fallback_service(client_dist.clone().not_found_service(not_found_service))
@@ -53,11 +55,19 @@ async fn create_server() -> axum::Server<AddrIncoming, IntoMakeService<axum::Rou
                 .make_span_with(trace::DefaultMakeSpan::new().level(Level::DEBUG))
                 .on_response(trace::DefaultOnResponse::new().level(Level::DEBUG)),
         )
-        .with_state(conf.leptos_options.clone());
+        .with_state(leptos_options.clone());
 
-    let server = axum::Server::bind(&conf.leptos_options.site_addr).serve(app.into_make_service());
+    let server = axum::Server::bind(&leptos_options.site_addr).serve(app.into_make_service());
     tracing::info!("nix-browser web 🌀️ http://{}", server.local_addr());
     server
+}
+
+async fn get_leptos_options(args: &cli::Args) -> leptos_config::LeptosOptions {
+    let conf_file = get_configuration(None).await.unwrap();
+    leptos_config::LeptosOptions {
+        site_addr: args.site_addr.unwrap_or(conf_file.leptos_options.site_addr),
+        ..conf_file.leptos_options
+    }
 }
 
 fn setup_logging() {
