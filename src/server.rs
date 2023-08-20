@@ -11,14 +11,13 @@ use leptos::*;
 use leptos_axum::{generate_route_list, LeptosRoutes};
 use std::net::SocketAddr;
 use tower_http::services::ServeDir;
-use tower_http::trace::{self, TraceLayer};
-use tracing::{instrument, Level};
+use tracing::instrument;
 
 use crate::cli;
 
 /// Axum server main entry point
 pub async fn main(args: cli::Args) {
-    setup_logging();
+    crate::logging::setup_server_logging();
     let leptos_options = get_leptos_options(&args).await;
     let server = create_server(leptos_options).await;
     if !args.no_open {
@@ -50,11 +49,7 @@ async fn create_server(
         // error handler)
         .fallback_service(client_dist.clone().not_found_service(not_found_service))
         // enable HTTP request logging
-        .layer(
-            TraceLayer::new_for_http()
-                .make_span_with(trace::DefaultMakeSpan::new().level(Level::DEBUG))
-                .on_response(trace::DefaultOnResponse::new().level(Level::DEBUG)),
-        )
+        .layer(crate::logging::http_trace_layer())
         .with_state(leptos_options.clone());
 
     let server = axum::Server::bind(&leptos_options.site_addr).serve(app.into_make_service());
@@ -68,13 +63,6 @@ async fn get_leptos_options(args: &cli::Args) -> leptos_config::LeptosOptions {
         site_addr: args.site_addr.unwrap_or(conf_file.leptos_options.site_addr),
         ..conf_file.leptos_options
     }
-}
-
-fn setup_logging() {
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO) // TODO: --verbose should use DEBUG
-        .compact()
-        .init();
 }
 
 /// Handler for missing routes
