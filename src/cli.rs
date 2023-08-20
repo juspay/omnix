@@ -16,7 +16,12 @@ pub struct Args {
     ///
     /// Uses localhost and random port by default. To use a different port, pass
     /// `127.0.0.1:8080`
-    #[arg(short = 's', long = "site-addr")]
+    #[arg(
+        short = 's',
+        long = "site-addr",
+        default_value = "127.0.0.1:0",
+        env = "LEPTOS_SITE_ADDR"
+    )]
     pub site_addr: Option<SocketAddr>,
 }
 
