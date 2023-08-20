@@ -1,3 +1,6 @@
+# Equivalent to passing --no-open
+export NIX_BROWSER_NO_OPEN := "true"
+
 default:
     @just --list
 
