@@ -7,7 +7,7 @@ use leptos_router::*;
 
 use crate::leptos_extra::{
     query::{self, QueryInput, RefetchQueryButton},
-    signal::{provide_signal, use_signal, OptionResult, SignalWithResult},
+    signal::{provide_signal, use_signal, SignalWithResult},
 };
 use crate::nix::{
     flake::{get_flake, url::FlakeUrl},
