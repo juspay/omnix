@@ -115,12 +115,7 @@ fn Dashboard(cx: Scope) -> impl IntoView {
 /// Nix flake dashboard
 #[component]
 fn NixFlake(cx: Scope) -> impl IntoView {
-    let suggestions: Vec<FlakeUrl> = vec![
-        "github:nammayatri/nammayatri".into(),
-        "github:srid/haskell-template".into(),
-        "github:juspay/nix-browser".into(),
-        "github:nixos/nixpkgs".into(),
-    ];
+    let suggestions = FlakeUrl::suggestions();
     let (query, set_query) = use_signal::<FlakeUrl>(cx);
     let result = query::use_server_query(cx, query, get_flake);
     let data = result.data;
@@ -131,7 +126,7 @@ fn NixFlake(cx: Scope) -> impl IntoView {
         <RefetchQueryButton result query/>
         <SuspenseWithErrorHandling>
             <p class="my-2">
-            // TODO: Cleanly do navigation
+                // TODO: Cleanly do navigation
                 <li>
                     <a href="/flake">"Main"</a>
                 </li>
@@ -184,9 +179,7 @@ fn NixFlakePerSystem(cx: Scope) -> impl IntoView {
     let (query, _) = use_signal::<FlakeUrl>(cx);
     let result = query::use_server_query(cx, query, get_flake);
     let data = result.data;
-    let data = Signal::derive(cx, move || {
-        data.with_result(move |v| v.per_system[&system().into()].clone())
-    });
+    let data = move || data.with_result(move |v| v.per_system[&system().into()].clone());
     view! { cx,
         <h2 class="p-2 text-xl text-red-600">{system}</h2>
         <div class="my-1 text-left">

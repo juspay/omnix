@@ -13,6 +13,18 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct FlakeUrl(String);
 
+impl FlakeUrl {
+    /// Provide real-world examples of flake URLs
+    pub fn suggestions() -> Vec<FlakeUrl> {
+        vec![
+            "github:nammayatri/nammayatri".into(),
+            "github:srid/haskell-template".into(),
+            "github:juspay/nix-browser".into(),
+            "github:nixos/nixpkgs".into(),
+        ]
+    }
+}
+
 impl From<&str> for FlakeUrl {
     fn from(url: &str) -> Self {
         url.to_string().into()
