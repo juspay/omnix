@@ -95,12 +95,27 @@ impl IntoView for Flake {
                     {self
                         .per_system
                         .iter()
-                        .map(|(k, _v)| view! { cx, <li>{k.to_string()}</li> })
+                        .map(|(k, _v)| {
+                            let system = &k.to_string();
+
+                            view! { cx,
+                                <li>
+                                    <a href=format!("/flake/{}", system)>{system}</a>
+                                </li>
+                            }
+                        })
                         .collect_view(cx)}
                 </p>
                 <div class="font-mono text-sm">{self.output}</div>
             </div>
         }
+        .into_view(cx)
+    }
+}
+
+impl IntoView for SystemOutput {
+    fn into_view(self, cx: Scope) -> View {
+        view! { cx, <pre>"TODO: Per System"</pre> }
         .into_view(cx)
     }
 }

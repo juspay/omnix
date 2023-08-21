@@ -31,6 +31,12 @@ impl From<&str> for System {
     }
 }
 
+impl From<String> for System {
+    fn from(s: String) -> Self {
+        Self::from(s.as_str())
+    }
+}
+
 impl AsRef<str> for System {
     fn as_ref(&self) -> &str {
         match self {
