@@ -28,10 +28,24 @@ pub fn use_signal<T>(cx: Scope) -> (ReadSignal<T>, WriteSignal<T>) {
         .unwrap()
 }
 
+/// Extends [SignalWith] to add a `with_result` method that operates on the
+/// inner value, avoiding the need to clone it.
+pub trait SignalWithResult<T, E>: SignalWith<Option<Result<T, E>>> {
+    /// Like [SignalWith::with] but operates on the inner [Result] value without cloning it.
+    fn with_result<U>(&self, f: impl Fn(&T) -> U + 'static) -> Option<Result<U, E>>
+    where
+        E: Clone,
+    {
+        self.with(move |d| map_option_result_ref(d, f))
+    }
+}
+
+impl<T, E> SignalWithResult<T, E> for Signal<Option<Result<T, E>>> {}
+
 /// Map the value inside a nested [Option]-of-[Result]
 ///
 /// This function is efficient in that the inner value is not cloned.
-pub fn map_option_result_ref<T1, T2, E>(
+fn map_option_result_ref<T1, T2, E>(
     d: &Option<Result<T1, E>>,
     f: impl Fn(&T1) -> T2 + 'static,
 ) -> Option<Result<T2, E>>

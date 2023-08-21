@@ -7,7 +7,7 @@
     rust-overlay.url = "github:oxalica/rust-overlay";
     crane.url = "github:ipetkov/crane";
     crane.inputs.nixpkgs.follows = "nixpkgs";
-    treefmt-nix.url = "github:srid/treefmt-nix/leptosfmt"; # https://github.com/numtide/treefmt-nix/pull/108
+    treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
     process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
     cargo-doc-live.url = "github:srid/cargo-doc-live";
@@ -53,13 +53,7 @@
           doCheck = !pkgs.stdenv.isDarwin;
         };
 
-        packages.default = self'.packages.nix-browser.overrideAttrs (oa: {
-          installPhase = (oa.installPhase or "") + ''
-            # Make the release app use a random port *by default*.
-            wrapProgram $out/bin/${oa.pname} \
-                    --set LEPTOS_SITE_ADDR 127.0.0.1:0
-          '';
-        });
+        packages.default = self'.packages.nix-browser;
 
         devShells.default = pkgs.mkShell {
           inputsFrom = [
