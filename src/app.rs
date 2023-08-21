@@ -7,7 +7,7 @@ use leptos_router::*;
 
 use crate::leptos_extra::{
     query::{self, QueryInput, RefetchQueryButton},
-    signal::{provide_signal, use_signal, SignalWithResult},
+    signal::{provide_signal, use_signal, OptionResult, SignalWithResult},
 };
 use crate::nix::{
     flake::{get_flake, url::FlakeUrl},
@@ -25,10 +25,10 @@ pub fn App(cx: Scope) -> impl IntoView {
 
     view! { cx,
         <Stylesheet id="leptos" href="/pkg/nix-browser.css"/>
+        <Title formatter=|s| format!("{s} ― nix-browser")/>
         <Router fallback=|cx| {
             view! { cx, <NotFound/> }
         }>
-            <Title formatter=|s| format!("{s} - nix-browser")/>
             <Body class="overflow-y-scroll"/>
             <div class="flex justify-center w-full min-h-screen bg-center bg-cover bg-base-200">
                 <div class="container flex flex-col items-center mx-auto max-w-prose">
@@ -37,7 +37,9 @@ pub fn App(cx: Scope) -> impl IntoView {
                         <div class="flex flex-col space-y-3">
                             <Routes>
                                 <Route path="" view=Dashboard/>
-                                <Route path="/flake" view=NixFlake/>
+                                <Route path="/flake" view=NixFlake>
+                                    <Route path="" view=NixFlakeHome/>
+                                </Route>
                                 <Route path="/health" view=NixHealth/>
                                 <Route path="/info" view=NixInfo/>
                                 <Route path="/about" view=About/>
@@ -112,7 +114,6 @@ fn Dashboard(cx: Scope) -> impl IntoView {
 /// Nix flake dashboard
 #[component]
 fn NixFlake(cx: Scope) -> impl IntoView {
-    let title = "Nix Flake";
     let suggestions: Vec<FlakeUrl> = vec![
         "github:nammayatri/nammayatri".into(),
         "github:srid/haskell-template".into(),
@@ -121,12 +122,22 @@ fn NixFlake(cx: Scope) -> impl IntoView {
     ];
     let (query, set_query) = use_signal::<FlakeUrl>(cx);
     let result = query::use_server_query(cx, query, get_flake);
-    let data = result.data;
     view! { cx,
-        <Title text=title/>
-        <h1 class="text-5xl font-bold">{title}</h1>
+        <Title text="Nix Flake"/>
+        <h1 class="text-5xl font-bold">{"Nix Flake"}</h1>
         <QueryInput id="nix-flake-input" query set_query suggestions/>
         <RefetchQueryButton result query/>
+        <Outlet/>
+    }
+}
+
+/// Nix flake dashboard
+#[component]
+fn NixFlakeHome(cx: Scope) -> impl IntoView {
+    let (query, _) = use_signal::<FlakeUrl>(cx);
+    let result = query::use_server_query(cx, query, get_flake);
+    let data = result.data;
+    view! { cx,
         <div class="my-1 text-left">
             <SuspenseWithErrorHandling>{data}</SuspenseWithErrorHandling>
         </div>

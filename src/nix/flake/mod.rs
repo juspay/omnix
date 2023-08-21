@@ -20,12 +20,12 @@ use self::{
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Flake {
     /// The flake url which this struct represents
-    url: FlakeUrl,
+    pub url: FlakeUrl,
     /// `nix flake show` output
-    output: FlakeOutput,
+    pub output: FlakeOutput,
     // TODO: Add higher-level info
     #[serde_as(as = "BTreeMap<serde_with::json::JsonString, _>")]
-    per_system: BTreeMap<System, SystemOutput>,
+    pub per_system: BTreeMap<System, SystemOutput>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
