@@ -135,6 +135,7 @@ fn NixFlake(cx: Scope) -> impl IntoView {
                     data.get()
                         .map_option_result(move |v| {
                             v.per_system
+                                .0
                                 .keys()
                                 .clone()
                                 .map(|k| {
@@ -179,7 +180,7 @@ fn NixFlakePerSystem(cx: Scope) -> impl IntoView {
     let (query, _) = use_signal::<FlakeUrl>(cx);
     let result = query::use_server_query(cx, query, get_flake);
     let data = result.data;
-    let data = move || data.with_result(move |v| v.per_system[&system().into()].clone());
+    let data = move || data.with_result(move |v| v.per_system.0[&system().into()].clone());
     view! { cx,
         <h2 class="p-2 text-xl text-red-600">{system}</h2>
         <div class="my-1 text-left">

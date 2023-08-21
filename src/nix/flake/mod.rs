@@ -1,22 +1,16 @@
+pub mod per_system;
 pub mod show;
 pub mod system;
 pub mod url;
-
-use serde_with::serde_as;
-use std::collections::BTreeMap;
 
 use leptos::*;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
 
-use self::{
-    show::{FlakeShowOutput, Leaf},
-    system::System,
-    url::FlakeUrl,
-};
+use self::{per_system::PerSystemOutputs, show::FlakeShowOutput, system::System, url::FlakeUrl};
 
 /// All the information about a Nix flake
-#[serde_as]
+// #[serde_as]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Flake {
     /// The flake url which this struct represents
@@ -24,45 +18,14 @@ pub struct Flake {
     /// `nix flake show` output
     pub output: FlakeShowOutput,
     // TODO: Add higher-level info
-    #[serde_as(as = "BTreeMap<serde_with::json::JsonString, _>")]
-    pub per_system: BTreeMap<System, SystemOutput>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct SystemOutput {
-    packages: BTreeMap<String, Leaf>,
-    devshells: BTreeMap<String, Leaf>,
-    checks: BTreeMap<String, Leaf>,
-    apps: BTreeMap<String, Leaf>,
-}
-
-impl SystemOutput {
-    pub fn from(output: &FlakeShowOutput, system: System) -> Self {
-        let lookup_type = move |k: &str| -> BTreeMap<String, Leaf> {
-            match output.lookup_attrset(vec![k, system.as_ref()]) {
-                None => BTreeMap::new(),
-                Some(packages) => packages
-                    .iter()
-                    .filter_map(|(k, v)| {
-                        let v = v.as_leaf()?;
-                        Some((k.clone(), v.clone()))
-                    })
-                    .collect(),
-            }
-        };
-        SystemOutput {
-            packages: lookup_type("packages"),
-            devshells: lookup_type("devShells"),
-            checks: lookup_type("checks"),
-            apps: lookup_type("apps"),
-        }
-    }
+    pub per_system: PerSystemOutputs,
 }
 
 /// Get [Flake] info for the given flake url
 #[instrument(name = "flake")]
 #[server(GetFlake, "/api")]
 pub async fn get_flake(url: FlakeUrl) -> Result<Flake, ServerFnError> {
+    use std::collections::BTreeMap;
     let output = self::show::run_nix_flake_show(&url).await?;
     let mut per_system = BTreeMap::new();
     for system in [
@@ -73,13 +36,13 @@ pub async fn get_flake(url: FlakeUrl) -> Result<Flake, ServerFnError> {
     ] {
         per_system.insert(
             System::from(system),
-            SystemOutput::from(&output, System::from(system)),
+            per_system::SystemOutput::from(&output, System::from(system)),
         );
     }
     Ok(Flake {
         url,
         output,
-        per_system,
+        per_system: PerSystemOutputs(per_system),
     })
 }
 
@@ -94,6 +57,7 @@ impl IntoView for Flake {
                     TODO: Show overview, rather than raw flake output
                     {self
                         .per_system
+                        .0
                         .iter()
                         .map(|(k, _v)| {
                             let system = &k.to_string();
@@ -110,11 +74,5 @@ impl IntoView for Flake {
             </div>
         }
         .into_view(cx)
-    }
-}
-
-impl IntoView for SystemOutput {
-    fn into_view(self, cx: Scope) -> View {
-        view! { cx, <pre>"TODO: Per System"</pre> }.into_view(cx)
     }
 }
