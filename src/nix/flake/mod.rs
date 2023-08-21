@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use tracing::instrument;
 
 use self::{
-    show::{FlakeOutput, Leaf},
+    show::{FlakeShowOutput, Leaf},
     system::System,
     url::FlakeUrl,
 };
@@ -22,7 +22,7 @@ pub struct Flake {
     /// The flake url which this struct represents
     pub url: FlakeUrl,
     /// `nix flake show` output
-    pub output: FlakeOutput,
+    pub output: FlakeShowOutput,
     // TODO: Add higher-level info
     #[serde_as(as = "BTreeMap<serde_with::json::JsonString, _>")]
     pub per_system: BTreeMap<System, SystemOutput>,
@@ -37,7 +37,7 @@ pub struct SystemOutput {
 }
 
 impl SystemOutput {
-    pub fn from(output: &FlakeOutput, system: System) -> Self {
+    pub fn from(output: &FlakeShowOutput, system: System) -> Self {
         let lookup_type = move |k: &str| -> BTreeMap<String, Leaf> {
             match output.lookup_attrset(vec![k, system.as_ref()]) {
                 None => BTreeMap::new(),
@@ -115,7 +115,6 @@ impl IntoView for Flake {
 
 impl IntoView for SystemOutput {
     fn into_view(self, cx: Scope) -> View {
-        view! { cx, <pre>"TODO: Per System"</pre> }
-        .into_view(cx)
+        view! { cx, <pre>"TODO: Per System"</pre> }.into_view(cx)
     }
 }

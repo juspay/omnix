@@ -9,16 +9,16 @@ use std::collections::BTreeMap;
 /// Output of `nix flake show` (with IFD)
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
-pub enum FlakeOutput {
+pub enum FlakeShowOutput {
     Leaf(Leaf),
-    Attrset(FlakeOutputSet),
+    Attrset(FlakeShowOutputSet),
 }
 
 /// An attrset of flake outputs
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct FlakeOutputSet(BTreeMap<String, FlakeOutput>);
+pub struct FlakeShowOutputSet(BTreeMap<String, FlakeShowOutput>);
 
-impl FlakeOutput {
+impl FlakeShowOutput {
     pub fn as_leaf(&self) -> Option<&Leaf> {
         match self {
             Self::Leaf(v) => Some(v),
@@ -26,7 +26,7 @@ impl FlakeOutput {
         }
     }
 
-    pub fn as_attrset(&self) -> Option<&BTreeMap<String, FlakeOutput>> {
+    pub fn as_attrset(&self) -> Option<&BTreeMap<String, FlakeShowOutput>> {
         match self {
             Self::Attrset(v) => Some(&v.0),
             _ => None,
@@ -45,7 +45,7 @@ impl FlakeOutput {
         Some(cur)
     }
 
-    pub fn lookup_attrset(&self, path: Vec<&str>) -> Option<&BTreeMap<String, FlakeOutput>> {
+    pub fn lookup_attrset(&self, path: Vec<&str>) -> Option<&BTreeMap<String, FlakeShowOutput>> {
         self.lookup(path)?.as_attrset()
     }
 }
@@ -76,7 +76,7 @@ pub enum Type {
 
 /// Run `nix flake show` on the given flake url
 #[cfg(feature = "ssr")]
-pub async fn run_nix_flake_show(flake_url: &FlakeUrl) -> Result<FlakeOutput, ServerFnError> {
+pub async fn run_nix_flake_show(flake_url: &FlakeUrl) -> Result<FlakeShowOutput, ServerFnError> {
     use tokio::process::Command;
 
     let mut cmd = Command::new("nix");
@@ -90,14 +90,14 @@ pub async fn run_nix_flake_show(flake_url: &FlakeUrl) -> Result<FlakeOutput, Ser
         &flake_url.to_string(),
     ]);
     let stdout: Vec<u8> = crate::command::run_command(&mut cmd).await?;
-    let v = serde_json::from_slice::<FlakeOutput>(&stdout)?;
+    let v = serde_json::from_slice::<FlakeShowOutput>(&stdout)?;
     Ok(v)
 }
 
-/// The [IntoView] instance for [FlakeOutput] renders it recursively.
+/// The [IntoView] instance for [FlakeShowOutput] renders it recursively.
 ///
 /// WARNING: This may cause performance problems if the tree is large.
-impl IntoView for FlakeOutput {
+impl IntoView for FlakeShowOutput {
     fn into_view(self, cx: Scope) -> View {
         match self {
             Self::Leaf(v) => v.into_view(cx),
@@ -121,7 +121,7 @@ impl IntoView for Leaf {
     }
 }
 
-impl IntoView for FlakeOutputSet {
+impl IntoView for FlakeShowOutputSet {
     fn into_view(self, cx: Scope) -> View {
         view! { cx,
             <ul class="list-disc">
