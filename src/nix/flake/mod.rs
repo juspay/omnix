@@ -53,23 +53,7 @@ impl IntoView for Flake {
         view! { cx,
             <div class="flex flex-col my-4">
                 <h3 class="text-lg font-bold">{self.url}</h3>
-                <p class="my-2">
-                    TODO: Show overview, rather than raw flake output
-                    {self
-                        .per_system
-                        .0
-                        .iter()
-                        .map(|(k, _v)| {
-                            let system = &k.to_string();
 
-                            view! { cx,
-                                <li>
-                                    <a href=format!("/flake/{}", system)>{system}</a>
-                                </li>
-                            }
-                        })
-                        .collect_view(cx)}
-                </p>
                 <div class="font-mono text-sm">{self.output}</div>
             </div>
         }
