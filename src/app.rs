@@ -138,7 +138,7 @@ fn NixFlakeNav(cx: Scope) -> impl IntoView {
     let result = query::use_server_query(cx, query, get_flake);
     let data = result.data;
     view! { cx,
-        <p class="my-2">
+        <ul class="my-2">
             // TODO: Cleanly do navigation
             <li>
                 <a href="/flake">"Main"</a>
@@ -162,7 +162,12 @@ fn NixFlakeNav(cx: Scope) -> impl IntoView {
 
                                         view! { cx,
                                             <li>
-                                                <a href=format!("/flake/{}", system)>{system}</a>
+                                                <a
+                                                    class="hover:bg-primary-200"
+                                                    href=format!("/flake/{}", system)
+                                                >
+                                                    {system}
+                                                </a>
                                             </li>
                                         }
                                     }
@@ -173,7 +178,7 @@ fn NixFlakeNav(cx: Scope) -> impl IntoView {
 
             </SuspenseWithErrorHandling>
 
-        </p>
+        </ul>
     }
 }
 
