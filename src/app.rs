@@ -117,9 +117,7 @@ fn Dashboard(cx: Scope) -> impl IntoView {
 fn NixFlake(cx: Scope) -> impl IntoView {
     let suggestions = FlakeUrl::suggestions();
     let (query, set_query) = use_signal::<FlakeUrl>(cx);
-    tracing::info!("🍎 before use_server_query");
     let result = query::use_server_query(cx, query, get_flake);
-    tracing::info!("🍎 after use_server_query");
     view! { cx,
         <Title text="Nix Flake"/>
         <h1 class="text-5xl font-bold">{"Nix Flake"}</h1>
@@ -133,7 +131,6 @@ fn NixFlake(cx: Scope) -> impl IntoView {
 
 #[component]
 fn NixFlakeNav(cx: Scope) -> impl IntoView {
-    tracing::info!("🍎 in nav");
     let (query, _) = use_signal::<FlakeUrl>(cx);
     let result = query::use_server_query(cx, query, get_flake);
     let data = result.data;
@@ -143,11 +140,6 @@ fn NixFlakeNav(cx: Scope) -> impl IntoView {
             <li>
                 <a href="/flake">"Main"</a>
             </li>
-            // <a href="/flake/x86_64-linux">"x86_64-linux"</a>
-            // <a href="/flake/aarch64-linux">"aarch64-linux"</a>
-            // <a href="/flake/x86_64-darwin">"x86_64-darwin"</a>
-            // <a href="/flake/aarch64-darwin">"aarch64-darwin"</a>
-            // FIXME: why is this (not above) causing route switch bug?
             <SuspenseWithErrorHandling>
                 {move || {
                     data.get()
