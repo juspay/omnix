@@ -5,16 +5,19 @@ use leptos_meta::*;
 use leptos_query::*;
 use leptos_router::*;
 
-use crate::leptos_extra::{
-    query::{self, QueryInput, RefetchQueryButton},
-    signal::{provide_signal, use_signal, OptionResult, SignalWithResult},
-};
 use crate::nix::{
     flake::{get_flake, url::FlakeUrl},
     health::{get_nix_health, traits::Check},
     info::get_nix_info,
 };
 use crate::widget::*;
+use crate::{
+    leptos_extra::{
+        query::{self, QueryInput, RefetchQueryButton},
+        signal::{provide_signal, use_signal, OptionResult, SignalWithResult},
+    },
+    nix::flake::Flake,
+};
 
 /// Main frontend application container
 #[component]
@@ -125,40 +128,48 @@ fn NixFlake(cx: Scope) -> impl IntoView {
         <QueryInput id="nix-flake-input" query set_query suggestions/>
         <RefetchQueryButton result query/>
         <SuspenseWithErrorHandling>
-            <p class="my-2">
-                // TODO: Cleanly do navigation
-                <li>
-                    <a href="/flake">"Main"</a>
-                </li>
-                {move || {
-                    tracing::info!("NixFlake");
-                    data.get()
-                        .map_option_result(move |v| {
-                            v.per_system
-                                .0
-                                .keys()
-                                .clone()
-                                .map(|k| {
-                                    {
-                                        let system = &k.to_string().clone();
-
-                                        view! { cx,
-                                            <li>
-                                                <a href=format!("/flake/{}", system)>{system}</a>
-                                            </li>
-                                        }
-                                    }
-                                })
-                                .collect_view(cx)
-                        })
-                }}
-
-            </p>
-
-            "BEGIN SUBROUTE"
-            <Outlet/>
-            "END"
+            <NixFlakeNav data/>
         </SuspenseWithErrorHandling>
+
+        // Without this suspense wrapper around Outlet, route switches can become null and void in the middle (BUG).
+        <SuspenseWithErrorHandling>
+            <Outlet/>
+        </SuspenseWithErrorHandling>
+    }
+}
+
+#[component]
+fn NixFlakeNav(cx: Scope, data: Signal<Option<Result<Flake, ServerFnError>>>) -> impl IntoView {
+    view! { cx,
+        <p class="my-2">
+            // TODO: Cleanly do navigation
+            <li>
+                <a href="/flake">"Main"</a>
+            </li>
+            {move || {
+                tracing::info!("NixFlake");
+                data.get()
+                    .map_option_result(move |v| {
+                        v.per_system
+                            .0
+                            .keys()
+                            .clone()
+                            .map(|k| {
+                                {
+                                    let system = &k.to_string().clone();
+
+                                    view! { cx,
+                                        <li>
+                                            <a href=format!("/flake/{}", system)>{system}</a>
+                                        </li>
+                                    }
+                                }
+                            })
+                            .collect_view(cx)
+                    })
+            }}
+
+        </p>
     }
 }
 
@@ -167,7 +178,12 @@ fn NixFlakeHome(cx: Scope) -> impl IntoView {
     let (query, _) = use_signal::<FlakeUrl>(cx);
     let result = query::use_server_query(cx, query, get_flake);
     let data = result.data;
-    view! { cx, <div class="my-1 text-left">{data}</div> }
+    view! { cx,
+        <div class="my-1 text-left">
+            "Home" <SuspenseWithErrorHandling>{data}</SuspenseWithErrorHandling>
+
+        </div>
+    }
     // <SuspenseWithErrorHandling>{data}</SuspenseWithErrorHandling>
 }
 
@@ -182,10 +198,11 @@ fn NixFlakePerSystem(cx: Scope) -> impl IntoView {
     let data = result.data;
     let data = move || data.with_result(move |v| v.per_system.0[&system().into()].clone());
     view! { cx,
-        <h2 class="p-2 text-xl text-red-600">{system}</h2>
+        <h2 class="p-2 text-xl text-red-600">
+            <SuspenseWithErrorHandling>{system}</SuspenseWithErrorHandling>
+        </h2>
         <div class="my-1 text-left">
-            // <SuspenseWithErrorHandling>{data}</SuspenseWithErrorHandling>
-            {data}
+            <SuspenseWithErrorHandling>{data}</SuspenseWithErrorHandling>
         </div>
     }
 }
