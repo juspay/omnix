@@ -31,14 +31,14 @@ impl Check for TrustedUsers {
                 Report::Green
             } else {
                 Report::Red(WithDetails {
-                    msg: "$USER not present in trusted_users",
-                    suggestion: "Run 'echo \"trusted-users = root srid\" | sudo tee -a /etc/nix/nix.conf && sudo pkill nix-daemon'",
+                    msg: "$USER not present in trusted_users".into(),
+                    suggestion: "Run 'echo \"trusted-users = root $USER\" | sudo tee -a /etc/nix/nix.conf && sudo pkill nix-daemon'".into(),
                 })
             }
         } else {
             Report::Red(WithDetails {
-                msg: "$USER environment variable not set",
-                suggestion: "Run 'export USER=$(whoami)'",
+                msg: "$USER environment variable not set".into(),
+                suggestion: "Run 'export USER=$(whoami)'".into(),
             })
         }
     }
