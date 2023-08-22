@@ -16,7 +16,7 @@ pub enum FlakeShowOutput {
 
 /// An attrset of flake outputs
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct FlakeShowOutputSet(BTreeMap<String, FlakeShowOutput>);
+pub struct FlakeShowOutputSet(pub BTreeMap<String, FlakeShowOutput>);
 
 impl FlakeShowOutput {
     pub fn as_leaf(&self) -> Option<&Leaf> {

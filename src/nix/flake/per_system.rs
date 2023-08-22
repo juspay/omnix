@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 
 use super::{
-    show::{FlakeShowOutput, Leaf},
+    show::{FlakeShowOutput, FlakeShowOutputSet, Leaf},
     System,
 };
 
@@ -49,6 +49,24 @@ impl SystemOutput {
 
 impl IntoView for SystemOutput {
     fn into_view(self, cx: Scope) -> View {
-        view! { cx, <pre>"TODO: Per System"</pre> }.into_view(cx)
+        let mut m = BTreeMap::new();
+        for k in [
+            ("packages", self.packages),
+            ("devshells", self.devshells),
+            ("checks", self.checks),
+            ("apps", self.apps),
+        ] {
+            m.insert(
+                k.0.to_string(),
+                FlakeShowOutput::Attrset(FlakeShowOutputSet(
+                    k.1.into_iter()
+                        .map(|(k, v)| (k, FlakeShowOutput::Leaf(v)))
+                        .collect(),
+                )),
+            );
+        }
+
+        let data = FlakeShowOutputSet(m);
+        data.into_view(cx)
     }
 }

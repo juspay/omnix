@@ -179,9 +179,8 @@ fn NixFlakeHome(cx: Scope) -> impl IntoView {
     let result = query::use_server_query(cx, query, get_flake);
     let data = result.data;
     view! { cx,
-        <div class="my-1 text-left">
-            "Home" <SuspenseWithErrorHandling>{data}</SuspenseWithErrorHandling>
-
+        <div class="p-2 my-1 text-left border-2 border-black">
+            <SuspenseWithErrorHandling>{data}</SuspenseWithErrorHandling>
         </div>
     }
     // <SuspenseWithErrorHandling>{data}</SuspenseWithErrorHandling>
