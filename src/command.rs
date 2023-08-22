@@ -13,7 +13,7 @@ pub async fn run_command(cmd: &mut Command) -> Result<Vec<u8>, CommandError> {
 
 #[instrument(name = "run-command", err)]
 async fn run_command_(cmd: &mut Command) -> Result<Vec<u8>, CommandError> {
-    tracing::info!("Running command");
+    tracing::info!("🖥️ Running command");
     let out = cmd.output().await?;
     if out.status.success() {
         Ok(out.stdout)
