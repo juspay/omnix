@@ -31,10 +31,9 @@ pub fn App(cx: Scope) -> impl IntoView {
         }>
             <Body class="overflow-y-scroll"/>
             <div class="flex justify-center w-full min-h-screen bg-center bg-cover bg-base-200">
-                <div class="container flex flex-col items-center mx-auto max-w-prose">
+                <div class="container flex flex-col items-stretch mx-auto max-w-prose">
                     <Nav/>
-                    <div class="z-0 flex col-start-1 row-start-1 px-2 text-center">
-                        <div class="flex flex-col space-y-3">
+                    <main class="flex flex-col px-2 space-y-3 text-center">
                             <Routes>
                                 <Route path="" view=Dashboard/>
                                 <Route path="/flake" view=NixFlake>
@@ -45,8 +44,7 @@ pub fn App(cx: Scope) -> impl IntoView {
                                 <Route path="/info" view=NixInfo/>
                                 <Route path="/about" view=About/>
                             </Routes>
-                        </div>
-                    </div>
+                    </main>
                 </div>
             </div>
         </Router>
