@@ -139,10 +139,10 @@ fn NixFlakeNav(cx: Scope) -> impl IntoView {
     view! { cx,
         <nav class="flex flex-row items-center justify-center w-full my-2 ">
             // TODO: Cleanly do navigation
-            <A class href="/flake" exact=true>
-                "All"
-            </A>
             <SuspenseWithErrorHandling>
+                <A class href="/flake" exact=true>
+                    "All"
+                </A>
                 {move || {
                     data.get()
                         .map_option_result(move |v| {

@@ -20,9 +20,11 @@ pub struct PerSystemOutputs(
 pub struct SystemOutput {
     system: System,
     packages: BTreeMap<String, Leaf>,
+    legacy_packages: BTreeMap<String, Leaf>,
     devshells: BTreeMap<String, Leaf>,
     checks: BTreeMap<String, Leaf>,
     apps: BTreeMap<String, Leaf>,
+    // TODO: Add arbitrary outputs
 }
 
 impl SystemOutput {
@@ -42,6 +44,7 @@ impl SystemOutput {
         SystemOutput {
             system: system.clone(),
             packages: lookup_type("packages"),
+            legacy_packages: lookup_type("legacyPackages"),
             devshells: lookup_type("devShells"),
             checks: lookup_type("checks"),
             apps: lookup_type("apps"),
@@ -54,6 +57,8 @@ impl IntoView for SystemOutput {
         let mut m = BTreeMap::new();
         for k in [
             ("packages", self.packages),
+            // TODO: paginate. rendering nixpkgs legacyPackages takes half a minute!
+            ("legacy_packages", self.legacy_packages),
             ("devshells", self.devshells),
             ("checks", self.checks),
             ("apps", self.apps),

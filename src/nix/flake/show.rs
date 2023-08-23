@@ -85,6 +85,7 @@ pub async fn run_nix_flake_show(flake_url: &FlakeUrl) -> Result<FlakeShowOutput,
         "nix-command flakes",
         "flake",
         "show",
+        "--legacy", // for showing nixpkgs legacyPackages
         "--allow-import-from-derivation",
         "--json",
         &flake_url.to_string(),
