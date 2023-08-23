@@ -63,52 +63,11 @@ impl FlakeSchema {
             other: (*output).as_attrset().cloned(),
         }
     }
-
-    // HACK: reconstruct flake show output but just for perSystem, and use
-    // its into_view, until we have proper rendering.
-    pub fn to_flake_show_output(self) -> FlakeShowOutputSet {
-        let mut m = BTreeMap::new();
-        for (k, v) in [
-            ("packages", self.packages.clone()),
-            ("legacyPackages", self.legacy_packages.clone()),
-            ("devShells", self.devshells.clone()),
-            ("checks", self.checks.clone()),
-            ("apps", self.apps.clone()),
-        ] {
-            if v.is_empty() {
-                continue;
-            }
-            let inner = FlakeShowOutput::Attrset(FlakeShowOutputSet(
-                v.into_iter()
-                    .map(|(k, v)| (k, FlakeShowOutput::Leaf(v)))
-                    .collect(),
-            ));
-            let outer = FlakeShowOutput::Attrset(FlakeShowOutputSet(
-                vec![(self.system.to_string(), inner)].into_iter().collect(),
-            ));
-            m.insert(k.to_string(), outer);
-        }
-        match self.formatter {
-            None => {}
-            Some(v) => {
-                m.insert("formatter".to_string(), FlakeShowOutput::Leaf(v));
-            }
-        }
-        match self.other {
-            None => {}
-            Some(v) => {
-                m.extend(v.0);
-            }
-        }
-
-        FlakeShowOutputSet(m)
-    }
 }
 
 impl IntoView for FlakeSchema {
     fn into_view(self, cx: Scope) -> View {
-        let system = self.system.clone();
-        let data = self.to_flake_show_output();
+        let system = &self.system.clone();
         view! { cx,
             <div>
                 <h2 class="my-2 ">
@@ -118,9 +77,45 @@ impl IntoView for FlakeSchema {
                         "(" {system.to_string()} ")"
                     </span>
                 </h2>
-                <div class="text-left">{data}</div>
+
+                <div class="text-left">
+
+                    <h3 class="my-2 font-bold text-l">"Packages"</h3>
+                    {leaf_map(cx, &self.packages)}
+                    <h3 class="my-2 font-bold text-l">"Dev Shells"</h3>
+                    {leaf_map(cx, &self.devshells)}
+                    <h3 class="my-2 font-bold text-l">"Checks"</h3>
+                    {leaf_map(cx, &self.checks)}
+                    <h3 class="my-2 font-bold text-l">"Apps"</h3>
+                    {leaf_map(cx, &self.apps)}
+                    <h3 class="my-2 font-bold text-l">"Legacy Packages"</h3>
+                    {leaf_map(cx, &self.legacy_packages)}
+                    <h3 class="my-2 font-bold text-l">"Formatter"</h3>
+                    {self.formatter}
+                    <h3 class="my-2 font-bold text-l">"Other"</h3>
+                    {self.other}
+                </div>
             </div>
         }
         .into_view(cx)
     }
+}
+
+fn leaf_map(cx: Scope, t: &BTreeMap<String, Leaf>) -> View {
+    view! { cx,
+        <ul class="list-disc">
+            {t
+                .into_iter()
+                .map(|(k, v)| {
+                    view! { cx,
+                        <li class="ml-4">
+                            <span class="px-2 py-1 font-bold text-primary-500">{k}</span>
+                            {v.clone()}
+                        </li>
+                    }
+                })
+                .collect_view(cx)}
+        </ul>
+    }
+    .into_view(cx)
 }
