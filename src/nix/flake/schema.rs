@@ -17,43 +17,51 @@ pub struct FlakeSchema {
     checks: BTreeMap<String, Leaf>,
     apps: BTreeMap<String, Leaf>,
     formatter: Option<Leaf>,
+    /// Other unrecognized keys.
     other: Option<FlakeShowOutputSet>,
+    // TODO: Add nixosModules, nixosConfigurations, darwinModules, etc.
 }
 
 impl FlakeSchema {
+    /// Builds the [FlakeSchema] for the given system
+    ///
+    /// Other system outputs are eliminated, but non-per-system outputs are kept
+    /// as is (in [FlakeSchema::other]).
     pub fn from(output: &FlakeShowOutput, system: &System) -> Self {
-        let lookup_type = move |k: &str| -> BTreeMap<String, Leaf> {
-            match output.lookup_attrset(vec![k, system.as_ref()]) {
+        let output: &mut FlakeShowOutput = &mut output.clone();
+        let lookup_type = |output: &mut FlakeShowOutput, k: &str| -> BTreeMap<String, Leaf> {
+            let r = match output.pop(vec![k, system.as_ref()]) {
                 None => BTreeMap::new(),
-                Some(packages) => packages
-                    .iter()
-                    .filter_map(|(k, v)| {
-                        let v = v.as_leaf()?;
-                        Some((k.clone(), v.clone()))
-                    })
-                    .collect(),
-            }
+                Some(out) => match out.as_attrset() {
+                    None => BTreeMap::new(),
+                    Some(packages) => packages
+                        .iter()
+                        .filter_map(|(k, v)| {
+                            let v = v.as_leaf()?;
+                            Some((k.clone(), v.clone()))
+                        })
+                        .collect(),
+                },
+            };
+            output.pop(vec![k]);
+            r
         };
-        let lookup_leaf_type = move |k: &str| -> Option<Leaf> {
-            output.lookup_leaf(vec![k, system.as_ref()]).cloned()
+        let lookup_leaf_type = |output: &mut FlakeShowOutput, k: &str| -> Option<Leaf> {
+            let leaf = output.pop(vec![k, system.as_ref()])?.as_leaf()?.clone();
+            output.pop(vec![k]);
+            Some(leaf)
         };
-        let other = output.without_keys(&[
-            "packages",
-            "legacyPackages",
-            "devShells",
-            "checks",
-            "apps",
-            "formatter",
-        ]);
         FlakeSchema {
             system: system.clone(),
-            packages: lookup_type("packages"),
-            legacy_packages: lookup_type("legacyPackages"),
-            devshells: lookup_type("devShells"),
-            checks: lookup_type("checks"),
-            apps: lookup_type("apps"),
-            formatter: lookup_leaf_type("formatter"),
-            other,
+            packages: lookup_type(output, "packages"),
+            legacy_packages: lookup_type(output, "legacyPackages"),
+            devshells: lookup_type(output, "devShells"),
+            checks: lookup_type(output, "checks"),
+            apps: lookup_type(output, "apps"),
+            formatter: lookup_leaf_type(output, "formatter"),
+            other: (*output)
+                .as_attrset()
+                .map(|v| FlakeShowOutputSet(v.clone())),
         }
     }
 

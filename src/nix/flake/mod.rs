@@ -18,8 +18,9 @@ pub struct Flake {
     pub url: FlakeUrl,
     /// `nix flake show` output
     pub output: FlakeShowOutput,
-    // TODO: Add higher-level info
+    /// Flake output schema (typed version of [FlakeShowOutput])
     pub schema: FlakeSchema,
+    // TODO: Add `nix flake metadata` info.
 }
 
 /// Get [Flake] info for the given flake url

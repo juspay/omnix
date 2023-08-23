@@ -4,7 +4,7 @@
 use super::url::FlakeUrl;
 use leptos::*;
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
+use std::collections::{btree_map::Entry, BTreeMap};
 
 /// Output of `nix flake show` (with IFD)
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -45,20 +45,27 @@ impl FlakeShowOutput {
         Some(cur)
     }
 
-    pub fn lookup_attrset(&self, path: Vec<&str>) -> Option<&BTreeMap<String, FlakeShowOutput>> {
-        self.lookup(path)?.as_attrset()
-    }
-
-    pub fn lookup_leaf(&self, path: Vec<&str>) -> Option<&Leaf> {
-        self.lookup(path)?.as_leaf()
-    }
-
-    pub fn without_keys(&self, keys: &[&str]) -> Option<FlakeShowOutputSet> {
-        let mut v = self.as_attrset()?.clone();
-        for key in keys {
-            v.remove(*key);
+    /// Like [lookup] but removes the key
+    pub fn pop(&mut self, path: Vec<&str>) -> Option<Self> {
+        let mut cur = self;
+        let mut path = path.iter().peekable();
+        while let Some(part) = path.next() {
+            match cur {
+                Self::Attrset(v) => {
+                    if let Entry::Occupied(entry) = v.0.entry(part.to_string()) {
+                        if path.peek().is_none() {
+                            return Some(entry.remove());
+                        } else {
+                            cur = entry.into_mut();
+                        }
+                    } else {
+                        return None;
+                    }
+                }
+                _ => return None,
+            }
         }
-        Some(FlakeShowOutputSet(v))
+        None
     }
 }
 

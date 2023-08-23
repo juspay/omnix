@@ -127,11 +127,6 @@ fn NixFlake(cx: Scope) -> impl IntoView {
         <h1 class="text-5xl font-bold">{"Nix Flake"}</h1>
         <QueryInput id="nix-flake-input" query set_query suggestions/>
         <RefetchQueryButton result query/>
-
-        // FIXME: putting this here causes route switch bugs
-        // github.com/leptos-rs/leptos/issues/1569
-        // <NixFlakeNav />
-
         <Outlet/>
     }
 }
