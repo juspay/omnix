@@ -1,4 +1,5 @@
 {
+  description = "WIP: nix-browser";
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";
@@ -51,6 +52,7 @@
           # Disable tests on macOS for https://github.com/garnix-io/issues/issues/69
           # If/when we move to Jenkins, this won't be necessary.
           doCheck = !pkgs.stdenv.isDarwin;
+          meta.description = "WIP: nix-browser";
         };
 
         packages.default = self'.packages.nix-browser;
