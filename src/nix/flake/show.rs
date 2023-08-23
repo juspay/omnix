@@ -93,6 +93,18 @@ pub enum Type {
     Unknown,
 }
 
+impl Type {
+    pub fn to_icon(&self) -> &'static str {
+        match self {
+            Self::NixosModule => "❄️",
+            Self::Derivation => "📦",
+            Self::App => "📱",
+            Self::Template => "🏗️",
+            Self::Unknown => "❓",
+        }
+    }
+}
+
 /// Run `nix flake show` on the given flake url
 #[cfg(feature = "ssr")]
 pub async fn run_nix_flake_show(flake_url: &FlakeUrl) -> Result<FlakeShowOutput, ServerFnError> {

@@ -68,6 +68,18 @@ impl FlakeSchema {
 impl IntoView for FlakeSchema {
     fn into_view(self, cx: Scope) -> View {
         let system = &self.system.clone();
+        fn view_btree(
+            cx: Scope,
+            title: &'static str,
+            tree: &BTreeMap<String, Leaf>,
+        ) -> impl IntoView {
+            (!tree.is_empty()).then(|| {
+                view! { cx,
+                    <h3 class="my-2 font-bold text-l">{title}</h3>
+                    {leaf_map(cx, tree)}
+                }
+            })
+        }
         view! { cx,
             <div>
                 <h2 class="my-2 ">
@@ -79,21 +91,12 @@ impl IntoView for FlakeSchema {
                 </h2>
 
                 <div class="text-left">
-
-                    <h3 class="my-2 font-bold text-l">"Packages"</h3>
-                    {leaf_map(cx, &self.packages)}
-                    <h3 class="my-2 font-bold text-l">"Dev Shells"</h3>
-                    {leaf_map(cx, &self.devshells)}
-                    <h3 class="my-2 font-bold text-l">"Checks"</h3>
-                    {leaf_map(cx, &self.checks)}
-                    <h3 class="my-2 font-bold text-l">"Apps"</h3>
-                    {leaf_map(cx, &self.apps)}
-                    <h3 class="my-2 font-bold text-l">"Legacy Packages"</h3>
-                    {leaf_map(cx, &self.legacy_packages)}
-                    <h3 class="my-2 font-bold text-l">"Formatter"</h3>
-                    {self.formatter}
-                    <h3 class="my-2 font-bold text-l">"Other"</h3>
-                    {self.other}
+                    {view_btree(cx, "Packages", &self.packages)}
+                    {view_btree(cx, "Legacy Packages", &self.legacy_packages)}
+                    {view_btree(cx, "Dev Shells", &self.devshells)}
+                    {view_btree(cx, "Checks", &self.checks)} {view_btree(cx, "Apps", &self.apps)}
+                    <h3 class="my-2 font-bold text-l">"Formatter"</h3> {self.formatter}
+                    <h3 class="my-2 font-bold text-l">"Other"</h3> {self.other}
                 </div>
             </div>
         }
@@ -101,21 +104,42 @@ impl IntoView for FlakeSchema {
     }
 }
 
-fn leaf_map(cx: Scope, t: &BTreeMap<String, Leaf>) -> View {
+fn leaf_map(cx: Scope, tree: &BTreeMap<String, Leaf>) -> View {
     view! { cx,
-        <ul class="list-disc">
-            {t
+        <div class="flex flex-wrap">
+            {tree
                 .iter()
                 .map(|(k, v)| {
                     view! { cx,
-                        <li class="ml-4">
-                            <span class="px-2 py-1 font-bold text-primary-500">{k}</span>
-                            {v.clone()}
-                        </li>
+                        <div
+                            title=format!("{:?}", v.type_)
+                            class="flex flex-col p-2 m-2 space-y-2 bg-white border-4 border-gray-300 rounded hover:border-gray-400"
+                        >
+                            <div class="flex flex-row justify-start space-x-2 font-bold text-primary-500">
+                                <div>{v.type_.to_icon()}</div>
+                                <div>{k}</div>
+                            </div>
+                            {v
+                                .name
+                                .as_ref()
+                                .map(|v| {
+                                    view! { cx,
+                                        <div class="font-mono text-xs text-gray-500">{v}</div>
+                                    }
+                                })}
+
+                            {v
+                                .description
+                                .as_ref()
+                                .map(|v| {
+                                    view! { cx, <div class="font-light">{v}</div> }
+                                })}
+
+                        </div>
                     }
                 })
                 .collect_view(cx)}
-        </ul>
+        </div>
     }
     .into_view(cx)
 }
