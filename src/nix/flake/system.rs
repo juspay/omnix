@@ -1,12 +1,19 @@
-use std::fmt::{Display, Formatter};
+use std::{
+    convert::Infallible,
+    fmt::{Display, Formatter},
+    str::FromStr,
+};
 
 use serde::{Deserialize, Serialize};
+use serde_with::{DeserializeFromStr, SerializeDisplay};
 
 /// The system for which a derivation will build
 ///
 /// The enum includes the four standard systems, as well as a fallback to
 /// capture the rest.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, SerializeDisplay, DeserializeFromStr,
+)]
 pub enum System {
     Darwin(Arch),
     Linux(Arch),
@@ -17,6 +24,14 @@ pub enum System {
 pub enum Arch {
     Aarch64,
     X86_64,
+}
+
+impl FromStr for System {
+    type Err = Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self::from(s))
+    }
 }
 
 impl From<&str> for System {

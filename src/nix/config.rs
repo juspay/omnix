@@ -7,6 +7,8 @@ use serde::{Deserialize, Serialize};
 use tracing::instrument;
 use url::Url;
 
+use super::flake::system::System;
+
 /// Nix configuration spit out by `nix show-config`
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
@@ -17,7 +19,7 @@ pub struct NixConfig {
     pub flake_registry: ConfigVal<String>,
     pub max_jobs: ConfigVal<i32>,
     pub substituters: ConfigVal<Vec<Url>>,
-    pub system: ConfigVal<String>,
+    pub system: ConfigVal<System>,
 }
 
 /// The value for each 'nix show-config --json' key.
@@ -61,6 +63,12 @@ impl IntoView for ConfigVal<i32> {
 impl IntoView for ConfigVal<String> {
     fn into_view(self, cx: Scope) -> View {
         self.value.into_view(cx)
+    }
+}
+
+impl IntoView for ConfigVal<System> {
+    fn into_view(self, cx: Scope) -> View {
+        self.value.to_string().into_view(cx)
     }
 }
 
