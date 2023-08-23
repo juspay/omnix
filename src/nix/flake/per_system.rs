@@ -72,10 +72,12 @@ impl IntoView for SystemOutput {
         let system = self.system;
         view! { cx,
             <div>
-                <h2 class="p-2 text-xl text-red-600">
+                <h2 class="mt-2 text-xl font-bold text-primary-600">
                     {system.human_readable()} " "
-                    <span class="text-gray-500">"(" {system.to_string()} ")"</span>
                 </h2>
+                <span class="mb-2 font-mono text-xs text-gray-500">
+                    "(" {system.to_string()} ")"
+                </span>
                 <div class="text-left">{data}</div>
             </div>
         }

@@ -8,8 +8,8 @@ use serde::{Deserialize, Serialize};
 /// capture the rest.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum System {
-    Linux(Arch),
     Darwin(Arch),
+    Linux(Arch),
     Other(String),
 }
 
