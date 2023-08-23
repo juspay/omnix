@@ -29,39 +29,38 @@ impl FlakeSchema {
     /// as is (in [FlakeSchema::other]).
     pub fn from(output: &FlakeShowOutput, system: &System) -> Self {
         let output: &mut FlakeShowOutput = &mut output.clone();
-        let lookup_type = |output: &mut FlakeShowOutput, k: &str| -> BTreeMap<String, Leaf> {
-            let r = match output.pop(vec![k, system.as_ref()]) {
-                None => BTreeMap::new(),
-                Some(out) => match out.as_attrset() {
-                    None => BTreeMap::new(),
-                    Some(packages) => packages
-                        .iter()
-                        .filter_map(|(k, v)| {
-                            let v = v.as_leaf()?;
-                            Some((k.clone(), v.clone()))
-                        })
-                        .collect(),
-                },
+        let pop_type = |output: &mut FlakeShowOutput, k: &str| -> BTreeMap<String, Leaf> {
+            let mut f = || -> Option<BTreeMap<String, Leaf>> {
+                let out = output.pop(vec![k, system.as_ref()])?;
+                let packages = out.as_attrset()?;
+                let r = packages
+                    .0
+                    .iter()
+                    .filter_map(|(k, v)| {
+                        let v = v.as_leaf()?;
+                        Some((k.clone(), v.clone()))
+                    })
+                    .collect();
+                Some(r)
             };
+            let mr = f();
             output.pop(vec![k]);
-            r
+            mr.unwrap_or(BTreeMap::new())
         };
-        let lookup_leaf_type = |output: &mut FlakeShowOutput, k: &str| -> Option<Leaf> {
+        let pop_leaf_type = |output: &mut FlakeShowOutput, k: &str| -> Option<Leaf> {
             let leaf = output.pop(vec![k, system.as_ref()])?.as_leaf()?.clone();
             output.pop(vec![k]);
             Some(leaf)
         };
         FlakeSchema {
             system: system.clone(),
-            packages: lookup_type(output, "packages"),
-            legacy_packages: lookup_type(output, "legacyPackages"),
-            devshells: lookup_type(output, "devShells"),
-            checks: lookup_type(output, "checks"),
-            apps: lookup_type(output, "apps"),
-            formatter: lookup_leaf_type(output, "formatter"),
-            other: (*output)
-                .as_attrset()
-                .map(|v| FlakeShowOutputSet(v.clone())),
+            packages: pop_type(output, "packages"),
+            legacy_packages: pop_type(output, "legacyPackages"),
+            devshells: pop_type(output, "devShells"),
+            checks: pop_type(output, "checks"),
+            apps: pop_type(output, "apps"),
+            formatter: pop_leaf_type(output, "formatter"),
+            other: (*output).as_attrset().cloned(),
         }
     }
 

@@ -26,9 +26,9 @@ impl FlakeShowOutput {
         }
     }
 
-    pub fn as_attrset(&self) -> Option<&BTreeMap<String, FlakeShowOutput>> {
+    pub fn as_attrset(&self) -> Option<&FlakeShowOutputSet> {
         match self {
-            Self::Attrset(v) => Some(&v.0),
+            Self::Attrset(v) => Some(&v),
             _ => None,
         }
     }
