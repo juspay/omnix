@@ -71,14 +71,15 @@ impl FlakeSchema {
             if v.is_empty() {
                 continue;
             }
-            m.insert(
-                k.to_string(),
-                FlakeShowOutput::Attrset(FlakeShowOutputSet(
-                    v.into_iter()
-                        .map(|(k, v)| (k, FlakeShowOutput::Leaf(v)))
-                        .collect(),
-                )),
-            );
+            let inner = FlakeShowOutput::Attrset(FlakeShowOutputSet(
+                v.into_iter()
+                    .map(|(k, v)| (k, FlakeShowOutput::Leaf(v)))
+                    .collect(),
+            ));
+            let outer = FlakeShowOutput::Attrset(FlakeShowOutputSet(
+                vec![(self.system.to_string(), inner)].into_iter().collect(),
+            ));
+            m.insert(k.to_string(), outer);
         }
         match self.formatter {
             None => {}
@@ -104,9 +105,7 @@ impl IntoView for FlakeSchema {
         view! { cx,
             <div>
                 <h2 class="my-2 ">
-                    <div class="text-xl font-bold text-primary-600">
-                        {system.human_readable()}
-                    </div>
+                    <div class="text-xl font-bold text-primary-600">{system.human_readable()}</div>
                     " "
                     <span class="font-mono text-xs text-gray-500">
                         "(" {system.to_string()} ")"

@@ -142,7 +142,12 @@ impl IntoView for FlakeShowOutputSet {
                     .0
                     .iter()
                     .map(|(k, v)| {
-                        view! { cx, <li class="ml-2">{k} : {v.clone()}</li> }
+                        view! { cx,
+                            <li class="ml-4">
+                                <span class="px-2 py-1 font-bold text-primary-500">{k}</span>
+                                {v.clone()}
+                            </li>
+                        }
                     })
                     .collect_view(cx)}
             </ul>
