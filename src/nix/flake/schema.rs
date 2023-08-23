@@ -105,7 +105,7 @@ fn leaf_map(cx: Scope, t: &BTreeMap<String, Leaf>) -> View {
     view! { cx,
         <ul class="list-disc">
             {t
-                .into_iter()
+                .iter()
                 .map(|(k, v)| {
                     view! { cx,
                         <li class="ml-4">
