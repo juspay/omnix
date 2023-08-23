@@ -1,4 +1,4 @@
-pub mod per_system;
+pub mod schema;
 pub mod show;
 pub mod system;
 pub mod url;
@@ -7,7 +7,7 @@ use leptos::*;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
 
-use self::{per_system::PerSystemOutputs, show::FlakeShowOutput, system::System, url::FlakeUrl};
+use self::{schema::FlakeSchema, show::FlakeShowOutput, system::System, url::FlakeUrl};
 
 /// All the information about a Nix flake
 // #[serde_as]
@@ -18,31 +18,21 @@ pub struct Flake {
     /// `nix flake show` output
     pub output: FlakeShowOutput,
     // TODO: Add higher-level info
-    pub per_system: PerSystemOutputs,
+    pub schema: FlakeSchema,
 }
 
 /// Get [Flake] info for the given flake url
 #[instrument(name = "flake")]
 #[server(GetFlake, "/api")]
 pub async fn get_flake(url: FlakeUrl) -> Result<Flake, ServerFnError> {
-    use std::collections::BTreeMap;
+    use super::config::run_nix_show_config;
+    // TODO: Can we cache this?
+    let nix_config = run_nix_show_config().await?;
     let output = self::show::run_nix_flake_show(&url).await?;
-    let mut per_system = BTreeMap::new();
-    for system in [
-        "x86_64-linux",
-        "x86_64-darwin",
-        "aarch64-linux",
-        "aarch64-darwin",
-    ] {
-        per_system.insert(
-            System::from(system),
-            per_system::SystemOutput::from(&output, &System::from(system)),
-        );
-    }
     Ok(Flake {
         url,
-        output,
-        per_system: PerSystemOutputs(per_system),
+        output: output.clone(),
+        schema: FlakeSchema::from(&output, &System::from(nix_config.system.value)),
     })
 }
 
@@ -53,8 +43,10 @@ impl IntoView for Flake {
         view! { cx,
             <div class="flex flex-col my-4">
                 <h3 class="text-lg font-bold">{self.url}</h3>
-
-                <div class="font-mono text-sm">{self.output}</div>
+                <div>{self.schema}</div>
+                <div class="p-2 font-mono text-xs text-gray-500 border-2 border-black">
+                    {self.output}
+                </div>
             </div>
         }
         .into_view(cx)

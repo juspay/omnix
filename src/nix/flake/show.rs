@@ -52,6 +52,14 @@ impl FlakeShowOutput {
     pub fn lookup_leaf(&self, path: Vec<&str>) -> Option<&Leaf> {
         self.lookup(path)?.as_leaf()
     }
+
+    pub fn without_keys(&self, keys: &[&str]) -> Option<FlakeShowOutputSet> {
+        let mut v = self.as_attrset()?.clone();
+        for key in keys {
+            v.remove(*key);
+        }
+        Some(FlakeShowOutputSet(v))
+    }
 }
 
 /// A flake output that is not an attrset
