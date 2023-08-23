@@ -62,7 +62,7 @@ fn Nav(cx: Scope) -> impl IntoView {
             <A exact=true href="/" class=class>
                 "Dashboard"
             </A>
-            <A exact=true href="/flake" class=class>
+            <A exact=false href="/flake" class=class>
                 "Flake"
             </A>
             <A exact=true href="/health" class=class>
@@ -135,12 +135,13 @@ fn NixFlakeNav(cx: Scope) -> impl IntoView {
     let (query, _) = use_signal::<FlakeUrl>(cx);
     let result = query::use_server_query(cx, query, get_flake);
     let data = result.data;
+    let class = "px-3 py-2 hover:bg-primary-200";
     view! { cx,
-        <ul class="my-2">
+        <nav class="flex flex-row items-center justify-center w-full my-2 ">
             // TODO: Cleanly do navigation
-            <li>
-                <a href="/flake">"Main"</a>
-            </li>
+            <A class href="/flake" exact=true>
+                "All"
+            </A>
             <SuspenseWithErrorHandling>
                 {move || {
                     data.get()
@@ -151,17 +152,12 @@ fn NixFlakeNav(cx: Scope) -> impl IntoView {
                                 .clone()
                                 .map(|k| {
                                     {
-                                        let system = &k.to_string().clone();
+                                        let system = k.clone();
 
                                         view! { cx,
-                                            <li>
-                                                <a
-                                                    class="hover:bg-primary-200"
-                                                    href=format!("/flake/{}", system)
-                                                >
-                                                    {system}
-                                                </a>
-                                            </li>
+                                            <A class href=format!("/flake/{}", system) exact=true>
+                                                {system.human_readable()}
+                                            </A>
                                         }
                                     }
                                 })
@@ -171,7 +167,7 @@ fn NixFlakeNav(cx: Scope) -> impl IntoView {
 
             </SuspenseWithErrorHandling>
 
-        </ul>
+        </nav>
     }
 }
 

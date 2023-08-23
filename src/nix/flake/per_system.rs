@@ -69,9 +69,13 @@ impl IntoView for SystemOutput {
         }
 
         let data = FlakeShowOutputSet(m);
+        let system = self.system;
         view! { cx,
             <div>
-                <h2 class="p-2 text-xl text-red-600">{self.system.to_string()}</h2>
+                <h2 class="p-2 text-xl text-red-600">
+                    {system.human_readable()} " "
+                    <span class="text-gray-500">"(" {system.to_string()} ")"</span>
+                </h2>
                 <div class="text-left">{data}</div>
             </div>
         }

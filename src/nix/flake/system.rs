@@ -60,3 +60,22 @@ impl Display for System {
         write!(f, "{}", self.as_ref())
     }
 }
+
+impl System {
+    pub fn human_readable(&self) -> String {
+        match self {
+            System::Linux(arch) => format!("Linux ({})", arch.human_readable()),
+            System::Darwin(arch) => format!("macOS ({})", arch.human_readable()),
+            System::Other(s) => s.clone(),
+        }
+    }
+}
+
+impl Arch {
+    pub fn human_readable(&self) -> &'static str {
+        match self {
+            Self::Aarch64 => "ARM",
+            Self::X86_64 => "Intel",
+        }
+    }
+}
