@@ -18,6 +18,7 @@ pub struct PerSystemOutputs(
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SystemOutput {
+    system: System,
     packages: BTreeMap<String, Leaf>,
     devshells: BTreeMap<String, Leaf>,
     checks: BTreeMap<String, Leaf>,
@@ -25,7 +26,7 @@ pub struct SystemOutput {
 }
 
 impl SystemOutput {
-    pub fn from(output: &FlakeShowOutput, system: System) -> Self {
+    pub fn from(output: &FlakeShowOutput, system: &System) -> Self {
         let lookup_type = move |k: &str| -> BTreeMap<String, Leaf> {
             match output.lookup_attrset(vec![k, system.as_ref()]) {
                 None => BTreeMap::new(),
@@ -39,6 +40,7 @@ impl SystemOutput {
             }
         };
         SystemOutput {
+            system: system.clone(),
             packages: lookup_type("packages"),
             devshells: lookup_type("devShells"),
             checks: lookup_type("checks"),
@@ -67,6 +69,12 @@ impl IntoView for SystemOutput {
         }
 
         let data = FlakeShowOutputSet(m);
-        data.into_view(cx)
+        view! { cx,
+            <div>
+                <h2 class="p-2 text-xl text-red-600">{self.system.to_string()}</h2>
+                <div class="text-left">{data}</div>
+            </div>
+        }
+        .into_view(cx)
     }
 }

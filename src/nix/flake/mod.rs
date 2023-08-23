@@ -36,7 +36,7 @@ pub async fn get_flake(url: FlakeUrl) -> Result<Flake, ServerFnError> {
     ] {
         per_system.insert(
             System::from(system),
-            per_system::SystemOutput::from(&output, System::from(system)),
+            per_system::SystemOutput::from(&output, &System::from(system)),
         );
     }
     Ok(Flake {

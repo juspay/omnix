@@ -34,16 +34,16 @@ pub fn App(cx: Scope) -> impl IntoView {
                 <div class="container flex flex-col items-stretch mx-auto max-w-prose">
                     <Nav/>
                     <main class="flex flex-col px-2 space-y-3 text-center">
-                            <Routes>
-                                <Route path="" view=Dashboard/>
-                                <Route path="/flake" view=NixFlake>
-                                    <Route path="" view=NixFlakeHome/>
-                                    <Route path=":system" view=NixFlakePerSystem/>
-                                </Route>
-                                <Route path="/health" view=NixHealth/>
-                                <Route path="/info" view=NixInfo/>
-                                <Route path="/about" view=About/>
-                            </Routes>
+                        <Routes>
+                            <Route path="" view=Dashboard/>
+                            <Route path="/flake" view=NixFlake>
+                                <Route path="" view=NixFlakeHome/>
+                                <Route path=":system" view=NixFlakePerSystem/>
+                            </Route>
+                            <Route path="/health" view=NixHealth/>
+                            <Route path="/info" view=NixInfo/>
+                            <Route path="/about" view=About/>
+                        </Routes>
                     </main>
                 </div>
             </div>
@@ -200,12 +200,7 @@ fn NixFlakePerSystem(cx: Scope) -> impl IntoView {
     let data = move || data.with_result(move |v| v.per_system.0[&system().into()].clone());
     view! { cx,
         <NixFlakeNav/>
-        <SuspenseWithErrorHandling>
-            <h2 class="p-2 text-xl text-red-600">{system}</h2>
-            <div>
-            {data}
-            </div>
-        </SuspenseWithErrorHandling>
+        <SuspenseWithErrorHandling>{data}</SuspenseWithErrorHandling>
     }
 }
 
