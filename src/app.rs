@@ -21,7 +21,13 @@ use crate::widget::*;
 pub fn App(cx: Scope) -> impl IntoView {
     provide_meta_context(cx);
     provide_query_client(cx);
-    provide_signal::<FlakeUrl>(cx, "github:srid/haskell-template".into());
+    provide_signal::<FlakeUrl>(
+        cx,
+        FlakeUrl::suggestions()
+            .first()
+            .map(Clone::clone)
+            .unwrap_or("https://github.com/srid/haskell-template".into()),
+    );
 
     view! { cx,
         <Stylesheet id="leptos" href="/pkg/nix-browser.css"/>
@@ -38,6 +44,7 @@ pub fn App(cx: Scope) -> impl IntoView {
                             <Route path="" view=Dashboard/>
                             <Route path="/flake" view=NixFlake>
                                 <Route path="" view=NixFlakeHome/>
+                                <Route path="raw" view=NixFlakeRaw/>
                             </Route>
                             <Route path="/health" view=NixHealth/>
                             <Route path="/info" view=NixInfo/>
@@ -137,6 +144,23 @@ fn NixFlakeHome(cx: Scope) -> impl IntoView {
     view! { cx,
         <div class="p-2 my-1">
             <SuspenseWithErrorHandling>{data}</SuspenseWithErrorHandling>
+        </div>
+    }
+}
+
+#[component]
+fn NixFlakeRaw(cx: Scope) -> impl IntoView {
+    let (query, _) = use_signal::<FlakeUrl>(cx);
+    let result = query::use_server_query(cx, query, get_flake);
+    let data = result.data;
+    view! { cx,
+        <div>
+            <A href="/flake">"< Back"</A>
+        </div>
+        <div class="px-4 py-2 font-mono text-xs text-left text-gray-500 border-2 border-black">
+            <SuspenseWithErrorHandling>
+                {move || { data.get().map(|r| r.map(|v| v.output.into_view(cx))) }}
+            </SuspenseWithErrorHandling>
         </div>
     }
 }

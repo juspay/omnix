@@ -4,6 +4,7 @@ pub mod system;
 pub mod url;
 
 use leptos::*;
+use leptos_router::*;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
 
@@ -43,13 +44,12 @@ impl IntoView for Flake {
         view! { cx,
             <div class="flex flex-col my-4">
                 <h3 class="text-lg font-bold">{self.url}</h3>
+                <div class="text-sm italic text-gray-600">
+                    <A href="/flake/raw" exact=true>
+                        "View raw output"
+                    </A>
+                </div>
                 <div>{self.schema}</div>
-                <details class="my-2 mt-4 hover:cursor-pointer">
-                    <summary class="font-bold">"Raw flake output"</summary>
-                    <div class="px-4 py-2 font-mono text-xs text-left text-gray-500 border-2 border-black">
-                        {self.output}
-                    </div>
-                </details>
             </div>
         }
         .into_view(cx)
