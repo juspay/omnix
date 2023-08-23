@@ -13,7 +13,7 @@
     process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
     cargo-doc-live.url = "github:srid/cargo-doc-live";
 
-    leptos-fullstack.url = "github:srid/leptos-fullstack/rebuild";
+    leptos-fullstack.url = "github:srid/leptos-fullstack";
     leptos-fullstack.flake = false;
   };
 
