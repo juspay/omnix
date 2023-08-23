@@ -24,6 +24,7 @@ pub struct SystemOutput {
     devshells: BTreeMap<String, Leaf>,
     checks: BTreeMap<String, Leaf>,
     apps: BTreeMap<String, Leaf>,
+    formatter: Option<Leaf>,
     // TODO: Add arbitrary outputs
 }
 
@@ -41,6 +42,9 @@ impl SystemOutput {
                     .collect(),
             }
         };
+        let lookup_leaf_type = move |k: &str| -> Option<Leaf> {
+            output.lookup_leaf(vec![k, system.as_ref()]).cloned()
+        };
         SystemOutput {
             system: system.clone(),
             packages: lookup_type("packages"),
@@ -48,14 +52,17 @@ impl SystemOutput {
             devshells: lookup_type("devShells"),
             checks: lookup_type("checks"),
             apps: lookup_type("apps"),
+            formatter: lookup_leaf_type("formatter"),
         }
     }
 }
 
 impl IntoView for SystemOutput {
     fn into_view(self, cx: Scope) -> View {
+        // HACK: reconstruct flake show output but just for perSystem, and use
+        // its into_view, until we have proper rendering.
         let mut m = BTreeMap::new();
-        for k in [
+        for (k, v) in [
             ("packages", self.packages),
             // TODO: paginate. rendering nixpkgs legacyPackages takes half a minute!
             ("legacy_packages", self.legacy_packages),
@@ -63,14 +70,23 @@ impl IntoView for SystemOutput {
             ("checks", self.checks),
             ("apps", self.apps),
         ] {
+            if v.is_empty() {
+                continue;
+            }
             m.insert(
-                k.0.to_string(),
+                k.to_string(),
                 FlakeShowOutput::Attrset(FlakeShowOutputSet(
-                    k.1.into_iter()
+                    v.into_iter()
                         .map(|(k, v)| (k, FlakeShowOutput::Leaf(v)))
                         .collect(),
                 )),
             );
+        }
+        match self.formatter {
+            None => {}
+            Some(v) => {
+                m.insert("formatter".to_string(), FlakeShowOutput::Leaf(v));
+            }
         }
 
         let data = FlakeShowOutputSet(m);

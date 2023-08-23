@@ -48,6 +48,10 @@ impl FlakeShowOutput {
     pub fn lookup_attrset(&self, path: Vec<&str>) -> Option<&BTreeMap<String, FlakeShowOutput>> {
         self.lookup(path)?.as_attrset()
     }
+
+    pub fn lookup_leaf(&self, path: Vec<&str>) -> Option<&Leaf> {
+        self.lookup(path)?.as_leaf()
+    }
 }
 
 /// A flake output that is not an attrset
