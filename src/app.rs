@@ -124,7 +124,10 @@ fn NixFlake(cx: Scope) -> impl IntoView {
         <QueryInput id="nix-flake-input" query set_query suggestions/>
         <RefetchQueryButton result query/>
 
-        // <NixFlakeNav /> FIXME: putting this here causes route switch bugs
+        // FIXME: putting this here causes route switch bugs
+        // github.com/leptos-rs/leptos/issues/1569
+        // <NixFlakeNav />
+
         <Outlet/>
     }
 }
@@ -176,11 +179,8 @@ fn NixFlakeNav(cx: Scope) -> impl IntoView {
 
 #[component]
 fn NixFlakeHome(cx: Scope) -> impl IntoView {
-    tracing::info!("🍎 in home");
     let (query, _) = use_signal::<FlakeUrl>(cx);
-    tracing::info!("🍎 in home: before use_server_query");
     let result = query::use_server_query(cx, query, get_flake);
-    tracing::info!("🍎 in home: after use_server_query");
     let data = result.data;
     view! { cx,
         <NixFlakeNav/>
