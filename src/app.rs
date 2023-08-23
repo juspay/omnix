@@ -194,14 +194,17 @@ fn NixFlakePerSystem(cx: Scope) -> impl IntoView {
     let params = use_params_map(cx);
     let system = move || params.with(|params| params.get("system").cloned().unwrap_or_default());
 
-    // let (query, _) = use_signal::<FlakeUrl>(cx);
-    // let result = query::use_server_query(cx, query, get_flake);
-    // let data = result.data;
-    // let data = move || data.with_result(move |v| v.per_system.0[&system().into()].clone());
+    let (query, _) = use_signal::<FlakeUrl>(cx);
+    let result = query::use_server_query(cx, query, get_flake);
+    let data = result.data;
+    let data = move || data.with_result(move |v| v.per_system.0[&system().into()].clone());
     view! { cx,
         <NixFlakeNav/>
         <SuspenseWithErrorHandling>
             <h2 class="p-2 text-xl text-red-600">{system}</h2>
+            <div>
+            {data}
+            </div>
         </SuspenseWithErrorHandling>
     }
 }
