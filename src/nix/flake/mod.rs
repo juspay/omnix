@@ -31,7 +31,7 @@ pub async fn get_flake(url: FlakeUrl) -> Result<Flake, ServerFnError> {
     // TODO: Can we cache this?
     let nix_config = run_nix_show_config().await?;
     let output = self::show::run_nix_flake_show(&url).await?;
-    let system = System::from(nix_config.system.value);
+    let system = nix_config.system.value;
     Ok(Flake {
         url,
         output: output.clone(),
