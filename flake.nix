@@ -28,15 +28,13 @@
       ];
       perSystem = { config, self', pkgs, lib, system, ... }:
         let
-          isArch = !(builtins.isNull (builtins.match "arch" system));
-          env = with pkgs; 
-            (if !isArch then
-              {
-                CHROME_DRIVER_HEADLESS = "true";
-                CHROME_BINARY_PATH = "${chromium}/bin/chromium";
-                CHROME_DRIVER_URL = "http://127.0.0.1:9515";
-              }
-            else { }) // { TEST_PORT = "5000"; };
+          isDarwinOrArch = with pkgs; stdenv.isDarwin || !(builtins.isNull (builtins.match "aarch.*" system));
+          env = with pkgs; {
+            CHROME_DRIVER_HEADLESS = "true";
+            CHROME_BINARY_PATH = with pkgs; if isDarwinOrArch then "" else "${chromium}/bin/chromium";
+            CHROME_DRIVER_URL = "http://127.0.0.1:9515";
+            TEST_PORT = "5000";
+          };
         in
         {
           _module.args.pkgs = import inputs.nixpkgs {
@@ -73,16 +71,17 @@
               port = 8975;
               settings.processes = {
                 start-chromedriver = {
-                  command = with pkgs; if isArch then "exit 0" else "${chromedriver}/bin/chromedriver";
+                  command = if isDarwinOrArch then "exit 0" else with pkgs; "${chromedriver}/bin/chromedriver";
                   readiness_probe = {
-                    exec.command = with pkgs; builtins.toString (writeShellScript "chromedriver-health" ''
-                      ${curl}/bin/curl --fail ${env.CHROME_DRIVER_URL}
-                      if [ "$?" -eq 7 ]; then
-                        exit 1
-                      else
-                        exit 0
-                      fi
-                    '');
+                    exec.command = if isDarwinOrArch then "exit 0" else
+                      with pkgs; builtins.toString (writeShellScript "chromedriver-health" ''
+                        ${curl}/bin/curl --fail ${env.CHROME_DRIVER_URL}
+                        if [ "$?" -eq 7 ]; then
+                          exit 1
+                        else
+                          exit 0
+                        fi
+                      '');
                     initial_delay_seconds = 2;
                     period_seconds = 10;
                     timeout_seconds = 4;
@@ -99,13 +98,13 @@
                 };
                 test = {
                   environment = env;
-                  command = if isArch then "exit 0" else "cargo leptos test";
+                  command = if isDarwinOrArch then "exit 0" else "cargo leptos test";
                   depends_on."start-chromedriver".condition = "process_healthy";
                   depends_on."start-app".condition = "process_healthy";
                 };
               };
             };
-            
+
           packages.default = self'.packages.nix-browser;
 
           devShells.default = pkgs.mkShell ({
@@ -119,7 +118,7 @@
               cargo-expand
               config.process-compose.cargo-doc-live.outputs.package
               config.process-compose.cargo-test.outputs.package
-            ] ++ lib.optionals (!isArch) [ chromedriver chromium ];
+            ] ++ lib.optionals (!isDarwinOrArch) [ chromedriver chromium ];
           } // env);
         };
     };
