@@ -4,7 +4,7 @@ use leptos::*;
 use serde::{Deserialize, Serialize};
 
 use super::{
-    outputs::{FlakeOutputs, FlakeOutputsSet, Val},
+    outputs::{FlakeOutputs, Val},
     System,
 };
 
@@ -18,7 +18,7 @@ pub struct FlakeSchema {
     apps: BTreeMap<String, Val>,
     formatter: Option<Val>,
     /// Other unrecognized keys.
-    other: Option<FlakeOutputsSet>,
+    other: Option<BTreeMap<String, FlakeOutputs>>,
     // TODO: Add nixosModules, nixosConfigurations, darwinModules, etc.
 }
 
@@ -34,7 +34,6 @@ impl FlakeSchema {
                 let out = output.pop(&[k, system.as_ref()])?;
                 let packages = out.as_attrset()?;
                 let r = packages
-                    .0
                     .iter()
                     .filter_map(|(k, v)| {
                         let v = v.as_leaf()?;
@@ -110,7 +109,7 @@ impl IntoView for FlakeSchema {
                             let k = v.name.as_ref().unwrap_or(&default);
                             view_flake_val(cx, k, &v)
                         })}
-                    {view_section_heading(cx, "Other")} {self.other}
+                    {view_section_heading(cx, "Other")} {self.other.map(FlakeOutputs::Attrset)}
                 </div>
             </div>
         }

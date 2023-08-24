@@ -11,12 +11,8 @@ use std::collections::{btree_map::Entry, BTreeMap};
 #[serde(untagged)]
 pub enum FlakeOutputs {
     Val(Val),
-    Attrset(FlakeOutputsSet),
+    Attrset(BTreeMap<String, FlakeOutputs>),
 }
-
-/// Like [FlakeOutputs], but is known to be an attrset.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct FlakeOutputsSet(pub BTreeMap<String, FlakeOutputs>);
 
 impl FlakeOutputs {
     /// Get the non-attrset value
@@ -28,7 +24,7 @@ impl FlakeOutputs {
     }
 
     /// Ensure the value is an attrset, and get it
-    pub fn as_attrset(&self) -> Option<&FlakeOutputsSet> {
+    pub fn as_attrset(&self) -> Option<&BTreeMap<String, FlakeOutputs>> {
         match self {
             Self::Attrset(v) => Some(v),
             _ => None,
@@ -47,7 +43,7 @@ impl FlakeOutputs {
         while let Some(part) = path.next() {
             match cur {
                 Self::Attrset(v) => {
-                    if let Entry::Occupied(entry) = v.0.entry(part.to_string()) {
+                    if let Entry::Occupied(entry) = v.entry(part.to_string()) {
                         if path.peek().is_none() {
                             return Some(entry.remove());
                         } else {
@@ -109,30 +105,23 @@ impl IntoView for FlakeOutputs {
     fn into_view(self, cx: Scope) -> View {
         match self {
             Self::Val(v) => v.into_view(cx),
-            Self::Attrset(v) => v.into_view(cx),
+            Self::Attrset(v) => view! { cx,
+                <ul class="list-disc">
+                    {v
+                        .iter()
+                        .map(|(k, v)| {
+                            view! { cx,
+                                <li class="ml-4">
+                                    <span class="px-2 py-1 font-bold text-primary-500">{k}</span>
+                                    {v.clone()}
+                                </li>
+                            }
+                        })
+                        .collect_view(cx)}
+                </ul>
+            }
+            .into_view(cx),
         }
-    }
-}
-
-impl IntoView for FlakeOutputsSet {
-    fn into_view(self, cx: Scope) -> View {
-        view! { cx,
-            <ul class="list-disc">
-                {self
-                    .0
-                    .iter()
-                    .map(|(k, v)| {
-                        view! { cx,
-                            <li class="ml-4">
-                                <span class="px-2 py-1 font-bold text-primary-500">{k}</span>
-                                {v.clone()}
-                            </li>
-                        }
-                    })
-                    .collect_view(cx)}
-            </ul>
-        }
-        .into_view(cx)
     }
 }
 
