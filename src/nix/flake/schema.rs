@@ -4,19 +4,19 @@ use leptos::*;
 use serde::{Deserialize, Serialize};
 
 use super::{
-    outputs::{FlakeOutputs, FlakeOutputsSet, Leaf},
+    outputs::{FlakeOutputs, FlakeOutputsSet, Val},
     System,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct FlakeSchema {
     system: System,
-    packages: BTreeMap<String, Leaf>,
-    legacy_packages: BTreeMap<String, Leaf>,
-    devshells: BTreeMap<String, Leaf>,
-    checks: BTreeMap<String, Leaf>,
-    apps: BTreeMap<String, Leaf>,
-    formatter: Option<Leaf>,
+    packages: BTreeMap<String, Val>,
+    legacy_packages: BTreeMap<String, Val>,
+    devshells: BTreeMap<String, Val>,
+    checks: BTreeMap<String, Val>,
+    apps: BTreeMap<String, Val>,
+    formatter: Option<Val>,
     /// Other unrecognized keys.
     other: Option<FlakeOutputsSet>,
     // TODO: Add nixosModules, nixosConfigurations, darwinModules, etc.
@@ -29,8 +29,8 @@ impl FlakeSchema {
     /// as is (in [FlakeSchema::other]).
     pub fn from(output: &FlakeOutputs, system: &System) -> Self {
         let output: &mut FlakeOutputs = &mut output.clone();
-        let pop_type = |output: &mut FlakeOutputs, k: &str| -> BTreeMap<String, Leaf> {
-            let mut f = || -> Option<BTreeMap<String, Leaf>> {
+        let pop_type = |output: &mut FlakeOutputs, k: &str| -> BTreeMap<String, Val> {
+            let mut f = || -> Option<BTreeMap<String, Val>> {
                 let out = output.pop(vec![k, system.as_ref()])?;
                 let packages = out.as_attrset()?;
                 let r = packages
@@ -47,7 +47,7 @@ impl FlakeSchema {
             output.pop(vec![k]);
             mr.unwrap_or(BTreeMap::new())
         };
-        let pop_leaf_type = |output: &mut FlakeOutputs, k: &str| -> Option<Leaf> {
+        let pop_leaf_type = |output: &mut FlakeOutputs, k: &str| -> Option<Val> {
             let leaf = output.pop(vec![k, system.as_ref()])?.as_leaf()?.clone();
             output.pop(vec![k]);
             Some(leaf)
@@ -78,7 +78,7 @@ impl IntoView for FlakeSchema {
         fn view_btree(
             cx: Scope,
             title: &'static str,
-            tree: &BTreeMap<String, Leaf>,
+            tree: &BTreeMap<String, Val>,
         ) -> impl IntoView {
             (!tree.is_empty()).then(|| {
                 view! { cx,
@@ -118,7 +118,7 @@ impl IntoView for FlakeSchema {
     }
 }
 
-fn view_btree_body(cx: Scope, tree: &BTreeMap<String, Leaf>) -> View {
+fn view_btree_body(cx: Scope, tree: &BTreeMap<String, Val>) -> View {
     view! { cx,
         <div class="flex flex-wrap justify-start">
             {tree.iter().map(|(k, v)| view_leaf(cx, k, v)).collect_view(cx)}
@@ -127,7 +127,7 @@ fn view_btree_body(cx: Scope, tree: &BTreeMap<String, Leaf>) -> View {
     .into_view(cx)
 }
 
-fn view_leaf(cx: Scope, k: &String, v: &Leaf) -> impl IntoView {
+fn view_leaf(cx: Scope, k: &String, v: &Val) -> impl IntoView {
     view! { cx,
         <div
             title=format!("{:?}", v.type_)

@@ -8,7 +8,7 @@ use std::collections::{btree_map::Entry, BTreeMap};
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum FlakeOutputs {
-    Leaf(Leaf),
+    Val(Val),
     Attrset(FlakeOutputsSet),
 }
 
@@ -17,9 +17,9 @@ pub enum FlakeOutputs {
 pub struct FlakeOutputsSet(pub BTreeMap<String, FlakeOutputs>);
 
 impl FlakeOutputs {
-    pub fn as_leaf(&self) -> Option<&Leaf> {
+    pub fn as_leaf(&self) -> Option<&Val> {
         match self {
-            Self::Leaf(v) => Some(v),
+            Self::Val(v) => Some(v),
             _ => None,
         }
     }
@@ -55,10 +55,10 @@ impl FlakeOutputs {
     }
 }
 
-/// A flake output that is not an attrset
+/// A flake output value that is not an attrset
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Leaf {
+pub struct Val {
     #[serde(rename = "type")]
     pub type_: Type,
     pub name: Option<String>,
@@ -97,13 +97,13 @@ impl Type {
 impl IntoView for FlakeOutputs {
     fn into_view(self, cx: Scope) -> View {
         match self {
-            Self::Leaf(v) => v.into_view(cx),
+            Self::Val(v) => v.into_view(cx),
             Self::Attrset(v) => v.into_view(cx),
         }
     }
 }
 
-impl IntoView for Leaf {
+impl IntoView for Val {
     fn into_view(self, cx: Scope) -> View {
         view! { cx,
             <span>
