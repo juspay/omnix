@@ -1,3 +1,4 @@
+//! Nix system types
 use std::{
     convert::Infallible,
     fmt::{Display, Formatter},
@@ -20,6 +21,7 @@ pub enum System {
     Other(String),
 }
 
+/// CPU architecture in the system
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum Arch {
     Aarch64,
@@ -77,6 +79,7 @@ impl Display for System {
 }
 
 impl System {
+    /// Return the human readable title for the Nix system
     pub fn human_readable(&self) -> String {
         match self {
             System::Linux(arch) => format!("Linux ({})", arch.human_readable()),
@@ -87,6 +90,7 @@ impl System {
 }
 
 impl Arch {
+    /// Return the human readable title for the CPU architecture
     pub fn human_readable(&self) -> &'static str {
         match self {
             Self::Aarch64 => "ARM",

@@ -1,3 +1,4 @@
+//! High-level schema of a flake
 use std::collections::BTreeMap;
 
 use leptos::*;
@@ -32,8 +33,8 @@ impl FlakeSchema {
         let pop_per_system_tree = |output: &mut FlakeOutputs, k: &str| -> BTreeMap<String, Val> {
             let mut f = || -> Option<BTreeMap<String, Val>> {
                 let out = output.pop(&[k, system.as_ref()])?;
-                let packages = out.as_attrset()?;
-                let r = packages
+                let outs = out.as_attrset()?;
+                let r = outs
                     .iter()
                     .filter_map(|(k, v)| {
                         let v = v.as_leaf()?;

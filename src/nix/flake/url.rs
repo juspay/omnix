@@ -1,3 +1,6 @@
+//! Flake URL types
+//!
+//! See <https://nixos.org/manual/nix/stable/command-ref/new-cli/nix3-flake.html#url-like-syntax>
 use std::{
     fmt::{Display, Formatter},
     str::FromStr,

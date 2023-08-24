@@ -1,3 +1,4 @@
+//! Rust module for Nix flakes
 pub mod outputs;
 pub mod schema;
 #[cfg(feature = "ssr")]

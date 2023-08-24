@@ -60,7 +60,7 @@ impl FlakeOutputs {
     }
 }
 
-/// The metadata of a flake output value that is not an attrset
+/// The metadata of a flake output value which is of non-attrset [Type]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Val {
@@ -70,7 +70,7 @@ pub struct Val {
     pub description: Option<String>,
 }
 
-/// The type of a flake output val
+/// The type of a flake output [Val]
 ///
 /// [Nix source ref](https://github.com/NixOS/nix/blob/2.14.1/src/nix/flake.cc#L1105)
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
