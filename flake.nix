@@ -68,6 +68,11 @@
             cargo-expand
             config.process-compose.cargo-doc-live.outputs.package
           ];
+          shellHook = ''
+            echo
+            echo "🍎🍎 Run 'just <recipe>' to get started"
+            just
+          '';
         };
       };
     };
