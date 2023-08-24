@@ -70,7 +70,9 @@ impl IntoView for FlakeSchema {
         let system = &self.system.clone();
         fn view_section_heading(cx: Scope, title: &'static str) -> impl IntoView {
             view! { cx,
-                <h3 class="p-2 mt-4 mb-2 font-bold bg-gray-300 border-b-2 border-l-2 border-black text-l">{title}</h3>
+                <h3 class="p-2 mt-4 mb-2 font-bold bg-gray-300 border-b-2 border-l-2 border-black text-l">
+                    {title}
+                </h3>
             }
         }
         fn view_btree(
@@ -101,13 +103,14 @@ impl IntoView for FlakeSchema {
                     {view_btree(cx, "Dev Shells", &self.devshells)}
                     {view_btree(cx, "Checks", &self.checks)} {view_btree(cx, "Apps", &self.apps)}
                     {view_section_heading(cx, "Formatter")}
-                    {self.formatter.map(|v| {
-                        let default = "formatter".to_string();
-                        let k = v.name.as_ref().unwrap_or(&default);
-                        view_leaf(cx, k, &v)
-                    })}
-                    {view_section_heading(cx, "Other")}
-                    {self.other}
+                    {self
+                        .formatter
+                        .map(|v| {
+                            let default = "formatter".to_string();
+                            let k = v.name.as_ref().unwrap_or(&default);
+                            view_leaf(cx, k, &v)
+                        })}
+                    {view_section_heading(cx, "Other")} {self.other}
                 </div>
             </div>
         }
@@ -118,10 +121,7 @@ impl IntoView for FlakeSchema {
 fn view_btree_body(cx: Scope, tree: &BTreeMap<String, Leaf>) -> View {
     view! { cx,
         <div class="flex flex-wrap justify-start">
-            {tree
-                .iter()
-                .map(|(k, v)| view_leaf(cx, k, v))
-                .collect_view(cx)}
+            {tree.iter().map(|(k, v)| view_leaf(cx, k, v)).collect_view(cx)}
         </div>
     }
     .into_view(cx)
@@ -141,9 +141,7 @@ fn view_leaf(cx: Scope, k: &String, v: &Leaf) -> impl IntoView {
                 .name
                 .as_ref()
                 .map(|v| {
-                    view! { cx,
-                        <div class="font-mono text-xs text-gray-500">{v}</div>
-                    }
+                    view! { cx, <div class="font-mono text-xs text-gray-500">{v}</div> }
                 })}
 
             {v
