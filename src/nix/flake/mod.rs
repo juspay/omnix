@@ -40,8 +40,6 @@ pub async fn get_flake(url: FlakeUrl) -> Result<Flake, ServerFnError> {
 }
 
 impl IntoView for Flake {
-    // TODO: Remove this attribute
-    #[allow(clippy::iter_kv_map)]
     fn into_view(self, cx: Scope) -> View {
         view! { cx,
             <div class="flex flex-col my-4">

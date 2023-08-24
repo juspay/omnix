@@ -107,11 +107,12 @@ fn Dashboard(cx: Scope) -> impl IntoView {
     view! { cx,
         <Title text="Dashboard"/>
         <h1 class="text-5xl font-bold">"Dashboard"</h1>
-        <div id="cards" class="flex flex-row">
+        <div id="cards" class="flex flex-row flex-wrap">
             <SuspenseWithErrorHandling>
                 <Card href="/health">"Nix Health Check " {report}</Card>
             </SuspenseWithErrorHandling>
             <Card href="/info">"Nix Info ℹ️"</Card>
+            <Card href="/flake">"Flake Overview ❄️️"</Card>
         </div>
     }
 }

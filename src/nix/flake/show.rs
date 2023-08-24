@@ -33,19 +33,7 @@ impl FlakeShowOutput {
         }
     }
 
-    /// Lookup the given path in the flake output
-    pub fn lookup(&self, path: Vec<&str>) -> Option<&Self> {
-        let mut cur = self;
-        for part in path {
-            match cur {
-                Self::Attrset(v) => cur = v.0.get(part)?,
-                _ => return None,
-            }
-        }
-        Some(cur)
-    }
-
-    /// Like [lookup] but removes the key
+    /// Lookup the given path, returning the value, and remove it from the tree.
     pub fn pop(&mut self, path: Vec<&str>) -> Option<Self> {
         let mut cur = self;
         let mut path = path.iter().peekable();
