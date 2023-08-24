@@ -11,15 +11,15 @@ use super::{
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct FlakeSchema {
-    system: System,
-    packages: BTreeMap<String, Val>,
-    legacy_packages: BTreeMap<String, Val>,
-    devshells: BTreeMap<String, Val>,
-    checks: BTreeMap<String, Val>,
-    apps: BTreeMap<String, Val>,
-    formatter: Option<Val>,
+    pub system: System,
+    pub packages: BTreeMap<String, Val>,
+    pub legacy_packages: BTreeMap<String, Val>,
+    pub devshells: BTreeMap<String, Val>,
+    pub checks: BTreeMap<String, Val>,
+    pub apps: BTreeMap<String, Val>,
+    pub formatter: Option<Val>,
     /// Other unrecognized keys.
-    other: Option<BTreeMap<String, FlakeOutputs>>,
+    pub other: Option<BTreeMap<String, FlakeOutputs>>,
     // TODO: Add nixosModules, nixosConfigurations, darwinModules, etc.
 }
 
