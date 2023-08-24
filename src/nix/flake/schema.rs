@@ -68,6 +68,11 @@ impl FlakeSchema {
 impl IntoView for FlakeSchema {
     fn into_view(self, cx: Scope) -> View {
         let system = &self.system.clone();
+        fn view_section_heading(cx: Scope, title: &'static str) -> impl IntoView {
+            view! { cx,
+                <h3 class="p-2 mt-4 mb-2 font-bold bg-gray-300 border-b-2 border-l-2 border-black text-l">{title}</h3>
+            }
+        }
         fn view_btree(
             cx: Scope,
             title: &'static str,
@@ -75,8 +80,8 @@ impl IntoView for FlakeSchema {
         ) -> impl IntoView {
             (!tree.is_empty()).then(|| {
                 view! { cx,
-                    <h3 class="my-2 font-bold text-l">{title}</h3>
-                    {leaf_map(cx, tree)}
+                    {view_section_heading(cx, title)}
+                    {view_btree_body(cx, tree)}
                 }
             })
         }
@@ -95,8 +100,14 @@ impl IntoView for FlakeSchema {
                     {view_btree(cx, "Legacy Packages", &self.legacy_packages)}
                     {view_btree(cx, "Dev Shells", &self.devshells)}
                     {view_btree(cx, "Checks", &self.checks)} {view_btree(cx, "Apps", &self.apps)}
-                    <h3 class="my-2 font-bold text-l">"Formatter"</h3> {self.formatter}
-                    <h3 class="my-2 font-bold text-l">"Other"</h3> {self.other}
+                    {view_section_heading(cx, "Formatter")}
+                    {self.formatter.map(|v| {
+                        let default = "formatter".to_string();
+                        let k = v.name.as_ref().unwrap_or(&default);
+                        view_leaf(cx, k, &v)
+                    })}
+                    {view_section_heading(cx, "Other")}
+                    {self.other}
                 </div>
             </div>
         }
@@ -104,42 +115,44 @@ impl IntoView for FlakeSchema {
     }
 }
 
-fn leaf_map(cx: Scope, tree: &BTreeMap<String, Leaf>) -> View {
+fn view_btree_body(cx: Scope, tree: &BTreeMap<String, Leaf>) -> View {
     view! { cx,
-        <div class="flex flex-wrap">
+        <div class="flex flex-wrap justify-start">
             {tree
                 .iter()
-                .map(|(k, v)| {
-                    view! { cx,
-                        <div
-                            title=format!("{:?}", v.type_)
-                            class="flex flex-col p-2 m-2 space-y-2 bg-white border-4 border-gray-300 rounded hover:border-gray-400"
-                        >
-                            <div class="flex flex-row justify-start space-x-2 font-bold text-primary-500">
-                                <div>{v.type_.to_icon()}</div>
-                                <div>{k}</div>
-                            </div>
-                            {v
-                                .name
-                                .as_ref()
-                                .map(|v| {
-                                    view! { cx,
-                                        <div class="font-mono text-xs text-gray-500">{v}</div>
-                                    }
-                                })}
-
-                            {v
-                                .description
-                                .as_ref()
-                                .map(|v| {
-                                    view! { cx, <div class="font-light">{v}</div> }
-                                })}
-
-                        </div>
-                    }
-                })
+                .map(|(k, v)| view_leaf(cx, k, v))
                 .collect_view(cx)}
         </div>
     }
     .into_view(cx)
+}
+
+fn view_leaf(cx: Scope, k: &String, v: &Leaf) -> impl IntoView {
+    view! { cx,
+        <div
+            title=format!("{:?}", v.type_)
+            class="flex flex-col p-2 my-2 mr-2 space-y-2 bg-white border-4 border-gray-300 rounded hover:border-gray-400"
+        >
+            <div class="flex flex-row justify-start space-x-2 font-bold text-primary-500">
+                <div>{v.type_.to_icon()}</div>
+                <div>{k}</div>
+            </div>
+            {v
+                .name
+                .as_ref()
+                .map(|v| {
+                    view! { cx,
+                        <div class="font-mono text-xs text-gray-500">{v}</div>
+                    }
+                })}
+
+            {v
+                .description
+                .as_ref()
+                .map(|v| {
+                    view! { cx, <div class="font-light">{v}</div> }
+                })}
+
+        </div>
+    }
 }

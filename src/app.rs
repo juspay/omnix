@@ -39,7 +39,7 @@ pub fn App(cx: Scope) -> impl IntoView {
             <div class="flex justify-center w-full min-h-screen bg-center bg-cover bg-base-200">
                 <div class="container flex flex-col items-stretch mx-auto max-w-prose">
                     <Nav/>
-                    <main class="flex flex-col px-2 space-y-3 text-center">
+                    <main class="flex flex-col px-2 mb-8 space-y-3 text-center">
                         <Routes>
                             <Route path="" view=Dashboard/>
                             <Route path="/flake" view=NixFlake>
