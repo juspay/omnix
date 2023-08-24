@@ -33,25 +33,20 @@ impl FlakeOutputs {
 
     /// Lookup the given path, returning the value, while removing it from the tree.
     ///
-    /// Example:
+    /// # Example
+    /// ```no_run
     /// let val = tree.pop(&["packages", "aarch64-darwin", "default"]);
+    /// ```
     pub fn pop(&mut self, path: &[&str]) -> Option<Self> {
-        let mut cur = self;
+        let mut curr = self;
         let mut path = path.iter().peekable();
         while let Some(part) = path.next() {
-            match cur {
-                Self::Attrset(v) => {
-                    if let Entry::Occupied(entry) = v.entry(part.to_string()) {
-                        if path.peek().is_none() {
-                            return Some(entry.remove());
-                        } else {
-                            cur = entry.into_mut();
-                        }
-                    } else {
-                        return None;
-                    }
-                }
-                _ => return None,
+            let Self::Attrset(v) = curr else { return None; };
+            let Entry::Occupied(entry) = v.entry(part.to_string()) else { return None; };
+            if path.peek().is_none() {
+                return Some(entry.remove());
+            } else {
+                curr = entry.into_mut();
             }
         }
         None

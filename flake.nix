@@ -107,19 +107,23 @@
 
           packages.default = self'.packages.nix-browser;
 
-          devShells.default = pkgs.mkShell ({
-            inputsFrom = [
-              config.treefmt.build.devShell
-              self'.devShells.nix-browser
-            ];
-            packages = with pkgs; [
-              just
-              cargo-watch
-              cargo-expand
-              config.process-compose.cargo-doc-live.outputs.package
-              config.process-compose.cargo-test.outputs.package
-            ] ++ lib.optionals (!isDarwinOrArch) [ chromedriver chromium ];
-          } // env);
-        };
+        devShells.default = pkgs.mkShell ({
+          inputsFrom = [
+            config.treefmt.build.devShell
+            self'.devShells.nix-browser
+          ];
+          packages = with pkgs; [
+            just
+            cargo-watch
+            cargo-expand
+            config.process-compose.cargo-doc-live.outputs.package
+            config.process-compose.cargo-test.outputs.package
+          ] ++ lib.optionals (!isDarwinOrArch) [ chromedriver chromium ];;
+          shellHook = ''
+            echo
+            echo "🍎🍎 Run 'just <recipe>' to get started"
+            just
+          '';
+        } // env);
     };
 }
