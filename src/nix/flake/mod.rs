@@ -1,4 +1,6 @@
+pub mod outputs;
 pub mod schema;
+#[cfg(feature = "ssr")]
 pub mod show;
 pub mod system;
 pub mod url;
@@ -8,7 +10,7 @@ use leptos_router::*;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
 
-use self::{schema::FlakeSchema, show::FlakeShowOutput, system::System, url::FlakeUrl};
+use self::{outputs::FlakeShowOutput, schema::FlakeSchema, system::System, url::FlakeUrl};
 
 /// All the information about a Nix flake
 // #[serde_as]

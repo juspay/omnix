@@ -4,7 +4,7 @@ use leptos::*;
 use serde::{Deserialize, Serialize};
 
 use super::{
-    show::{FlakeShowOutput, FlakeShowOutputSet, Leaf},
+    outputs::{FlakeShowOutput, FlakeShowOutputSet, Leaf},
     System,
 };
 
