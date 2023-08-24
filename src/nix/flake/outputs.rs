@@ -34,9 +34,7 @@ impl FlakeOutputs {
     /// Lookup the given path, returning the value, while removing it from the tree.
     ///
     /// Example:
-    /// ```
     /// let val = tree.pop(&["packages", "aarch64-darwin", "default"]);
-    /// ```
     pub fn pop(&mut self, path: &[&str]) -> Option<Self> {
         let mut cur = self;
         let mut path = path.iter().peekable();
