@@ -17,11 +17,17 @@ impl FlakeUrl {
     /// Provide real-world examples of flake URLs
     pub fn suggestions() -> Vec<FlakeUrl> {
         vec![
-            "github:nammayatri/nammayatri".into(),
-            "github:srid/haskell-template".into(),
+            FlakeUrl::default(),
+            "github:srid/emanote".into(),
             "github:juspay/nix-browser".into(),
             "github:nixos/nixpkgs".into(),
         ]
+    }
+}
+
+impl Default for FlakeUrl {
+    fn default() -> Self {
+        "github:nammayatri/nammayatri".into()
     }
 }
 

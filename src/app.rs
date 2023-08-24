@@ -26,7 +26,7 @@ pub fn App(cx: Scope) -> impl IntoView {
         FlakeUrl::suggestions()
             .first()
             .map(Clone::clone)
-            .unwrap_or("https://github.com/srid/haskell-template".into()),
+            .unwrap_or_default(),
     );
 
     view! { cx,
