@@ -36,21 +36,43 @@ pub trait SignalWithResult<T, E>: SignalWith<Option<Result<T, E>>> {
     where
         E: Clone,
     {
-        self.with(move |d| map_option_result_ref(d, f))
+        self.with(move |d| d.map_option_result(f))
     }
 }
 
 impl<T, E> SignalWithResult<T, E> for Signal<Option<Result<T, E>>> {}
 
-/// Map the value inside a nested [Option]-of-[Result]
-///
-/// This function is efficient in that the inner value is not cloned.
-fn map_option_result_ref<T1, T2, E>(
-    d: &Option<Result<T1, E>>,
-    f: impl Fn(&T1) -> T2 + 'static,
-) -> Option<Result<T2, E>>
-where
-    E: Clone,
-{
-    d.as_ref().map(|r| r.as_ref().map(f).map_err(Clone::clone))
+/// Functions unique to [Option] of [Result] values
+pub trait OptionResult<T, E> {
+    /// Map the value inside a nested [Option]-of-[Result]
+    ///
+    /// This function is efficient in that the inner value is not cloned.
+    fn map_option_result<U>(&self, f: impl Fn(&T) -> U + 'static) -> Option<Result<U, E>>
+    where
+        E: Clone;
+
+    /// Like [[Option::unwrap_or]] but unwraps the nested value
+    fn unwrap_option_result_value_or(&self, default: T) -> T
+    where
+        T: Clone;
+}
+
+impl<T, E> OptionResult<T, E> for Option<Result<T, E>> {
+    fn map_option_result<U>(&self, f: impl Fn(&T) -> U + 'static) -> Option<Result<U, E>>
+    where
+        E: Clone,
+    {
+        self.as_ref()
+            .map(|r| r.as_ref().map(f).map_err(Clone::clone))
+    }
+
+    fn unwrap_option_result_value_or(&self, default: T) -> T
+    where
+        T: Clone,
+    {
+        self.as_ref()
+            .and_then(|r| r.as_ref().ok())
+            .cloned()
+            .unwrap_or(default)
+    }
 }
