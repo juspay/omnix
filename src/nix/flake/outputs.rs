@@ -5,6 +5,8 @@ use serde::{Deserialize, Serialize};
 use std::collections::{btree_map::Entry, BTreeMap};
 
 /// Represents the "outputs" of a flake
+///
+/// This structure is currently produced by `nix flake show`
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum FlakeOutputs {
@@ -12,11 +14,12 @@ pub enum FlakeOutputs {
     Attrset(FlakeOutputsSet),
 }
 
-/// An attrset of flake outputs
+/// Like [FlakeOutputs], but is known to be an attrset.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct FlakeOutputsSet(pub BTreeMap<String, FlakeOutputs>);
 
 impl FlakeOutputs {
+    /// Get the non-attrset value
     pub fn as_leaf(&self) -> Option<&Val> {
         match self {
             Self::Val(v) => Some(v),
@@ -24,6 +27,7 @@ impl FlakeOutputs {
         }
     }
 
+    /// Ensure the value is an attrset, and get it
     pub fn as_attrset(&self) -> Option<&FlakeOutputsSet> {
         match self {
             Self::Attrset(v) => Some(v),
@@ -31,8 +35,13 @@ impl FlakeOutputs {
         }
     }
 
-    /// Lookup the given path, returning the value, and remove it from the tree.
-    pub fn pop(&mut self, path: Vec<&str>) -> Option<Self> {
+    /// Lookup the given path, returning the value, while removing it from the tree.
+    ///
+    /// Example:
+    /// ```
+    /// let val = tree.pop(&["packages", "aarch64-darwin", "default"]);
+    /// ```
+    pub fn pop(&mut self, path: &[&str]) -> Option<Self> {
         let mut cur = self;
         let mut path = path.iter().peekable();
         while let Some(part) = path.next() {
@@ -55,7 +64,7 @@ impl FlakeOutputs {
     }
 }
 
-/// A flake output value that is not an attrset
+/// The metadata of a flake output value that is not an attrset
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Val {
@@ -65,7 +74,7 @@ pub struct Val {
     pub description: Option<String>,
 }
 
-/// The type of a flake output
+/// The type of a flake output val
 ///
 /// [Nix source ref](https://github.com/NixOS/nix/blob/2.14.1/src/nix/flake.cc#L1105)
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -80,6 +89,7 @@ pub enum Type {
 }
 
 impl Type {
+    /// Get the icon for this type
     pub fn to_icon(&self) -> &'static str {
         match self {
             Self::NixosModule => "❄️",
@@ -91,7 +101,8 @@ impl Type {
     }
 }
 
-/// The [IntoView] instance for [FlakeOutputs] renders it recursively.
+/// The [IntoView] instance for [FlakeOutputs] renders it recursively. This view
+/// is used to see the raw flake output only; it is not useful for general UX.
 ///
 /// WARNING: This may cause performance problems if the tree is large.
 impl IntoView for FlakeOutputs {
@@ -100,21 +111,6 @@ impl IntoView for FlakeOutputs {
             Self::Val(v) => v.into_view(cx),
             Self::Attrset(v) => v.into_view(cx),
         }
-    }
-}
-
-impl IntoView for Val {
-    fn into_view(self, cx: Scope) -> View {
-        view! { cx,
-            <span>
-                <b>{self.name}</b>
-                " ("
-                {self.type_}
-                ") "
-                <em>{self.description}</em>
-            </span>
-        }
-        .into_view(cx)
     }
 }
 
@@ -135,6 +131,21 @@ impl IntoView for FlakeOutputsSet {
                     })
                     .collect_view(cx)}
             </ul>
+        }
+        .into_view(cx)
+    }
+}
+
+impl IntoView for Val {
+    fn into_view(self, cx: Scope) -> View {
+        view! { cx,
+            <span>
+                <b>{self.name}</b>
+                " ("
+                {self.type_}
+                ") "
+                <em>{self.description}</em>
+            </span>
         }
         .into_view(cx)
     }

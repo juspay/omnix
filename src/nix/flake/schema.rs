@@ -29,9 +29,9 @@ impl FlakeSchema {
     /// as is (in [FlakeSchema::other]).
     pub fn from(output: &FlakeOutputs, system: &System) -> Self {
         let output: &mut FlakeOutputs = &mut output.clone();
-        let pop_type = |output: &mut FlakeOutputs, k: &str| -> BTreeMap<String, Val> {
+        let pop_per_system_tree = |output: &mut FlakeOutputs, k: &str| -> BTreeMap<String, Val> {
             let mut f = || -> Option<BTreeMap<String, Val>> {
-                let out = output.pop(vec![k, system.as_ref()])?;
+                let out = output.pop(&[k, system.as_ref()])?;
                 let packages = out.as_attrset()?;
                 let r = packages
                     .0
@@ -44,21 +44,21 @@ impl FlakeSchema {
                 Some(r)
             };
             let mr = f();
-            output.pop(vec![k]);
+            output.pop(&[k]);
             mr.unwrap_or(BTreeMap::new())
         };
         let pop_leaf_type = |output: &mut FlakeOutputs, k: &str| -> Option<Val> {
-            let leaf = output.pop(vec![k, system.as_ref()])?.as_leaf()?.clone();
-            output.pop(vec![k]);
+            let leaf = output.pop(&[k, system.as_ref()])?.as_leaf()?.clone();
+            output.pop(&[k]);
             Some(leaf)
         };
         FlakeSchema {
             system: system.clone(),
-            packages: pop_type(output, "packages"),
-            legacy_packages: pop_type(output, "legacyPackages"),
-            devshells: pop_type(output, "devShells"),
-            checks: pop_type(output, "checks"),
-            apps: pop_type(output, "apps"),
+            packages: pop_per_system_tree(output, "packages"),
+            legacy_packages: pop_per_system_tree(output, "legacyPackages"),
+            devshells: pop_per_system_tree(output, "devShells"),
+            checks: pop_per_system_tree(output, "checks"),
+            apps: pop_per_system_tree(output, "apps"),
             formatter: pop_leaf_type(output, "formatter"),
             other: (*output).as_attrset().cloned(),
         }
@@ -108,7 +108,7 @@ impl IntoView for FlakeSchema {
                         .map(|v| {
                             let default = "formatter".to_string();
                             let k = v.name.as_ref().unwrap_or(&default);
-                            view_leaf(cx, k, &v)
+                            view_flake_val(cx, k, &v)
                         })}
                     {view_section_heading(cx, "Other")} {self.other}
                 </div>
@@ -121,13 +121,13 @@ impl IntoView for FlakeSchema {
 fn view_btree_body(cx: Scope, tree: &BTreeMap<String, Val>) -> View {
     view! { cx,
         <div class="flex flex-wrap justify-start">
-            {tree.iter().map(|(k, v)| view_leaf(cx, k, v)).collect_view(cx)}
+            {tree.iter().map(|(k, v)| view_flake_val(cx, k, v)).collect_view(cx)}
         </div>
     }
     .into_view(cx)
 }
 
-fn view_leaf(cx: Scope, k: &String, v: &Val) -> impl IntoView {
+fn view_flake_val(cx: Scope, k: &String, v: &Val) -> impl IntoView {
     view! { cx,
         <div
             title=format!("{:?}", v.type_)
