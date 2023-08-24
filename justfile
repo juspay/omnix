@@ -18,7 +18,7 @@ watch-release:
 
 # Run tests (backend & frontend)
 test:
-    cargo watch -- cargo leptos test
+    cargo-test
 
 doc:
     cargo-doc-live
