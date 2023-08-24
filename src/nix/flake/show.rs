@@ -1,11 +1,11 @@
 //! Rust module for `nix flake show`
 
-use super::outputs::FlakeShowOutput;
+use super::outputs::FlakeOutputs;
 use super::url::FlakeUrl;
 use leptos::*;
 
 /// Run `nix flake show` on the given flake url
-pub async fn run_nix_flake_show(flake_url: &FlakeUrl) -> Result<FlakeShowOutput, ServerFnError> {
+pub async fn run_nix_flake_show(flake_url: &FlakeUrl) -> Result<FlakeOutputs, ServerFnError> {
     use tokio::process::Command;
 
     let mut cmd = Command::new("nix");
@@ -20,7 +20,7 @@ pub async fn run_nix_flake_show(flake_url: &FlakeUrl) -> Result<FlakeShowOutput,
         &flake_url.to_string(),
     ]);
     let stdout: Vec<u8> = crate::command::run_command(&mut cmd).await?;
-    let v = serde_json::from_slice::<FlakeShowOutput>(&stdout)?;
+    let v = serde_json::from_slice::<FlakeOutputs>(&stdout)?;
     Ok(v)
 }
 

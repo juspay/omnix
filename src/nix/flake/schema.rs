@@ -4,7 +4,7 @@ use leptos::*;
 use serde::{Deserialize, Serialize};
 
 use super::{
-    outputs::{FlakeShowOutput, FlakeShowOutputSet, Leaf},
+    outputs::{FlakeOutputs, FlakeOutputsSet, Leaf},
     System,
 };
 
@@ -18,7 +18,7 @@ pub struct FlakeSchema {
     apps: BTreeMap<String, Leaf>,
     formatter: Option<Leaf>,
     /// Other unrecognized keys.
-    other: Option<FlakeShowOutputSet>,
+    other: Option<FlakeOutputsSet>,
     // TODO: Add nixosModules, nixosConfigurations, darwinModules, etc.
 }
 
@@ -27,9 +27,9 @@ impl FlakeSchema {
     ///
     /// Other system outputs are eliminated, but non-per-system outputs are kept
     /// as is (in [FlakeSchema::other]).
-    pub fn from(output: &FlakeShowOutput, system: &System) -> Self {
-        let output: &mut FlakeShowOutput = &mut output.clone();
-        let pop_type = |output: &mut FlakeShowOutput, k: &str| -> BTreeMap<String, Leaf> {
+    pub fn from(output: &FlakeOutputs, system: &System) -> Self {
+        let output: &mut FlakeOutputs = &mut output.clone();
+        let pop_type = |output: &mut FlakeOutputs, k: &str| -> BTreeMap<String, Leaf> {
             let mut f = || -> Option<BTreeMap<String, Leaf>> {
                 let out = output.pop(vec![k, system.as_ref()])?;
                 let packages = out.as_attrset()?;
@@ -47,7 +47,7 @@ impl FlakeSchema {
             output.pop(vec![k]);
             mr.unwrap_or(BTreeMap::new())
         };
-        let pop_leaf_type = |output: &mut FlakeShowOutput, k: &str| -> Option<Leaf> {
+        let pop_leaf_type = |output: &mut FlakeOutputs, k: &str| -> Option<Leaf> {
             let leaf = output.pop(vec![k, system.as_ref()])?.as_leaf()?.clone();
             output.pop(vec![k]);
             Some(leaf)

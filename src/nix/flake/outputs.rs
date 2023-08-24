@@ -1,22 +1,22 @@
-//! Rust module for `nix flake show`
+//! Nix flake outputs
 
 use leptos::*;
 use serde::{Deserialize, Serialize};
 use std::collections::{btree_map::Entry, BTreeMap};
 
-/// Output of `nix flake show` (with IFD)
+/// Represents the "outputs" of a flake
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
-pub enum FlakeShowOutput {
+pub enum FlakeOutputs {
     Leaf(Leaf),
-    Attrset(FlakeShowOutputSet),
+    Attrset(FlakeOutputsSet),
 }
 
 /// An attrset of flake outputs
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct FlakeShowOutputSet(pub BTreeMap<String, FlakeShowOutput>);
+pub struct FlakeOutputsSet(pub BTreeMap<String, FlakeOutputs>);
 
-impl FlakeShowOutput {
+impl FlakeOutputs {
     pub fn as_leaf(&self) -> Option<&Leaf> {
         match self {
             Self::Leaf(v) => Some(v),
@@ -24,7 +24,7 @@ impl FlakeShowOutput {
         }
     }
 
-    pub fn as_attrset(&self) -> Option<&FlakeShowOutputSet> {
+    pub fn as_attrset(&self) -> Option<&FlakeOutputsSet> {
         match self {
             Self::Attrset(v) => Some(v),
             _ => None,
@@ -91,10 +91,10 @@ impl Type {
     }
 }
 
-/// The [IntoView] instance for [FlakeShowOutput] renders it recursively.
+/// The [IntoView] instance for [FlakeOutputs] renders it recursively.
 ///
 /// WARNING: This may cause performance problems if the tree is large.
-impl IntoView for FlakeShowOutput {
+impl IntoView for FlakeOutputs {
     fn into_view(self, cx: Scope) -> View {
         match self {
             Self::Leaf(v) => v.into_view(cx),
@@ -118,7 +118,7 @@ impl IntoView for Leaf {
     }
 }
 
-impl IntoView for FlakeShowOutputSet {
+impl IntoView for FlakeOutputsSet {
     fn into_view(self, cx: Scope) -> View {
         view! { cx,
             <ul class="list-disc">
