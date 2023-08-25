@@ -1,17 +1,13 @@
 //! Rust module for `nix flake show`
 
-use super::outputs::FlakeOutputs;
-use super::url::FlakeUrl;
+use super::{outputs::FlakeOutputs, url::FlakeUrl};
+use crate::nix::command;
 use leptos::*;
 
 /// Run `nix flake show` on the given flake url
 pub async fn run_nix_flake_show(flake_url: &FlakeUrl) -> Result<FlakeOutputs, ServerFnError> {
-    use tokio::process::Command;
-
-    let mut cmd = Command::new("nix");
+    let mut cmd = command::NixCmd::default().command();
     cmd.args(vec![
-        "--extra-experimental-features",
-        "nix-command flakes",
         "flake",
         "show",
         "--legacy", // for showing nixpkgs legacyPackages

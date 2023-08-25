@@ -1,4 +1,6 @@
 //! Rust module to interact with Nix
+#[cfg(feature = "ssr")]
+pub mod command;
 pub mod config;
 pub mod flake;
 pub mod health;

@@ -76,14 +76,9 @@ impl IntoView for ConfigVal<System> {
 #[cfg(feature = "ssr")]
 #[instrument(name = "show-config")]
 pub async fn run_nix_show_config() -> Result<NixConfig, ServerFnError> {
-    use tokio::process::Command;
-    let mut cmd = Command::new("nix");
-    cmd.args(vec![
-        "--extra-experimental-features",
-        "nix-command",
-        "show-config",
-        "--json",
-    ]);
+    use crate::nix::command;
+    let mut cmd = command::NixCmd::default().command();
+    cmd.args(vec!["show-config", "--json"]);
     let stdout: Vec<u8> = crate::command::run_command(&mut cmd).await?;
     let v = serde_json::from_slice::<NixConfig>(&stdout)?;
     Ok(v)

@@ -51,8 +51,8 @@ impl FromStr for NixVersion {
 #[cfg(feature = "ssr")]
 #[instrument(name = "version")]
 pub async fn run_nix_version() -> Result<NixVersion, ServerFnError> {
-    use tokio::process::Command;
-    let mut cmd = Command::new("nix");
+    use crate::nix::command;
+    let mut cmd = command::NixCmd::default().command();
     cmd.arg("--version");
     let stdout: Vec<u8> = crate::command::run_command(&mut cmd).await?;
     // Utf-8 errors don't matter here because we're just parsing numbers
