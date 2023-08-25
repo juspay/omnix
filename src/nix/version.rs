@@ -7,6 +7,8 @@ use thiserror::Error;
 #[cfg(feature = "ssr")]
 use tracing::instrument;
 
+use super::refs;
+
 /// Nix version as parsed from `nix --version`
 #[derive(Clone, PartialOrd, PartialEq, Eq, Debug, Serialize, Deserialize)]
 pub struct NixVersion {
@@ -61,7 +63,12 @@ pub async fn run_nix_version() -> Result<NixVersion, ServerFnError> {
 /// The HTML view for [NixVersion]
 impl IntoView for NixVersion {
     fn into_view(self, cx: Scope) -> View {
-        view! { cx, <span class="font-mono">{format!("{}", self)}</span> }.into_view(cx)
+        view! { cx,
+            <a href=refs::RELEASE_HISTORY class="font-mono hover:underline" target="_blank">
+                {format!("{}", self)}
+            </a>
+        }
+        .into_view(cx)
     }
 }
 

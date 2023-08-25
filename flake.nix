@@ -115,6 +115,7 @@
             ];
             packages = with pkgs; [
               just
+              nixci
               cargo-watch
               cargo-expand
               config.process-compose.cargo-doc-live.outputs.package
