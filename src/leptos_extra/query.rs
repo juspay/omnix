@@ -86,8 +86,7 @@ pub fn QueryInput<K>(
     id: &'static str,
     /// Initial suggestions to show in the datalist
     suggestions: Vec<K>,
-    query: ReadSignal<K>,
-    set_query: WriteSignal<K>,
+    query: RwSignal<K>,
 ) -> impl IntoView
 where
     K: ToString + FromStr + Hash + Eq + Clone + Display + 'static,
@@ -107,14 +106,14 @@ where
             on:change=move |ev| {
                 match FromStr::from_str(&event_target_value(&ev)) {
                     Ok(url) => {
-                        set_query(url);
+                        query.set(url);
                         set_input_err(None)
                     }
                     Err(e) => set_input_err(Some(e.to_string())),
                 }
             }
 
-            prop:value=move || query().to_string()
+            prop:value=move || query.get().to_string()
         />
         <span class="text-red-500">{input_err}</span>
         // TODO: use local storage, and cache user's inputs

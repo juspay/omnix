@@ -12,6 +12,7 @@ use serde::{Deserialize, Serialize};
 use tracing::instrument;
 
 use self::{outputs::FlakeOutputs, schema::FlakeSchema, system::System, url::FlakeUrl};
+use crate::nix::command::Refresh;
 
 /// All the information about a Nix flake
 // #[serde_as]
@@ -29,12 +30,13 @@ pub struct Flake {
 /// Get [Flake] info for the given flake url
 #[instrument(name = "flake")]
 #[server(GetFlake, "/api")]
-pub async fn get_flake(url: FlakeUrl) -> Result<Flake, ServerFnError> {
+pub async fn get_flake(args: (FlakeUrl, Refresh)) -> Result<Flake, ServerFnError> {
     use super::config::run_nix_show_config;
+    let (url, refresh) = args;
     // TODO: Can we cache this?
     let nix_config = run_nix_show_config().await?;
     let system = nix_config.system.value;
-    let output = self::show::run_nix_flake_show(&url).await?;
+    let output = self::show::run_nix_flake_show(&url, refresh).await?;
     Ok(Flake {
         url,
         output: output.clone(),
