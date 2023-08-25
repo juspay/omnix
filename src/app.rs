@@ -13,7 +13,7 @@ use crate::nix::{
 use crate::widget::*;
 use crate::{
     leptos_extra::{
-        query::{self, QueryInput, RefetchQueryButton},
+        query::{self, RefetchQueryButton},
         signal::{provide_signal, use_signal, SignalWithResult},
     },
     nix::command::Refresh,
@@ -132,7 +132,7 @@ fn NixFlake(cx: Scope) -> impl IntoView {
     view! { cx,
         <Title text="Nix Flake"/>
         <h1 class="text-5xl font-bold">{"Nix Flake"}</h1>
-        <QueryInput id="nix-flake-input" query=url suggestions/>
+        <TextInput id="nix-flake-input" label="Load a Nix Flake" val=url suggestions/>
         <RefetchQueryButton result query/>
         <Outlet/>
     }
