@@ -8,6 +8,7 @@ use tokio::process::Command;
 /// options](https://nixos.org/manual/nix/stable/command-ref/new-cli/nix#options)
 pub struct NixCmd {
     pub extra_experimental_features: Vec<String>,
+    pub refresh: bool,
 }
 
 impl Default for NixCmd {
@@ -15,6 +16,7 @@ impl Default for NixCmd {
     fn default() -> Self {
         Self {
             extra_experimental_features: vec!["nix-command".to_string(), "flakes".to_string()],
+            refresh: false,
         }
     }
 }
@@ -27,11 +29,16 @@ impl NixCmd {
         cmd
     }
 
+    /// Convert this [NixCmd] configuration into a list of arguments for
+    /// [Command]
     fn args(&self) -> Vec<String> {
         let mut args = vec![];
         if !self.extra_experimental_features.is_empty() {
             args.push("--extra-experimental-features".to_string());
             args.push(self.extra_experimental_features.join(" "));
+        }
+        if self.refresh {
+            args.push("--refresh".to_string());
         }
         args
     }
