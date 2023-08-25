@@ -5,16 +5,19 @@ use leptos_meta::*;
 use leptos_query::*;
 use leptos_router::*;
 
-use crate::leptos_extra::{
-    query::{self, QueryInput, RefetchQueryButton},
-    signal::{provide_signal, use_signal, SignalWithResult},
-};
 use crate::nix::{
     flake::{get_flake, url::FlakeUrl},
     health::{get_nix_health, traits::Check},
     info::get_nix_info,
 };
 use crate::widget::*;
+use crate::{
+    leptos_extra::{
+        query::{self, QueryInput, RefetchQueryButton},
+        signal::{provide_signal, use_signal, SignalWithResult},
+    },
+    nix::command::Refresh,
+};
 
 /// Main frontend application container
 #[component]
@@ -28,6 +31,7 @@ pub fn App(cx: Scope) -> impl IntoView {
             .map(Clone::clone)
             .unwrap_or_default(),
     );
+    provide_signal::<Refresh>(cx, false.into()); // refresh flag is unused, but we may add it to UI later.
 
     view! { cx,
         <Stylesheet id="leptos" href="/pkg/nix-browser.css"/>
@@ -121,12 +125,14 @@ fn Dashboard(cx: Scope) -> impl IntoView {
 #[component]
 fn NixFlake(cx: Scope) -> impl IntoView {
     let suggestions = FlakeUrl::suggestions();
-    let (query, set_query) = use_signal::<FlakeUrl>(cx);
+    let url = use_signal::<FlakeUrl>(cx);
+    let refresh = use_signal::<Refresh>(cx);
+    let query = move || (url(), refresh());
     let result = query::use_server_query(cx, query, get_flake);
     view! { cx,
         <Title text="Nix Flake"/>
         <h1 class="text-5xl font-bold">{"Nix Flake"}</h1>
-        <QueryInput id="nix-flake-input" query set_query suggestions/>
+        <QueryInput id="nix-flake-input" query=url suggestions/>
         <RefetchQueryButton result query/>
         <Outlet/>
     }
@@ -134,7 +140,9 @@ fn NixFlake(cx: Scope) -> impl IntoView {
 
 #[component]
 fn NixFlakeHome(cx: Scope) -> impl IntoView {
-    let (query, _) = use_signal::<FlakeUrl>(cx);
+    let url = use_signal::<FlakeUrl>(cx);
+    let refresh = use_signal::<Refresh>(cx);
+    let query = move || (url(), refresh());
     let result = query::use_server_query(cx, query, get_flake);
     let data = result.data;
     view! { cx,
@@ -146,7 +154,9 @@ fn NixFlakeHome(cx: Scope) -> impl IntoView {
 
 #[component]
 fn NixFlakeRaw(cx: Scope) -> impl IntoView {
-    let (query, _) = use_signal::<FlakeUrl>(cx);
+    let url = use_signal::<FlakeUrl>(cx);
+    let refresh = use_signal::<Refresh>(cx);
+    let query = move || (url(), refresh());
     let result = query::use_server_query(cx, query, get_flake);
     let data = result.data;
     view! { cx,
