@@ -89,7 +89,7 @@
                   };
                 };
                 start-app = {
-                  command = "${self'.packages.default}/bin/nix-browser --site-addr 127.0.0.1:${env.TEST_PORT}";
+                  command = "${self'.packages.default}/bin/nix-browser --site-addr=127.0.0.1:${env.TEST_PORT}";
                   readiness_probe = {
                     exec.command = with pkgs; "${curl}/bin/curl --fail 127.0.0.1:${env.TEST_PORT}";
                     initial_delay_seconds = 2;
@@ -99,7 +99,7 @@
                 };
                 test = {
                   environment = env;
-                  command = if isDarwinOrArch then "exit 0" else "cargo leptos test";
+                  command = if isDarwinOrArch then "cargo test" else "cargo test -- --include-ignored";
                   depends_on."start-chromedriver".condition = "process_healthy";
                   depends_on."start-app".condition = "process_healthy";
                 };
