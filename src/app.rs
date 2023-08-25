@@ -41,7 +41,7 @@ pub fn App(cx: Scope) -> impl IntoView {
         }>
             <Body class="overflow-y-scroll"/>
             <div class="flex justify-center w-full min-h-screen bg-center bg-cover bg-base-200">
-                <div class="container flex flex-col items-stretch mx-auto max-w-prose">
+                <div class="flex flex-col items-stretch mx-auto sm:container sm:max-w-screen-md">
                     <Nav/>
                     <main class="flex flex-col px-2 mb-8 space-y-3 text-center">
                         <Routes>
@@ -102,9 +102,9 @@ fn Dashboard(cx: Scope) -> impl IntoView {
         view! { cx,
             <A
                 href=href
-                class="flex items-center justify-center w-64 h-48 p-2 m-2 border-2 rounded-lg shadow border-base-400 active:shadow-none bg-base-100 hover:bg-primary-200"
+                class="flex items-center justify-center w-48 h-48 p-2 m-2 border-2 rounded-lg shadow border-base-400 active:shadow-none bg-base-100 hover:bg-primary-200"
             >
-                <span class="text-4xl text-base-800">{children(cx)}</span>
+                <span class="text-3xl text-base-800">{children(cx)}</span>
             </A>
         }
     }
