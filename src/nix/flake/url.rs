@@ -30,7 +30,8 @@ impl FlakeUrl {
 
 impl Default for FlakeUrl {
     fn default() -> Self {
-        "github:nammayatri/nammayatri".into()
+        // https://github.com/nammayatri/nammayatri/pull/2727
+        "github:nammayatri/nammayatri/nix-meta".into()
     }
 }
 
