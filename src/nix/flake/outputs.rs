@@ -35,6 +35,7 @@ impl FlakeOutputs {
     ///
     /// # Example
     /// ```no_run
+    /// let tree : &nix_browser::nix::flake::outputs::FlakeOutputs = todo!();
     /// let val = tree.pop(&["packages", "aarch64-darwin", "default"]);
     /// ```
     pub fn pop(&mut self, path: &[&str]) -> Option<Self> {
