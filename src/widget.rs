@@ -77,12 +77,24 @@ pub fn NotFound(cx: Scope) -> impl IntoView {
 pub fn Errors(cx: Scope, errors: Errors) -> impl IntoView {
     tracing::error!("Errors: {:?}", errors);
     view! { cx,
-        <div class="flex flex-row justify-center overflow-auto text-xl text-white bg-error-500">
-            <div class="font-mono whitespace-pre-wrap">
+        <div class="flex flex-col justify-center overflow-auto">
+            <header class="p-2 text-xl font-bold text-white bg-error-500">"💣 ERROR 💣"</header>
+            <div class="p-2 font-mono text-sm text-left whitespace-pre-wrap bg-black">
                 <ul>
                     {errors
                         .into_iter()
-                        .map(|(_, e)| view! { cx, <li>{e.to_string()}</li> })
+                        .map(|(k, e)| {
+                            view! { cx,
+                                <li class="mb-4">
+                                    <header class="px-2 mb-2 font-bold text-gray-100">
+                                        {format!("{:?}", k)}
+                                    </header>
+                                    <div class="px-2 text-gray-400 hover:text-gray-100">
+                                        {e.to_string()}
+                                    </div>
+                                </li>
+                            }
+                        })
                         .collect_view(cx)}
                 </ul>
             </div>
