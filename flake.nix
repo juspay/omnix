@@ -56,6 +56,7 @@
           };
 
           leptos-fullstack.overrideCraneArgs = oa: {
+            SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
             nativeBuildInputs = (oa.nativeBuildInputs or [ ]) ++ [
               pkgs.nix # cargo tests need nix
             ];
