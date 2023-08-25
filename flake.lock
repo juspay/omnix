@@ -111,11 +111,11 @@
     "leptos-fullstack": {
       "flake": false,
       "locked": {
-        "lastModified": 1692120027,
-        "narHash": "sha256-EylrHP3VJlORAIVAXE/3o/Q+nydefp3jj858upo8IDY=",
+        "lastModified": 1692909627,
+        "narHash": "sha256-hJVU7JaMqprldE+1FjHtADe0Mumv+6c+1HfcvzCZJlg=",
         "owner": "srid",
         "repo": "leptos-fullstack",
-        "rev": "42475954fe17116576814d2eb495abb7e87b5855",
+        "rev": "321505b623d1a5b86cad9e5f39965c5084ba2c6c",
         "type": "github"
       },
       "original": {
