@@ -30,14 +30,6 @@ pub struct Args {
 }
 
 impl Args {
-    /// Return the server log level
-    pub fn log_level(&self) -> tracing::Level {
-        match self.verbose {
-            0 => tracing::Level::INFO,
-            1 => tracing::Level::DEBUG,
-            _ => tracing::Level::TRACE,
-        }
-    }
     /// Return the server log directive
     pub fn log_directives(&self) -> Vec<Directive> {
         match self.verbose {
