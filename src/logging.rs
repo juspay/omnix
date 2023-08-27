@@ -7,6 +7,7 @@ use tower_http::{
 };
 #[cfg(feature = "ssr")]
 use tracing_subscriber::filter::{Directive, LevelFilter};
+#[cfg(feature = "ssr")]
 use tracing_subscriber::EnvFilter;
 
 /// Setup server-side logging using [tracing_subscriber]
