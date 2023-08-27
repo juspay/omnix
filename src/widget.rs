@@ -1,5 +1,7 @@
 //! Various Leptos widgets
 
+use std::{fmt::Display, hash::Hash, str::FromStr};
+
 use cfg_if::cfg_if;
 #[cfg(feature = "ssr")]
 use http::status::StatusCode;
@@ -75,13 +77,26 @@ pub fn NotFound(cx: Scope) -> impl IntoView {
 /// Display errors to the user
 #[component]
 pub fn Errors(cx: Scope, errors: Errors) -> impl IntoView {
+    tracing::error!("Errors: {:?}", errors);
     view! { cx,
-        <div class="flex flex-row justify-center overflow-auto text-xl text-white bg-error-500">
-            <div class="font-mono whitespace-pre-wrap">
+        <div class="flex flex-col justify-center overflow-auto">
+            <header class="p-2 text-xl font-bold text-white bg-error-500">"💣 ERROR 💣"</header>
+            <div class="p-2 font-mono text-sm text-left whitespace-pre-wrap bg-black">
                 <ul>
                     {errors
                         .into_iter()
-                        .map(|(_, e)| view! { cx, <li>{e.to_string()}</li> })
+                        .map(|(k, e)| {
+                            view! { cx,
+                                <li class="mb-4">
+                                    <header class="px-2 mb-2 font-bold text-gray-100">
+                                        {format!("{:?}", k)}
+                                    </header>
+                                    <div class="px-2 text-gray-400 hover:text-gray-100">
+                                        {e.to_string()}
+                                    </div>
+                                </li>
+                            }
+                        })
                         .collect_view(cx)}
                 </ul>
             </div>
@@ -99,5 +114,63 @@ pub fn SuspenseWithErrorHandling(cx: Scope, children: ChildrenFn) -> impl IntoVi
                 view! { cx, <Errors errors=errors.get()/> }
             }>{children.with_value(|c| c(cx))}</ErrorBoundary>
         </Suspense>
+    }
+}
+
+/// An input element component with suggestions.
+///
+/// A label, input element, and datalist are rendered, as well as error div.
+/// [FromStr::from_str] is used to parse the input value into `K`.
+///
+/// Arguments:
+/// * `id`: The id of the input element
+/// * `label`: The label string
+/// * `suggestions`: The initial suggestions to show in the datalist
+/// * `val`: The [RwSignal] mirror'ing the input element value
+#[component]
+pub fn TextInput<K>(
+    cx: Scope,
+    id: &'static str,
+    label: &'static str,
+    /// Initial suggestions to show in the datalist
+    suggestions: Vec<K>,
+    val: RwSignal<K>,
+) -> impl IntoView
+where
+    K: ToString + FromStr + Hash + Eq + Clone + Display + 'static,
+    <K as std::str::FromStr>::Err: Display,
+{
+    let datalist_id = &format!("{}-datalist", id);
+    // Input query to the server fn
+    // Errors in input element (based on [FromStr::from_str])
+    let (input_err, set_input_err) = create_signal(cx, None::<String>);
+    view! { cx,
+        <label for=id>{label}</label>
+        <input
+            list=datalist_id
+            id=id.to_string()
+            type="text"
+            class="w-full p-1 font-mono"
+            on:change=move |ev| {
+                match FromStr::from_str(&event_target_value(&ev)) {
+                    Ok(s) => {
+                        val.set(s);
+                        set_input_err(None)
+                    }
+                    Err(e) => set_input_err(Some(e.to_string())),
+                }
+            }
+
+            prop:value=move || val.get().to_string()
+        />
+        <span class="text-red-500">{input_err}</span>
+        // TODO: use local storage, and cache user's inputs
+        <datalist id=datalist_id>
+            {suggestions
+                .iter()
+                .map(|s| view! { cx, <option value=s.to_string()></option> })
+                .collect_view(cx)}
+
+        </datalist>
     }
 }

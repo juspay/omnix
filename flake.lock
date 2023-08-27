@@ -111,11 +111,11 @@
     "leptos-fullstack": {
       "flake": false,
       "locked": {
-        "lastModified": 1692120027,
-        "narHash": "sha256-EylrHP3VJlORAIVAXE/3o/Q+nydefp3jj858upo8IDY=",
+        "lastModified": 1692909627,
+        "narHash": "sha256-hJVU7JaMqprldE+1FjHtADe0Mumv+6c+1HfcvzCZJlg=",
         "owner": "srid",
         "repo": "leptos-fullstack",
-        "rev": "42475954fe17116576814d2eb495abb7e87b5855",
+        "rev": "321505b623d1a5b86cad9e5f39965c5084ba2c6c",
         "type": "github"
       },
       "original": {
@@ -298,16 +298,15 @@
         ]
       },
       "locked": {
-        "lastModified": 1691938955,
-        "narHash": "sha256-L5pbeych2GAASy/SHgbwjLKtTLjpAHCnlgqFWD8iEfU=",
-        "owner": "srid",
+        "lastModified": 1692524468,
+        "narHash": "sha256-wJffwu1deOgc3c/cBIZQ52dfWfPWBzjOamYBX121hcw=",
+        "owner": "numtide",
         "repo": "treefmt-nix",
-        "rev": "28f521755a60441b42b87349b854db6fc2643c93",
+        "rev": "e2761d701581d8dcc4e0e88aecfde317ddf6f0cd",
         "type": "github"
       },
       "original": {
-        "owner": "srid",
-        "ref": "leptosfmt",
+        "owner": "numtide",
         "repo": "treefmt-nix",
         "type": "github"
       }

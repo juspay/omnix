@@ -3,8 +3,7 @@ use leptos::*;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
 
-use crate::nix::config::NixConfig;
-use crate::nix::version::NixVersion;
+use crate::nix::{config::NixConfig, version::NixVersion};
 
 /// All the information about the user's Nix installation
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -20,7 +19,6 @@ pub struct NixInfo {
 pub async fn get_nix_info(_unit: ()) -> Result<NixInfo, ServerFnError> {
     let nix_version = super::version::run_nix_version().await?;
     let nix_config = super::config::run_nix_show_config().await?;
-    tracing::info!("Got nix info. Version = {}", nix_version);
     Ok(NixInfo {
         nix_version,
         nix_config,

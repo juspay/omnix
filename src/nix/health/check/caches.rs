@@ -1,5 +1,6 @@
 use leptos::*;
 use serde::{Deserialize, Serialize};
+use url::Url;
 
 use crate::nix::{
     config::ConfigVal,
@@ -12,7 +13,7 @@ use crate::nix::{
 
 /// Check that [crate::nix::config::NixConfig::substituters] is set to a good value.
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Caches(ConfigVal<Vec<String>>);
+pub struct Caches(ConfigVal<Vec<Url>>);
 
 impl Check for Caches {
     fn check(info: &info::NixInfo) -> Self {
@@ -23,20 +24,20 @@ impl Check for Caches {
     }
     fn report(&self) -> Report<WithDetails> {
         let val = &self.0.value;
-        if val.contains(&"https://cache.nixos.org/".to_string()) {
+        if val.contains(&Url::parse("https://cache.nixos.org").unwrap()) {
             // TODO: Hardcoding this to test failed reports
-            if val.contains(&"https://nammayatri.cachix.org/".to_string()) {
+            if val.contains(&Url::parse("https://nammayatri.cachix.org").unwrap()) {
                 Report::Green
             } else {
                 Report::Red(WithDetails {
-                    msg: "You are missing the nammayatri cache",
-                    suggestion: "Run 'nix run nixpkgs#cachix use nammayatri",
+                    msg: "You are missing the nammayatri cache".into(),
+                    suggestion: "Run 'nix run nixpkgs#cachix use nammayatri".into(),
                 })
             }
         } else {
             Report::Red(WithDetails {
-                msg: "You are missing the official cache",
-                suggestion: "Try looking in /etc/nix/nix.conf",
+                msg: "You are missing the official cache".into(),
+                suggestion: "Try looking in /etc/nix/nix.conf".into(),
             })
         }
     }

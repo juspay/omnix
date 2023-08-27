@@ -1,4 +1,5 @@
 {
+  description = "WIP: nix-browser";
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";
@@ -7,7 +8,7 @@
     rust-overlay.url = "github:oxalica/rust-overlay";
     crane.url = "github:ipetkov/crane";
     crane.inputs.nixpkgs.follows = "nixpkgs";
-    treefmt-nix.url = "github:srid/treefmt-nix/leptosfmt"; # https://github.com/numtide/treefmt-nix/pull/108
+    treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
     process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
     cargo-doc-live.url = "github:srid/cargo-doc-live";
@@ -51,15 +52,10 @@
           # Disable tests on macOS for https://github.com/garnix-io/issues/issues/69
           # If/when we move to Jenkins, this won't be necessary.
           doCheck = !pkgs.stdenv.isDarwin;
+          meta.description = "WIP: nix-browser";
         };
 
-        packages.default = self'.packages.nix-browser.overrideAttrs (oa: {
-          installPhase = (oa.installPhase or "") + ''
-            # Make the release app use a random port *by default*.
-            wrapProgram $out/bin/${oa.pname} \
-                    --set LEPTOS_SITE_ADDR 127.0.0.1:0
-          '';
-        });
+        packages.default = self'.packages.nix-browser;
 
         devShells.default = pkgs.mkShell {
           inputsFrom = [
@@ -68,10 +64,16 @@
           ];
           packages = with pkgs; [
             just
+            nixci
             cargo-watch
             cargo-expand
             config.process-compose.cargo-doc-live.outputs.package
           ];
+          shellHook = ''
+            echo
+            echo "🍎🍎 Run 'just <recipe>' to get started"
+            just
+          '';
         };
       };
     };
