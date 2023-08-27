@@ -1,7 +1,9 @@
 //! Command-line interface
 use clap::Parser;
 use std::net::SocketAddr;
-use tracing_subscriber::filter::{Directive, LevelFilter};
+use tracing_subscriber::EnvFilter;
+
+use crate::logging;
 
 #[derive(Parser, Debug)]
 pub struct Args {
@@ -30,29 +32,13 @@ pub struct Args {
 }
 
 impl Args {
-    /// Return the server log directive
-    pub fn log_directives(&self) -> Vec<Directive> {
-        match self.verbose {
-            0 => vec![
-                LevelFilter::INFO.into(),
-                "nix_browser=info".parse().unwrap(),
-                "tower_http=OFF".parse().unwrap(),
-                "hyper=OFF".parse().unwrap(),
-            ],
-            1 => vec![
-                LevelFilter::DEBUG.into(),
-                "nix_browser=debug".parse().unwrap(),
-                "tower_http=OFF".parse().unwrap(),
-                "hyper=OFF".parse().unwrap(),
-            ],
-            2 => vec![
-                LevelFilter::TRACE.into(),
-                "nix_browser=trace".parse().unwrap(),
-                "tower_http=OFF".parse().unwrap(),
-                "hyper=OFF".parse().unwrap(),
-            ],
-            3 => vec![LevelFilter::DEBUG.into()],
-            _ => vec![LevelFilter::TRACE.into()],
-        }
+    /// Return the log filter for CLI flag.
+    pub fn log_filter(&self) -> EnvFilter {
+        logging::log_directives_for_verbosity(self.verbose)
+            .iter()
+            .fold(
+                EnvFilter::from_env("NIX_BROWSER_LOG"),
+                |filter, directive| filter.add_directive(directive.clone()),
+            )
     }
 }
