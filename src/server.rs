@@ -13,12 +13,13 @@ use std::net::SocketAddr;
 use tower_http::services::ServeDir;
 use tower_http::trace::{self, TraceLayer};
 use tracing::instrument;
+use tracing_subscriber::{filter::Directive, EnvFilter};
 
 use crate::cli;
 
 /// Axum server main entry point
 pub async fn main(args: cli::Args) {
-    setup_logging(args.log_level());
+    setup_logging(args.log_directives());
     let server = create_server(args.log_level()).await;
     if !args.no_open {
         open_http_app(server.local_addr()).await;
@@ -62,9 +63,15 @@ async fn create_server(
     server
 }
 
-fn setup_logging(trace_level: tracing::Level) {
+/// Setup server-side logging using [tracing_subscriber]
+#[cfg(feature = "ssr")]
+fn setup_logging(log_directives: Vec<Directive>) {
+    let filter = log_directives.iter().fold(
+        EnvFilter::from_env("NIX_BROWSER_LOG"),
+        |filter, directive| filter.add_directive(directive.clone()),
+    );
     tracing_subscriber::fmt()
-        .with_max_level(trace_level)
+        .with_env_filter(filter)
         .compact()
         .init();
 }

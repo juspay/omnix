@@ -1,6 +1,6 @@
 //! Command-line interface
 use clap::Parser;
-
+use tracing_subscriber::filter::{Directive, LevelFilter};
 #[derive(Parser, Debug)]
 pub struct Args {
     /// Do not automatically open the application in the local browser
@@ -20,6 +20,31 @@ impl Args {
             0 => tracing::Level::INFO,
             1 => tracing::Level::DEBUG,
             _ => tracing::Level::TRACE,
+        }
+    }
+    /// Return the server log directive
+    pub fn log_directives(&self) -> Vec<Directive> {
+        match self.verbose {
+            0 => vec![
+                LevelFilter::INFO.into(),
+                "nix_browser=info".parse().unwrap(),
+                "tower_http=OFF".parse().unwrap(),
+                "hyper=OFF".parse().unwrap(),
+            ],
+            1 => vec![
+                LevelFilter::DEBUG.into(),
+                "nix_browser=debug".parse().unwrap(),
+                "tower_http=OFF".parse().unwrap(),
+                "hyper=OFF".parse().unwrap(),
+            ],
+            2 => vec![
+                LevelFilter::TRACE.into(),
+                "nix_browser=trace".parse().unwrap(),
+                "tower_http=OFF".parse().unwrap(),
+                "hyper=OFF".parse().unwrap(),
+            ],
+            3 => vec![LevelFilter::DEBUG.into()],
+            _ => vec![LevelFilter::TRACE.into()],
         }
     }
 }
