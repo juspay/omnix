@@ -1,7 +1,6 @@
 //! Command-line interface
 use clap::Parser;
 use std::net::SocketAddr;
-use tracing_subscriber::EnvFilter;
 
 use crate::logging;
 
@@ -27,19 +26,6 @@ pub struct Args {
     )]
     pub site_addr: Option<SocketAddr>,
 
-    /// Be verbose in server logging (-v, -vv)
-    #[arg(short = 'v', long = "verbose", action = clap::ArgAction::Count , default_value_t = 0)]
-    pub verbose: u8,
-}
-
-impl Args {
-    /// Return the log filter for CLI flag.
-    pub fn log_filter(&self) -> EnvFilter {
-        logging::log_directives_for_verbosity(self.verbose)
-            .iter()
-            .fold(
-                EnvFilter::from_env("NIX_BROWSER_LOG"),
-                |filter, directive| filter.add_directive(directive.clone()),
-            )
-    }
+    #[command(flatten)]
+    pub verbosity: logging::Verbosity,
 }
