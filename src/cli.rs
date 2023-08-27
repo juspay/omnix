@@ -12,6 +12,7 @@ pub struct Args {
     /// Enabled by default if the app is running under `cargo leptos ...`
     #[arg(short = 'n', long = "no-open", env = "NIX_BROWSER_NO_OPEN")]
     pub no_open: bool,
+
     /// The address to serve the application on
     ///
     /// Format: `IP_ADDRESS:PORT`
