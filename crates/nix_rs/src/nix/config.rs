@@ -34,6 +34,20 @@ pub struct ConfigVal<T> {
     pub description: String,
 }
 
+impl NixConfig {
+    /// Get the output of `nix show-config`
+    #[cfg(feature = "ssr")]
+    #[instrument(name = "show-config")]
+    pub async fn from_nix(
+        nix_cmd: super::command::NixCmd,
+    ) -> Result<NixConfig, super::command::NixCmdError> {
+        let v = nix_cmd
+            .run_with_args_expecting_json(&["show-config", "--json"])
+            .await?;
+        Ok(v)
+    }
+}
+
 /// The HTML view for config values that are lists; rendered as HTML lists.
 impl<T> IntoView for ConfigVal<Vec<T>>
 where
@@ -77,10 +91,7 @@ impl IntoView for ConfigVal<System> {
 #[instrument(name = "show-config")]
 pub async fn run_nix_show_config() -> Result<NixConfig, ServerFnError> {
     use crate::nix::command;
-    let mut cmd = command::NixCmd::default().command();
-    cmd.args(vec!["show-config", "--json"]);
-    let stdout: Vec<u8> = crate::command::run_command(&mut cmd).await?;
-    let v = serde_json::from_slice::<NixConfig>(&stdout)?;
+    let v = NixConfig::from_nix(command::NixCmd::default()).await?;
     Ok(v)
 }
 

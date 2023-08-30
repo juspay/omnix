@@ -50,13 +50,10 @@ impl FromStr for NixVersion {
 /// Get the output of `nix --version`
 #[cfg(feature = "ssr")]
 #[instrument(name = "version")]
-pub async fn run_nix_version() -> Result<NixVersion, ServerFnError> {
-    use crate::nix::command;
-    let mut cmd = command::NixCmd::default().command();
-    cmd.arg("--version");
-    let stdout: Vec<u8> = crate::command::run_command(&mut cmd).await?;
-    // Utf-8 errors don't matter here because we're just parsing numbers
-    let v = NixVersion::from_str(&String::from_utf8_lossy(&stdout))?;
+pub async fn run_nix_version() -> Result<NixVersion, super::command::NixCmdError> {
+    let v = crate::nix::command::NixCmd::default()
+        .run_with_args_expecting_fromstr(&["--version"])
+        .await?;
     Ok(v)
 }
 
