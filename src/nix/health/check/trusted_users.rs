@@ -31,7 +31,7 @@ impl Check for TrustedUsers {
         let trusted_users = &self.trusted_users.value;
         let current_user = &self.current_user;
         // tracing::info!("{:?} {:?}", val, current_user);
-        if trusted_users.contains(&current_user) {
+        if trusted_users.contains(current_user) {
             Report::Green
         } else {
             Report::Red(WithDetails {
