@@ -10,7 +10,7 @@ use crate::nix::{
     info, system,
 };
 
-/// Check that [crate::nix::config::NixConfig::substituters] is set to a good value.
+/// Check that [crate::nix::config::NixConfig::trusted_users] is set to a good value.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TrustedUsers {
     trusted_users: ConfigVal<Vec<String>>,
@@ -30,7 +30,6 @@ impl Check for TrustedUsers {
     fn report(&self) -> Report<WithDetails> {
         let trusted_users = &self.trusted_users.value;
         let current_user = &self.current_user;
-        // tracing::info!("{:?} {:?}", val, current_user);
         if trusted_users.contains(current_user) {
             Report::Green
         } else {
