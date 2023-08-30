@@ -1,6 +1,5 @@
 //! Nix flake outputs
 
-use leptos::*;
 use serde::{Deserialize, Serialize};
 use std::collections::{btree_map::Entry, BTreeMap};
 
@@ -88,66 +87,5 @@ impl Type {
             Self::Template => "🏗️",
             Self::Unknown => "❓",
         }
-    }
-}
-
-/// The [IntoView] instance for [FlakeOutputs] renders it recursively. This view
-/// is used to see the raw flake output only; it is not useful for general UX.
-///
-/// WARNING: This may cause performance problems if the tree is large.
-impl IntoView for FlakeOutputs {
-    fn into_view(self, cx: Scope) -> View {
-        match self {
-            Self::Val(v) => v.into_view(cx),
-            Self::Attrset(v) => view! { cx,
-                <ul class="list-disc">
-                    {v
-                        .iter()
-                        .map(|(k, v)| {
-                            view! { cx,
-                                <li class="ml-4">
-                                    <span class="px-2 py-1 font-bold text-primary-500">{k}</span>
-                                    {v.clone()}
-                                </li>
-                            }
-                        })
-                        .collect_view(cx)}
-                </ul>
-            }
-            .into_view(cx),
-        }
-    }
-}
-
-impl IntoView for Val {
-    fn into_view(self, cx: Scope) -> View {
-        view! { cx,
-            <span>
-                <b>{self.name}</b>
-                " ("
-                {self.type_}
-                ") "
-                <em>{self.description}</em>
-            </span>
-        }
-        .into_view(cx)
-    }
-}
-
-impl IntoView for Type {
-    fn into_view(self, cx: Scope) -> View {
-        view! { cx,
-            <span>
-                {match self {
-                    Self::NixosModule => "nixosModule ❄️",
-                    Self::Derivation => "derivation 📦",
-                    Self::App => "app 📱",
-                    Self::Template => "template 🏗️",
-                    Self::Unknown => "unknown ❓",
-                }}
-
-            </span>
-        }
-        .into_view(cx)
     }
 }
