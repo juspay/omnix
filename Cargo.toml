@@ -1,3 +1,5 @@
+[workspace]
+
 [package]
 edition = "2021"
 # If you change the name here, you must also do it in flake.nix (and run `cargo generate-lockfile` afterwards)
