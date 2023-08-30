@@ -4,7 +4,8 @@ const defaultTheme = require('tailwindcss/defaultTheme')
 module.exports = {
   content: [
     "index.html",
-    "./src/**/*.rs"
+    "./src/**/*.rs",
+    "./crates/**/*.rs"
   ],
   theme: {
     fontFamily: {
