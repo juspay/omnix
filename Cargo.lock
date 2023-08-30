@@ -1858,22 +1858,16 @@ dependencies = [
 name = "nix_rs"
 version = "0.1.0"
 dependencies = [
- "axum",
- "axum-macros",
  "cfg-if",
  "clap",
  "console_error_panic_hook",
  "console_log",
  "http",
  "human-panic",
- "hyper",
  "leptos",
- "leptos_axum",
  "leptos_meta",
- "leptos_query",
  "leptos_router",
  "log",
- "open",
  "regex",
  "serde",
  "serde_json",
