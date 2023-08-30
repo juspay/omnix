@@ -8,6 +8,7 @@ use crate::nix::{
         traits::Check,
     },
     info,
+    system,
 };
 
 /// Check that [crate::nix::config::NixConfig::experimental_features] is set to a good value.
@@ -15,7 +16,7 @@ use crate::nix::{
 pub struct FlakeEnabled(ConfigVal<Vec<String>>);
 
 impl Check for FlakeEnabled {
-    fn check(info: &info::NixInfo) -> Self {
+    fn check(info: &info::NixInfo, _: &system::SysInfo) -> Self {
         FlakeEnabled(info.nix_config.experimental_features.clone())
     }
     fn name(&self) -> &'static str {

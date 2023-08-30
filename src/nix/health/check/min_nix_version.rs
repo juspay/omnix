@@ -7,6 +7,7 @@ use crate::nix::{
         traits::Check,
     },
     info,
+    system,
     version::NixVersion,
 };
 
@@ -15,7 +16,7 @@ use crate::nix::{
 pub struct MinNixVersion(NixVersion);
 
 impl Check for MinNixVersion {
-    fn check(info: &info::NixInfo) -> Self {
+    fn check(info: &info::NixInfo, _: &system::SysInfo) -> Self {
         MinNixVersion(info.nix_version.clone())
     }
     fn name(&self) -> &'static str {

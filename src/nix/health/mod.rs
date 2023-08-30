@@ -14,13 +14,15 @@ use self::check::{
 use self::report::{NoDetails, Report, WithDetails};
 use self::traits::Check;
 use super::info;
+use super::system;
 
 /// Get [NixHealth] information
 #[instrument(name = "nix-health")]
 #[server(GetNixHealth, "/api")]
 pub async fn get_nix_health(_unit: ()) -> Result<NixHealth, ServerFnError> {
-    let info = info::get_nix_info(()).await?;
-    Ok(NixHealth::check(&info))
+    let nix_info = info::get_nix_info(()).await?;
+    let sys_info = system::get_sys_info(()).await?;
+    Ok(NixHealth::check(&nix_info,&sys_info))
 }
 
 /// Nix Health check information for user's install
@@ -57,13 +59,13 @@ impl<'a> IntoIterator for &'a NixHealth {
 
 impl Check for NixHealth {
     type Report = Report<NoDetails>;
-    fn check(info: &info::NixInfo) -> Self {
+    fn check(nix_info: &info::NixInfo, sys_info: &system::SysInfo) -> Self {
         NixHealth {
-            max_jobs: MaxJobs::check(info),
-            caches: Caches::check(info),
-            flake_enabled: FlakeEnabled::check(info),
-            min_nix_version: MinNixVersion::check(info),
-            trusted_users: TrustedUsers::check(info),
+            max_jobs: MaxJobs::check(nix_info, sys_info),
+            caches: Caches::check(nix_info, sys_info),
+            flake_enabled: FlakeEnabled::check(nix_info, sys_info),
+            min_nix_version: MinNixVersion::check(nix_info, sys_info),
+            trusted_users: TrustedUsers::check(nix_info, sys_info),
         }
     }
     fn name(&self) -> &'static str {

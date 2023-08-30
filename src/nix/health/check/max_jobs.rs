@@ -8,6 +8,7 @@ use crate::nix::{
         traits::Check,
     },
     info,
+    system,
 };
 
 /// Check that [crate::nix::config::NixConfig::max_jobs] is set to a good value.
@@ -15,7 +16,7 @@ use crate::nix::{
 pub struct MaxJobs(ConfigVal<i32>);
 
 impl Check for MaxJobs {
-    fn check(info: &info::NixInfo) -> Self {
+    fn check(info: &info::NixInfo, _: &system::SysInfo) -> Self {
         MaxJobs(info.nix_config.max_jobs.clone())
     }
     fn name(&self) -> &'static str {

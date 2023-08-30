@@ -3,6 +3,7 @@ use leptos::*;
 use super::{
     info,
     report::{Report, WithDetails},
+    system,
 };
 
 /// Types that implement health check with reports
@@ -13,7 +14,7 @@ pub trait Check: IntoView {
     type Report = Report<WithDetails>;
 
     /// Run and create the health check
-    fn check(info: &info::NixInfo) -> Self
+    fn check(nix_info: &info::NixInfo, sys_info: &system::SysInfo) -> Self
     where
         Self: Sized;
 

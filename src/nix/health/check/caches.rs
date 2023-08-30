@@ -9,6 +9,7 @@ use crate::nix::{
         traits::Check,
     },
     info,
+    system,
 };
 
 /// Check that [crate::nix::config::NixConfig::substituters] is set to a good value.
@@ -16,7 +17,7 @@ use crate::nix::{
 pub struct Caches(ConfigVal<Vec<Url>>);
 
 impl Check for Caches {
-    fn check(info: &info::NixInfo) -> Self {
+    fn check(info: &info::NixInfo, _: &system::SysInfo) -> Self {
         Caches(info.nix_config.substituters.clone())
     }
     fn name(&self) -> &'static str {
