@@ -15,9 +15,9 @@ console_error_panic_hook = "0.1"
 console_log = { version = "1" }
 http = { version = "0.2", optional = true }
 human-panic = "1.1.5"
-leptos = { version = "0.4", features = ["serde", "nightly"] }
-leptos_meta = { version = "0.4" }
-leptos_router = { version = "0.4" }
+leptos.workspace = true
+leptos_meta.workspace = true
+leptos_router.workspace = true
 log = "0.4"
 regex = "1.9.3"
 serde = { version = "1.0", features = ["derive"] }

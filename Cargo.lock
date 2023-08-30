@@ -1549,6 +1549,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "leptos_extra"
+version = "0.1.0"
+dependencies = [
+ "cfg-if",
+ "leptos",
+ "leptos_query",
+ "tracing",
+]
+
+[[package]]
 name = "leptos_hot_reload"
 version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1832,6 +1842,7 @@ dependencies = [
  "hyper",
  "leptos",
  "leptos_axum",
+ "leptos_extra",
  "leptos_meta",
  "leptos_query",
  "leptos_router",

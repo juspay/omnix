@@ -3,7 +3,6 @@
 //!
 //! [README]: https://github.com/juspay/nix-browser
 pub mod app;
-pub mod leptos_extra;
 pub mod logging;
 pub mod widget;
 #[cfg(feature = "hydrate")]
