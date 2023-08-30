@@ -9,10 +9,10 @@ crate-type = ["cdylib", "rlib"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-cfg-if = "1"
+cfg-if.workspace = true
 leptos.workspace = true
 leptos_query.workspace = true
-tracing = "0.1"
+tracing.workspace = true
 
 [features]
 hydrate = ["leptos/hydrate", "leptos_query/hydrate"]

@@ -1846,7 +1846,6 @@ dependencies = [
  "leptos_meta",
  "leptos_query",
  "leptos_router",
- "log",
  "nix_rs",
  "open",
  "regex",
@@ -1860,7 +1859,6 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "tracing-subscriber-wasm",
- "url",
  "uuid",
  "wasm-bindgen",
 ]
@@ -1870,28 +1868,19 @@ name = "nix_rs"
 version = "0.1.0"
 dependencies = [
  "cfg-if",
- "clap",
- "console_error_panic_hook",
- "console_log",
- "http",
- "human-panic",
  "leptos",
  "leptos_meta",
  "leptos_router",
- "log",
  "regex",
  "serde",
  "serde_json",
  "serde_with",
  "thiserror",
  "tokio",
- "tower",
- "tower-http",
  "tracing",
  "tracing-subscriber",
  "tracing-subscriber-wasm",
  "url",
- "uuid",
 ]
 
 [[package]]
