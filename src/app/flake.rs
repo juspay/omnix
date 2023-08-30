@@ -75,7 +75,7 @@ pub fn NixFlakeRaw(cx: Scope) -> impl IntoView {
 fn view_flake(cx: Scope, flake: Flake) -> View {
     view! { cx,
         <div class="flex flex-col my-4">
-            <h3 class="text-lg font-bold">{flake.url}</h3>
+            <h3 class="text-lg font-bold">{flake.url.to_string()}</h3>
             <div class="text-sm italic text-gray-600">
                 <A href="/flake/raw" exact=true>
                     "View raw output"

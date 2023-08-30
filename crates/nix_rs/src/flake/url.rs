@@ -6,7 +6,6 @@ use std::{
     str::FromStr,
 };
 
-use leptos::*;
 use serde::{Deserialize, Serialize};
 
 /// A flake URL
@@ -57,18 +56,6 @@ impl FromStr for FlakeUrl {
         } else {
             Ok(s.into())
         }
-    }
-}
-
-impl IntoView for FlakeUrl {
-    fn into_view(self, cx: Scope) -> View {
-        self.0.into_view(cx)
-    }
-}
-
-impl IntoView for &FlakeUrl {
-    fn into_view(self, cx: Scope) -> View {
-        self.0.clone().into_view(cx)
     }
 }
 
