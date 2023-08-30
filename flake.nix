@@ -71,8 +71,7 @@
               cargo-watch
               cargo-expand
               config.process-compose.cargo-doc-live.outputs.package
-              config.process-compose.cargo-test.outputs.package
-            ] ++ lib.optionals (!isDarwinOrArch) [ chromedriver chromium ];
+            ];
             shellHook = ''
               echo
               echo "🍎🍎 Run 'just <recipe>' to get started"

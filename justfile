@@ -19,6 +19,10 @@ alias w := watch
 test:
     cargo-test
 
+# Run tests (e2e)
+e2e-test:
+    nix run .#cargo-e2e-test
+
 # Run docs server (live reloading)
 doc:
     cargo-doc-live
