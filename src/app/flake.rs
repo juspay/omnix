@@ -1,7 +1,7 @@
 //! Frontend UI entry point
 
 use leptos::*;
-use leptos_extra::signal::use_signal;
+use leptos_extra::signal::{use_signal, SignalWithResult};
 use leptos_meta::*;
 use leptos_router::*;
 use nix_rs::flake::Flake;
@@ -38,7 +38,9 @@ pub fn NixFlakeHome(cx: Scope) -> impl IntoView {
     let data = result.data;
     view! { cx,
         <div class="p-2 my-1">
-            <SuspenseWithErrorHandling>{data}</SuspenseWithErrorHandling>
+            <SuspenseWithErrorHandling>
+                {move || data.with_result(move |r| view_flake(cx, r.clone()))}
+            </SuspenseWithErrorHandling>
         </div>
     }
 }
@@ -56,10 +58,25 @@ pub fn NixFlakeRaw(cx: Scope) -> impl IntoView {
         </div>
         <div class="px-4 py-2 font-mono text-xs text-left text-gray-500 border-2 border-black">
             <SuspenseWithErrorHandling>
-                {move || { data.get().map(|r| r.map(|v| v.output.into_view(cx))) }}
+                {move || data.with_result(move |r| r.clone().output.into_view(cx))}
             </SuspenseWithErrorHandling>
         </div>
     }
+}
+
+fn view_flake(cx: Scope, flake: Flake) -> View {
+    view! { cx,
+        <div class="flex flex-col my-4">
+            <h3 class="text-lg font-bold">{flake.url}</h3>
+            <div class="text-sm italic text-gray-600">
+                <A href="/flake/raw" exact=true>
+                    "View raw output"
+                </A>
+            </div>
+            <div>{flake.schema}</div>
+        </div>
+    }
+    .into_view(cx)
 }
 
 /// Get [Flake] info for the given flake url

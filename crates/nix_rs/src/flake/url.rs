@@ -66,6 +66,12 @@ impl IntoView for FlakeUrl {
     }
 }
 
+impl IntoView for &FlakeUrl {
+    fn into_view(self, cx: Scope) -> View {
+        self.0.clone().into_view(cx)
+    }
+}
+
 impl Display for FlakeUrl {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
