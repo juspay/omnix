@@ -8,8 +8,7 @@ use crate::nix::{
         report::{Report, WithDetails},
         traits::Check,
     },
-    info,
-    system,
+    info, system,
 };
 
 /// Check that [crate::nix::config::NixConfig::substituters] is set to a good value.

@@ -6,8 +6,7 @@ use crate::nix::{
         report::{Report, WithDetails},
         traits::Check,
     },
-    info,
-    system,
+    info, system,
     version::NixVersion,
 };
 

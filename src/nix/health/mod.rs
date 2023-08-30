@@ -9,7 +9,8 @@ use serde::{Deserialize, Serialize};
 use tracing::instrument;
 
 use self::check::{
-    caches::Caches, flake_enabled::FlakeEnabled, max_jobs::MaxJobs, min_nix_version::MinNixVersion, trusted_users::TrustedUsers
+    caches::Caches, flake_enabled::FlakeEnabled, max_jobs::MaxJobs, min_nix_version::MinNixVersion,
+    trusted_users::TrustedUsers,
 };
 use self::report::{NoDetails, Report, WithDetails};
 use self::traits::Check;
@@ -22,7 +23,7 @@ use super::system;
 pub async fn get_nix_health(_unit: ()) -> Result<NixHealth, ServerFnError> {
     let nix_info = info::get_nix_info(()).await?;
     let sys_info = system::get_sys_info(()).await?;
-    Ok(NixHealth::check(&nix_info,&sys_info))
+    Ok(NixHealth::check(&nix_info, &sys_info))
 }
 
 /// Nix Health check information for user's install
