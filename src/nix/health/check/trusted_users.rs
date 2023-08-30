@@ -46,6 +46,6 @@ impl IntoView for TrustedUsers {
         view! { cx,
             <div>"The following trusted_users are present:" {self.trusted_users.into_view(cx)}</div>
         }
-            .into_view(cx)
+        .into_view(cx)
     }
 }
