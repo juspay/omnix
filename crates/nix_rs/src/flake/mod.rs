@@ -9,10 +9,8 @@ pub mod url;
 use leptos::*;
 use leptos_router::*;
 use serde::{Deserialize, Serialize};
-use tracing::instrument;
 
 use self::{outputs::FlakeOutputs, schema::FlakeSchema, system::System, url::FlakeUrl};
-use crate::command::Refresh;
 
 /// All the information about a Nix flake
 // #[serde_as]
@@ -25,23 +23,6 @@ pub struct Flake {
     /// Flake output schema (typed version of [FlakeOutputs])
     pub schema: FlakeSchema,
     // TODO: Add `nix flake metadata` info.
-}
-
-/// Get [Flake] info for the given flake url
-#[instrument(name = "flake")]
-#[server(GetFlake, "/api")]
-pub async fn get_flake(args: (FlakeUrl, Refresh)) -> Result<Flake, ServerFnError> {
-    use super::config::run_nix_show_config;
-    let (url, refresh) = args;
-    // TODO: Can we cache this?
-    let nix_config = run_nix_show_config().await?;
-    let system = nix_config.system.value;
-    let output = self::show::run_nix_flake_show(&url, refresh).await?;
-    Ok(Flake {
-        url,
-        output: output.clone(),
-        schema: FlakeSchema::from(&output, &system),
-    })
 }
 
 impl IntoView for Flake {

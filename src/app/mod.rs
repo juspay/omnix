@@ -1,18 +1,20 @@
 //! Frontend UI entry point
 
+mod flake;
+
 use leptos::*;
 use leptos_meta::*;
 use leptos_query::*;
 use leptos_router::*;
 
-use crate::widget::*;
+use crate::{app::flake::*, widget::*};
 use leptos_extra::{
     query::{self, RefetchQueryButton},
-    signal::{provide_signal, use_signal, SignalWithResult},
+    signal::{provide_signal, SignalWithResult},
 };
-use nix_rs::command::Refresh;
 use nix_rs::{
-    flake::{get_flake, url::FlakeUrl},
+    command::Refresh,
+    flake::url::FlakeUrl,
     health::{get_nix_health, traits::Check},
     info::get_nix_info,
 };
@@ -115,56 +117,6 @@ fn Dashboard(cx: Scope) -> impl IntoView {
             </SuspenseWithErrorHandling>
             <Card href="/info">"Nix Info ℹ️"</Card>
             <Card href="/flake">"Flake Overview ❄️️"</Card>
-        </div>
-    }
-}
-
-/// Nix flake dashboard
-#[component]
-fn NixFlake(cx: Scope) -> impl IntoView {
-    let suggestions = FlakeUrl::suggestions();
-    let url = use_signal::<FlakeUrl>(cx);
-    let refresh = use_signal::<Refresh>(cx);
-    let query = move || (url(), refresh());
-    let result = query::use_server_query(cx, query, get_flake);
-    view! { cx,
-        <Title text="Nix Flake"/>
-        <h1 class="text-5xl font-bold">{"Nix Flake"}</h1>
-        <TextInput id="nix-flake-input" label="Load a Nix Flake" val=url suggestions/>
-        <RefetchQueryButton result query/>
-        <Outlet/>
-    }
-}
-
-#[component]
-fn NixFlakeHome(cx: Scope) -> impl IntoView {
-    let url = use_signal::<FlakeUrl>(cx);
-    let refresh = use_signal::<Refresh>(cx);
-    let query = move || (url(), refresh());
-    let result = query::use_server_query(cx, query, get_flake);
-    let data = result.data;
-    view! { cx,
-        <div class="p-2 my-1">
-            <SuspenseWithErrorHandling>{data}</SuspenseWithErrorHandling>
-        </div>
-    }
-}
-
-#[component]
-fn NixFlakeRaw(cx: Scope) -> impl IntoView {
-    let url = use_signal::<FlakeUrl>(cx);
-    let refresh = use_signal::<Refresh>(cx);
-    let query = move || (url(), refresh());
-    let result = query::use_server_query(cx, query, get_flake);
-    let data = result.data;
-    view! { cx,
-        <div>
-            <A href="/flake">"< Back"</A>
-        </div>
-        <div class="px-4 py-2 font-mono text-xs text-left text-gray-500 border-2 border-black">
-            <SuspenseWithErrorHandling>
-                {move || { data.get().map(|r| r.map(|v| v.output.into_view(cx))) }}
-            </SuspenseWithErrorHandling>
         </div>
     }
 }
