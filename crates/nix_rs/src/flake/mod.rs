@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 use tracing::instrument;
 
 use self::{outputs::FlakeOutputs, schema::FlakeSchema, system::System, url::FlakeUrl};
-use crate::nix::command::Refresh;
+use crate::command::Refresh;
 
 /// All the information about a Nix flake
 // #[serde_as]

@@ -1,7 +1,7 @@
 use leptos::*;
 use serde::{Deserialize, Serialize};
 
-use crate::nix::{
+use crate::{
     health::{
         report::{Report, WithDetails},
         traits::Check,
@@ -10,7 +10,7 @@ use crate::nix::{
     version::NixVersion,
 };
 
-/// Check that [crate::nix::version::NixVersion] is set to a good value.
+/// Check that [crate::version::NixVersion] is set to a good value.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MinNixVersion(NixVersion);
 

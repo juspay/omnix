@@ -1,8 +1,122 @@
-//! Utilities for running commands
+//! Nix command configuration
 
+use std::fmt::{self, Display};
+
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 #[cfg(feature = "ssr")]
+use tokio::process::Command;
+#[cfg(feature = "ssr")]
 use tracing::instrument;
+
+/// The `nix` command along with its global options.
+///
+/// See [available global
+/// options](https://nixos.org/manual/nix/stable/command-ref/new-cli/nix#options)
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Hash)]
+pub struct NixCmd {
+    pub extra_experimental_features: Vec<String>,
+    pub refresh: Refresh,
+}
+
+/// Whether to refresh the flake
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Hash)]
+pub struct Refresh(bool);
+
+impl From<bool> for Refresh {
+    fn from(b: bool) -> Self {
+        Self(b)
+    }
+}
+
+impl Default for NixCmd {
+    /// The default `nix` command with flakes already enabled.
+    fn default() -> Self {
+        Self {
+            extra_experimental_features: vec!["nix-command".to_string(), "flakes".to_string()],
+            refresh: false.into(),
+        }
+    }
+}
+
+#[cfg(feature = "ssr")]
+impl NixCmd {
+    /// Return a [Command] for this [NixCmd] configuration
+    pub fn command(&self) -> Command {
+        let mut cmd = Command::new("nix");
+        cmd.args(self.args());
+        cmd
+    }
+
+    #[cfg(feature = "ssr")]
+    pub async fn run_with_args_expecting_json<T>(&self, args: &[&str]) -> Result<T, NixCmdError>
+    where
+        T: serde::de::DeserializeOwned,
+    {
+        let stdout = self.run_with_args_returning_stdout(args).await?;
+        let v = serde_json::from_slice::<T>(&stdout)?;
+        Ok(v)
+    }
+
+    #[cfg(feature = "ssr")]
+    pub async fn run_with_args_expecting_fromstr<T>(&self, args: &[&str]) -> Result<T, NixCmdError>
+    where
+        T: std::str::FromStr,
+        <T as std::str::FromStr>::Err: std::fmt::Display,
+    {
+        let stdout = self.run_with_args_returning_stdout(args).await?;
+        let v = &String::from_utf8_lossy(&stdout);
+        let v = T::from_str(v.trim()).map_err(|e| FromStrError(e.to_string()))?;
+        Ok(v)
+    }
+
+    #[cfg(feature = "ssr")]
+    async fn run_with_args_returning_stdout(&self, args: &[&str]) -> Result<Vec<u8>, CommandError> {
+        let mut cmd = self.command();
+        cmd.args(args);
+        run_command(&mut cmd).await
+    }
+
+    /// Convert this [NixCmd] configuration into a list of arguments for
+    /// [Command]
+    fn args(&self) -> Vec<String> {
+        let mut args = vec![];
+        if !self.extra_experimental_features.is_empty() {
+            args.push("--extra-experimental-features".to_string());
+            args.push(self.extra_experimental_features.join(" "));
+        }
+        if self.refresh.0 {
+            args.push("--refresh".to_string());
+        }
+        args
+    }
+}
+
+#[derive(Error, Debug)]
+pub enum NixCmdError {
+    #[error("Command error: {0}")]
+    CmdError(#[from] CommandError),
+
+    #[error("Failed to decode command stdout (utf8 error): {0}")]
+    DecodeErrorUtf8(#[from] std::string::FromUtf8Error),
+
+    #[error("Failed to decode command stdout (from_str error): {0}")]
+    DecodeErrorFromStr(#[from] FromStrError),
+
+    #[error("Failed to decode command stdout (json error): {0}")]
+    DecodeErrorJson(#[from] serde_json::Error),
+}
+
+#[derive(Debug)]
+pub struct FromStrError(String);
+
+impl Display for FromStrError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Failed to parse string: {}", self.0)
+    }
+}
+
+impl std::error::Error for FromStrError {}
 
 /// Run the given command, returning its stdout.
 #[cfg(feature = "ssr")]

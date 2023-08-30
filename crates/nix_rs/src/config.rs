@@ -90,8 +90,7 @@ impl IntoView for ConfigVal<System> {
 #[cfg(feature = "ssr")]
 #[instrument(name = "show-config")]
 pub async fn run_nix_show_config() -> Result<NixConfig, ServerFnError> {
-    use crate::nix::command;
-    let v = NixConfig::from_nix(command::NixCmd::default()).await?;
+    let v = NixConfig::from_nix(crate::command::NixCmd::default()).await?;
     Ok(v)
 }
 

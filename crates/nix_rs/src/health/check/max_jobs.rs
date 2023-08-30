@@ -1,7 +1,7 @@
 use leptos::*;
 use serde::{Deserialize, Serialize};
 
-use crate::nix::{
+use crate::{
     config::ConfigVal,
     health::{
         report::{Report, WithDetails},
@@ -10,7 +10,7 @@ use crate::nix::{
     info,
 };
 
-/// Check that [crate::nix::config::NixConfig::max_jobs] is set to a good value.
+/// Check that [crate::config::NixConfig::max_jobs] is set to a good value.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MaxJobs(ConfigVal<i32>);
 

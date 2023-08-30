@@ -10,8 +10,8 @@ use leptos_extra::{
     query::{self, RefetchQueryButton},
     signal::{provide_signal, use_signal, SignalWithResult},
 };
-use nix_rs::nix::command::Refresh;
-use nix_rs::nix::{
+use nix_rs::command::Refresh;
+use nix_rs::{
     flake::{get_flake, url::FlakeUrl},
     health::{get_nix_health, traits::Check},
     info::get_nix_info,

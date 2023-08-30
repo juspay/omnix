@@ -51,7 +51,7 @@ impl FromStr for NixVersion {
 #[cfg(feature = "ssr")]
 #[instrument(name = "version")]
 pub async fn run_nix_version() -> Result<NixVersion, super::command::NixCmdError> {
-    let v = crate::nix::command::NixCmd::default()
+    let v = crate::command::NixCmd::default()
         .run_with_args_expecting_fromstr(&["--version"])
         .await?;
     Ok(v)
