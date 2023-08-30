@@ -39,7 +39,7 @@ impl NixConfig {
     #[cfg(feature = "ssr")]
     #[instrument(name = "show-config")]
     pub async fn from_nix(
-        nix_cmd: super::command::NixCmd,
+        nix_cmd: &super::command::NixCmd,
     ) -> Result<NixConfig, super::command::NixCmdError> {
         let v = nix_cmd
             .run_with_args_expecting_json(&["show-config", "--json"])
@@ -90,7 +90,7 @@ impl IntoView for ConfigVal<System> {
 #[cfg(feature = "ssr")]
 #[instrument(name = "show-config")]
 pub async fn run_nix_show_config() -> Result<NixConfig, ServerFnError> {
-    let v = NixConfig::from_nix(crate::command::NixCmd::default()).await?;
+    let v = NixConfig::from_nix(&crate::command::NixCmd::default()).await?;
     Ok(v)
 }
 

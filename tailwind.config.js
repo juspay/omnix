@@ -3,8 +3,8 @@ const defaultTheme = require('tailwindcss/defaultTheme')
 
 module.exports = {
   content: [
-    "index.html",
     "./src/**/*.rs",
+    // TODO: remove this
     "./crates/**/*.rs"
   ],
   theme: {

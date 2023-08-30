@@ -14,6 +14,26 @@ pub enum FlakeOutputs {
 }
 
 impl FlakeOutputs {
+    /// Run `nix flake show` on the given flake url
+    #[cfg(feature = "ssr")]
+    #[tracing::instrument(name = "flake-show")]
+    pub async fn from_nix(
+        nix_cmd: &crate::command::NixCmd,
+        flake_url: &super::url::FlakeUrl,
+    ) -> Result<Self, crate::command::NixCmdError> {
+        let v = nix_cmd
+            .run_with_args_expecting_json(&[
+                "flake",
+                "show",
+                "--legacy", // for showing nixpkgs legacyPackages
+                "--allow-import-from-derivation",
+                "--json",
+                &flake_url.to_string(),
+            ])
+            .await?;
+        Ok(v)
+    }
+
     /// Get the non-attrset value
     pub fn as_leaf(&self) -> Option<&Val> {
         match self {

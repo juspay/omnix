@@ -16,7 +16,6 @@ use nix_rs::flake::{
     Flake,
 };
 use nix_rs::{command::Refresh, flake::outputs::Type};
-use tracing::instrument;
 
 use crate::widget::*;
 
@@ -226,18 +225,14 @@ fn view_type(cx: Scope, type_: Type) -> View {
 }
 
 /// Get [Flake] info for the given flake url
-#[instrument(name = "flake")]
 #[server(GetFlake, "/api")]
 pub async fn get_flake(args: (FlakeUrl, Refresh)) -> Result<Flake, ServerFnError> {
-    use nix_rs::config::run_nix_show_config;
+    use nix_rs::command::NixCmd;
     let (url, refresh) = args;
-    // TODO: Can we cache this?
-    let nix_config = run_nix_show_config().await?;
-    let system = nix_config.system.value;
-    let output = nix_rs::flake::show::run_nix_flake_show(&url, refresh).await?;
-    Ok(Flake {
-        url,
-        output: output.clone(),
-        schema: nix_rs::flake::schema::FlakeSchema::from(&output, &system),
-    })
+    let nix_cmd = &NixCmd {
+        refresh,
+        ..NixCmd::default()
+    };
+    let v = Flake::from_nix(nix_cmd, url).await?;
+    Ok(v)
 }
