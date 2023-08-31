@@ -1,6 +1,10 @@
 //! Nix health check UI
 
 use leptos::*;
+use leptos_extra::{
+    query::{self, RefetchQueryButton},
+    signal::SignalWithResult,
+};
 use leptos_meta::*;
 use nix_rs::{
     health::{
@@ -17,10 +21,6 @@ use nix_rs::{
 use tracing::instrument;
 
 use crate::{app::info::ConfigValListView, widget::*};
-use leptos_extra::{
-    query::{self, RefetchQueryButton},
-    signal::SignalWithResult,
-};
 
 /// Nix health checks
 #[component]
@@ -47,80 +47,82 @@ pub fn NixHealthRoute(cx: Scope) -> impl IntoView {
 
 #[component]
 fn NixHealthView(cx: Scope, health: NixHealth) -> impl IntoView {
-    #[component]
-    fn ViewCheck<C>(cx: Scope, check: C, children: Children) -> impl IntoView
-    where
-        C: Check<Report = Report<WithDetails>>,
-    {
-        let report = check.report();
-        view! { cx,
-            <div class="contents">
-                <details
-                    open=report != Report::Green
-                    class="my-2 bg-white border-2 rounded-lg cursor-pointer hover:bg-primary-100 border-base-300"
-                >
-                    <summary class="p-4 text-xl font-bold">
-                        <ReportSummaryView report=&report.without_details()/>
-                        {" "}
-                        {check.name()}
-                    </summary>
-                    <div class="p-4">
-                        <div class="p-2 my-2 font-mono text-sm bg-black text-base-100">
-                            {children(cx)}
-                        </div>
-                        <div class="flex flex-col justify-start space-y-4">
-                            {report
-                                .get_red_details()
-                                .map(move |details| {
-                                    view! { cx, <WithDetailsView details/> }
-                                })}
-
-                        </div>
-                    </div>
-                </details>
-            </div>
-        }
-    }
     view! { cx,
         <div class="flex flex-col items-stretch justify-start space-y-8 text-left">
-            <ViewCheck check=health.min_nix_version.clone()>
-                <MinNixVersionView v=health.min_nix_version/>
+            <ViewCheck name=health.min_nix_version.name() report=health.min_nix_version.report()>
+                <MinNixVersionView v=&health.min_nix_version/>
             </ViewCheck>
-            <ViewCheck check=health.max_jobs.clone()>
-                <MaxJobsView v=health.max_jobs/>
+            <ViewCheck name=health.max_jobs.name() report=health.max_jobs.report()>
+                <MaxJobsView v=&health.max_jobs/>
             </ViewCheck>
-            <ViewCheck check=health.caches.clone()>
-                <CachesView v=health.caches/>
+            <ViewCheck name=health.caches.name() report=health.caches.report()>
+                <CachesView v=&health.caches/>
             </ViewCheck>
-            <ViewCheck check=health.flake_enabled.clone()>
-                <FlakeEnabledView v=health.flake_enabled/>
+            <ViewCheck name=health.flake_enabled.name() report=health.flake_enabled.report()>
+                <FlakeEnabledView v=&health.flake_enabled/>
             </ViewCheck>
         </div>
     }
 }
 
 #[component]
-fn CachesView(cx: Scope, v: Caches) -> impl IntoView {
-    view! { cx, <div>"The following caches are in use:" <ConfigValListView cfg=v.0/></div> }
+fn ViewCheck(
+    cx: Scope,
+    name: &'static str,
+    report: Report<WithDetails>,
+    children: Children,
+) -> impl IntoView {
+    view! { cx,
+        <div class="contents">
+            <details
+                open=report != Report::Green
+                class="my-2 bg-white border-2 rounded-lg cursor-pointer hover:bg-primary-100 border-base-300"
+            >
+                <summary class="p-4 text-xl font-bold">
+                    <ReportSummaryView report=&report.without_details()/>
+                    {" "}
+                    {name}
+                </summary>
+                <div class="p-4">
+                    <div class="p-2 my-2 font-mono text-sm bg-black text-base-100">
+                        {children(cx)}
+                    </div>
+                    <div class="flex flex-col justify-start space-y-4">
+                        {report
+                            .get_red_details()
+                            .map(move |details| {
+                                view! { cx, <WithDetailsView details/> }
+                            })}
+
+                    </div>
+                </div>
+            </details>
+        </div>
+    }
 }
 
 #[component]
-fn FlakeEnabledView(cx: Scope, v: FlakeEnabled) -> impl IntoView {
-    view! { cx, <span>"experimental-features: " <ConfigValListView cfg=v.0/></span> }
+fn CachesView<'a>(cx: Scope, v: &'a Caches) -> impl IntoView {
+    view! { cx, <div>"The following caches are in use:" <ConfigValListView cfg=v.0.clone()/></div> }
 }
 
 #[component]
-fn MaxJobsView(cx: Scope, v: MaxJobs) -> impl IntoView {
+fn FlakeEnabledView<'a>(cx: Scope, v: &'a FlakeEnabled) -> impl IntoView {
+    view! { cx, <span>"experimental-features: " <ConfigValListView cfg=v.0.clone()/></span> }
+}
+
+#[component]
+fn MaxJobsView<'a>(cx: Scope, v: &'a MaxJobs) -> impl IntoView {
     view! { cx, <span>"Nix builds are using " {v.0.value} " cores"</span> }
 }
 
 #[component]
-fn MinNixVersionView(cx: Scope, v: MinNixVersion) -> impl IntoView {
-    view! { cx, <span>"Nix version: " <NixVersionView ver=v.0/></span> }
+fn MinNixVersionView<'a>(cx: Scope, v: &'a MinNixVersion) -> impl IntoView {
+    view! { cx, <span>"Nix version: " <NixVersionView ver=&v.0/></span> }
 }
 
 #[component]
-fn NixVersionView(cx: Scope, ver: NixVersion) -> impl IntoView {
+fn NixVersionView<'a>(cx: Scope, ver: &'a NixVersion) -> impl IntoView {
     view! { cx,
         <a href=nix_rs::refs::RELEASE_HISTORY class="font-mono hover:underline" target="_blank">
             {format!("{}", ver)}
