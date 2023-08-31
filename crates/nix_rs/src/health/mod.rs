@@ -4,7 +4,6 @@ pub mod check;
 pub mod report;
 pub mod traits;
 
-use leptos::*;
 use serde::{Deserialize, Serialize};
 
 use self::check::{
@@ -64,12 +63,5 @@ impl Check for NixHealth {
         } else {
             Report::Red(NoDetails)
         }
-    }
-}
-
-// TODO: remove
-impl IntoView for NixHealth {
-    fn into_view(self, cx: Scope) -> View {
-        ().into_view(cx)
     }
 }

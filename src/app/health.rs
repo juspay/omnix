@@ -2,7 +2,7 @@
 
 use leptos::*;
 use leptos_meta::*;
-use nix_rs::health::{
+use nix_rs::{health::{
     check::{
         caches::Caches, flake_enabled::FlakeEnabled, max_jobs::MaxJobs,
         min_nix_version::MinNixVersion,
@@ -10,7 +10,7 @@ use nix_rs::health::{
     report::{NoDetails, Report, WithDetails},
     traits::Check,
     NixHealth,
-};
+}, version::NixVersion};
 use tracing::instrument;
 
 use crate::widget::*;
@@ -113,7 +113,16 @@ fn MaxJobsView(cx: Scope, v: MaxJobs) -> impl IntoView {
 
 #[component]
 fn MinNixVersionView(cx: Scope, v: MinNixVersion) -> impl IntoView {
-    view! { cx, <span>"Nix version: " {v.0}</span> }
+    view! { cx, <span>"Nix version: " <NixVersionView ver=v.0 /></span> }
+}
+
+#[component]
+fn NixVersionView(cx: Scope, ver: NixVersion) -> impl IntoView {
+    view! { cx,
+        <a href=nix_rs::refs::RELEASE_HISTORY class="font-mono hover:underline" target="_blank">
+            {format!("{}", ver)}
+        </a>
+    }
 }
 
 #[component]

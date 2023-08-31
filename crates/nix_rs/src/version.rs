@@ -1,13 +1,10 @@
 //! Rust module for `nix --version`
-use leptos::*;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::{fmt, str::FromStr};
 use thiserror::Error;
 #[cfg(feature = "ssr")]
 use tracing::instrument;
-
-use super::refs;
 
 /// Nix version as parsed from `nix --version`
 #[derive(Clone, PartialOrd, PartialEq, Eq, Debug, Serialize, Deserialize)]
@@ -60,20 +57,6 @@ impl NixVersion {
         Ok(v)
     }
 }
-
-/// The HTML view for [NixVersion]
-/// TODO: remove this after health check is ported over.
-impl IntoView for NixVersion {
-    fn into_view(self, cx: Scope) -> View {
-        view! { cx,
-            <a href=refs::RELEASE_HISTORY class="font-mono hover:underline" target="_blank">
-                {format!("{}", self)}
-            </a>
-        }
-        .into_view(cx)
-    }
-}
-
 /// The String view for [NixVersion]
 impl fmt::Display for NixVersion {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
