@@ -86,38 +86,6 @@ impl IntoView for ConfigVal<System> {
     }
 }
 
-impl IntoView for NixConfig {
-    fn into_view(self, cx: Scope) -> View {
-        fn mk_row<T>(cx: Scope, key: impl IntoView, value: ConfigVal<T>) -> impl IntoView
-        where
-            ConfigVal<T>: IntoView,
-        {
-            view! { cx,
-                // TODO: Use a nice Tailwind tooltip here, instead of "title"
-                // attribute.
-                <tr title=&value.description>
-                    <td class="px-4 py-2 font-semibold text-base-700">{key}</td>
-                    <td class="px-4 py-2 text-left">
-                        <code>{value}</code>
-                    </td>
-                </tr>
-            }
-        }
-        view! { cx,
-            <div class="py-1 my-1 rounded bg-primary-50">
-                <table class="text-right">
-                    <tbody>
-                        {mk_row(cx, "System", self.system)} {mk_row(cx, "Max Jobs", self.max_jobs)}
-                        {mk_row(cx, "Cores per build", self.cores)}
-                        {mk_row(cx, "Nix Caches", self.substituters)}
-                    </tbody>
-                </table>
-            </div>
-        }
-        .into_view(cx)
-    }
-}
-
 #[cfg(feature = "ssr")]
 #[tokio::test]
 async fn test_nix_config() {

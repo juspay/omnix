@@ -62,6 +62,7 @@ impl NixVersion {
 }
 
 /// The HTML view for [NixVersion]
+/// TODO: remove this after health check is ported over.
 impl IntoView for NixVersion {
     fn into_view(self, cx: Scope) -> View {
         view! { cx,

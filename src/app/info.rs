@@ -3,7 +3,11 @@
 use leptos::*;
 use leptos_extra::signal::SignalWithResult;
 use leptos_meta::*;
-use nix_rs::info::NixInfo;
+use nix_rs::{
+    config::{ConfigVal, NixConfig},
+    info::NixInfo,
+    version::NixVersion,
+};
 
 use crate::widget::*;
 use leptos_extra::query::{self, RefetchQueryButton};
@@ -46,14 +50,57 @@ fn NixInfoView<'a>(cx: Scope, info: &'a NixInfo) -> impl IntoView {
                 <b>
                     Nix Version
                 </b>
-                <div class="p-1 my-1 rounded bg-primary-50">{info.nix_version.clone()}</div>
+                <div class="p-1 my-1 rounded bg-primary-50">
+                    <NixVersionView version=&info.nix_version/>
+                </div>
             </div>
             <div>
                 <b>
                     Nix Config
                 </b>
-                {info.nix_config.clone()}
+                <NixConfigView config=info.nix_config.clone()/>
             </div>
         </div>
     }
+}
+
+#[component]
+fn NixVersionView<'a>(cx: Scope, version: &'a NixVersion) -> impl IntoView {
+    view! { cx,
+        <a href=nix_rs::refs::RELEASE_HISTORY class="font-mono hover:underline" target="_blank">
+            {format!("{}", version)}
+        </a>
+    }
+}
+
+#[component]
+fn NixConfigView(cx: Scope, config: NixConfig) -> impl IntoView {
+    fn mk_row<T>(cx: Scope, key: impl IntoView, value: ConfigVal<T>) -> impl IntoView
+    where
+        ConfigVal<T>: IntoView,
+    {
+        view! { cx,
+            // TODO: Use a nice Tailwind tooltip here, instead of "title"
+            // attribute.
+            <tr title=&value.description>
+                <td class="px-4 py-2 font-semibold text-base-700">{key}</td>
+                <td class="px-4 py-2 text-left">
+                    <code>{value}</code>
+                </td>
+            </tr>
+        }
+    }
+    view! { cx,
+        <div class="py-1 my-1 rounded bg-primary-50">
+            <table class="text-right">
+                <tbody>
+                    {mk_row(cx, "Local System", config.system)}
+                    {mk_row(cx, "Max Jobs", config.max_jobs)}
+                    {mk_row(cx, "Cores per build", config.cores)}
+                    {mk_row(cx, "Nix Caches", config.substituters)}
+                </tbody>
+            </table>
+        </div>
+    }
+    .into_view(cx)
 }
