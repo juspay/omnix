@@ -71,7 +71,13 @@ impl Verbosity {
         let base_filter = LevelFilter::WARN.into();
         match self.verbose {
             // Default
-            0 => vec![base_filter, "nix_browser=info".parse().unwrap()],
+            0 => vec![
+                base_filter,
+                "nix_browser=info".parse().unwrap(),
+                // TODO: do for all levels below
+                "nix_rs=info".parse().unwrap(),
+                "leptos_extra=info".parse().unwrap(),
+            ],
             // -v: log app DEBUG level, as well as http requests
             1 => vec![
                 base_filter,
