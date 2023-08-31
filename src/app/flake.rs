@@ -21,7 +21,7 @@ use crate::widget::*;
 
 /// Nix flake dashboard
 #[component]
-pub fn NixFlake(cx: Scope) -> impl IntoView {
+pub fn NixFlakeRoute(cx: Scope) -> impl IntoView {
     let suggestions = FlakeUrl::suggestions();
     let url = use_signal::<FlakeUrl>(cx);
     let refresh = use_signal::<Refresh>(cx);
@@ -37,7 +37,7 @@ pub fn NixFlake(cx: Scope) -> impl IntoView {
 }
 
 #[component]
-pub fn NixFlakeHome(cx: Scope) -> impl IntoView {
+pub fn NixFlakeHomeRoute(cx: Scope) -> impl IntoView {
     let url = use_signal::<FlakeUrl>(cx);
     let refresh = use_signal::<Refresh>(cx);
     let query = move || (url(), refresh());
@@ -53,7 +53,7 @@ pub fn NixFlakeHome(cx: Scope) -> impl IntoView {
 }
 
 #[component]
-pub fn NixFlakeRaw(cx: Scope) -> impl IntoView {
+pub fn NixFlakeRawRoute(cx: Scope) -> impl IntoView {
     let url = use_signal::<FlakeUrl>(cx);
     let refresh = use_signal::<Refresh>(cx);
     let query = move || (url(), refresh());
@@ -65,7 +65,12 @@ pub fn NixFlakeRaw(cx: Scope) -> impl IntoView {
         </div>
         <div class="px-4 py-2 font-mono text-xs text-left text-gray-500 border-2 border-black">
             <SuspenseWithErrorHandling>
-                {move || data.with_result(move |r| view_flake_outputs(cx, r.clone().output))}
+                {move || {
+                    data.with_result(move |r| {
+                        view! { cx, <FlakeOutputsRawView outs=r.clone().output/> }
+                    })
+                }}
+
             </SuspenseWithErrorHandling>
         </div>
     }
@@ -80,29 +85,26 @@ fn view_flake(cx: Scope, flake: Flake) -> View {
                     "View raw output"
                 </A>
             </div>
-            <div>{view_flake_schema(cx, flake.schema)}</div>
+            <div>
+                <FlakeSchemaView schema=flake.schema/>
+            </div>
         </div>
     }
     .into_view(cx)
 }
 
-fn view_flake_schema(cx: Scope, schema: FlakeSchema) -> View {
+#[component]
+fn SectionHeading(cx: Scope, title: &'static str) -> impl IntoView {
+    view! { cx,
+        <h3 class="p-2 mt-4 mb-2 font-bold bg-gray-300 border-b-2 border-l-2 border-black text-l">
+            {title}
+        </h3>
+    }
+}
+
+#[component]
+fn FlakeSchemaView(cx: Scope, schema: FlakeSchema) -> impl IntoView {
     let system = &schema.system.clone();
-    fn view_section_heading(cx: Scope, title: &'static str) -> impl IntoView {
-        view! { cx,
-            <h3 class="p-2 mt-4 mb-2 font-bold bg-gray-300 border-b-2 border-l-2 border-black text-l">
-                {title}
-            </h3>
-        }
-    }
-    fn view_btree(cx: Scope, title: &'static str, tree: &BTreeMap<String, Val>) -> impl IntoView {
-        (!tree.is_empty()).then(|| {
-            view! { cx,
-                {view_section_heading(cx, title)}
-                {view_btree_body(cx, tree)}
-            }
-        })
-    }
     view! { cx,
         <div>
             <h2 class="my-2 ">
@@ -112,36 +114,55 @@ fn view_flake_schema(cx: Scope, schema: FlakeSchema) -> View {
             </h2>
 
             <div class="text-left">
-                {view_btree(cx, "Packages", &schema.packages)}
-                {view_btree(cx, "Legacy Packages", &schema.legacy_packages)}
-                {view_btree(cx, "Dev Shells", &schema.devshells)}
-                {view_btree(cx, "Checks", &schema.checks)} {view_btree(cx, "Apps", &schema.apps)}
-                {view_section_heading(cx, "Formatter")}
+                <BTreeMapView title="Packages" tree=schema.packages/>
+                <BTreeMapView title="Legacy Packages" tree=schema.legacy_packages/>
+                <BTreeMapView title="Dev Shells" tree=schema.devshells/>
+                <BTreeMapView title="Checks" tree=schema.checks/>
+                <BTreeMapView title="Apps" tree=schema.apps/>
+                <SectionHeading title="Formatter"/>
                 {schema
                     .formatter
+                    .as_ref()
                     .map(|v| {
                         let default = "formatter".to_string();
                         let k = v.name.as_ref().unwrap_or(&default);
-                        view_flake_val(cx, k, &v)
+                        view! { cx, <FlakeValView k v/> }
                     })}
-                {view_section_heading(cx, "Other")}
-                {schema.other.map(|v| view_flake_outputs(cx, FlakeOutputs::Attrset(v)))}
+
+                <SectionHeading title="Other"/>
+                {schema
+                    .other
+                    .map(|v| {
+                        // TODO: Use a non-recursive rendering component?
+                        view! { cx, <FlakeOutputsRawView outs=FlakeOutputs::Attrset(v)/> }
+                    })}
+
             </div>
         </div>
     }
-    .into_view(cx)
 }
 
-fn view_btree_body(cx: Scope, tree: &BTreeMap<String, Val>) -> View {
+#[component]
+fn BTreeMapView(cx: Scope, title: &'static str, tree: BTreeMap<String, Val>) -> impl IntoView {
+    (!tree.is_empty()).then(move || {
+        view! { cx,
+            <SectionHeading title/>
+            <BTreeMapBodyView tree/>
+        }
+    })
+}
+
+#[component]
+fn BTreeMapBodyView(cx: Scope, tree: BTreeMap<String, Val>) -> impl IntoView {
     view! { cx,
         <div class="flex flex-wrap justify-start">
-            {tree.iter().map(|(k, v)| view_flake_val(cx, k, v)).collect_view(cx)}
+            {tree.iter().map(|(k, v)| view! { cx, <FlakeValView k v/> }).collect_view(cx)}
         </div>
     }
-    .into_view(cx)
 }
 
-fn view_flake_val(cx: Scope, k: &String, v: &Val) -> impl IntoView {
+#[component]
+fn FlakeValView<'a>(cx: Scope, k: &'a String, v: &'a Val) -> impl IntoView {
     view! { cx,
         <div
             title=format!("{:?}", v.type_)
@@ -169,11 +190,40 @@ fn view_flake_val(cx: Scope, k: &String, v: &Val) -> impl IntoView {
     }
 }
 
-/// The [IntoView] instance for [FlakeOutputs] renders it recursively. This view
-/// is used to see the raw flake output only; it is not useful for general UX.
+/// This component renders recursively. This view is used to see the raw flake
+/// output only; it is not useful for general UX.
 ///
 /// WARNING: This may cause performance problems if the tree is large.
-fn view_flake_outputs(cx: Scope, outs: FlakeOutputs) -> View {
+#[component]
+fn FlakeOutputsRawView(cx: Scope, outs: FlakeOutputs) -> impl IntoView {
+    fn view_val(cx: Scope, val: Val) -> View {
+        view! { cx,
+            <span>
+                <b>{val.name}</b>
+                " ("
+                <TypeView type_=val.type_/>
+                ") "
+                <em>{val.description}</em>
+            </span>
+        }
+        .into_view(cx)
+    }
+
+    #[component]
+    fn TypeView(cx: Scope, type_: Type) -> impl IntoView {
+        view! { cx,
+            <span>
+                {match type_ {
+                    Type::NixosModule => "nixosModule ❄️",
+                    Type::Derivation => "derivation 📦",
+                    Type::App => "app 📱",
+                    Type::Template => "template 🏗️",
+                    Type::Unknown => "unknown ❓",
+                }}
+
+            </span>
+        }
+    }
     match outs {
         FlakeOutputs::Val(v) => view_val(cx, v),
         FlakeOutputs::Attrset(v) => view! { cx,
@@ -184,7 +234,7 @@ fn view_flake_outputs(cx: Scope, outs: FlakeOutputs) -> View {
                         view! { cx,
                             <li class="ml-4">
                                 <span class="px-2 py-1 font-bold text-primary-500">{k}</span>
-                                {view_flake_outputs(cx, v.clone())}
+                                <FlakeOutputsRawView outs=v.clone()/>
                             </li>
                         }
                     })
@@ -193,35 +243,6 @@ fn view_flake_outputs(cx: Scope, outs: FlakeOutputs) -> View {
         }
         .into_view(cx),
     }
-}
-
-fn view_val(cx: Scope, val: Val) -> View {
-    view! { cx,
-        <span>
-            <b>{val.name}</b>
-            " ("
-            {view_type(cx, val.type_)}
-            ") "
-            <em>{val.description}</em>
-        </span>
-    }
-    .into_view(cx)
-}
-
-fn view_type(cx: Scope, type_: Type) -> View {
-    view! { cx,
-        <span>
-            {match type_ {
-                Type::NixosModule => "nixosModule ❄️",
-                Type::Derivation => "derivation 📦",
-                Type::App => "app 📱",
-                Type::Template => "template 🏗️",
-                Type::Unknown => "unknown ❓",
-            }}
-
-        </span>
-    }
-    .into_view(cx)
 }
 
 /// Get [Flake] info for the given flake url

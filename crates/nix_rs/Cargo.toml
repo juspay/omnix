@@ -24,6 +24,7 @@ tracing-subscriber.workspace = true
 tracing-subscriber-wasm.workspace = true
 url = { version = "2.4", features = ["serde"] }
 
+# TODO: drop hydrate, and replace ssr with server or something
 [features]
 hydrate = ["leptos/hydrate", "leptos_meta/hydrate", "leptos_router/hydrate"]
 ssr = ["dep:tokio", "leptos_meta/ssr", "leptos_router/ssr", "leptos/ssr"]

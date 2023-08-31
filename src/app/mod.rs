@@ -46,9 +46,9 @@ pub fn App(cx: Scope) -> impl IntoView {
                     <main class="flex flex-col px-2 mb-8 space-y-3 text-center">
                         <Routes>
                             <Route path="" view=Dashboard/>
-                            <Route path="/flake" view=NixFlake>
-                                <Route path="" view=NixFlakeHome/>
-                                <Route path="raw" view=NixFlakeRaw/>
+                            <Route path="/flake" view=NixFlakeRoute>
+                                <Route path="" view=NixFlakeHomeRoute/>
+                                <Route path="raw" view=NixFlakeRawRoute/>
                             </Route>
                             <Route path="/health" view=NixHealth/>
                             <Route path="/info" view=NixInfo/>
