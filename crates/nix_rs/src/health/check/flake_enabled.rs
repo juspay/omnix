@@ -32,5 +32,3 @@ impl Check for FlakeEnabled {
         }
     }
 }
-
-

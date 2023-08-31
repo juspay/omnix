@@ -75,7 +75,8 @@ fn NixVersionView<'a>(cx: Scope, version: &'a NixVersion) -> impl IntoView {
 
 #[component]
 fn NixConfigView(cx: Scope, config: NixConfig) -> impl IntoView {
-    fn mk_row<T>(cx: Scope, key: impl IntoView, value: ConfigVal<T>) -> impl IntoView
+    #[component]
+    fn ConfigRow<T>(cx: Scope, key: &'static str, value: ConfigVal<T>) -> impl IntoView
     where
         ConfigVal<T>: IntoView,
     {
@@ -94,10 +95,10 @@ fn NixConfigView(cx: Scope, config: NixConfig) -> impl IntoView {
         <div class="py-1 my-1 rounded bg-primary-50">
             <table class="text-right">
                 <tbody>
-                    {mk_row(cx, "Local System", config.system)}
-                    {mk_row(cx, "Max Jobs", config.max_jobs)}
-                    {mk_row(cx, "Cores per build", config.cores)}
-                    {mk_row(cx, "Nix Caches", config.substituters)}
+                    <ConfigRow key="Local System" value=config.system/>
+                    <ConfigRow key="Max Jobs" value=config.max_jobs/>
+                    <ConfigRow key="Cores per build" value=config.cores/>
+                    <ConfigRow key="Nix Caches" value=config.substituters/>
                 </tbody>
             </table>
         </div>

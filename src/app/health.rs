@@ -2,15 +2,18 @@
 
 use leptos::*;
 use leptos_meta::*;
-use nix_rs::{health::{
-    check::{
-        caches::Caches, flake_enabled::FlakeEnabled, max_jobs::MaxJobs,
-        min_nix_version::MinNixVersion,
+use nix_rs::{
+    health::{
+        check::{
+            caches::Caches, flake_enabled::FlakeEnabled, max_jobs::MaxJobs,
+            min_nix_version::MinNixVersion,
+        },
+        report::{NoDetails, Report, WithDetails},
+        traits::Check,
+        NixHealth,
     },
-    report::{NoDetails, Report, WithDetails},
-    traits::Check,
-    NixHealth,
-}, version::NixVersion};
+    version::NixVersion,
+};
 use tracing::instrument;
 
 use crate::widget::*;
@@ -113,7 +116,7 @@ fn MaxJobsView(cx: Scope, v: MaxJobs) -> impl IntoView {
 
 #[component]
 fn MinNixVersionView(cx: Scope, v: MinNixVersion) -> impl IntoView {
-    view! { cx, <span>"Nix version: " <NixVersionView ver=v.0 /></span> }
+    view! { cx, <span>"Nix version: " <NixVersionView ver=v.0/></span> }
 }
 
 #[component]
@@ -144,8 +147,7 @@ fn WithDetailsView(cx: Scope, details: WithDetails) -> impl IntoView {
     view! { cx,
         <h3 class="my-2 font-bold text-l"></h3>
         <div class="p-2 bg-red-400 rounded bg-border">{details.msg}</div>
-        <h3 class="my-2 font-bold text-l">
-        </h3>
+        <h3 class="my-2 font-bold text-l"></h3>
         <div class="p-2 bg-blue-400 rounded bg-border">{details.suggestion}</div>
     }
 }
