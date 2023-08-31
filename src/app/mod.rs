@@ -92,7 +92,7 @@ fn Dashboard(cx: Scope) -> impl IntoView {
     tracing::debug!("Rendering Dashboard page");
     let result = query::use_server_query(cx, || (), get_nix_health);
     let data = result.data;
-    let report = move || data.with_result(|v| v.report());
+    let report = Signal::derive(cx, move || data.with_result(|v| v.report()));
     // A Card component
     #[component]
     fn Card(cx: Scope, href: &'static str, children: Children) -> impl IntoView {
@@ -110,7 +110,16 @@ fn Dashboard(cx: Scope) -> impl IntoView {
         <h1 class="text-5xl font-bold">"Dashboard"</h1>
         <div id="cards" class="flex flex-row flex-wrap">
             <SuspenseWithErrorHandling>
-                <Card href="/health">"Nix Health Check " {report}</Card>
+                <Card href="/health">
+                    "Nix Health Check "
+                    {move || {
+                        report
+                            .with_result(move |report| {
+                                view! { cx, <ReportSummaryView report/> }
+                            })
+                    }}
+
+                </Card>
             </SuspenseWithErrorHandling>
             <Card href="/info">"Nix Info ℹ️"</Card>
             <Card href="/flake">"Flake Overview ❄️️"</Card>

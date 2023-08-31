@@ -23,10 +23,10 @@ use super::info;
 // [IntoIterator] impl is provide towards this end.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct NixHealth {
-    max_jobs: MaxJobs,
-    caches: Caches,
-    flake_enabled: FlakeEnabled,
-    min_nix_version: MinNixVersion,
+    pub max_jobs: MaxJobs,
+    pub caches: Caches,
+    pub flake_enabled: FlakeEnabled,
+    pub min_nix_version: MinNixVersion,
 }
 
 impl<'a> IntoIterator for &'a NixHealth {
@@ -67,44 +67,9 @@ impl Check for NixHealth {
     }
 }
 
+// TODO: remove
 impl IntoView for NixHealth {
     fn into_view(self, cx: Scope) -> View {
-        #[component]
-        fn ViewCheck<C>(cx: Scope, check: C) -> impl IntoView
-        where
-            C: Check<Report = Report<WithDetails>>,
-        {
-            let report = check.report();
-            view! { cx,
-                <div class="contents">
-                    <details
-                        open=report != Report::Green
-                        class="my-2 bg-white border-2 rounded-lg cursor-pointer hover:bg-primary-100 border-base-300"
-                    >
-                        <summary class="p-4 text-xl font-bold">
-                            {report.without_details()} {" "} {check.name()}
-                        </summary>
-                        <div class="p-4">
-                            <div class="p-2 my-2 font-mono text-sm bg-black text-base-100">
-                                {check}
-                            </div>
-                            <div class="flex flex-col justify-start space-y-4">
-                                {report.get_red_details()}
-                            </div>
-                        </div>
-                    </details>
-                </div>
-            }
-        }
-        view! { cx,
-            <div class="flex flex-col items-stretch justify-start space-y-8 text-left">
-                // TODO: Make this use [NixHealth::into_iter]
-                <ViewCheck check=self.min_nix_version/>
-                <ViewCheck check=self.max_jobs/>
-                <ViewCheck check=self.caches/>
-                <ViewCheck check=self.flake_enabled/>
-            </div>
-        }
-        .into_view(cx)
+        ().into_view(cx)
     }
 }

@@ -1,4 +1,3 @@
-use leptos::*;
 use serde::{Deserialize, Serialize};
 
 /// Health report
@@ -42,39 +41,5 @@ impl Report<WithDetails> {
             Report::Green => None,
             Report::Red(details) => Some(details.clone()),
         }
-    }
-}
-
-impl IntoView for WithDetails {
-    fn into_view(self, cx: Scope) -> View {
-        view! { cx,
-            <h3 class="my-2 font-bold text-l">
-                Problem:
-            </h3>
-            <div class="p-2 bg-red-400 rounded bg-border">{self.msg}</div>
-            <h3 class="my-2 font-bold text-l">
-                Suggestion:
-            </h3>
-            <div class="p-2 bg-blue-400 rounded bg-border">{self.suggestion}</div>
-        }
-        .into_view(cx)
-    }
-}
-
-impl IntoView for Report<NoDetails> {
-    fn into_view(self, cx: Scope) -> View {
-        view! { cx,
-            {match self {
-                Report::Green => {
-                    view! { cx, <span class="text-green-500">{"✓"}</span> }.into_view(cx)
-                }
-                Report::Red(NoDetails) => {
-
-                    view! { cx, <span class="text-red-500">{"✗"}</span> }
-                        .into_view(cx)
-                }
-            }}
-        }
-        .into_view(cx)
     }
 }
