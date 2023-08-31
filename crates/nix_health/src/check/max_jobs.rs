@@ -1,18 +1,14 @@
-use leptos::*;
+use nix_rs::{config::ConfigVal, info};
 use serde::{Deserialize, Serialize};
 
-use crate::nix::{
-    config::ConfigVal,
-    health::{
-        report::{Report, WithDetails},
-        traits::Check,
-    },
-    info,
+use crate::{
+    report::{Report, WithDetails},
+    traits::Check,
 };
 
-/// Check that [crate::nix::config::NixConfig::max_jobs] is set to a good value.
+/// Check that [crate::config::NixConfig::max_jobs] is set to a good value.
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct MaxJobs(ConfigVal<i32>);
+pub struct MaxJobs(pub ConfigVal<i32>);
 
 impl Check for MaxJobs {
     fn check(info: &info::NixInfo) -> Self {
@@ -30,11 +26,5 @@ impl Check for MaxJobs {
                 suggestion: "Try editing /etc/nix/nix.conf".into(),
             })
         }
-    }
-}
-
-impl IntoView for MaxJobs {
-    fn into_view(self, cx: Scope) -> View {
-        view! { cx, <span>"Nix builds are using " {self.0} " cores"</span> }.into_view(cx)
     }
 }

@@ -1,18 +1,14 @@
-use leptos::*;
+use nix_rs::{info, version::NixVersion};
 use serde::{Deserialize, Serialize};
 
-use crate::nix::{
-    health::{
-        report::{Report, WithDetails},
-        traits::Check,
-    },
-    info,
-    version::NixVersion,
+use crate::{
+    report::{Report, WithDetails},
+    traits::Check,
 };
 
-/// Check that [crate::nix::version::NixVersion] is set to a good value.
+/// Check that [crate::version::NixVersion] is set to a good value.
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct MinNixVersion(NixVersion);
+pub struct MinNixVersion(pub NixVersion);
 
 impl Check for MinNixVersion {
     fn check(info: &info::NixInfo) -> Self {
@@ -35,11 +31,5 @@ impl Check for MinNixVersion {
                 suggestion: "See https://nixos.org/manual/nix/stable/command-ref/new-cli/nix3-upgrade-nix.html".into(),
             })
         }
-    }
-}
-
-impl IntoView for MinNixVersion {
-    fn into_view(self, cx: Scope) -> View {
-        view! { cx, <span>"Nix version: " {self.0}</span> }.into_view(cx)
     }
 }

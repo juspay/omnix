@@ -1,23 +1,21 @@
 //! Frontend UI entry point
 
+mod flake;
+mod health;
+mod info;
+
 use leptos::*;
+use leptos_extra::{
+    query::{self},
+    signal::{provide_signal, SignalWithResult},
+};
 use leptos_meta::*;
 use leptos_query::*;
 use leptos_router::*;
+use nix_health::traits::Check;
+use nix_rs::{command::Refresh, flake::url::FlakeUrl};
 
-use crate::nix::{
-    flake::{get_flake, url::FlakeUrl},
-    health::{get_nix_health, traits::Check},
-    info::get_nix_info,
-};
-use crate::widget::*;
-use crate::{
-    leptos_extra::{
-        query::{self, RefetchQueryButton},
-        signal::{provide_signal, use_signal, SignalWithResult},
-    },
-    nix::command::Refresh,
-};
+use crate::{app::flake::*, app::health::*, app::info::*, widget::*};
 
 /// Main frontend application container
 #[component]
@@ -46,12 +44,12 @@ pub fn App(cx: Scope) -> impl IntoView {
                     <main class="flex flex-col px-2 mb-8 space-y-3 text-center">
                         <Routes>
                             <Route path="" view=Dashboard/>
-                            <Route path="/flake" view=NixFlake>
-                                <Route path="" view=NixFlakeHome/>
-                                <Route path="raw" view=NixFlakeRaw/>
+                            <Route path="/flake" view=NixFlakeRoute>
+                                <Route path="" view=NixFlakeHomeRoute/>
+                                <Route path="raw" view=NixFlakeRawRoute/>
                             </Route>
-                            <Route path="/health" view=NixHealth/>
-                            <Route path="/info" view=NixInfo/>
+                            <Route path="/health" view=NixHealthRoute/>
+                            <Route path="/info" view=NixInfoRoute/>
                             <Route path="/about" view=About/>
                         </Routes>
                     </main>
@@ -95,7 +93,7 @@ fn Dashboard(cx: Scope) -> impl IntoView {
     tracing::debug!("Rendering Dashboard page");
     let result = query::use_server_query(cx, || (), get_nix_health);
     let data = result.data;
-    let report = move || data.with_result(|v| v.report());
+    let report = Signal::derive(cx, move || data.with_result(|v| v.report()));
     // A Card component
     #[component]
     fn Card(cx: Scope, href: &'static str, children: Children) -> impl IntoView {
@@ -113,92 +111,19 @@ fn Dashboard(cx: Scope) -> impl IntoView {
         <h1 class="text-5xl font-bold">"Dashboard"</h1>
         <div id="cards" class="flex flex-row flex-wrap">
             <SuspenseWithErrorHandling>
-                <Card href="/health">"Nix Health Check " {report}</Card>
+                <Card href="/health">
+                    "Nix Health Check "
+                    {move || {
+                        report
+                            .with_result(move |report| {
+                                view! { cx, <ReportSummaryView report/> }
+                            })
+                    }}
+
+                </Card>
             </SuspenseWithErrorHandling>
             <Card href="/info">"Nix Info ℹ️"</Card>
             <Card href="/flake">"Flake Overview ❄️️"</Card>
-        </div>
-    }
-}
-
-/// Nix flake dashboard
-#[component]
-fn NixFlake(cx: Scope) -> impl IntoView {
-    let suggestions = FlakeUrl::suggestions();
-    let url = use_signal::<FlakeUrl>(cx);
-    let refresh = use_signal::<Refresh>(cx);
-    let query = move || (url(), refresh());
-    let result = query::use_server_query(cx, query, get_flake);
-    view! { cx,
-        <Title text="Nix Flake"/>
-        <h1 class="text-5xl font-bold">{"Nix Flake"}</h1>
-        <TextInput id="nix-flake-input" label="Load a Nix Flake" val=url suggestions/>
-        <RefetchQueryButton result query/>
-        <Outlet/>
-    }
-}
-
-#[component]
-fn NixFlakeHome(cx: Scope) -> impl IntoView {
-    let url = use_signal::<FlakeUrl>(cx);
-    let refresh = use_signal::<Refresh>(cx);
-    let query = move || (url(), refresh());
-    let result = query::use_server_query(cx, query, get_flake);
-    let data = result.data;
-    view! { cx,
-        <div class="p-2 my-1">
-            <SuspenseWithErrorHandling>{data}</SuspenseWithErrorHandling>
-        </div>
-    }
-}
-
-#[component]
-fn NixFlakeRaw(cx: Scope) -> impl IntoView {
-    let url = use_signal::<FlakeUrl>(cx);
-    let refresh = use_signal::<Refresh>(cx);
-    let query = move || (url(), refresh());
-    let result = query::use_server_query(cx, query, get_flake);
-    let data = result.data;
-    view! { cx,
-        <div>
-            <A href="/flake">"< Back"</A>
-        </div>
-        <div class="px-4 py-2 font-mono text-xs text-left text-gray-500 border-2 border-black">
-            <SuspenseWithErrorHandling>
-                {move || { data.get().map(|r| r.map(|v| v.output.into_view(cx))) }}
-            </SuspenseWithErrorHandling>
-        </div>
-    }
-}
-
-/// Nix information
-#[component]
-fn NixInfo(cx: Scope) -> impl IntoView {
-    let title = "Nix Info";
-    let result = query::use_server_query(cx, || (), get_nix_info);
-    let data = result.data;
-    view! { cx,
-        <Title text=title/>
-        <h1 class="text-5xl font-bold">{title}</h1>
-        <RefetchQueryButton result query=|| ()/>
-        <div class="my-1 text-left">
-            <SuspenseWithErrorHandling>{data}</SuspenseWithErrorHandling>
-        </div>
-    }
-}
-
-/// Nix health checks
-#[component]
-fn NixHealth(cx: Scope) -> impl IntoView {
-    let title = "Nix Health";
-    let result = query::use_server_query(cx, || (), get_nix_health);
-    let data = result.data;
-    view! { cx,
-        <Title text=title/>
-        <h1 class="text-5xl font-bold">{title}</h1>
-        <RefetchQueryButton result query=|| ()/>
-        <div class="my-1">
-            <SuspenseWithErrorHandling>{data}</SuspenseWithErrorHandling>
         </div>
     }
 }

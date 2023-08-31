@@ -1,14 +1,8 @@
-use leptos::*;
-
-use super::{
-    info,
-    report::{Report, WithDetails},
-};
+use crate::report::{Report, WithDetails};
+use nix_rs::info;
 
 /// Types that implement health check with reports
-///
-/// Check types can be rendered into views using the [IntoView] trait.
-pub trait Check: IntoView {
+pub trait Check {
     /// The type of the report produced by this health check
     type Report = Report<WithDetails>;
 

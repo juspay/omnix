@@ -1,3 +1,23 @@
+[workspace]
+
+[workspace.dependencies]
+cfg-if = "1"
+leptos = { version = "0.4", features = ["serde", "nightly"] }
+leptos_meta = { version = "0.4", features = ["nightly"] }
+leptos_router = { version = "0.4", features = ["nightly"] }
+leptos_query = "0.2"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-subscriber-wasm = "0.1"
+wasm-bindgen = "=0.2.87"                                            # The version here must match the pinned stuff in Nix flakes.
+nix_rs = { path = "./crates/nix_rs" }
+nix_health = { path = "./crates/nix_health" }
+leptos_extra = { path = "./crates/leptos_extra" }
+thiserror = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_with = { version = "3.2", features = ["json"] }
+
 [package]
 edition = "2021"
 # If you change the name here, you must also do it in flake.nix (and run `cargo generate-lockfile` afterwards)
@@ -13,34 +33,35 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 axum = { version = "0.6", features = ["json", "tokio"], optional = true }
 axum-macros = { version = "0.3", optional = true }
-cfg-if = "1"
+cfg-if.workspace = true
 clap = { version = "4.3", features = ["derive", "env"] }
 console_error_panic_hook = "0.1"
 console_log = { version = "1" }
 http = { version = "0.2", optional = true }
 human-panic = "1.1.5"
 hyper = { version = "0.14", features = ["server"], optional = true }
-leptos = { version = "0.4", features = ["serde", "nightly"] }
+leptos.workspace = true
 leptos_axum = { version = "0.4", optional = true }
-leptos_query = "0.2"
-leptos_meta = { version = "0.4" }
-leptos_router = { version = "0.4" }
-log = "0.4"
+leptos_meta.workspace = true
+leptos_router.workspace = true
+leptos_query.workspace = true
 regex = "1.9.3"
 open = { version = "5.0", optional = true }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-serde_with = { version = "3.2", features = ["json"] }
-thiserror = "1.0"
+serde.workspace = true
+serde_json.workspace = true
+serde_with.workspace = true
+thiserror.workspace = true
 tokio = { version = "1.29", features = ["full"], optional = true }
 tower = { version = "0.4", optional = true }
 tower-http = { version = "0.4", features = ["full"], optional = true }
-tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-tracing-subscriber-wasm = "0.1"
-url = { version = "2.4", features = ["serde"] }
+tracing.workspace = true
+tracing-subscriber.workspace = true
+tracing-subscriber-wasm.workspace = true
 uuid = { version = "1.3.0", features = ["serde", "v4", "js"] }
-wasm-bindgen = "=0.2.87"                                                  # The version here must match the pinned stuff in Nix flakes.
+wasm-bindgen.workspace = true
+nix_rs.workspace = true
+nix_health.workspace = true
+leptos_extra.workspace = true
 
 [features]
 default = [
@@ -51,6 +72,7 @@ hydrate = [
     "leptos_meta/hydrate",
     "leptos_query/hydrate",
     "leptos_router/hydrate",
+    "leptos_extra/hydrate",
 ]
 ssr = [
     "dep:axum-macros",
@@ -62,10 +84,13 @@ ssr = [
     "dep:tokio",
     "dep:tower-http",
     "dep:tower",
+    "leptos/ssr",
     "leptos_meta/ssr",
     "leptos_query/ssr",
     "leptos_router/ssr",
-    "leptos/ssr",
+    "leptos_extra/ssr",
+    "nix_rs/all",
+    "nix_health/all",
 ]
 
 # Defines a size-optimized profile for the WASM bundle in release mode

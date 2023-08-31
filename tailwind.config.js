@@ -3,8 +3,8 @@ const defaultTheme = require('tailwindcss/defaultTheme')
 
 module.exports = {
   content: [
-    "index.html",
-    "./src/**/*.rs"
+    "./src/**/*.rs",
+    "./crates/leptos_extra/**/*.rs"
   ],
   theme: {
     fontFamily: {
