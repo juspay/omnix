@@ -47,14 +47,18 @@ impl FromStr for NixVersion {
     }
 }
 
-/// Get the output of `nix --version`
-#[cfg(feature = "ssr")]
-#[instrument(name = "version")]
-pub async fn run_nix_version() -> Result<NixVersion, super::command::NixCmdError> {
-    let v = crate::command::NixCmd::default()
-        .run_with_args_expecting_fromstr(&["--version"])
-        .await?;
-    Ok(v)
+impl NixVersion {
+    /// Get the output of `nix --version`
+    #[cfg(feature = "ssr")]
+    #[instrument(name = "version")]
+    pub async fn from_nix(
+        nix_cmd: &super::command::NixCmd,
+    ) -> Result<NixVersion, super::command::NixCmdError> {
+        let v = nix_cmd
+            .run_with_args_expecting_fromstr(&["--version"])
+            .await?;
+        Ok(v)
+    }
 }
 
 /// The HTML view for [NixVersion]
@@ -79,7 +83,9 @@ impl fmt::Display for NixVersion {
 #[cfg(feature = "ssr")]
 #[tokio::test]
 async fn test_run_nix_version() {
-    let nix_version = run_nix_version().await.unwrap();
+    let nix_version = NixVersion::from_nix(&crate::command::NixCmd::default())
+        .await
+        .unwrap();
     println!("Nix version: {}", nix_version);
 }
 

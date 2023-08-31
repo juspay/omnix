@@ -1,7 +1,6 @@
 //! Information about the user's Nix installation
 use leptos::*;
 use serde::{Deserialize, Serialize};
-use tracing::instrument;
 
 use crate::{config::NixConfig, version::NixVersion};
 
@@ -13,16 +12,17 @@ pub struct NixInfo {
     pub nix_config: NixConfig,
 }
 
-/// Determine [NixInfo] on the user's system
-#[instrument(name = "nix-info")]
-#[server(GetNixInfo, "/api")]
-pub async fn get_nix_info(_unit: ()) -> Result<NixInfo, ServerFnError> {
-    let nix_version = super::version::run_nix_version().await?;
-    let nix_config = super::config::run_nix_show_config().await?;
-    Ok(NixInfo {
-        nix_version,
-        nix_config,
-    })
+impl NixInfo {
+    /// Determine [NixInfo] on the user's system
+    #[cfg(feature = "ssr")]
+    pub async fn from_nix(nix_cmd: &crate::command::NixCmd) -> Result<NixInfo, ServerFnError> {
+        let nix_version = NixVersion::from_nix(nix_cmd).await?;
+        let nix_config = NixConfig::from_nix(nix_cmd).await?;
+        Ok(NixInfo {
+            nix_version,
+            nix_config,
+        })
+    }
 }
 
 impl IntoView for NixInfo {

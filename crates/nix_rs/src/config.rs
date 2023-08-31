@@ -86,14 +86,6 @@ impl IntoView for ConfigVal<System> {
     }
 }
 
-/// Get the output of `nix show-config`
-#[cfg(feature = "ssr")]
-#[instrument(name = "show-config")]
-pub async fn run_nix_show_config() -> Result<NixConfig, ServerFnError> {
-    let v = NixConfig::from_nix(&crate::command::NixCmd::default()).await?;
-    Ok(v)
-}
-
 impl IntoView for NixConfig {
     fn into_view(self, cx: Scope) -> View {
         fn mk_row<T>(cx: Scope, key: impl IntoView, value: ConfigVal<T>) -> impl IntoView
@@ -128,7 +120,7 @@ impl IntoView for NixConfig {
 
 #[cfg(feature = "ssr")]
 #[tokio::test]
-async fn test_run_nix_show_config() {
-    let nix_config = run_nix_show_config().await.unwrap();
-    println!("Max Jobs: {}", nix_config.max_jobs.value)
+async fn test_nix_config() {
+    let v = NixConfig::from_nix(&crate::command::NixCmd::default()).await?;
+    println!("Max Jobs: {}", v.max_jobs.value)
 }

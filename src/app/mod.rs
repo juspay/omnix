@@ -1,13 +1,14 @@
 //! Frontend UI entry point
 
 mod flake;
+mod info;
 
 use leptos::*;
 use leptos_meta::*;
 use leptos_query::*;
 use leptos_router::*;
 
-use crate::{app::flake::*, widget::*};
+use crate::{app::flake::*, app::info::*, widget::*};
 use leptos_extra::{
     query::{self, RefetchQueryButton},
     signal::{provide_signal, SignalWithResult},
@@ -16,7 +17,6 @@ use nix_rs::{
     command::Refresh,
     flake::url::FlakeUrl,
     health::{get_nix_health, traits::Check},
-    info::get_nix_info,
 };
 
 /// Main frontend application container
@@ -51,7 +51,7 @@ pub fn App(cx: Scope) -> impl IntoView {
                                 <Route path="raw" view=NixFlakeRawRoute/>
                             </Route>
                             <Route path="/health" view=NixHealth/>
-                            <Route path="/info" view=NixInfo/>
+                            <Route path="/info" view=NixInfoRoute/>
                             <Route path="/about" view=About/>
                         </Routes>
                     </main>
@@ -117,22 +117,6 @@ fn Dashboard(cx: Scope) -> impl IntoView {
             </SuspenseWithErrorHandling>
             <Card href="/info">"Nix Info ℹ️"</Card>
             <Card href="/flake">"Flake Overview ❄️️"</Card>
-        </div>
-    }
-}
-
-/// Nix information
-#[component]
-fn NixInfo(cx: Scope) -> impl IntoView {
-    let title = "Nix Info";
-    let result = query::use_server_query(cx, || (), get_nix_info);
-    let data = result.data;
-    view! { cx,
-        <Title text=title/>
-        <h1 class="text-5xl font-bold">{title}</h1>
-        <RefetchQueryButton result query=|| ()/>
-        <div class="my-1 text-left">
-            <SuspenseWithErrorHandling>{data}</SuspenseWithErrorHandling>
         </div>
     }
 }

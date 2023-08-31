@@ -19,7 +19,7 @@ use super::info;
 #[instrument(name = "nix-health")]
 #[server(GetNixHealth, "/api")]
 pub async fn get_nix_health(_unit: ()) -> Result<NixHealth, ServerFnError> {
-    let info = info::get_nix_info(()).await?;
+    let info = info::NixInfo::from_nix(&crate::command::NixCmd::default()).await?;
     Ok(NixHealth::check(&info))
 }
 
