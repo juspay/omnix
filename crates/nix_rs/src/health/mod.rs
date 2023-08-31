@@ -6,7 +6,6 @@ pub mod traits;
 
 use leptos::*;
 use serde::{Deserialize, Serialize};
-use tracing::instrument;
 
 use self::check::{
     caches::Caches, flake_enabled::FlakeEnabled, max_jobs::MaxJobs, min_nix_version::MinNixVersion,
@@ -14,14 +13,6 @@ use self::check::{
 use self::report::{NoDetails, Report, WithDetails};
 use self::traits::Check;
 use super::info;
-
-/// Get [NixHealth] information
-#[instrument(name = "nix-health")]
-#[server(GetNixHealth, "/api")]
-pub async fn get_nix_health(_unit: ()) -> Result<NixHealth, ServerFnError> {
-    let info = info::NixInfo::from_nix(&crate::command::NixCmd::default()).await?;
-    Ok(NixHealth::check(&info))
-}
 
 /// Nix Health check information for user's install
 ///
