@@ -68,26 +68,30 @@ impl Verbosity {
 
     fn log_directives(&self) -> Vec<Directive> {
         // Allow warnings+errors from all crates.
-        let base_filter = LevelFilter::WARN.into();
         match self.verbose {
             // Default
             0 => vec![
-                base_filter,
+                LevelFilter::WARN.into(),
                 "nix_browser=info".parse().unwrap(),
-                // TODO: do for all levels below
                 "nix_rs=info".parse().unwrap(),
                 "leptos_extra=info".parse().unwrap(),
             ],
             // -v: log app DEBUG level, as well as http requests
             1 => vec![
-                base_filter,
+                LevelFilter::WARN.into(),
                 "nix_browser=debug".parse().unwrap(),
+                "nix_rs=debug".parse().unwrap(),
+                "leptos_extra=debug".parse().unwrap(),
+                // 3rd-party libraries
                 "tower_http=info".parse().unwrap(),
             ],
             // -vv: log app TRACE level, as well as http requests
             2 => vec![
-                base_filter,
+                LevelFilter::WARN.into(),
                 "nix_browser=trace".parse().unwrap(),
+                "nix_rs=trace".parse().unwrap(),
+                "leptos_extra=trace".parse().unwrap(),
+                // 3rd-party libraries
                 "tower_http=info".parse().unwrap(),
             ],
             // -vvv: log DEBUG level of app and libraries
