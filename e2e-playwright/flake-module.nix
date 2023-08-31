@@ -13,9 +13,9 @@
           port = 8975;
           settings.processes = {
             start-app = {
-              command = "${lib.getExe self'.packages.default} --site-addr=127.0.0.1:${env.TEST_PORT}";
+              command = "${lib.getExe self'.packages.default} --site-addr=127.0.0.1:${TEST_PORT}";
               readiness_probe = {
-                exec.command = "${lib.getExe pkgs.curl} --fail 127.0.0.1:${env.TEST_PORT}";
+                exec.command = "${lib.getExe pkgs.curl} --fail 127.0.0.1:${TEST_PORT}";
                 initial_delay_seconds = 2;
                 period_seconds = 10;
                 timeout_seconds = 4;
