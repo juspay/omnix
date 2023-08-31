@@ -1,9 +1,11 @@
+#![feature(associated_type_defaults)]
 //! Health checks for the user's Nix install
 
 pub mod check;
 pub mod report;
 pub mod traits;
 
+use nix_rs::info;
 use serde::{Deserialize, Serialize};
 
 use self::check::{
@@ -11,7 +13,6 @@ use self::check::{
 };
 use self::report::{NoDetails, Report, WithDetails};
 use self::traits::Check;
-use super::info;
 
 /// Nix Health check information for user's install
 ///

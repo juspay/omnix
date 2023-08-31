@@ -1,13 +1,10 @@
+use nix_rs::{config::ConfigVal, info};
 use serde::{Deserialize, Serialize};
 use url::Url;
 
 use crate::{
-    config::ConfigVal,
-    health::{
-        report::{Report, WithDetails},
-        traits::Check,
-    },
-    info,
+    report::{Report, WithDetails},
+    traits::Check,
 };
 
 /// Check that [crate::config::NixConfig::substituters] is set to a good value.

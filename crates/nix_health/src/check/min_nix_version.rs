@@ -1,12 +1,9 @@
+use nix_rs::{info, version::NixVersion};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    health::{
-        report::{Report, WithDetails},
-        traits::Check,
-    },
-    info,
-    version::NixVersion,
+    report::{Report, WithDetails},
+    traits::Check,
 };
 
 /// Check that [crate::version::NixVersion] is set to a good value.

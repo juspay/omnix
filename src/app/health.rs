@@ -6,18 +6,16 @@ use leptos_extra::{
     signal::SignalWithResult,
 };
 use leptos_meta::*;
-use nix_rs::{
-    health::{
-        check::{
-            caches::Caches, flake_enabled::FlakeEnabled, max_jobs::MaxJobs,
-            min_nix_version::MinNixVersion,
-        },
-        report::{NoDetails, Report, WithDetails},
-        traits::Check,
-        NixHealth,
+use nix_health::{
+    check::{
+        caches::Caches, flake_enabled::FlakeEnabled, max_jobs::MaxJobs,
+        min_nix_version::MinNixVersion,
     },
-    version::NixVersion,
+    report::{NoDetails, Report, WithDetails},
+    traits::Check,
+    NixHealth,
 };
+use nix_rs::version::NixVersion;
 use tracing::instrument;
 
 use crate::{app::info::ConfigValListView, widget::*};
@@ -157,11 +155,9 @@ fn WithDetailsView(cx: Scope, details: WithDetails) -> impl IntoView {
 /// Get [NixHealth] information
 #[instrument(name = "nix-health")]
 #[server(GetNixHealth, "/api")]
-pub async fn get_nix_health(_unit: ()) -> Result<nix_rs::health::NixHealth, ServerFnError> {
-    use nix_rs::{
-        health::{traits::Check, NixHealth},
-        info,
-    };
+pub async fn get_nix_health(_unit: ()) -> Result<nix_health::NixHealth, ServerFnError> {
+    use nix_health::{traits::Check, NixHealth};
+    use nix_rs::info;
     let info = info::NixInfo::from_nix(&nix_rs::command::NixCmd::default()).await?;
     let health = NixHealth::check(&info);
     Ok(health)

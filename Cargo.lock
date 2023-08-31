@@ -1849,6 +1849,7 @@ dependencies = [
  "leptos_meta",
  "leptos_query",
  "leptos_router",
+ "nix_health",
  "nix_rs",
  "open",
  "regex",
@@ -1864,6 +1865,24 @@ dependencies = [
  "tracing-subscriber-wasm",
  "uuid",
  "wasm-bindgen",
+]
+
+[[package]]
+name = "nix_health"
+version = "0.1.0"
+dependencies = [
+ "cfg-if",
+ "nix_rs",
+ "regex",
+ "serde",
+ "serde_json",
+ "serde_with",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "tracing-subscriber-wasm",
+ "url",
 ]
 
 [[package]]

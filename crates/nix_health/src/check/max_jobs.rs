@@ -1,12 +1,9 @@
+use nix_rs::{config::ConfigVal, info};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    config::ConfigVal,
-    health::{
-        report::{Report, WithDetails},
-        traits::Check,
-    },
-    info,
+    report::{Report, WithDetails},
+    traits::Check,
 };
 
 /// Check that [crate::config::NixConfig::max_jobs] is set to a good value.
