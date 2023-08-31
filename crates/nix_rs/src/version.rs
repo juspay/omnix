@@ -3,7 +3,7 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::{fmt, str::FromStr};
 use thiserror::Error;
-#[cfg(feature = "ssr")]
+#[cfg(feature = "all")]
 use tracing::instrument;
 
 /// Nix version as parsed from `nix --version`
@@ -46,7 +46,7 @@ impl FromStr for NixVersion {
 
 impl NixVersion {
     /// Get the output of `nix --version`
-    #[cfg(feature = "ssr")]
+    #[cfg(feature = "all")]
     #[instrument(name = "version")]
     pub async fn from_nix(
         nix_cmd: &super::command::NixCmd,
@@ -64,7 +64,7 @@ impl fmt::Display for NixVersion {
     }
 }
 
-#[cfg(feature = "ssr")]
+#[cfg(feature = "all")]
 #[tokio::test]
 async fn test_run_nix_version() {
     let nix_version = NixVersion::from_nix(&crate::command::NixCmd::default())
@@ -73,7 +73,7 @@ async fn test_run_nix_version() {
     println!("Nix version: {}", nix_version);
 }
 
-#[cfg(feature = "ssr")]
+#[cfg(feature = "all")]
 #[tokio::test]
 async fn test_parse_nix_version() {
     assert_eq!(

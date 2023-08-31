@@ -21,6 +21,5 @@ tracing-subscriber.workspace = true
 tracing-subscriber-wasm.workspace = true
 url = { version = "2.4", features = ["serde"] }
 
-# TODO: ssr with server or something
 [features]
-ssr = ["dep:tokio"]
+all = ["dep:tokio"]

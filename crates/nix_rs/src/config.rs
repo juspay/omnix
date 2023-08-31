@@ -1,7 +1,7 @@
 //! Rust module for `nix show-config`
 
 use serde::{Deserialize, Serialize};
-#[cfg(feature = "ssr")]
+#[cfg(feature = "all")]
 use tracing::instrument;
 use url::Url;
 
@@ -34,7 +34,7 @@ pub struct ConfigVal<T> {
 
 impl NixConfig {
     /// Get the output of `nix show-config`
-    #[cfg(feature = "ssr")]
+    #[cfg(feature = "all")]
     #[instrument(name = "show-config")]
     pub async fn from_nix(
         nix_cmd: &super::command::NixCmd,
@@ -46,7 +46,7 @@ impl NixConfig {
     }
 }
 
-#[cfg(feature = "ssr")]
+#[cfg(feature = "all")]
 #[tokio::test]
 async fn test_nix_config() {
     let v = NixConfig::from_nix(&crate::command::NixCmd::default()).await?;

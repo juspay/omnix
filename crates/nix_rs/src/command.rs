@@ -4,9 +4,9 @@ use std::fmt::{self, Display};
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
-#[cfg(feature = "ssr")]
+#[cfg(feature = "all")]
 use tokio::process::Command;
-#[cfg(feature = "ssr")]
+#[cfg(feature = "all")]
 use tracing::instrument;
 
 /// The `nix` command along with its global options.
@@ -39,7 +39,7 @@ impl Default for NixCmd {
     }
 }
 
-#[cfg(feature = "ssr")]
+#[cfg(feature = "all")]
 impl NixCmd {
     /// Return a [Command] for this [NixCmd] configuration
     pub fn command(&self) -> Command {
@@ -48,7 +48,7 @@ impl NixCmd {
         cmd
     }
 
-    #[cfg(feature = "ssr")]
+    #[cfg(feature = "all")]
     pub async fn run_with_args_expecting_json<T>(&self, args: &[&str]) -> Result<T, NixCmdError>
     where
         T: serde::de::DeserializeOwned,
@@ -58,7 +58,7 @@ impl NixCmd {
         Ok(v)
     }
 
-    #[cfg(feature = "ssr")]
+    #[cfg(feature = "all")]
     pub async fn run_with_args_expecting_fromstr<T>(&self, args: &[&str]) -> Result<T, NixCmdError>
     where
         T: std::str::FromStr,
@@ -70,7 +70,7 @@ impl NixCmd {
         Ok(v)
     }
 
-    #[cfg(feature = "ssr")]
+    #[cfg(feature = "all")]
     async fn run_with_args_returning_stdout(&self, args: &[&str]) -> Result<Vec<u8>, CommandError> {
         let mut cmd = self.command();
         cmd.args(args);
@@ -119,14 +119,14 @@ impl Display for FromStrError {
 impl std::error::Error for FromStrError {}
 
 /// Run the given command, returning its stdout.
-#[cfg(feature = "ssr")]
+#[cfg(feature = "all")]
 #[allow(clippy::needless_pass_by_ref_mut)]
 pub async fn run_command(cmd: &mut tokio::process::Command) -> Result<Vec<u8>, CommandError> {
     cmd.kill_on_drop(true);
     run_command_(cmd).await
 }
 
-#[cfg(feature = "ssr")]
+#[cfg(feature = "all")]
 #[instrument(name = "run-command", err)]
 async fn run_command_(cmd: &mut tokio::process::Command) -> Result<Vec<u8>, CommandError> {
     tracing::info!("️🏃️ Running command");
