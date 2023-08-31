@@ -5,16 +5,16 @@ mod health;
 mod info;
 
 use leptos::*;
-use leptos_meta::*;
-use leptos_query::*;
-use leptos_router::*;
-
-use crate::{app::flake::*, app::health::*, app::info::*, widget::*};
 use leptos_extra::{
     query::{self},
     signal::{provide_signal, SignalWithResult},
 };
+use leptos_meta::*;
+use leptos_query::*;
+use leptos_router::*;
 use nix_rs::{command::Refresh, flake::url::FlakeUrl, health::traits::Check};
+
+use crate::{app::flake::*, app::health::*, app::info::*, widget::*};
 
 /// Main frontend application container
 #[component]
