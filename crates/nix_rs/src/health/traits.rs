@@ -4,8 +4,6 @@ use super::{
 };
 
 /// Types that implement health check with reports
-///
-/// Check types can be rendered into views using the [IntoView] trait.
 pub trait Check {
     /// The type of the report produced by this health check
     type Report = Report<WithDetails>;

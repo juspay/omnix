@@ -1,4 +1,6 @@
 //! High-level schema of a flake
+//!
+//! TODO: Use <https://github.com/DeterminateSystems/flake-schemas>
 use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
@@ -8,6 +10,9 @@ use super::{
     System,
 };
 
+/// High-level schema of a flake
+///
+/// TODO: Use <https://github.com/DeterminateSystems/flake-schemas>
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct FlakeSchema {
     pub system: System,

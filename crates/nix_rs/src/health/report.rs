@@ -5,8 +5,6 @@ use serde::{Deserialize, Serialize};
 /// If you just want the binary indicator, use `Report<NoDetails>` (see
 /// [NoDetails]). If you want the report with details regarding the problem, use
 /// `Report<WithDetails>` (see [WithDetails]).
-///
-/// Reports can be rendered into views using the [IntoView] trait.
 #[derive(Debug, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize, Clone)]
 pub enum Report<T> {
     /// Green means everything is fine

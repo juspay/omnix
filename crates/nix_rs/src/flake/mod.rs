@@ -4,16 +4,15 @@ pub mod schema;
 pub mod system;
 pub mod url;
 
-#[cfg(feature = "all")]
-use crate::command::NixCmdError;
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "all")]
 use tracing::instrument;
 
 use self::{outputs::FlakeOutputs, schema::FlakeSchema, system::System, url::FlakeUrl};
+#[cfg(feature = "all")]
+use crate::command::NixCmdError;
 
 /// All the information about a Nix flake
-// #[serde_as]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Flake {
     /// The flake url which this struct represents
@@ -39,10 +38,11 @@ impl Flake {
         let nix_config = NixConfig::from_nix(nix_cmd).await?;
         let system = nix_config.system.value;
         let output = FlakeOutputs::from_nix(nix_cmd, &url).await?;
+        let schema = FlakeSchema::from(&output, &system);
         Ok(Flake {
             url,
             output: output.clone(),
-            schema: crate::flake::schema::FlakeSchema::from(&output, &system),
+            schema,
         })
     }
 }

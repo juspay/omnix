@@ -1,4 +1,11 @@
-//! Nix command configuration
+//! Nix base command configuration
+//!
+//! # Example
+//!
+//! ```no_run
+//! let cmd = NixCmd::default();
+//! cmd.run_with_args_returning_stdout(&["--version"]).await?;
+//! ```
 
 use std::fmt::{self, Display};
 
@@ -9,7 +16,7 @@ use tokio::process::Command;
 #[cfg(feature = "all")]
 use tracing::instrument;
 
-/// The `nix` command along with its global options.
+/// The `nix` command's global options.
 ///
 /// See [available global
 /// options](https://nixos.org/manual/nix/stable/command-ref/new-cli/nix#options)
@@ -19,7 +26,7 @@ pub struct NixCmd {
     pub refresh: Refresh,
 }
 
-/// Whether to refresh the flake
+/// Whether to refresh the flake, by passing --refresh to nix
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Hash)]
 pub struct Refresh(bool);
 
@@ -48,6 +55,7 @@ impl NixCmd {
         cmd
     }
 
+    /// Run nix with given args, interpreting stdout as JSON, parsing into `T`
     #[cfg(feature = "all")]
     pub async fn run_with_args_expecting_json<T>(&self, args: &[&str]) -> Result<T, NixCmdError>
     where
@@ -58,6 +66,7 @@ impl NixCmd {
         Ok(v)
     }
 
+    /// Run nix with given args, interpreting parsing stdout, via [std::str::FromStr], into `T`
     #[cfg(feature = "all")]
     pub async fn run_with_args_expecting_fromstr<T>(&self, args: &[&str]) -> Result<T, NixCmdError>
     where
@@ -70,6 +79,7 @@ impl NixCmd {
         Ok(v)
     }
 
+    /// Run nix with given args, returning stdout.
     #[cfg(feature = "all")]
     async fn run_with_args_returning_stdout(&self, args: &[&str]) -> Result<Vec<u8>, CommandError> {
         let mut cmd = self.command();
@@ -92,6 +102,7 @@ impl NixCmd {
     }
 }
 
+/// Errors when running and interpreting the output of a nix command
 #[derive(Error, Debug)]
 pub enum NixCmdError {
     #[error("Command error: {0}")]

@@ -1,4 +1,4 @@
-//! Frontend UI entry point
+//! UI for /flake segment of the app
 
 use std::collections::BTreeMap;
 
@@ -9,13 +9,15 @@ use leptos_extra::{
 };
 use leptos_meta::*;
 use leptos_router::*;
-use nix_rs::flake::{
-    outputs::{FlakeOutputs, Val},
-    schema::FlakeSchema,
-    url::FlakeUrl,
-    Flake,
+use nix_rs::{
+    command::Refresh,
+    flake::{
+        outputs::{FlakeOutputs, Type, Val},
+        schema::FlakeSchema,
+        url::FlakeUrl,
+        Flake,
+    },
 };
-use nix_rs::{command::Refresh, flake::outputs::Type};
 
 use crate::widget::*;
 
@@ -46,7 +48,12 @@ pub fn NixFlakeHomeRoute(cx: Scope) -> impl IntoView {
     view! { cx,
         <div class="p-2 my-1">
             <SuspenseWithErrorHandling>
-                {move || data.with_result(move |r| view_flake(cx, r.clone()))}
+                {move || {
+                    data.with_result(move |flake| {
+                        view! { cx, <FlakeView flake=flake.clone()/> }
+                    })
+                }}
+
             </SuspenseWithErrorHandling>
         </div>
     }
@@ -76,7 +83,8 @@ pub fn NixFlakeRawRoute(cx: Scope) -> impl IntoView {
     }
 }
 
-fn view_flake(cx: Scope, flake: Flake) -> View {
+#[component]
+fn FlakeView(cx: Scope, flake: Flake) -> impl IntoView {
     view! { cx,
         <div class="flex flex-col my-4">
             <h3 class="text-lg font-bold">{flake.url.to_string()}</h3>
@@ -90,7 +98,6 @@ fn view_flake(cx: Scope, flake: Flake) -> View {
             </div>
         </div>
     }
-    .into_view(cx)
 }
 
 #[component]
