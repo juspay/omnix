@@ -1868,9 +1868,6 @@ name = "nix_rs"
 version = "0.1.0"
 dependencies = [
  "cfg-if",
- "leptos",
- "leptos_meta",
- "leptos_router",
  "regex",
  "serde",
  "serde_json",

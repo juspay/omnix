@@ -1,5 +1,7 @@
 //! Frontend UI entry point
 
+use std::fmt::Display;
+
 use leptos::*;
 use leptos_extra::signal::SignalWithResult;
 use leptos_meta::*;
@@ -76,17 +78,14 @@ fn NixVersionView<'a>(cx: Scope, version: &'a NixVersion) -> impl IntoView {
 #[component]
 fn NixConfigView(cx: Scope, config: NixConfig) -> impl IntoView {
     #[component]
-    fn ConfigRow<T>(cx: Scope, key: &'static str, value: ConfigVal<T>) -> impl IntoView
-    where
-        ConfigVal<T>: IntoView,
-    {
+    fn ConfigRow(cx: Scope, key: &'static str, title: String, children: Children) -> impl IntoView {
         view! { cx,
             // TODO: Use a nice Tailwind tooltip here, instead of "title"
             // attribute.
-            <tr title=&value.description>
+            <tr title=title>
                 <td class="px-4 py-2 font-semibold text-base-700">{key}</td>
                 <td class="px-4 py-2 text-left">
-                    <code>{value}</code>
+                    <code>{children(cx)}</code>
                 </td>
             </tr>
         }
@@ -94,13 +93,40 @@ fn NixConfigView(cx: Scope, config: NixConfig) -> impl IntoView {
     view! { cx,
         <div class="py-1 my-1 rounded bg-primary-50">
             <table class="text-right">
+                // FIXME: so many clones
                 <tbody>
-                    <ConfigRow key="Local System" value=config.system/>
-                    <ConfigRow key="Max Jobs" value=config.max_jobs/>
-                    <ConfigRow key="Cores per build" value=config.cores/>
-                    <ConfigRow key="Nix Caches" value=config.substituters/>
+                    <ConfigRow key="Local System" title=config.system.description>
+                        {config.system.value.to_string()}
+                    </ConfigRow>
+                    <ConfigRow key="Max Jobs" title=config.max_jobs.description.clone()>
+                        {config.max_jobs.value}
+                    </ConfigRow>
+                    <ConfigRow key="Cores per build" title=config.cores.description>
+                        {config.cores.value}
+                    </ConfigRow>
+                    <ConfigRow key="Nix Caches" title=config.substituters.clone().description>
+                        <ConfigValListView cfg=config.substituters.clone()/>
+                    </ConfigRow>
                 </tbody>
             </table>
+        </div>
+    }
+    .into_view(cx)
+}
+
+#[component]
+pub fn ConfigValListView<T>(cx: Scope, cfg: ConfigVal<Vec<T>>) -> impl IntoView
+where
+    T: Display,
+{
+    view! { cx,
+        // Render a list of T items in the list 'self'
+        <div class="flex flex-col space-y-4">
+            {cfg
+                .value
+                .into_iter()
+                .map(|item| view! { cx, <li class="list-disc">{item.to_string()}</li> })
+                .collect_view(cx)}
         </div>
     }
     .into_view(cx)

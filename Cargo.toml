@@ -71,7 +71,6 @@ hydrate = [
     "leptos_query/hydrate",
     "leptos_router/hydrate",
     "leptos_extra/hydrate",
-    "nix_rs/hydrate",
 ]
 ssr = [
     "dep:axum-macros",

@@ -10,9 +10,6 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 cfg-if.workspace = true
-leptos.workspace = true
-leptos_meta.workspace = true
-leptos_router.workspace = true
 regex = "1.9.3"
 thiserror.workspace = true
 serde.workspace = true
@@ -24,7 +21,6 @@ tracing-subscriber.workspace = true
 tracing-subscriber-wasm.workspace = true
 url = { version = "2.4", features = ["serde"] }
 
-# TODO: drop hydrate, and replace ssr with server or something
+# TODO: ssr with server or something
 [features]
-hydrate = ["leptos/hydrate", "leptos_meta/hydrate", "leptos_router/hydrate"]
-ssr = ["dep:tokio", "leptos_meta/ssr", "leptos_router/ssr", "leptos/ssr"]
+ssr = ["dep:tokio"]

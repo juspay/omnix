@@ -16,7 +16,7 @@ use nix_rs::{
 };
 use tracing::instrument;
 
-use crate::widget::*;
+use crate::{app::info::ConfigValListView, widget::*};
 use leptos_extra::{
     query::{self, RefetchQueryButton},
     signal::SignalWithResult,
@@ -101,17 +101,17 @@ fn NixHealthView(cx: Scope, health: NixHealth) -> impl IntoView {
 
 #[component]
 fn CachesView(cx: Scope, v: Caches) -> impl IntoView {
-    view! { cx, <div>"The following caches are in use:" {v.0.into_view(cx)}</div> }
+    view! { cx, <div>"The following caches are in use:" <ConfigValListView cfg=v.0/></div> }
 }
 
 #[component]
 fn FlakeEnabledView(cx: Scope, v: FlakeEnabled) -> impl IntoView {
-    view! { cx, <span>"experimental-features: " {v.0}</span> }
+    view! { cx, <span>"experimental-features: " <ConfigValListView cfg=v.0/></span> }
 }
 
 #[component]
 fn MaxJobsView(cx: Scope, v: MaxJobs) -> impl IntoView {
-    view! { cx, <span>"Nix builds are using " {v.0} " cores"</span> }
+    view! { cx, <span>"Nix builds are using " {v.0.value} " cores"</span> }
 }
 
 #[component]

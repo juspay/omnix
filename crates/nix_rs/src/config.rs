@@ -1,7 +1,5 @@
 //! Rust module for `nix show-config`
-use std::fmt::Display;
 
-use leptos::*;
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "ssr")]
 use tracing::instrument;
@@ -45,44 +43,6 @@ impl NixConfig {
             .run_with_args_expecting_json(&["show-config", "--json"])
             .await?;
         Ok(v)
-    }
-}
-
-/// The HTML view for config values that are lists; rendered as HTML lists.
-impl<T> IntoView for ConfigVal<Vec<T>>
-where
-    T: Display,
-{
-    fn into_view(self, cx: Scope) -> View {
-        view! { cx,
-            // Render a list of T items in the list 'self'
-            <div class="flex flex-col space-y-4">
-                {self
-                    .value
-                    .into_iter()
-                    .map(|item| view! { cx, <li class="list-disc">{item.to_string()}</li> })
-                    .collect_view(cx)}
-            </div>
-        }
-        .into_view(cx)
-    }
-}
-
-impl IntoView for ConfigVal<i32> {
-    fn into_view(self, cx: Scope) -> View {
-        self.value.into_view(cx)
-    }
-}
-
-impl IntoView for ConfigVal<String> {
-    fn into_view(self, cx: Scope) -> View {
-        self.value.into_view(cx)
-    }
-}
-
-impl IntoView for ConfigVal<System> {
-    fn into_view(self, cx: Scope) -> View {
-        self.value.to_string().into_view(cx)
     }
 }
 
