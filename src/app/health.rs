@@ -3,6 +3,10 @@
 use leptos::*;
 use leptos_meta::*;
 use nix_rs::health::{
+    check::{
+        caches::Caches, flake_enabled::FlakeEnabled, max_jobs::MaxJobs,
+        min_nix_version::MinNixVersion,
+    },
     report::{NoDetails, Report, WithDetails},
     traits::Check,
     NixHealth,
@@ -41,7 +45,7 @@ pub fn NixHealthRoute(cx: Scope) -> impl IntoView {
 #[component]
 fn NixHealthView(cx: Scope, health: NixHealth) -> impl IntoView {
     #[component]
-    fn ViewCheck<C>(cx: Scope, check: C) -> impl IntoView
+    fn ViewCheck<C>(cx: Scope, check: C, children: Children) -> impl IntoView
     where
         C: Check<Report = Report<WithDetails>>,
     {
@@ -58,7 +62,9 @@ fn NixHealthView(cx: Scope, health: NixHealth) -> impl IntoView {
                         {check.name()}
                     </summary>
                     <div class="p-4">
-                        <div class="p-2 my-2 font-mono text-sm bg-black text-base-100">{check}</div>
+                        <div class="p-2 my-2 font-mono text-sm bg-black text-base-100">
+                            {children(cx)}
+                        </div>
                         <div class="flex flex-col justify-start space-y-4">
                             {report
                                 .get_red_details()
@@ -74,13 +80,40 @@ fn NixHealthView(cx: Scope, health: NixHealth) -> impl IntoView {
     }
     view! { cx,
         <div class="flex flex-col items-stretch justify-start space-y-8 text-left">
-            // TODO: Make this use [NixHealth::into_iter]
-            <ViewCheck check=health.min_nix_version/>
-            <ViewCheck check=health.max_jobs/>
-            <ViewCheck check=health.caches/>
-            <ViewCheck check=health.flake_enabled/>
+            <ViewCheck check=health.min_nix_version.clone()>
+                <MinNixVersionView v=health.min_nix_version/>
+            </ViewCheck>
+            <ViewCheck check=health.max_jobs.clone()>
+                <MaxJobsView v=health.max_jobs/>
+            </ViewCheck>
+            <ViewCheck check=health.caches.clone()>
+                <CachesView v=health.caches/>
+            </ViewCheck>
+            <ViewCheck check=health.flake_enabled.clone()>
+                <FlakeEnabledView v=health.flake_enabled/>
+            </ViewCheck>
         </div>
     }
+}
+
+#[component]
+fn CachesView(cx: Scope, v: Caches) -> impl IntoView {
+    view! { cx, <div>"The following caches are in use:" {v.0.into_view(cx)}</div> }
+}
+
+#[component]
+fn FlakeEnabledView(cx: Scope, v: FlakeEnabled) -> impl IntoView {
+    view! { cx, <span>"experimental-features: " {v.0}</span> }
+}
+
+#[component]
+fn MaxJobsView(cx: Scope, v: MaxJobs) -> impl IntoView {
+    view! { cx, <span>"Nix builds are using " {v.0} " cores"</span> }
+}
+
+#[component]
+fn MinNixVersionView(cx: Scope, v: MinNixVersion) -> impl IntoView {
+    view! { cx, <span>"Nix version: " {v.0}</span> }
 }
 
 #[component]
@@ -100,12 +133,9 @@ pub fn ReportSummaryView<'a>(cx: Scope, report: &'a Report<NoDetails>) -> impl I
 #[component]
 fn WithDetailsView(cx: Scope, details: WithDetails) -> impl IntoView {
     view! { cx,
-        <h3 class="my-2 font-bold text-l">
-                Prob
-        </h3>
+        <h3 class="my-2 font-bold text-l"></h3>
         <div class="p-2 bg-red-400 rounded bg-border">{details.msg}</div>
         <h3 class="my-2 font-bold text-l">
-                Suggest
         </h3>
         <div class="p-2 bg-blue-400 rounded bg-border">{details.suggestion}</div>
     }
