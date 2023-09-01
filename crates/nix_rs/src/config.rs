@@ -18,6 +18,7 @@ pub struct NixConfig {
     pub max_jobs: ConfigVal<i32>,
     pub substituters: ConfigVal<Vec<Url>>,
     pub system: ConfigVal<System>,
+    pub trusted_users: ConfigVal<Vec<String>>,
 }
 
 /// The value for each 'nix show-config --json' key.
