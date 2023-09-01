@@ -10,7 +10,7 @@ use crate::{
 /// Check that [crate::nix::config::NixConfig::trusted_users] is set to a good value.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TrustedUsers {
-    trusted_users: ConfigVal<Vec<String>>,
+    pub trusted_users: ConfigVal<Vec<String>>,
     current_user: String,
 }
 

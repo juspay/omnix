@@ -9,7 +9,7 @@ use leptos_meta::*;
 use nix_health::{
     check::{
         caches::Caches, flake_enabled::FlakeEnabled, max_jobs::MaxJobs,
-        min_nix_version::MinNixVersion,
+        min_nix_version::MinNixVersion, trusted_users::TrustedUsers,
     },
     report::{NoDetails, Report, WithDetails},
     traits::Check,
@@ -59,6 +59,9 @@ fn NixHealthView(cx: Scope, health: NixHealth) -> impl IntoView {
             <ViewCheck name=health.flake_enabled.name() report=health.flake_enabled.report()>
                 <FlakeEnabledView v=&health.flake_enabled/>
             </ViewCheck>
+            <ViewCheck name=health.trusted_users.name() report=health.trusted_users.report()>
+                <TrustedUsersView v=&health.trusted_users/>
+            </ViewCheck>
         </div>
     }
 }
@@ -107,6 +110,11 @@ fn CachesView<'a>(cx: Scope, v: &'a Caches) -> impl IntoView {
 #[component]
 fn FlakeEnabledView<'a>(cx: Scope, v: &'a FlakeEnabled) -> impl IntoView {
     view! { cx, <span>"experimental-features: " <ConfigValListView cfg=v.0.clone()/></span> }
+}
+
+#[component]
+fn TrustedUsersView<'a>(cx: Scope, v: &'a TrustedUsers) -> impl IntoView {
+    view! { cx, <span>"trusted_users: " <ConfigValListView cfg=v.trusted_users.clone()/></span> }
 }
 
 #[component]
