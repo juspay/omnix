@@ -2,10 +2,15 @@
 use std::convert::Infallible;
 
 use crate::app::App;
+use crate::nix::info::get_nix_info;
 use axum::response::Response as AxumResponse;
 use axum::routing::IntoMakeService;
-use axum::{body::Body, http::Request, response::IntoResponse};
-use axum::{routing::post, Router};
+use axum::{body::Body, http::Request, response::IntoResponse, Json};
+use axum::{
+    http::StatusCode,
+    routing::{get, post},
+    Router,
+};
 use hyper::server::conn::AddrIncoming;
 use leptos::*;
 use leptos_axum::{generate_route_list, LeptosRoutes};
@@ -41,6 +46,8 @@ async fn create_server(
     let not_found_service =
         tower::service_fn(move |req| not_found_handler(leptos_options_clone.to_owned(), req));
     let app = Router::new()
+        // data API routes
+        .route("/api/data/nix-info", get(get_nix_info_handler))
         // server functions API routes
         .route("/api/*fn_name", post(leptos_axum::handle_server_fns))
         // application routes
@@ -62,6 +69,15 @@ async fn get_leptos_options(args: &cli::Args) -> leptos_config::LeptosOptions {
     leptos_config::LeptosOptions {
         site_addr: args.site_addr.unwrap_or(conf_file.leptos_options.site_addr),
         ..conf_file.leptos_options
+    }
+}
+
+/// Handler for nix-info data
+#[axum::debug_handler]
+async fn get_nix_info_handler() -> Result<impl IntoResponse, StatusCode> {
+    match get_nix_info(()).await {
+        Ok(info) => Ok(Json(info)),
+        Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
     }
 }
 

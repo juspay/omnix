@@ -1,12 +1,11 @@
-{ self, lib, ... }:
+{ self, lib, inputs, ... }:
 {
-  perSystem = { config, self', inputs', pkgs, system, ... }:
+  perSystem = { config, self', pkgs, system, ... }:
     {
       # e2e test service using playwright
       process-compose.cargo-e2e-playwright-test =
         let
           TEST_PORT = "5000";
-          PLAYWRIGHT_BROWSERS_PATH = "${pkgs.playwright-driver.browsers}";
         in
         {
           tui = false;
@@ -22,10 +21,14 @@
               };
             };
             test = {
+              environment = {
+                inherit TEST_PORT;
+              };
               command = pkgs.writeShellApplication {
                 name = "e2e-playwright";
                 runtimeInputs = with pkgs; [ nodejs playwright-test ];
                 text = ''
+                  cd e2e-playwright
                   playwright test --project chromium
                 '';
               };
