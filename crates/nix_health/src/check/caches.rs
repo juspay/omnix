@@ -1,19 +1,15 @@
-use leptos::*;
+use nix_rs::{config::ConfigVal, info};
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-use crate::nix::{
-    config::ConfigVal,
-    health::{
-        report::{Report, WithDetails},
-        traits::Check,
-    },
-    info,
+use crate::{
+    report::{Report, WithDetails},
+    traits::Check,
 };
 
-/// Check that [crate::nix::config::NixConfig::substituters] is set to a good value.
+/// Check that [crate::config::NixConfig::substituters] is set to a good value.
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Caches(ConfigVal<Vec<Url>>);
+pub struct Caches(pub ConfigVal<Vec<Url>>);
 
 impl Check for Caches {
     fn check(info: &info::NixInfo) -> Self {
@@ -40,12 +36,5 @@ impl Check for Caches {
                 suggestion: "Try looking in /etc/nix/nix.conf".into(),
             })
         }
-    }
-}
-
-impl IntoView for Caches {
-    fn into_view(self, cx: Scope) -> View {
-        view! { cx, <div>"The following caches are in use:" {self.0.into_view(cx)}</div> }
-            .into_view(cx)
     }
 }

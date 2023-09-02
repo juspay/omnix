@@ -1,0 +1,19 @@
+[package]
+edition = "2021"
+name = "leptos_extra"
+version = "0.1.0"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+cfg-if.workspace = true
+leptos.workspace = true
+leptos_query.workspace = true
+tracing.workspace = true
+
+[features]
+hydrate = ["leptos/hydrate", "leptos_query/hydrate"]
+ssr = ["leptos/ssr", "leptos_query/ssr"]

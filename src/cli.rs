@@ -2,6 +2,8 @@
 use clap::Parser;
 use std::net::SocketAddr;
 
+use crate::logging;
+
 #[derive(Parser, Debug)]
 pub struct Args {
     /// Do not automatically open the application in the local browser
@@ -23,4 +25,7 @@ pub struct Args {
         env = "LEPTOS_SITE_ADDR"
     )]
     pub site_addr: Option<SocketAddr>,
+
+    #[command(flatten)]
+    pub verbosity: logging::Verbosity,
 }

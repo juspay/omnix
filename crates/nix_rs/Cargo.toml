@@ -1,0 +1,25 @@
+[package]
+edition = "2021"
+name = "nix_rs"
+version = "0.1.0"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+cfg-if.workspace = true
+regex = "1.9.3"
+thiserror.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_with.workspace = true
+tokio = { version = "1.29", features = ["full"], optional = true }
+tracing.workspace = true
+tracing-subscriber.workspace = true
+tracing-subscriber-wasm.workspace = true
+url = { version = "2.4", features = ["serde"] }
+
+[features]
+all = ["dep:tokio"]

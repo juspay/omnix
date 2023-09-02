@@ -22,7 +22,7 @@ use crate::cli;
 
 /// Axum server main entry point
 pub async fn main(args: cli::Args) {
-    crate::logging::setup_server_logging();
+    crate::logging::setup_server_logging(&args.verbosity);
     let leptos_options = get_leptos_options(&args).await;
     let server = create_server(leptos_options).await;
     if !args.no_open {

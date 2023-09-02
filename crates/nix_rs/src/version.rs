@@ -1,13 +1,10 @@
 //! Rust module for `nix --version`
-use leptos::*;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::{fmt, str::FromStr};
 use thiserror::Error;
-#[cfg(feature = "ssr")]
+#[cfg(feature = "all")]
 use tracing::instrument;
-
-use super::refs;
 
 /// Nix version as parsed from `nix --version`
 #[derive(Clone, PartialOrd, PartialEq, Eq, Debug, Serialize, Deserialize)]
@@ -47,31 +44,19 @@ impl FromStr for NixVersion {
     }
 }
 
-/// Get the output of `nix --version`
-#[cfg(feature = "ssr")]
-#[instrument(name = "version")]
-pub async fn run_nix_version() -> Result<NixVersion, ServerFnError> {
-    use tokio::process::Command;
-    let mut cmd = Command::new("nix");
-    cmd.arg("--version");
-    let stdout: Vec<u8> = crate::command::run_command(&mut cmd).await?;
-    // Utf-8 errors don't matter here because we're just parsing numbers
-    let v = NixVersion::from_str(&String::from_utf8_lossy(&stdout))?;
-    Ok(v)
-}
-
-/// The HTML view for [NixVersion]
-impl IntoView for NixVersion {
-    fn into_view(self, cx: Scope) -> View {
-        view! { cx,
-            <a href=refs::RELEASE_HISTORY class="font-mono hover:underline" target="_blank">
-                {format!("{}", self)}
-            </a>
-        }
-        .into_view(cx)
+impl NixVersion {
+    /// Get the output of `nix --version`
+    #[cfg(feature = "all")]
+    #[instrument(name = "version")]
+    pub async fn from_nix(
+        nix_cmd: &super::command::NixCmd,
+    ) -> Result<NixVersion, super::command::NixCmdError> {
+        let v = nix_cmd
+            .run_with_args_expecting_fromstr(&["--version"])
+            .await?;
+        Ok(v)
     }
 }
-
 /// The String view for [NixVersion]
 impl fmt::Display for NixVersion {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -79,14 +64,16 @@ impl fmt::Display for NixVersion {
     }
 }
 
-#[cfg(feature = "ssr")]
+#[cfg(feature = "all")]
 #[tokio::test]
 async fn test_run_nix_version() {
-    let nix_version = run_nix_version().await.unwrap();
+    let nix_version = NixVersion::from_nix(&crate::command::NixCmd::default())
+        .await
+        .unwrap();
     println!("Nix version: {}", nix_version);
 }
 
-#[cfg(feature = "ssr")]
+#[cfg(feature = "all")]
 #[tokio::test]
 async fn test_parse_nix_version() {
     assert_eq!(

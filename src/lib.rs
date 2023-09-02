@@ -3,16 +3,12 @@
 //!
 //! [README]: https://github.com/juspay/nix-browser
 pub mod app;
-pub mod leptos_extra;
 pub mod logging;
-pub mod nix;
 pub mod widget;
 #[cfg(feature = "hydrate")]
 use wasm_bindgen::prelude::wasm_bindgen;
 #[cfg(feature = "ssr")]
 pub mod cli;
-#[cfg(feature = "ssr")]
-pub mod command;
 #[cfg(feature = "ssr")]
 pub mod server;
 

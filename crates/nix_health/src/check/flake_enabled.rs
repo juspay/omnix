@@ -1,18 +1,14 @@
-use leptos::*;
+use nix_rs::{config::ConfigVal, info};
 use serde::{Deserialize, Serialize};
 
-use crate::nix::{
-    config::ConfigVal,
-    health::{
-        report::{Report, WithDetails},
-        traits::Check,
-    },
-    info,
+use crate::{
+    report::{Report, WithDetails},
+    traits::Check,
 };
 
-/// Check that [crate::nix::config::NixConfig::experimental_features] is set to a good value.
+/// Check that [crate::config::NixConfig::experimental_features] is set to a good value.
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct FlakeEnabled(ConfigVal<Vec<String>>);
+pub struct FlakeEnabled(pub ConfigVal<Vec<String>>);
 
 impl Check for FlakeEnabled {
     fn check(info: &info::NixInfo) -> Self {
@@ -31,11 +27,5 @@ impl Check for FlakeEnabled {
                 suggestion: "See https://nixos.wiki/wiki/Flakes#Enable_flakes".into(),
             })
         }
-    }
-}
-
-impl IntoView for FlakeEnabled {
-    fn into_view(self, cx: Scope) -> View {
-        view! { cx, <span>"experimental-features: " {self.0}</span> }.into_view(cx)
     }
 }
