@@ -35,7 +35,7 @@
                 };
               };
               start-app = {
-                command = "${lib.getExe self'.packages.default} --site-addr=127.0.0.1:${env.TEST_PORT}";
+                command = "${lib.getExe self'.packages.default} --site-addr=127.0.0.1:${env.TEST_PORT} --no-open";
                 readiness_probe = {
                   exec.command = "${lib.getExe pkgs.curl} --fail 127.0.0.1:${env.TEST_PORT}";
                   initial_delay_seconds = 2;
@@ -48,6 +48,7 @@
                 command = "cargo test -- --include-ignored";
                 depends_on."start-chromedriver".condition = "process_healthy";
                 depends_on."start-app".condition = "process_healthy";
+                availability.exit_on_end = true;
               };
             };
           };
