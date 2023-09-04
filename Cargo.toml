@@ -63,9 +63,6 @@ nix_rs.workspace = true
 nix_health.workspace = true
 leptos_extra.workspace = true
 
-[dev-dependencies]
-thirtyfour = "0.31.0"
-
 [features]
 default = [
     "ssr",

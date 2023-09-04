@@ -2,7 +2,7 @@
 use std::convert::Infallible;
 
 use crate::app::App;
-use crate::nix::info::get_nix_info;
+use nix_rs::info::NixInfo;
 use axum::response::Response as AxumResponse;
 use axum::routing::IntoMakeService;
 use axum::{body::Body, http::Request, response::IntoResponse, Json};
@@ -73,9 +73,9 @@ async fn get_leptos_options(args: &cli::Args) -> leptos_config::LeptosOptions {
 }
 
 /// Handler for nix-info data
-#[axum::debug_handler]
 async fn get_nix_info_handler() -> Result<impl IntoResponse, StatusCode> {
-    match get_nix_info(()).await {
+    let v = NixInfo::from_nix(&nix_rs::command::NixCmd::default()).await;
+    match v {
         Ok(info) => Ok(Json(info)),
         Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
     }

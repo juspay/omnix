@@ -19,10 +19,6 @@ alias w := watch
 test:
     cargo-test
 
-# Run tests (e2e)
-e2e-test:
-    nix run .#cargo-e2e-test
-
 # Run tests (e2e-playwright)
 e2e-playwright-test:
     nix run .#cargo-e2e-playwright-test

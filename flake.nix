@@ -25,7 +25,6 @@
         inputs.process-compose-flake.flakeModule
         inputs.cargo-doc-live.flakeModule
         (inputs.leptos-fullstack + /nix/flake-module.nix)
-        ./nix/e2e.nix
         ./e2e-playwright/flake-module.nix
       ];
       perSystem = { config, self', pkgs, lib, system, ... }: {
