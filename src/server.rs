@@ -2,7 +2,6 @@
 use std::convert::Infallible;
 
 use crate::app::App;
-use nix_rs::info::NixInfo;
 use axum::response::Response as AxumResponse;
 use axum::routing::IntoMakeService;
 use axum::{body::Body, http::Request, response::IntoResponse, Json};
@@ -14,6 +13,7 @@ use axum::{
 use hyper::server::conn::AddrIncoming;
 use leptos::*;
 use leptos_axum::{generate_route_list, LeptosRoutes};
+use nix_rs::info::NixInfo;
 use std::net::SocketAddr;
 use tower_http::services::ServeDir;
 use tracing::instrument;
