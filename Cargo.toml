@@ -1,4 +1,5 @@
 [workspace]
+default-members = [".", "crates/*"]
 
 [workspace.package]
 edition = "2021"
