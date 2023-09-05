@@ -3,7 +3,7 @@
   perSystem = { config, self', pkgs, system, ... }:
     {
       # e2e test service using playwright
-      process-compose.cargo-e2e-playwright-test =
+      process-compose.e2e-playwright-test =
         let
           TEST_PORT = "5000";
         in

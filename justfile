@@ -21,7 +21,7 @@ test:
 
 # Run tests (e2e-playwright)
 e2e-playwright-test:
-    nix run .#cargo-e2e-playwright-test
+    nix run .#e2e-playwright-test
 
 # Run docs server (live reloading)
 doc:
