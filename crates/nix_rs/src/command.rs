@@ -2,7 +2,7 @@
 //!
 //! # Example
 //!
-//! ```no_run
+//! ```ignore
 //! use nix_rs::command::NixCmd;
 //! let cmd = NixCmd::default();
 //! cmd.run_with_args_returning_stdout(&["--version"]);

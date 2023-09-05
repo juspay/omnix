@@ -45,15 +45,38 @@
           };
         };
 
-        leptos-fullstack.overrideCraneArgs = oa: {
-          nativeBuildInputs = (oa.nativeBuildInputs or [ ]) ++ [
-            pkgs.nix # cargo tests need nix
-          ];
-          # Disable tests on macOS for https://github.com/garnix-io/issues/issues/69
-          # If/when we move to Jenkins, this won't be necessary.
-          doCheck = !pkgs.stdenv.isDarwin;
-          meta.description = "WIP: nix-browser";
-        };
+        leptos-fullstack.overrideCraneArgs = oa:
+          let
+            # 'cargo leptos test' doesn't run tests for all crates in the
+            # workspace. We do it here.
+            run-test = pkgs.writeShellApplication {
+              name = "run-test";
+              text = ''
+                set -xe
+
+                ${oa.cargoTestCommand}
+
+                # Disable tests on macOS for https://github.com/garnix-io/issues/issues/69
+                # If/when we move to Jenkins, this won't be necessary.
+                ${if !pkgs.stdenv.isDarwin
+                  then ''
+                    # Run `cargo test` using the same settings as `cargo leptos test`
+                    # In particular: target-dir and features
+                    cargo test --target-dir=target/server --no-default-features --features=ssr
+                    cargo test --target-dir=target/front --no-default-features --features=hydrate
+                  ''
+                  else ""
+                }
+              '';
+            };
+          in
+          {
+            nativeBuildInputs = (oa.nativeBuildInputs or [ ]) ++ [
+              pkgs.nix # cargo tests need nix
+            ];
+            cargoTestCommand = lib.getExe run-test;
+            meta.description = "WIP: nix-browser";
+          };
 
         packages.default = self'.packages.nix-browser;
 
