@@ -17,7 +17,8 @@ alias w := watch
 
 # Run tests (backend & frontend)
 test:
-    cargo watch -- cargo leptos test
+    cargo test --all-features --workspace
+    cargo leptos test
 
 # Run docs server (live reloading)
 doc:

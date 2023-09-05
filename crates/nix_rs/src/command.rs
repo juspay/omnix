@@ -3,8 +3,9 @@
 //! # Example
 //!
 //! ```no_run
+//! use nix_rs::command::NixCmd;
 //! let cmd = NixCmd::default();
-//! cmd.run_with_args_returning_stdout(&["--version"]).await?;
+//! cmd.run_with_args_returning_stdout(&["--version"]);
 //! ```
 
 use std::fmt::{self, Display};
@@ -81,7 +82,10 @@ impl NixCmd {
 
     /// Run nix with given args, returning stdout.
     #[cfg(feature = "all")]
-    async fn run_with_args_returning_stdout(&self, args: &[&str]) -> Result<Vec<u8>, CommandError> {
+    pub async fn run_with_args_returning_stdout(
+        &self,
+        args: &[&str],
+    ) -> Result<Vec<u8>, CommandError> {
         let mut cmd = self.command();
         cmd.args(args);
         run_command(&mut cmd).await

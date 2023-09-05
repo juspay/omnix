@@ -48,7 +48,8 @@ impl NixConfig {
 
 #[cfg(feature = "all")]
 #[tokio::test]
-async fn test_nix_config() {
+async fn test_nix_config() -> Result<(), crate::command::NixCmdError> {
     let v = NixConfig::from_nix(&crate::command::NixCmd::default()).await?;
-    println!("Max Jobs: {}", v.max_jobs.value)
+    println!("Max Jobs: {}", v.max_jobs.value);
+    Ok(())
 }
