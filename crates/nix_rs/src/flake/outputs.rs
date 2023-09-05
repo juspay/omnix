@@ -15,7 +15,7 @@ pub enum FlakeOutputs {
 
 impl FlakeOutputs {
     /// Run `nix flake show` on the given flake url
-    #[cfg(feature = "all")]
+    #[cfg(feature = "ssr")]
     #[tracing::instrument(name = "flake-show")]
     pub async fn from_nix(
         nix_cmd: &crate::command::NixCmd,

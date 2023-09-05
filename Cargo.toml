@@ -93,8 +93,8 @@ ssr = [
     "leptos_query/ssr",
     "leptos_router/ssr",
     "leptos_extra/ssr",
-    "nix_rs/all",
-    "nix_health/all",
+    "nix_rs/ssr",
+    "nix_health/ssr",
 ]
 
 # Defines a size-optimized profile for the WASM bundle in release mode
