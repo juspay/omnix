@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use nix_rs::{config::ConfigVal, info};
 use serde::{Deserialize, Serialize};
 
@@ -27,5 +29,11 @@ impl Check for FlakeEnabled {
                 suggestion: "See https://nixos.wiki/wiki/Flakes#Enable_flakes".into(),
             })
         }
+    }
+}
+
+impl Display for FlakeEnabled {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "experimental-features = {}", self.0.value.join(" "))
     }
 }

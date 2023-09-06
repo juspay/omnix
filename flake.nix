@@ -78,7 +78,20 @@
             meta.description = "WIP: nix-browser";
           };
 
-        packages.default = self'.packages.nix-browser;
+        packages = {
+          default = self'.packages.nix-browser;
+          nix-health = config.leptos-fullstack.craneLib.buildPackage {
+            inherit (config.leptos-fullstack) src;
+            pname = "nix-health";
+            nativeBuildInputs = [
+              pkgs.nix # cargo tests need nix
+            ];
+            cargoExtraArgs = "-p nix_health --features ssr";
+            # Disable tests on macOS for https://github.com/garnix-io/issues/issues/69
+            # If/when we move to Jenkins, this won't be necessary.
+            doCheck = !pkgs.stdenv.isDarwin;
+          };
+        };
 
         devShells.default = pkgs.mkShell {
           inputsFrom = [

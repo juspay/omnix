@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use nix_rs::{info, version::NixVersion};
 use serde::{Deserialize, Serialize};
 
@@ -31,5 +33,11 @@ impl Check for MinNixVersion {
                 suggestion: "See https://nixos.org/manual/nix/stable/command-ref/new-cli/nix3-upgrade-nix.html".into(),
             })
         }
+    }
+}
+
+impl Display for MinNixVersion {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "nix version = {}", self.0)
     }
 }

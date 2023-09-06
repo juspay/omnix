@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use nix_rs::{config::ConfigVal, info};
 use serde::{Deserialize, Serialize};
 use url::Url;
@@ -20,14 +22,17 @@ impl Check for Caches {
     }
     fn report(&self) -> Report<WithDetails> {
         let val = &self.0.value;
+        // TODO: Hardcoding this to test failed reports
+        // TODO: Make this customizable in a flake
+        let required_cache = Url::parse("https://nix-community.cachix.org").unwrap();
         if val.contains(&Url::parse("https://cache.nixos.org").unwrap()) {
-            // TODO: Hardcoding this to test failed reports
-            if val.contains(&Url::parse("https://nammayatri.cachix.org").unwrap()) {
+            if val.contains(&required_cache) {
                 Report::Green
             } else {
                 Report::Red(WithDetails {
-                    msg: "You are missing the nammayatri cache".into(),
-                    suggestion: "Run 'nix run nixpkgs#cachix use nammayatri".into(),
+                    msg: format!("You are missing a required cache: {}", required_cache),
+                    // TODO: Suggestion should be smart. Use 'cachix use' if a cachix cache.
+                    suggestion: "Add substituters in /etc/nix/nix.conf or use 'cachix use'".into(),
                 })
             }
         } else {
@@ -36,5 +41,20 @@ impl Check for Caches {
                 suggestion: "Try looking in /etc/nix/nix.conf".into(),
             })
         }
+    }
+}
+
+impl Display for Caches {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "substituters = {}",
+            self.0
+                .value
+                .iter()
+                .map(|url| url.to_string())
+                .collect::<Vec<String>>()
+                .join(" ")
+        )
     }
 }

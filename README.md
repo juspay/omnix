@@ -58,3 +58,4 @@ We publish the following crates from this repo:
 | Crate Link | Description | 
 |------------|-------------|
 | https://crates.io/crates/nix_rs | Rust interface to the Nix command line |
+| https://crates.io/crates/nix_health | Nix health check library and executable |
