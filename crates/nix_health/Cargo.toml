@@ -6,6 +6,11 @@ version = "0.1.0"
 [lib]
 crate-type = ["cdylib", "rlib"]
 
+[[bin]]
+name = "nix-health"
+path = "src/main.rs"
+required-features = ["ssr"]
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
@@ -21,6 +26,8 @@ tracing-subscriber.workspace = true
 tracing-subscriber-wasm.workspace = true
 url = { version = "2.4", features = ["serde"] }
 nix_rs.workspace = true
+human-panic.workspace = true
+anyhow = { version = "1.0.75", optional = true }
 
 [features]
-ssr = ["dep:tokio", "nix_rs/ssr"]
+ssr = ["dep:tokio", "dep:anyhow", "nix_rs/ssr"]

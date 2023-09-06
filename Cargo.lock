@@ -1871,7 +1871,9 @@ dependencies = [
 name = "nix_health"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "cfg-if",
+ "human-panic",
  "nix_rs",
  "regex",
  "serde",
