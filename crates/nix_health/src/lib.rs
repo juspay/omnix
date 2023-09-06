@@ -58,6 +58,9 @@ impl Check for NixHealth {
     fn name(&self) -> &'static str {
         "Nix Health"
     }
+    fn information(&self) -> String {
+        "".into()
+    }
     fn report(&self) -> Report<NoDetails> {
         if self.into_iter().all(|c| c.report() == Report::Green) {
             Report::Green

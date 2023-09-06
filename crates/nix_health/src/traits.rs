@@ -14,6 +14,11 @@ pub trait Check {
     /// User-facing name for this health check
     fn name(&self) -> &'static str;
 
+    /// Information about this health check detected on the current environment.
+    ///
+    /// Useful to print in CLI.
+    fn information(&self) -> String;
+
     /// Return the health report for this health check
     fn report(&self) -> Self::Report;
 }

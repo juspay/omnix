@@ -17,6 +17,9 @@ impl Check for FlakeEnabled {
     fn name(&self) -> &'static str {
         "Flakes Enabled"
     }
+    fn information(&self) -> String {
+        format!("experimental-features = {}", self.0.value.join(" "))
+    }
     fn report(&self) -> Report<WithDetails> {
         let val = &self.0.value;
         if val.contains(&"flakes".to_string()) && val.contains(&"nix-command".to_string()) {

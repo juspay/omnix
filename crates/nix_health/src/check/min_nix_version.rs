@@ -17,6 +17,9 @@ impl Check for MinNixVersion {
     fn name(&self) -> &'static str {
         "Minimum Nix Version"
     }
+    fn information(&self) -> String {
+        format!("nix version = {}", self.0)
+    }
     fn report(&self) -> Report<WithDetails> {
         let min_required = NixVersion {
             major: 2,

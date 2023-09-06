@@ -17,6 +17,9 @@ impl Check for MaxJobs {
     fn name(&self) -> &'static str {
         "Max Jobs"
     }
+    fn information(&self) -> String {
+        format!("max-jobs = {}", self.0.value)
+    }
     fn report(&self) -> Report<WithDetails> {
         if self.0.value > 1 {
             Report::Green
