@@ -1,8 +1,10 @@
+use std::fmt::Display;
+
 use crate::report::{Report, WithDetails};
 use nix_rs::info;
 
 /// Types that implement health check with reports
-pub trait Check {
+pub trait Check: Display {
     /// The type of the report produced by this health check
     type Report = Report<WithDetails>;
 
@@ -13,11 +15,6 @@ pub trait Check {
 
     /// User-facing name for this health check
     fn name(&self) -> &'static str;
-
-    /// Information about this health check detected on the current environment.
-    ///
-    /// Useful to print in CLI.
-    fn information(&self) -> String;
 
     /// Return the health report for this health check
     fn report(&self) -> Self::Report;

@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use nix_rs::{config::ConfigVal, info};
 use serde::{Deserialize, Serialize};
 use url::Url;
@@ -17,17 +19,6 @@ impl Check for Caches {
     }
     fn name(&self) -> &'static str {
         "Nix Caches in use"
-    }
-    fn information(&self) -> String {
-        format!(
-            "substituters = {}",
-            self.0
-                .value
-                .iter()
-                .map(|url| url.to_string())
-                .collect::<Vec<String>>()
-                .join(" ")
-        )
     }
     fn report(&self) -> Report<WithDetails> {
         let val = &self.0.value;
@@ -50,5 +41,20 @@ impl Check for Caches {
                 suggestion: "Try looking in /etc/nix/nix.conf".into(),
             })
         }
+    }
+}
+
+impl Display for Caches {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "substituters = {}",
+            self.0
+                .value
+                .iter()
+                .map(|url| url.to_string())
+                .collect::<Vec<String>>()
+                .join(" ")
+        )
     }
 }

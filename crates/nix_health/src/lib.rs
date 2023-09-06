@@ -5,6 +5,8 @@ pub mod check;
 pub mod report;
 pub mod traits;
 
+use std::fmt::Display;
+
 use nix_rs::info;
 use serde::{Deserialize, Serialize};
 
@@ -58,14 +60,17 @@ impl Check for NixHealth {
     fn name(&self) -> &'static str {
         "Nix Health"
     }
-    fn information(&self) -> String {
-        "".into()
-    }
     fn report(&self) -> Report<NoDetails> {
         if self.into_iter().all(|c| c.report() == Report::Green) {
             Report::Green
         } else {
             Report::Red(NoDetails)
         }
+    }
+}
+
+impl Display for NixHealth {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "")
     }
 }

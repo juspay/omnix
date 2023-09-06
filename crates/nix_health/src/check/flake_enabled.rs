@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use nix_rs::{config::ConfigVal, info};
 use serde::{Deserialize, Serialize};
 
@@ -17,9 +19,6 @@ impl Check for FlakeEnabled {
     fn name(&self) -> &'static str {
         "Flakes Enabled"
     }
-    fn information(&self) -> String {
-        format!("experimental-features = {}", self.0.value.join(" "))
-    }
     fn report(&self) -> Report<WithDetails> {
         let val = &self.0.value;
         if val.contains(&"flakes".to_string()) && val.contains(&"nix-command".to_string()) {
@@ -30,5 +29,11 @@ impl Check for FlakeEnabled {
                 suggestion: "See https://nixos.wiki/wiki/Flakes#Enable_flakes".into(),
             })
         }
+    }
+}
+
+impl Display for FlakeEnabled {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "experimental-features = {}", self.0.value.join(" "))
     }
 }

@@ -45,8 +45,8 @@ clap = { version = "4.3", features = ["derive", "env"] }
 console_error_panic_hook = "0.1"
 console_log = { version = "1" }
 http = { version = "0.2", optional = true }
-hyper = { version = "0.14", features = ["server"], optional = true }
 human-panic.workspace = true
+hyper = { version = "0.14", features = ["server"], optional = true }
 leptos.workspace = true
 leptos_axum = { version = "0.4", optional = true }
 leptos_meta.workspace = true

@@ -16,11 +16,11 @@ async fn main() -> anyhow::Result<()> {
         match report {
             Report::Green => {
                 println!("{}", format!("✅ {}", check.name()).green().bold());
-                println!("   {}", check.information().blue());
+                println!("   {}", check.to_string().blue());
             }
             Report::Red(details) => {
                 println!("{}", format!("❌ {}", check.name()).red().bold());
-                println!("   {}", check.information().blue());
+                println!("   {}", check.to_string().blue());
                 println!("   {}", details.msg.yellow());
                 println!("   {}", details.suggestion);
             }
