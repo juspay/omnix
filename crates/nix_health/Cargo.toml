@@ -23,4 +23,4 @@ url = { version = "2.4", features = ["serde"] }
 nix_rs.workspace = true
 
 [features]
-all = ["dep:tokio", "nix_rs/all"]
+ssr = ["dep:tokio", "nix_rs/ssr"]

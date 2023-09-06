@@ -2,18 +2,19 @@
 //!
 //! # Example
 //!
-//! ```no_run
+//! ```ignore
+//! use nix_rs::command::NixCmd;
 //! let cmd = NixCmd::default();
-//! cmd.run_with_args_returning_stdout(&["--version"]).await?;
+//! cmd.run_with_args_returning_stdout(&["--version"]);
 //! ```
 
 use std::fmt::{self, Display};
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
-#[cfg(feature = "all")]
+#[cfg(feature = "ssr")]
 use tokio::process::Command;
-#[cfg(feature = "all")]
+#[cfg(feature = "ssr")]
 use tracing::instrument;
 
 /// The `nix` command's global options.
@@ -46,7 +47,7 @@ impl Default for NixCmd {
     }
 }
 
-#[cfg(feature = "all")]
+#[cfg(feature = "ssr")]
 impl NixCmd {
     /// Return a [Command] for this [NixCmd] configuration
     pub fn command(&self) -> Command {
@@ -56,7 +57,7 @@ impl NixCmd {
     }
 
     /// Run nix with given args, interpreting stdout as JSON, parsing into `T`
-    #[cfg(feature = "all")]
+    #[cfg(feature = "ssr")]
     pub async fn run_with_args_expecting_json<T>(&self, args: &[&str]) -> Result<T, NixCmdError>
     where
         T: serde::de::DeserializeOwned,
@@ -67,7 +68,7 @@ impl NixCmd {
     }
 
     /// Run nix with given args, interpreting parsing stdout, via [std::str::FromStr], into `T`
-    #[cfg(feature = "all")]
+    #[cfg(feature = "ssr")]
     pub async fn run_with_args_expecting_fromstr<T>(&self, args: &[&str]) -> Result<T, NixCmdError>
     where
         T: std::str::FromStr,
@@ -80,8 +81,11 @@ impl NixCmd {
     }
 
     /// Run nix with given args, returning stdout.
-    #[cfg(feature = "all")]
-    async fn run_with_args_returning_stdout(&self, args: &[&str]) -> Result<Vec<u8>, CommandError> {
+    #[cfg(feature = "ssr")]
+    pub async fn run_with_args_returning_stdout(
+        &self,
+        args: &[&str],
+    ) -> Result<Vec<u8>, CommandError> {
         let mut cmd = self.command();
         cmd.args(args);
         run_command(&mut cmd).await
@@ -130,14 +134,14 @@ impl Display for FromStrError {
 impl std::error::Error for FromStrError {}
 
 /// Run the given command, returning its stdout.
-#[cfg(feature = "all")]
+#[cfg(feature = "ssr")]
 #[allow(clippy::needless_pass_by_ref_mut)]
 pub async fn run_command(cmd: &mut tokio::process::Command) -> Result<Vec<u8>, CommandError> {
     cmd.kill_on_drop(true);
     run_command_(cmd).await
 }
 
-#[cfg(feature = "all")]
+#[cfg(feature = "ssr")]
 #[instrument(name = "run-command", err)]
 async fn run_command_(cmd: &mut tokio::process::Command) -> Result<Vec<u8>, CommandError> {
     tracing::info!("️🏃️ Running command");

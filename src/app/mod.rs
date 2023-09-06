@@ -1,5 +1,8 @@
 //! Frontend UI entry point
 
+// Workaround for https://github.com/rust-lang/rust-analyzer/issues/15344
+#![allow(non_snake_case)]
+
 mod flake;
 mod health;
 mod info;

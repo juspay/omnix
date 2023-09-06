@@ -50,3 +50,11 @@ We use [Tailwind](https://tailwindcss.com/) for styling; 🎓 familiarize yourse
 #### Color palette
 
 See `tailwind.config.js` for colour aliases we use throughout the app. Instead of, say, `text-pink-500` we use `text-primary-500` ("primary" is more semantic than "pink").
+
+## Crates
+
+We publish the following crates from this repo:
+
+| Crate Link | Description | 
+|------------|-------------|
+| https://crates.io/crates/nix_rs | Rust interface to the Nix command line |

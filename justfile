@@ -17,7 +17,8 @@ alias w := watch
 
 # Run tests (backend & frontend)
 test:
-    cargo-test
+    cargo test
+    cargo leptos test
 
 # Run tests (e2e-playwright)
 e2e-playwright-test:
