@@ -78,7 +78,13 @@
             meta.description = "WIP: nix-browser";
           };
 
-        packages.default = self'.packages.nix-browser;
+        packages = {
+          default = self'.packages.nix-browser;
+          nix-health = config.leptos-fullstack.craneLib.buildPackage {
+            inherit (config.leptos-fullstack) src;
+            pname = "nix-health";
+          };
+        };
 
         devShells.default = pkgs.mkShell {
           inputsFrom = [
