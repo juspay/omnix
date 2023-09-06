@@ -27,7 +27,7 @@ pub struct NixCmd {
     pub refresh: Refresh,
 }
 
-/// Whether to refresh the flake, by passing --refresh to nix
+/// Whether to refresh the flake, by passing `--refresh` to nix
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Hash)]
 pub struct Refresh(bool);
 
