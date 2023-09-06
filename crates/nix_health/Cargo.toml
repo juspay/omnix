@@ -1,7 +1,10 @@
 [package]
-edition = "2021"
+edition.workspace = true
 name = "nix_health"
 version = "0.1.0"
+license.workspace = true
+repository.workspace = true
+description = "Health check for the user's Nix environment"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
