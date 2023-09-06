@@ -1931,9 +1931,6 @@ dependencies = [
  "serde_with",
  "thiserror",
  "tokio",
- "tracing",
- "tracing-subscriber",
- "tracing-subscriber-wasm",
  "url",
 ]
 
@@ -1949,8 +1946,6 @@ dependencies = [
  "thiserror",
  "tokio",
  "tracing",
- "tracing-subscriber",
- "tracing-subscriber-wasm",
  "url",
 ]
 
