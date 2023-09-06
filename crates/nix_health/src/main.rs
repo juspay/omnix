@@ -25,7 +25,7 @@ async fn main() -> anyhow::Result<()> {
                 println!("   {}", details.suggestion);
             }
         }
-        println!("");
+        println!();
     }
     if health.into_iter().any(|c| c.report().is_red()) {
         println!("{}", "!! Some checks failed (see above)".red().bold());
