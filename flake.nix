@@ -80,9 +80,15 @@
 
         packages = {
           default = self'.packages.nix-browser;
+          # FIXME: Unfortunately this builds all dependencies of the workspace.
+          # Can we avoid that?
           nix-health = config.leptos-fullstack.craneLib.buildPackage {
             inherit (config.leptos-fullstack) src;
             pname = "nix-health";
+            cargoExtraArgs = "--features ssr";
+            nativeBuildInputs = [
+              pkgs.nix # cargo tests need nix
+            ];
           };
         };
 
