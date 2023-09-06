@@ -4,6 +4,9 @@ use crate::report::{Report, WithDetails};
 use nix_rs::info;
 
 /// Types that implement health check with reports
+///
+/// The `Display` instance is expected to display the information
+/// (human-readable, in the CLI) used for doing the check.
 pub trait Check: Display {
     /// The type of the report produced by this health check
     type Report = Report<WithDetails>;
