@@ -8,7 +8,7 @@ use crate::{
     traits::Check,
 };
 
-/// Check that [crate::config::NixConfig::max_jobs] is set to a good value.
+/// Check that [nix_rs::config::NixConfig::max_jobs] is set to a good value.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MaxJobs(pub ConfigVal<i32>);
 

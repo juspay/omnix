@@ -9,7 +9,7 @@ use crate::{
     traits::Check,
 };
 
-/// Check that [crate::config::NixConfig::substituters] is set to a good value.
+/// Check that [nix_rs::config::NixConfig::substituters] is set to a good value.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Caches(pub ConfigVal<Vec<Url>>);
 

@@ -8,7 +8,7 @@ use crate::{
     traits::Check,
 };
 
-/// Check that [crate::version::NixVersion] is set to a good value.
+/// Check that [nix_rs::version::NixVersion] is set to a good value.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MinNixVersion(pub NixVersion);
 

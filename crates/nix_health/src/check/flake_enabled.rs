@@ -8,7 +8,7 @@ use crate::{
     traits::Check,
 };
 
-/// Check that [crate::config::NixConfig::experimental_features] is set to a good value.
+/// Check that [nix_rs::config::NixConfig::experimental_features] is set to a good value.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct FlakeEnabled(pub ConfigVal<Vec<String>>);
 
