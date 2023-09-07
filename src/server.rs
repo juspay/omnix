@@ -5,11 +5,7 @@ use crate::app::App;
 use axum::response::Response as AxumResponse;
 use axum::routing::IntoMakeService;
 use axum::{body::Body, http::Request, response::IntoResponse};
-use axum::{
-    http::StatusCode,
-    routing::{get, post},
-    Router,
-};
+use axum::{routing::post, Router};
 use hyper::server::conn::AddrIncoming;
 use leptos::*;
 use leptos_axum::{generate_route_list, LeptosRoutes};

@@ -81,7 +81,7 @@
 
         packages.default = self'.packages.nix-browser;
 
-        devShells.default = pkgs.mkShell ({
+        devShells.default = pkgs.mkShell {
           inputsFrom = [
             config.treefmt.build.devShell
             self'.devShells.nix-browser
@@ -98,7 +98,7 @@
             echo "🍎🍎 Run 'just <recipe>' to get started"
             just
           '';
-        });
+        };
       };
     };
 }
