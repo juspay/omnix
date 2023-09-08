@@ -52,6 +52,7 @@ impl NixCmd {
     /// Return a [Command] for this [NixCmd] configuration
     pub fn command(&self) -> Command {
         let mut cmd = Command::new("nix");
+        cmd.kill_on_drop(true);
         cmd.args(self.args());
         cmd
     }
@@ -82,13 +83,24 @@ impl NixCmd {
 
     /// Run nix with given args, returning stdout.
     #[cfg(feature = "ssr")]
+    #[instrument(err)]
     pub async fn run_with_args_returning_stdout(
         &self,
         args: &[&str],
     ) -> Result<Vec<u8>, CommandError> {
         let mut cmd = self.command();
         cmd.args(args);
-        run_command(&mut cmd).await
+        tracing::info!("️🏃️ Running command: {:?}", cmd);
+        let out = cmd.output().await?;
+        if out.status.success() {
+            Ok(out.stdout)
+        } else {
+            let stderr = String::from_utf8(out.stderr)?;
+            Err(CommandError::ProcessFailed {
+                stderr,
+                exit_code: out.status.code(),
+            })
+        }
     }
 
     /// Convert this [NixCmd] configuration into a list of arguments for
@@ -132,30 +144,6 @@ impl Display for FromStrError {
 }
 
 impl std::error::Error for FromStrError {}
-
-/// Run the given command, returning its stdout.
-#[cfg(feature = "ssr")]
-#[allow(clippy::needless_pass_by_ref_mut)]
-pub async fn run_command(cmd: &mut tokio::process::Command) -> Result<Vec<u8>, CommandError> {
-    cmd.kill_on_drop(true);
-    run_command_(cmd).await
-}
-
-#[cfg(feature = "ssr")]
-#[instrument(name = "run-command", err)]
-async fn run_command_(cmd: &mut tokio::process::Command) -> Result<Vec<u8>, CommandError> {
-    tracing::info!("️🏃️ Running command");
-    let out = cmd.output().await?;
-    if out.status.success() {
-        Ok(out.stdout)
-    } else {
-        let stderr = String::from_utf8(out.stderr)?;
-        Err(CommandError::ProcessFailed {
-            stderr,
-            exit_code: out.status.code(),
-        })
-    }
-}
 
 #[derive(Error, Debug)]
 pub enum CommandError {
