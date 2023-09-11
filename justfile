@@ -20,13 +20,13 @@ test:
     cargo test
     cargo leptos test
 
-# Run tests (e2e-playwright)
-e2e-playwright-test:
+# Run end-to-end tests against release server
+e2e-release:
     nix run .#e2e-playwright-test
 
-# Run e3e tests against `just watch` server
-e2e:
-    cd e2e-playwright && TEST_PORT=3000 playwright test --project chromium
+# Run end-to-end tests against `just watch` server
+e2e-dev:
+    cd e2e && TEST_PORT=3000 playwright test --project chromium
 
 # Run docs server (live reloading)
 doc:
@@ -38,5 +38,5 @@ ci:
 
 # Setup node_modules using Nix (invoked automatically by nix-shell)
 node_modules NODE_PATH:
-    rm -f ./e2e-playwright/node_modules
-    ln -sf ${NODE_PATH} ./e2e-playwright/node_modules
+    rm -f ./e2e/node_modules
+    ln -sf ${NODE_PATH} ./e2e/node_modules
