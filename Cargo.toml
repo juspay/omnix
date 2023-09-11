@@ -4,9 +4,11 @@ default-members = [".", "crates/*"]
 [workspace.package]
 edition = "2021"
 license = "AGPL-3.0-only"
+repository = "https://github.com/juspay/nix-browser"
 
 [workspace.dependencies]
 cfg-if = "1"
+human-panic = "1.1.5"
 leptos = { version = "0.4", features = ["serde", "nightly"] }
 leptos_meta = { version = "0.4", features = ["nightly"] }
 leptos_router = { version = "0.4", features = ["nightly"] }
@@ -15,7 +17,7 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tracing-subscriber-wasm = "0.1"
 wasm-bindgen = "=0.2.87"                                            # The version here must match the pinned stuff in Nix flakes.
-nix_rs = { path = "./crates/nix_rs" }
+nix_rs = { version = "0.1", path = "./crates/nix_rs" }
 nix_health = { path = "./crates/nix_health" }
 leptos_extra = { path = "./crates/leptos_extra" }
 thiserror = "1.0"
@@ -30,6 +32,9 @@ name = "nix-browser"
 version = "0.1.0"
 homepage = "https://github.com/juspay/nix-browser"
 
+[package.metadata.docs.rs]
+all-features = true
+
 [lib]
 crate-type = ["cdylib", "rlib"]
 
@@ -43,7 +48,7 @@ clap = { version = "4.3", features = ["derive", "env"] }
 console_error_panic_hook = "0.1"
 console_log = { version = "1" }
 http = { version = "0.2", optional = true }
-human-panic = "1.1.5"
+human-panic.workspace = true
 hyper = { version = "0.14", features = ["server"], optional = true }
 leptos.workspace = true
 leptos_axum = { version = "0.4", optional = true }

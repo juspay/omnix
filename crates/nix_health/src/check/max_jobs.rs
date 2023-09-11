@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use nix_rs::{config::ConfigVal, info};
 use serde::{Deserialize, Serialize};
 
@@ -6,7 +8,7 @@ use crate::{
     traits::Check,
 };
 
-/// Check that [crate::config::NixConfig::max_jobs] is set to a good value.
+/// Check that [nix_rs::config::NixConfig::max_jobs] is set to a good value.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MaxJobs(pub ConfigVal<i32>);
 
@@ -26,5 +28,11 @@ impl Check for MaxJobs {
                 suggestion: "Try editing /etc/nix/nix.conf".into(),
             })
         }
+    }
+}
+
+impl Display for MaxJobs {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "max-jobs = {}", self.0.value)
     }
 }

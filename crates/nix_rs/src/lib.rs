@@ -1,4 +1,3 @@
-#![feature(associated_type_defaults)]
 //! Rust crate to interact with Nix
 //!
 //! This crate exposes various types representing what nix command gives us,

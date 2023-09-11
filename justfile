@@ -15,6 +15,12 @@ watch $RUST_BACKTRACE="1":
 
 alias w := watch
 
+# Run 'cargo run' for nix-health CLI in watch mode
+watch-nix-health:
+    cargo watch -- cargo run --bin nix-health --features=ssr
+
+alias wh := watch-nix-health
+
 # Run tests (backend & frontend)
 test:
     cargo test
