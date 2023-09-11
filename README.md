@@ -34,7 +34,9 @@ nix run
 ## Contributing
 
 - When you are done with your changes, run `just fmt` to **autoformat** the source tree; the CI checks for this.
-- Add tests if relevant. Run `just test` to run the **tests**.
+- Add tests if relevant, and run them:
+    - Run `just test` to run the **unit tests**.
+    - Run `just e2e` (requires `just watch` to be running) or `just e2e-release` to run the **end-to-end tests**
 - Add documentation wherever useful. To preview the **docs**, run `just doc`.
 
 ## Frontend tech

@@ -25,6 +25,7 @@
         inputs.process-compose-flake.flakeModule
         inputs.cargo-doc-live.flakeModule
         (inputs.leptos-fullstack + /nix/flake-module.nix)
+        ./e2e/flake-module.nix
       ];
       perSystem = { config, self', pkgs, lib, system, ... }: {
         _module.args.pkgs = import inputs.nixpkgs {
@@ -97,6 +98,7 @@
           inputsFrom = [
             config.treefmt.build.devShell
             self'.devShells.nix-browser
+            self'.devShells.e2e-playwright
           ];
           packages = with pkgs; [
             just
