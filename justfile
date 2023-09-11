@@ -25,7 +25,7 @@ e2e-release:
     nix run .#e2e-playwright-test
 
 # Run end-to-end tests against `just watch` server
-e2e-dev:
+e2e:
     cd e2e && TEST_PORT=3000 playwright test --project chromium
 
 # Run docs server (live reloading)
