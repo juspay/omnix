@@ -52,7 +52,7 @@
               name == "tests" ||
               name == "playwright.config.js";
           };
-          npmDepsHash = "sha256-WAMYkjC00ReCyyh5uI8vV7HJ+BEclBlxvBgEn9Mphe0=";
+          npmDepsHash = "sha256-hmZhH2H2Sx/YcCj2dALDM2VX0KeD0eg7xrRw4wI6klQ=";
           # npmDepsHash = lib.fakeHash;
           dontBuild = true;
           installPhase = ''
