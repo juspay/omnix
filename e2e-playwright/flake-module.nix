@@ -6,6 +6,7 @@
       process-compose.e2e-playwright-test =
         let
           TEST_PORT = "5000";
+          PLAYWRIGHT_BROWSERS_PATH="${pkgs.playwright-driver.browsers}";
         in
         {
           tui = false;
@@ -26,7 +27,7 @@
               };
               command = pkgs.writeShellApplication {
                 name = "e2e-playwright";
-                runtimeInputs = with pkgs; [ nodejs playwright-test ];
+                runtimeInputs = with pkgs; [ nodejs playwright-test PLAYWRIGHT_BROWSERS_PATH ];
                 text = ''
                   cd e2e-playwright
                   playwright test --project chromium
