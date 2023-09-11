@@ -44,7 +44,15 @@
           nodeModules = pkgs.buildNpmPackage {
             pname = "e2e-playwright";
             version = "1.0.0";
-            src = ./.;
+            src = builtins.path {
+              path = ./.;
+              filter = path: _:
+                let name = builtins.baseNameOf path; in
+                name == "package.json" ||
+                name == "package-lock.json" ||
+                name == "tests" ||
+                name == "playwright.config.js";
+            };
             npmDepsHash = "sha256-WAMYkjC00ReCyyh5uI8vV7HJ+BEclBlxvBgEn9Mphe0=";
             # npmDepsHash = lib.fakeHash;
             dontBuild = true;
