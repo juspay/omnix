@@ -8,7 +8,6 @@
       in
       {
         tui = false;
-        port = 8975;
         settings.processes = {
           start-app = {
             command = "${lib.getExe self'.packages.default} --site-addr=127.0.0.1:${TEST_PORT} --no-open";
