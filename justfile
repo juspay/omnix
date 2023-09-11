@@ -38,4 +38,5 @@ ci:
 
 # Setup node_modules using Nix (invoked automatically by nix-shell)
 node_modules NODE_PATH:
+    rm -f ./e2e-playwright/node_modules
     ln -sf ${NODE_PATH} ./e2e-playwright/node_modules
