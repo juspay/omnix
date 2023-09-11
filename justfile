@@ -24,6 +24,10 @@ test:
 e2e-playwright-test:
     nix run .#e2e-playwright-test
 
+# Run e3e tests against `just watch` server
+e2e:
+    cd e2e-playwright && TEST_PORT=3000 playwright test --project chromium
+
 # Run docs server (live reloading)
 doc:
     cargo-doc-live
@@ -31,3 +35,12 @@ doc:
 # Run CI locally
 ci:
     nixci
+
+# Setup node_modules using Nix (invoked automatically by nix-shell)
+node_modules NODE_PATH:
+    rm -rf ./e2e-playwright/node_modules
+    echo ${NODE_PATH}
+    # For some reason, symlinking is not enough.
+    # ln -sf ${NODE_PATH} ./e2e-playwright/node_modules
+    cp -r ${NODE_PATH} ./e2e-playwright/node_modules
+    chmod -R u+w ./e2e-playwright/node_modules

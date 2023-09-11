@@ -85,6 +85,7 @@
           inputsFrom = [
             config.treefmt.build.devShell
             self'.devShells.nix-browser
+            self'.devShells.e2e-playwright
           ];
           packages = with pkgs; [
             just

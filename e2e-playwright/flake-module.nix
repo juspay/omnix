@@ -1,4 +1,4 @@
-{ self, lib, inputs, ... }:
+{ lib, ... }:
 {
   perSystem = { config, self', pkgs, system, ... }:
     {
@@ -6,7 +6,7 @@
       process-compose.e2e-playwright-test =
         let
           TEST_PORT = "5000";
-          PLAYWRIGHT_BROWSERS_PATH="${pkgs.playwright-driver.browsers}";
+          PLAYWRIGHT_BROWSERS_PATH = "${pkgs.playwright-driver.browsers}";
         in
         {
           tui = false;
@@ -37,6 +37,33 @@
               availability.exit_on_end = true;
             };
           };
+        };
+
+      devShells.e2e-playwright =
+        let
+          nodeModules = pkgs.buildNpmPackage {
+            pname = "e2e-playwright";
+            version = "1.0.0";
+            src = ./.;
+            npmDepsHash = "sha256-WAMYkjC00ReCyyh5uI8vV7HJ+BEclBlxvBgEn9Mphe0=";
+            # npmDepsHash = lib.fakeHash;
+            dontBuild = true;
+            installPhase = ''
+              cp -r node_modules $out/
+            '';
+          };
+        in
+        pkgs.mkShell {
+          buildInputs = with pkgs; [
+            nodejs
+            playwright-test
+          ];
+          shellHook = ''
+            export NODE_PATH=${nodeModules}
+            # VSCode disrespects NODE_PATH https://github.com/microsoft/TypeScript/issues/8760
+            # So we must manually create ./node_modules
+            just node_modules NODE_PATH=$NODE_PATH
+          '';
         };
     };
 }
