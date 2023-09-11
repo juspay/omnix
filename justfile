@@ -19,6 +19,8 @@ alias w := watch
 watch-nix-health:
     cargo watch -- cargo run --bin nix-health --features=ssr
 
+alias wh := watch-nix-health
+
 # Run tests (backend & frontend)
 test:
     cargo test
