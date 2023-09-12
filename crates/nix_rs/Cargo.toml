@@ -22,6 +22,7 @@ tokio = { version = "1.29", features = ["full"], optional = true }
 tracing.workspace = true
 url = { version = "2.4", features = ["serde"] }
 colored = { version = "2.0", optional = true }
+shell-words = { version = "1.1.0", optional = true }
 
 [features]
-ssr = ["dep:tokio", "dep:colored"]
+ssr = ["dep:tokio", "dep:colored", "dep:shell-words"]

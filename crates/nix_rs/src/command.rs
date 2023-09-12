@@ -131,28 +131,20 @@ impl NixCmd {
     }
 }
 
+/// Convert a Command to user-copyable CLI string
 #[cfg(feature = "ssr")]
 fn to_cli(cmd: &tokio::process::Command) -> String {
     use std::ffi::OsStr;
-    let cli_args: Vec<String> = cmd
+    let program = cmd.as_std().get_program().to_string_lossy().to_string();
+    let args = cmd
         .as_std()
         .get_args()
         .collect::<Vec<&OsStr>>()
         .into_iter()
-        .map(|s| {
-            let s = s.to_string_lossy().to_string();
-            if s.contains(' ') {
-                format!("\"{}\"", s)
-            } else {
-                s
-            }
-        })
-        .collect();
-    format!(
-        "{} {}",
-        cmd.as_std().get_program().to_string_lossy(),
-        cli_args.join(" ")
-    )
+        .map(|s| s.to_string_lossy().to_string())
+        .collect::<Vec<String>>();
+    let cli = vec![program].into_iter().chain(args).collect::<Vec<String>>();
+    shell_words::join(cli)
 }
 
 /// Errors when running and interpreting the output of a nix command
