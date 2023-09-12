@@ -1,6 +1,6 @@
 use nix_rs::{config::ConfigVal, info};
-use system_rs;
 use serde::{Deserialize, Serialize};
+use system_rs;
 
 use crate::{
     report::{Report, WithDetails},

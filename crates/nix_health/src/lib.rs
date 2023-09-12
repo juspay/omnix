@@ -9,7 +9,8 @@ use nix_rs::info;
 use serde::{Deserialize, Serialize};
 
 use self::check::{
-    caches::Caches, flake_enabled::FlakeEnabled, max_jobs::MaxJobs, min_nix_version::MinNixVersion, trusted_users::TrustedUsers,
+    caches::Caches, flake_enabled::FlakeEnabled, max_jobs::MaxJobs, min_nix_version::MinNixVersion,
+    trusted_users::TrustedUsers,
 };
 use self::report::{NoDetails, Report, WithDetails};
 use self::traits::Check;
