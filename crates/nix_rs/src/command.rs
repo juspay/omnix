@@ -47,6 +47,20 @@ impl Default for NixCmd {
     }
 }
 
+/// Trace a user-copyable command line
+///
+/// [tracing::info!] the given [tokio::process::Command] with human-readable
+/// command-line string that can generally be copy-pasted by the user.
+///
+/// The command will be highlighted to distinguish it (for copying) from the
+/// rest of the instrumentation parameters.
+#[cfg(feature = "ssr")]
+#[instrument(name = "command")]
+pub fn trace_cmd(cmd: &tokio::process::Command) {
+    use colored::Colorize;
+    tracing::info!("️🐚 {}️", to_cli(cmd).bright_green().on_black());
+}
+
 #[cfg(feature = "ssr")]
 impl NixCmd {
     /// Return a [Command] for this [NixCmd] configuration
@@ -83,14 +97,13 @@ impl NixCmd {
 
     /// Run nix with given args, returning stdout.
     #[cfg(feature = "ssr")]
-    #[instrument(err)]
     pub async fn run_with_args_returning_stdout(
         &self,
         args: &[&str],
     ) -> Result<Vec<u8>, CommandError> {
         let mut cmd = self.command();
         cmd.args(args);
-        tracing::info!("️🏃️ Running command: {:?}", cmd);
+        trace_cmd(&cmd);
         let out = cmd.output().await?;
         if out.status.success() {
             Ok(out.stdout)
@@ -116,6 +129,30 @@ impl NixCmd {
         }
         args
     }
+}
+
+#[cfg(feature = "ssr")]
+fn to_cli(cmd: &tokio::process::Command) -> String {
+    use std::ffi::OsStr;
+    let cli_args: Vec<String> = cmd
+        .as_std()
+        .get_args()
+        .collect::<Vec<&OsStr>>()
+        .into_iter()
+        .map(|s| {
+            let s = s.to_string_lossy().to_string();
+            if s.contains(' ') {
+                format!("\"{}\"", s)
+            } else {
+                s
+            }
+        })
+        .collect();
+    format!(
+        "{} {}",
+        cmd.as_std().get_program().to_string_lossy(),
+        cli_args.join(" ")
+    )
 }
 
 /// Errors when running and interpreting the output of a nix command

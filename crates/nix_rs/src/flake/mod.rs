@@ -27,7 +27,7 @@ pub struct Flake {
 impl Flake {
     /// Get [Flake] info for the given flake url
     #[cfg(feature = "ssr")]
-    #[instrument(name = "flake")]
+    #[instrument(name = "flake", skip(nix_cmd))]
     pub async fn from_nix(
         nix_cmd: &crate::command::NixCmd,
         url: FlakeUrl,
