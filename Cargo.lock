@@ -1856,6 +1856,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_with",
+ "system_rs",
  "thiserror",
  "tokio",
  "tower",
@@ -1877,6 +1878,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_with",
+ "system_rs",
  "thiserror",
  "tokio",
  "tracing",
@@ -2766,6 +2768,23 @@ name = "sync_wrapper"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2047c6ded9c721764247e62cd3b03c09ffc529b2ba5b10ec482ae507a4a70160"
+
+[[package]]
+name = "system_rs"
+version = "0.1.0"
+dependencies = [
+ "cfg-if",
+ "os_info",
+ "serde",
+ "serde_json",
+ "serde_with",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "tracing-subscriber-wasm",
+ "url",
+]
 
 [[package]]
 name = "tap"

@@ -11,8 +11,8 @@ use crate::{
 pub struct MaxJobs(pub ConfigVal<i32>);
 
 impl Check for MaxJobs {
-    fn check(info: &info::NixInfo) -> Self {
-        MaxJobs(info.nix_config.max_jobs.clone())
+    fn check(nix_info: &info::NixInfo, _sys_info: &system_rs::info::SysInfo) -> Self {
+        MaxJobs(nix_info.nix_config.max_jobs.clone())
     }
     fn name(&self) -> &'static str {
         "Max Jobs"

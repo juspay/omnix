@@ -16,6 +16,8 @@ use nix_health::{
     NixHealth,
 };
 use nix_rs::version::NixVersion;
+#[cfg(feature = "ssr")]
+use system_rs;
 use tracing::instrument;
 
 use crate::{app::info::ConfigValListView, widget::*};
@@ -166,7 +168,8 @@ fn WithDetailsView(cx: Scope, details: WithDetails) -> impl IntoView {
 pub async fn get_nix_health(_unit: ()) -> Result<nix_health::NixHealth, ServerFnError> {
     use nix_health::{traits::Check, NixHealth};
     use nix_rs::info;
-    let info = info::NixInfo::from_nix(&nix_rs::command::NixCmd::default()).await?;
-    let health = NixHealth::check(&info);
+    let nix_info = info::NixInfo::from_nix(&nix_rs::command::NixCmd::default()).await?;
+    let sys_info = system_rs::info::SysInfo::get_info().await?;
+    let health = NixHealth::check(&nix_info, &sys_info);
     Ok(health)
 }

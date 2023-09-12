@@ -49,13 +49,13 @@ impl<'a> IntoIterator for &'a NixHealth {
 
 impl Check for NixHealth {
     type Report = Report<NoDetails>;
-    fn check(info: &info::NixInfo) -> Self {
+    fn check(nix_info: &info::NixInfo, sys_info: &system_rs::info::SysInfo) -> Self {
         NixHealth {
-            max_jobs: MaxJobs::check(info),
-            caches: Caches::check(info),
-            flake_enabled: FlakeEnabled::check(info),
-            min_nix_version: MinNixVersion::check(info),
-            trusted_users: TrustedUsers::check(info),
+            max_jobs: MaxJobs::check(nix_info, sys_info),
+            caches: Caches::check(nix_info, sys_info),
+            flake_enabled: FlakeEnabled::check(nix_info, sys_info),
+            min_nix_version: MinNixVersion::check(nix_info, sys_info),
+            trusted_users: TrustedUsers::check(nix_info, sys_info),
         }
     }
     fn name(&self) -> &'static str {

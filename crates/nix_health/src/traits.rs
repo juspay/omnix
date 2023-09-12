@@ -1,5 +1,6 @@
 use crate::report::{Report, WithDetails};
 use nix_rs::info;
+use system_rs;
 
 /// Types that implement health check with reports
 pub trait Check {
@@ -7,7 +8,7 @@ pub trait Check {
     type Report = Report<WithDetails>;
 
     /// Run and create the health check
-    fn check(info: &info::NixInfo) -> Self
+    fn check(nix_info: &info::NixInfo, sys_info: &system_rs::info::SysInfo ) -> Self
     where
         Self: Sized;
 
