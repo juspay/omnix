@@ -29,7 +29,7 @@ pub enum SysInfoError {
 
 #[cfg(feature = "ssr")]
 fn is_symlink(file_path: &str) -> io::Result<bool> {
-    let metadata = fs::metadata(file_path)?;
+    let metadata = fs::symlink_metadata(file_path)?;
     Ok(metadata.file_type().is_symlink())
 }
 
