@@ -1,4 +1,7 @@
 use nix_rs::{config::ConfigVal, info, system};
+
+use std::fmt::Display;
+
 use os_info;
 use serde::{Deserialize, Serialize};
 
@@ -45,5 +48,11 @@ impl Check for TrustedUsers {
                 suggestion: "Run 'echo \"trusted-users = root $USER\" | sudo tee -a /etc/nix/nix.conf && sudo pkill nix-daemon'".into(),
             })
         }
+    }
+}
+
+impl Display for TrustedUsers {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "trusted_users = {}", self.trusted_users.value.join(" "))
     }
 }

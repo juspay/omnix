@@ -1,7 +1,7 @@
 //! Information about the user's system
 use os_info;
 use serde::{Deserialize, Serialize};
-#[cfg(feature = "all")]
+#[cfg(feature = "ssr")]
 use std::env;
 
 /// Information about the user's system
@@ -14,7 +14,7 @@ pub struct SysInfo {
 
 impl SysInfo {
     /// Determine [SysInfo] on the user's system
-    #[cfg(feature = "all")]
+    #[cfg(feature = "ssr")]
     pub async fn get_info() -> Result<SysInfo, env::VarError> {
         let current_user = env::var("USER")?;
         let os = os_info::get().os_type();
