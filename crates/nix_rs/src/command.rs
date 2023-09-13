@@ -58,7 +58,7 @@ impl Default for NixCmd {
 #[instrument(name = "command")]
 pub fn trace_cmd(cmd: &tokio::process::Command) {
     use colored::Colorize;
-    tracing::info!("️🐚 {}️", to_cli(cmd).bright_green().on_black());
+    tracing::info!("🐚 {}️", to_cli(cmd).bright_blue());
 }
 
 #[cfg(feature = "ssr")]
