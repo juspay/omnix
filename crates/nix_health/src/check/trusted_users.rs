@@ -37,15 +37,19 @@ impl Check for TrustedUsers {
             Report::Green
         } else if os == os_info::Type::NixOS {
             Report::Red(WithDetails {
-                msg: "$USER not present in trusted_users".into(),
-                suggestion:
-                    "Add `nix.trustedUsers = [ \"root\" \"<$USER>\" ];` to your `configuration.nix`"
-                        .into(),
+                msg: format!("{} not present in trusted_users", current_user),
+                suggestion: format!(
+                    r#"Add `nix.trustedUsers = [ "root" "{}" ];` to your `configuration.nix`"#,
+                    current_user
+                ),
             })
         } else {
             Report::Red(WithDetails {
-                msg: "$USER not present in trusted_users".into(),
-                suggestion: "Run 'echo \"trusted-users = root $USER\" | sudo tee -a /etc/nix/nix.conf && sudo pkill nix-daemon'".into(),
+                msg: format!("{} not present in trusted_users", current_user),
+                suggestion: format!(
+                    r#"Run 'echo "trusted-users = root {}" | sudo tee -a /etc/nix/nix.conf && sudo pkill nix-daemon'"#,
+                    current_user
+                ),
             })
         }
     }
