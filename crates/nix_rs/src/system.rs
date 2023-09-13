@@ -1,10 +1,10 @@
 //! Information about the user's system
 use os_info;
 use serde::{Deserialize, Serialize};
-use thiserror::Error;
-use std::{env, io};
 #[cfg(feature = "ssr")]
 use std::fs;
+use std::{env, io};
+use thiserror::Error;
 
 /// Information about the user's system
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -41,6 +41,10 @@ impl SysInfo {
         let os = os_info::get().os_type();
         let file_path = "/etc/nix/nix.conf";
         let uses_nix_darwin = (os == os_info::Type::Macos) && is_symlink(file_path)?;
-        Ok(SysInfo { current_user, os , uses_nix_darwin })
+        Ok(SysInfo {
+            current_user,
+            os,
+            uses_nix_darwin,
+        })
     }
 }
