@@ -1940,8 +1940,8 @@ name = "nix_rs"
 version = "0.1.7"
 dependencies = [
  "cfg-if",
- "os_info",
  "colored",
+ "os_info",
  "regex",
  "serde",
  "serde_json",
