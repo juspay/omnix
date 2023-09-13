@@ -143,7 +143,10 @@ fn to_cli(cmd: &tokio::process::Command) -> String {
         .into_iter()
         .map(|s| s.to_string_lossy().to_string())
         .collect::<Vec<String>>();
-    let cli = vec![program].into_iter().chain(args).collect::<Vec<String>>();
+    let cli = vec![program]
+        .into_iter()
+        .chain(args)
+        .collect::<Vec<String>>();
     shell_words::join(cli)
 }
 
