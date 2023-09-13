@@ -50,7 +50,8 @@ impl Display for NixSystem {
 impl NixSystem {
     #[cfg(feature = "ssr")]
     pub async fn detect() -> Self {
-        let os_type = os_info::get().os_type();
+        let os_info = tokio::task::spawn_blocking(os_info::get).await.unwrap();
+        let os_type = os_info.os_type();
         async fn is_symlink(file_path: &str) -> std::io::Result<bool> {
             let metadata = tokio::fs::symlink_metadata(file_path).await?;
             Ok(metadata.file_type().is_symlink())
