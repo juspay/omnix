@@ -19,7 +19,6 @@ required-features = ["ssr"]
 [dependencies]
 cfg-if.workspace = true
 regex = "1.9.3"
-os_info = "3.7.0"
 thiserror.workspace = true
 serde.workspace = true
 serde_json.workspace = true

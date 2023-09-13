@@ -2,7 +2,6 @@ use nix_rs::{config::ConfigVal, info, system};
 
 use std::fmt::Display;
 
-use os_info;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -30,11 +29,9 @@ impl Check for TrustedUsers {
     fn report(&self) -> Report<WithDetails> {
         let trusted_users = &self.trusted_users.value;
         let current_user = &self.sys_info.current_user;
-        let os = self.sys_info.os;
-        let uses_nix_darwin = self.sys_info.uses_nix_darwin;
         if trusted_users.contains(current_user) {
             Report::Green
-        } else if os == os_info::Type::NixOS || uses_nix_darwin {
+        } else if self.sys_info.nix_system.has_configuration_nix() {
             Report::Red(WithDetails {
                 msg: format!("{} not present in trusted_users", current_user),
                 suggestion: format!(

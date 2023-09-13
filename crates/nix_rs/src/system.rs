@@ -11,10 +11,38 @@ use thiserror::Error;
 pub struct SysInfo {
     /// value of $USER
     pub current_user: String,
-    /// Name of the OS
-    pub os: os_info::Type,
-    /// True only when the os is MacOS and `nix.conf` is a symlink
-    pub uses_nix_darwin: bool,
+    /// OS information
+    pub nix_system: NixSystem,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum NixSystem {
+    /// https://github.com/LnL7/nix-darwin
+    NixDarwin,
+    /// https://nixos.org/
+    NixOS,
+    /// Nix is individually installed on Linux or macOS
+    Other(os_info::Type),
+}
+
+impl NixSystem {
+    pub fn detect() -> Self {
+        let os_type = os_info::get().os_type();
+        match os_type {
+            // To detect that we are on NixDarwin, we check if /etc/nix/nix.conf
+            // is a symlink (which nix-darwin manages like NixOS does)
+            os_info::Type::Macos if is_symlink("/etc/nix/nix.conf").unwrap_or(false) => {
+                NixSystem::NixDarwin
+            }
+            os_info::Type::NixOS => NixSystem::NixOS,
+            _ => NixSystem::Other(os_type),
+        }
+    }
+
+    /// The Nix for this [NixSystem] is configured automatically through a `configuration.nix`
+    pub fn has_configuration_nix(&self) -> bool {
+        self == &NixSystem::NixOS || self == &NixSystem::NixDarwin
+    }
 }
 
 /// Errors while trying to fetch system info
@@ -38,13 +66,10 @@ impl SysInfo {
     #[cfg(feature = "ssr")]
     pub async fn get_info() -> Result<SysInfo, SysInfoError> {
         let current_user = env::var("USER")?;
-        let os = os_info::get().os_type();
-        let file_path = "/etc/nix/nix.conf";
-        let uses_nix_darwin = (os == os_info::Type::Macos) && is_symlink(file_path)?;
+        let nix_system = NixSystem::detect();
         Ok(SysInfo {
             current_user,
-            os,
-            uses_nix_darwin,
+            nix_system,
         })
     }
 }
