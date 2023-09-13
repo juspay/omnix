@@ -6,15 +6,16 @@ use std::fs;
 use std::{env, io};
 use thiserror::Error;
 
-/// Information about the user's system
+/// Information about the user's environment
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SysInfo {
     /// value of $USER
     pub current_user: String,
-    /// OS information
+    /// Underlying nix system information
     pub nix_system: NixSystem,
 }
 
+/// The system under which Nix is installed and operates
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum NixSystem {
     /// https://github.com/LnL7/nix-darwin
@@ -26,8 +27,13 @@ pub enum NixSystem {
 }
 
 impl NixSystem {
+    #[cfg(feature = "ssr")]
     pub fn detect() -> Self {
         let os_type = os_info::get().os_type();
+        fn is_symlink(file_path: &str) -> io::Result<bool> {
+            let metadata = fs::symlink_metadata(file_path)?;
+            Ok(metadata.file_type().is_symlink())
+        }
         match os_type {
             // To detect that we are on NixDarwin, we check if /etc/nix/nix.conf
             // is a symlink (which nix-darwin manages like NixOS does)
@@ -48,19 +54,9 @@ impl NixSystem {
 /// Errors while trying to fetch system info
 #[derive(Error, Debug)]
 pub enum SysInfoError {
-    #[error("Failed to read the file: {0}")]
-    IOError(#[from] io::Error),
-
     #[error("Failed to fetch ENV: {0}")]
     EnvVarError(#[from] env::VarError),
 }
-
-#[cfg(feature = "ssr")]
-fn is_symlink(file_path: &str) -> io::Result<bool> {
-    let metadata = fs::symlink_metadata(file_path)?;
-    Ok(metadata.file_type().is_symlink())
-}
-
 impl SysInfo {
     /// Determine [SysInfo] on the user's system
     #[cfg(feature = "ssr")]
