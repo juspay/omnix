@@ -16,9 +16,9 @@ pub struct NixEnv {
 impl NixEnv {
     /// Determine [NixEnv] on the user's system
     #[cfg(feature = "ssr")]
-    pub fn detect() -> Result<NixEnv, NixEnvError> {
+    pub async fn detect() -> Result<NixEnv, NixEnvError> {
         let current_user = std::env::var("USER")?;
-        let nix_system = NixSystem::detect();
+        let nix_system = NixSystem::detect().await;
         Ok(NixEnv {
             current_user,
             nix_system,
@@ -49,16 +49,16 @@ impl Display for NixSystem {
 
 impl NixSystem {
     #[cfg(feature = "ssr")]
-    pub fn detect() -> Self {
+    pub async fn detect() -> Self {
         let os_type = os_info::get().os_type();
-        fn is_symlink(file_path: &str) -> std::io::Result<bool> {
-            let metadata = std::fs::symlink_metadata(file_path)?;
+        async fn is_symlink(file_path: &str) -> std::io::Result<bool> {
+            let metadata = tokio::fs::symlink_metadata(file_path).await?;
             Ok(metadata.file_type().is_symlink())
         }
         match os_type {
             // To detect that we are on NixDarwin, we check if /etc/nix/nix.conf
             // is a symlink (which nix-darwin manages like NixOS does)
-            os_info::Type::Macos if is_symlink("/etc/nix/nix.conf").unwrap_or(false) => {
+            os_info::Type::Macos if is_symlink("/etc/nix/nix.conf").await.unwrap_or(false) => {
                 NixSystem::NixDarwin
             }
             os_info::Type::NixOS => NixSystem::NixOS,
