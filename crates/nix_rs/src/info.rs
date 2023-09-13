@@ -1,4 +1,4 @@
-//! Information about the user's Nix installation and system
+//! Information about the user's Nix installation
 use serde::{Deserialize, Serialize};
 
 use crate::{config::NixConfig, version::NixVersion};
