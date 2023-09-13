@@ -47,17 +47,18 @@ pub fn NixHealthRoute(cx: Scope) -> impl IntoView {
 fn NixHealthView(cx: Scope, health: NixHealth) -> impl IntoView {
     view! { cx,
         <div class="flex flex-col items-stretch justify-start space-y-8 text-left">
+            // NOTE: Aim to keep this order in alignment with that of the IntoIterator impl
             <ViewCheck name=health.min_nix_version.name() report=health.min_nix_version.report()>
                 <MinNixVersionView v=&health.min_nix_version/>
+            </ViewCheck>
+            <ViewCheck name=health.flake_enabled.name() report=health.flake_enabled.report()>
+                <FlakeEnabledView v=&health.flake_enabled/>
             </ViewCheck>
             <ViewCheck name=health.max_jobs.name() report=health.max_jobs.report()>
                 <MaxJobsView v=&health.max_jobs/>
             </ViewCheck>
             <ViewCheck name=health.caches.name() report=health.caches.report()>
                 <CachesView v=&health.caches/>
-            </ViewCheck>
-            <ViewCheck name=health.flake_enabled.name() report=health.flake_enabled.report()>
-                <FlakeEnabledView v=&health.flake_enabled/>
             </ViewCheck>
             <ViewCheck name=health.trusted_users.name() report=health.trusted_users.report()>
                 <TrustedUsersView v=&health.trusted_users/>

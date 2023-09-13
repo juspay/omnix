@@ -41,10 +41,10 @@ impl<'a> IntoIterator for &'a NixHealth {
     /// Return an iterator to iterate on the fields of [NixHealth]
     fn into_iter(self) -> Self::IntoIter {
         let items: Vec<Self::Item> = vec![
+            &self.min_nix_version,
+            &self.flake_enabled,
             &self.max_jobs,
             &self.caches,
-            &self.flake_enabled,
-            &self.min_nix_version,
             &self.trusted_users,
         ];
         items.into_iter()
