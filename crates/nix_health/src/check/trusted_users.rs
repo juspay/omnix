@@ -1,4 +1,4 @@
-use nix_rs::{config::ConfigVal, info, system};
+use nix_rs::{config::ConfigVal, env, info};
 
 use std::fmt::Display;
 
@@ -13,11 +13,11 @@ use crate::{
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TrustedUsers {
     pub trusted_users: ConfigVal<Vec<String>>,
-    sys_info: system::SysInfo,
+    sys_info: env::NixEnv,
 }
 
 impl Check for TrustedUsers {
-    fn check(nix_info: &info::NixInfo, sys_info: &system::SysInfo) -> Self {
+    fn check(nix_info: &info::NixInfo, sys_info: &env::NixEnv) -> Self {
         TrustedUsers {
             trusted_users: nix_info.nix_config.trusted_users.clone(),
             sys_info: sys_info.clone(),

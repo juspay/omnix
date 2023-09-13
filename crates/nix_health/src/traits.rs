@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 use crate::report::{Report, WithDetails};
-use nix_rs::{info, system};
+use nix_rs::{env, info};
 
 /// Types that implement health check with reports
 ///
@@ -12,7 +12,7 @@ pub trait Check: Display {
     type Report = Report<WithDetails>;
 
     /// Run and create the health check
-    fn check(nix_info: &info::NixInfo, sys_info: &system::SysInfo) -> Self
+    fn check(nix_info: &info::NixInfo, sys_info: &env::NixEnv) -> Self
     where
         Self: Sized;
 

@@ -1,7 +1,7 @@
 use anyhow::Context;
 use colored::Colorize;
 use nix_health::{report::Report, traits::Check, NixHealth};
-use nix_rs::{command::NixCmd, info::NixInfo, system::SysInfo};
+use nix_rs::{command::NixCmd, env::NixEnv, info::NixInfo};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -9,7 +9,7 @@ async fn main() -> anyhow::Result<()> {
     let nix_info = NixInfo::from_nix(&NixCmd::default())
         .await
         .with_context(|| "Unable to gather nix info")?;
-    let sys_info = SysInfo::get_info()
+    let sys_info = NixEnv::get_info()
         .await
         .with_context(|| "Unable to gather system info")?;
     let health = NixHealth::check(&nix_info, &sys_info);

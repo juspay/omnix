@@ -1,4 +1,4 @@
-//! Information about the user's system
+//! Information about the environment in which Nix will run
 use os_info;
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "ssr")]
@@ -6,9 +6,9 @@ use std::fs;
 use std::{env, io};
 use thiserror::Error;
 
-/// Information about the user's environment
+/// The environment in which Nix operates
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct SysInfo {
+pub struct NixEnv {
     /// value of $USER
     pub current_user: String,
     /// Underlying nix system information
@@ -53,17 +53,17 @@ impl NixSystem {
 
 /// Errors while trying to fetch system info
 #[derive(Error, Debug)]
-pub enum SysInfoError {
+pub enum NixEnvError {
     #[error("Failed to fetch ENV: {0}")]
     EnvVarError(#[from] env::VarError),
 }
-impl SysInfo {
-    /// Determine [SysInfo] on the user's system
+impl NixEnv {
+    /// Determine [NixEnv] on the user's system
     #[cfg(feature = "ssr")]
-    pub async fn get_info() -> Result<SysInfo, SysInfoError> {
+    pub async fn get_info() -> Result<NixEnv, NixEnvError> {
         let current_user = env::var("USER")?;
         let nix_system = NixSystem::detect();
-        Ok(SysInfo {
+        Ok(NixEnv {
             current_user,
             nix_system,
         })

@@ -1,4 +1,4 @@
-use nix_rs::{config::ConfigVal, info, system};
+use nix_rs::{config::ConfigVal, env, info};
 
 use std::fmt::Display;
 
@@ -15,7 +15,7 @@ use crate::{
 pub struct Caches(pub ConfigVal<Vec<Url>>);
 
 impl Check for Caches {
-    fn check(nix_info: &info::NixInfo, _sys_info: &system::SysInfo) -> Self {
+    fn check(nix_info: &info::NixInfo, _sys_info: &env::NixEnv) -> Self {
         Caches(nix_info.nix_config.substituters.clone())
     }
     fn name(&self) -> &'static str {

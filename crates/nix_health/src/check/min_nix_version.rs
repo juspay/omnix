@@ -1,4 +1,4 @@
-use nix_rs::{info, system, version::NixVersion};
+use nix_rs::{env, info, version::NixVersion};
 
 use std::fmt::Display;
 
@@ -14,7 +14,7 @@ use crate::{
 pub struct MinNixVersion(pub NixVersion);
 
 impl Check for MinNixVersion {
-    fn check(nix_info: &info::NixInfo, _sys_info: &system::SysInfo) -> Self {
+    fn check(nix_info: &info::NixInfo, _sys_info: &env::NixEnv) -> Self {
         MinNixVersion(nix_info.nix_version.clone())
     }
     fn name(&self) -> &'static str {

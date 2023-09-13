@@ -5,7 +5,7 @@ pub mod check;
 pub mod report;
 pub mod traits;
 
-use nix_rs::{info, system};
+use nix_rs::{env, info};
 
 use std::fmt::Display;
 
@@ -53,7 +53,7 @@ impl<'a> IntoIterator for &'a NixHealth {
 
 impl Check for NixHealth {
     type Report = Report<NoDetails>;
-    fn check(nix_info: &info::NixInfo, sys_info: &system::SysInfo) -> Self {
+    fn check(nix_info: &info::NixInfo, sys_info: &env::NixEnv) -> Self {
         NixHealth {
             max_jobs: MaxJobs::check(nix_info, sys_info),
             caches: Caches::check(nix_info, sys_info),
