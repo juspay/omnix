@@ -168,7 +168,7 @@ pub async fn get_nix_health(_unit: ()) -> Result<nix_health::NixHealth, ServerFn
     use nix_health::{traits::Check, NixHealth};
     use nix_rs::{env, info};
     let nix_info = info::NixInfo::from_nix(&nix_rs::command::NixCmd::default()).await?;
-    let nix_env = env::NixEnv::get_info().await?;
+    let nix_env = env::NixEnv::detect()?;
     let health = NixHealth::check(&nix_info, &nix_env);
     Ok(health)
 }

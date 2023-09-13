@@ -3,7 +3,6 @@ use std::fmt::Display;
 
 use os_info;
 use serde::{Deserialize, Serialize};
-use thiserror::Error;
 
 /// The environment in which Nix operates
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -75,7 +74,7 @@ impl NixSystem {
 
 /// Errors while trying to fetch [NixEnv]
 #[cfg(feature = "ssr")]
-#[derive(Error, Debug)]
+#[derive(thiserror::Error, Debug)]
 pub enum NixEnvError {
     #[error("Failed to fetch ENV: {0}")]
     EnvVarError(#[from] std::env::VarError),
