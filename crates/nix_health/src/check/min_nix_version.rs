@@ -1,7 +1,7 @@
-use nix_rs::{env, info, version::NixVersion};
 
 use std::fmt::Display;
 
+use nix_rs::{env, info, version::NixVersion};
 use serde::{Deserialize, Serialize};
 
 use crate::{

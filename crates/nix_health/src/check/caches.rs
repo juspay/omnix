@@ -1,7 +1,6 @@
-use nix_rs::{config::ConfigVal, env, info};
-
 use std::fmt::Display;
 
+use nix_rs::{config::ConfigVal, env, info};
 use serde::{Deserialize, Serialize};
 use url::Url;
 

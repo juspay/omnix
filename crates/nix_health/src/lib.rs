@@ -5,10 +5,9 @@ pub mod check;
 pub mod report;
 pub mod traits;
 
-use nix_rs::{env, info};
-
 use std::fmt::Display;
 
+use nix_rs::{env, info};
 use serde::{Deserialize, Serialize};
 
 use self::check::{
