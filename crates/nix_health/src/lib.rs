@@ -5,7 +5,7 @@ pub mod check;
 pub mod report;
 pub mod traits;
 
-use nix_rs::info;
+use nix_rs::{info, system};
 use serde::{Deserialize, Serialize};
 
 use self::check::{
@@ -50,7 +50,7 @@ impl<'a> IntoIterator for &'a NixHealth {
 
 impl Check for NixHealth {
     type Report = Report<NoDetails>;
-    fn check(nix_info: &info::NixInfo, sys_info: &info::SysInfo) -> Self {
+    fn check(nix_info: &info::NixInfo, sys_info: &system::SysInfo) -> Self {
         NixHealth {
             max_jobs: MaxJobs::check(nix_info, sys_info),
             caches: Caches::check(nix_info, sys_info),

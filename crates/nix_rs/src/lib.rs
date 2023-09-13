@@ -8,4 +8,5 @@ pub mod config;
 pub mod flake;
 pub mod info;
 pub mod refs;
+pub mod system;
 pub mod version;

@@ -1,4 +1,4 @@
-use nix_rs::{config::ConfigVal, info};
+use nix_rs::{config::ConfigVal, info, system};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -11,7 +11,7 @@ use crate::{
 pub struct MaxJobs(pub ConfigVal<i32>);
 
 impl Check for MaxJobs {
-    fn check(nix_info: &info::NixInfo, _sys_info: &info::SysInfo) -> Self {
+    fn check(nix_info: &info::NixInfo, _sys_info: &system::SysInfo) -> Self {
         MaxJobs(nix_info.nix_config.max_jobs.clone())
     }
     fn name(&self) -> &'static str {

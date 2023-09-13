@@ -1,4 +1,4 @@
-use nix_rs::{info, version::NixVersion};
+use nix_rs::{info, system, version::NixVersion};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -11,7 +11,7 @@ use crate::{
 pub struct MinNixVersion(pub NixVersion);
 
 impl Check for MinNixVersion {
-    fn check(nix_info: &info::NixInfo, _sys_info: &info::SysInfo) -> Self {
+    fn check(nix_info: &info::NixInfo, _sys_info: &system::SysInfo) -> Self {
         MinNixVersion(nix_info.nix_version.clone())
     }
     fn name(&self) -> &'static str {

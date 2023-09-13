@@ -1,4 +1,4 @@
-use nix_rs::{config::ConfigVal, info};
+use nix_rs::{config::ConfigVal, info, system};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -14,7 +14,7 @@ pub struct TrustedUsers {
 }
 
 impl Check for TrustedUsers {
-    fn check(nix_info: &info::NixInfo, sys_info: &info::SysInfo) -> Self {
+    fn check(nix_info: &info::NixInfo, sys_info: &system::SysInfo) -> Self {
         TrustedUsers {
             trusted_users: nix_info.nix_config.trusted_users.clone(),
             current_user: sys_info.current_user.clone(),

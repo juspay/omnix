@@ -165,9 +165,9 @@ fn WithDetailsView(cx: Scope, details: WithDetails) -> impl IntoView {
 #[server(GetNixHealth, "/api")]
 pub async fn get_nix_health(_unit: ()) -> Result<nix_health::NixHealth, ServerFnError> {
     use nix_health::{traits::Check, NixHealth};
-    use nix_rs::info;
+    use nix_rs::{info, system};
     let nix_info = info::NixInfo::from_nix(&nix_rs::command::NixCmd::default()).await?;
-    let sys_info = info::SysInfo::get_info().await?;
+    let sys_info = system::SysInfo::get_info().await?;
     let health = NixHealth::check(&nix_info, &sys_info);
     Ok(health)
 }
