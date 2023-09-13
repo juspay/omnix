@@ -1940,6 +1940,7 @@ version = "0.1.8"
 dependencies = [
  "cfg-if",
  "colored",
+ "os_info",
  "regex",
  "serde",
  "serde_json",

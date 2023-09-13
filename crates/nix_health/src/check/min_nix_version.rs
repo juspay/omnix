@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use nix_rs::{info, version::NixVersion};
+use nix_rs::{env, info, version::NixVersion};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -13,8 +13,8 @@ use crate::{
 pub struct MinNixVersion(pub NixVersion);
 
 impl Check for MinNixVersion {
-    fn check(info: &info::NixInfo) -> Self {
-        MinNixVersion(info.nix_version.clone())
+    fn check(nix_info: &info::NixInfo, _nix_env: &env::NixEnv) -> Self {
+        MinNixVersion(nix_info.nix_version.clone())
     }
     fn name(&self) -> &'static str {
         "Minimum Nix Version"

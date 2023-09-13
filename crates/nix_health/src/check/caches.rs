@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use nix_rs::{config::ConfigVal, info};
+use nix_rs::{config::ConfigVal, env, info};
 use serde::{Deserialize, Serialize};
 use url::Url;
 
@@ -14,8 +14,8 @@ use crate::{
 pub struct Caches(pub ConfigVal<Vec<Url>>);
 
 impl Check for Caches {
-    fn check(info: &info::NixInfo) -> Self {
-        Caches(info.nix_config.substituters.clone())
+    fn check(nix_info: &info::NixInfo, _nix_env: &env::NixEnv) -> Self {
+        Caches(nix_info.nix_config.substituters.clone())
     }
     fn name(&self) -> &'static str {
         "Nix Caches in use"

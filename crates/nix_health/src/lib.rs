@@ -7,11 +7,12 @@ pub mod traits;
 
 use std::fmt::Display;
 
-use nix_rs::info;
+use nix_rs::{env, info};
 use serde::{Deserialize, Serialize};
 
 use self::check::{
     caches::Caches, flake_enabled::FlakeEnabled, max_jobs::MaxJobs, min_nix_version::MinNixVersion,
+    trusted_users::TrustedUsers,
 };
 use self::report::{NoDetails, Report, WithDetails};
 use self::traits::Check;
@@ -29,6 +30,7 @@ pub struct NixHealth {
     pub caches: Caches,
     pub flake_enabled: FlakeEnabled,
     pub min_nix_version: MinNixVersion,
+    pub trusted_users: TrustedUsers,
 }
 
 impl<'a> IntoIterator for &'a NixHealth {
@@ -38,10 +40,11 @@ impl<'a> IntoIterator for &'a NixHealth {
     /// Return an iterator to iterate on the fields of [NixHealth]
     fn into_iter(self) -> Self::IntoIter {
         let items: Vec<Self::Item> = vec![
+            &self.min_nix_version,
+            &self.flake_enabled,
             &self.max_jobs,
             &self.caches,
-            &self.flake_enabled,
-            &self.min_nix_version,
+            &self.trusted_users,
         ];
         items.into_iter()
     }
@@ -49,12 +52,13 @@ impl<'a> IntoIterator for &'a NixHealth {
 
 impl Check for NixHealth {
     type Report = Report<NoDetails>;
-    fn check(info: &info::NixInfo) -> Self {
+    fn check(nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Self {
         NixHealth {
-            max_jobs: MaxJobs::check(info),
-            caches: Caches::check(info),
-            flake_enabled: FlakeEnabled::check(info),
-            min_nix_version: MinNixVersion::check(info),
+            max_jobs: MaxJobs::check(nix_info, nix_env),
+            caches: Caches::check(nix_info, nix_env),
+            flake_enabled: FlakeEnabled::check(nix_info, nix_env),
+            min_nix_version: MinNixVersion::check(nix_info, nix_env),
+            trusted_users: TrustedUsers::check(nix_info, nix_env),
         }
     }
     fn name(&self) -> &'static str {

@@ -1,15 +1,18 @@
 use anyhow::Context;
 use colored::Colorize;
 use nix_health::{report::Report, traits::Check, NixHealth};
-use nix_rs::{command::NixCmd, info::NixInfo};
+use nix_rs::{command::NixCmd, env::NixEnv, info::NixInfo};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     human_panic::setup_panic!();
-    let info = NixInfo::from_nix(&NixCmd::default())
+    let nix_info = NixInfo::from_nix(&NixCmd::default())
         .await
         .with_context(|| "Unable to gather nix info")?;
-    let health = NixHealth::check(&info);
+    let nix_env = NixEnv::detect()
+        .await
+        .with_context(|| "Unable to gather system info")?;
+    let health = NixHealth::check(&nix_info, &nix_env);
     println!("Checking the health of your Nix setup:\n");
     for check in &health {
         let report = check.report();

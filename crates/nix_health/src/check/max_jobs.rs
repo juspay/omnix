@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use nix_rs::{config::ConfigVal, info};
+use nix_rs::{config::ConfigVal, env, info};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -13,8 +13,8 @@ use crate::{
 pub struct MaxJobs(pub ConfigVal<i32>);
 
 impl Check for MaxJobs {
-    fn check(info: &info::NixInfo) -> Self {
-        MaxJobs(info.nix_config.max_jobs.clone())
+    fn check(nix_info: &info::NixInfo, _nix_env: &env::NixEnv) -> Self {
+        MaxJobs(nix_info.nix_config.max_jobs.clone())
     }
     fn name(&self) -> &'static str {
         "Max Jobs"

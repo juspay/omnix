@@ -9,7 +9,7 @@ use leptos_meta::*;
 use nix_health::{
     check::{
         caches::Caches, flake_enabled::FlakeEnabled, max_jobs::MaxJobs,
-        min_nix_version::MinNixVersion,
+        min_nix_version::MinNixVersion, trusted_users::TrustedUsers,
     },
     report::{NoDetails, Report, WithDetails},
     traits::Check,
@@ -47,8 +47,12 @@ pub fn NixHealthRoute(cx: Scope) -> impl IntoView {
 fn NixHealthView(cx: Scope, health: NixHealth) -> impl IntoView {
     view! { cx,
         <div class="flex flex-col items-stretch justify-start space-y-8 text-left">
+            // NOTE: Aim to keep this order in alignment with that of the IntoIterator impl
             <ViewCheck name=health.min_nix_version.name() report=health.min_nix_version.report()>
                 <MinNixVersionView v=&health.min_nix_version/>
+            </ViewCheck>
+            <ViewCheck name=health.flake_enabled.name() report=health.flake_enabled.report()>
+                <FlakeEnabledView v=&health.flake_enabled/>
             </ViewCheck>
             <ViewCheck name=health.max_jobs.name() report=health.max_jobs.report()>
                 <MaxJobsView v=&health.max_jobs/>
@@ -56,8 +60,8 @@ fn NixHealthView(cx: Scope, health: NixHealth) -> impl IntoView {
             <ViewCheck name=health.caches.name() report=health.caches.report()>
                 <CachesView v=&health.caches/>
             </ViewCheck>
-            <ViewCheck name=health.flake_enabled.name() report=health.flake_enabled.report()>
-                <FlakeEnabledView v=&health.flake_enabled/>
+            <ViewCheck name=health.trusted_users.name() report=health.trusted_users.report()>
+                <TrustedUsersView v=&health.trusted_users/>
             </ViewCheck>
         </div>
     }
@@ -110,6 +114,11 @@ fn FlakeEnabledView<'a>(cx: Scope, v: &'a FlakeEnabled) -> impl IntoView {
 }
 
 #[component]
+fn TrustedUsersView<'a>(cx: Scope, v: &'a TrustedUsers) -> impl IntoView {
+    view! { cx, <span>"trusted_users: " <ConfigValListView cfg=v.trusted_users.clone()/></span> }
+}
+
+#[component]
 fn MaxJobsView<'a>(cx: Scope, v: &'a MaxJobs) -> impl IntoView {
     view! { cx, <span>"Nix builds are using " {v.0.value} " cores"</span> }
 }
@@ -157,8 +166,9 @@ fn WithDetailsView(cx: Scope, details: WithDetails) -> impl IntoView {
 #[server(GetNixHealth, "/api")]
 pub async fn get_nix_health(_unit: ()) -> Result<nix_health::NixHealth, ServerFnError> {
     use nix_health::{traits::Check, NixHealth};
-    use nix_rs::info;
-    let info = info::NixInfo::from_nix(&nix_rs::command::NixCmd::default()).await?;
-    let health = NixHealth::check(&info);
+    use nix_rs::{env, info};
+    let nix_info = info::NixInfo::from_nix(&nix_rs::command::NixCmd::default()).await?;
+    let nix_env = env::NixEnv::detect().await?;
+    let health = NixHealth::check(&nix_info, &nix_env);
     Ok(health)
 }

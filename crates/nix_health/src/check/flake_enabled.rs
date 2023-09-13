@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use nix_rs::{config::ConfigVal, info};
+use nix_rs::{config::ConfigVal, env, info};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -13,8 +13,8 @@ use crate::{
 pub struct FlakeEnabled(pub ConfigVal<Vec<String>>);
 
 impl Check for FlakeEnabled {
-    fn check(info: &info::NixInfo) -> Self {
-        FlakeEnabled(info.nix_config.experimental_features.clone())
+    fn check(nix_info: &info::NixInfo, _nix_env: &env::NixEnv) -> Self {
+        FlakeEnabled(nix_info.nix_config.experimental_features.clone())
     }
     fn name(&self) -> &'static str {
         "Flakes Enabled"
