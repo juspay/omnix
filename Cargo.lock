@@ -1467,6 +1467,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "is_proc_translated"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c91b17261e5e2c0d44e0fd72790fbdbf7dc2cd5af12b120fa24ea589f5e57f4a"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "itertools"
 version = "0.10.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1940,6 +1949,7 @@ version = "0.1.8"
 dependencies = [
  "cfg-if",
  "colored",
+ "is_proc_translated",
  "os_info",
  "regex",
  "serde",

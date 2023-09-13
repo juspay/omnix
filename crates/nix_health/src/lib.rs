@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 
 use self::check::{
     caches::Caches, flake_enabled::FlakeEnabled, max_jobs::MaxJobs, min_nix_version::MinNixVersion,
-    trusted_users::TrustedUsers,
+    rosetta::Rosetta, trusted_users::TrustedUsers,
 };
 use self::report::{NoDetails, Report, WithDetails};
 use self::traits::Check;
@@ -31,6 +31,7 @@ pub struct NixHealth {
     pub flake_enabled: FlakeEnabled,
     pub min_nix_version: MinNixVersion,
     pub trusted_users: TrustedUsers,
+    pub rosetta: Rosetta,
 }
 
 impl<'a> IntoIterator for &'a NixHealth {
@@ -40,6 +41,7 @@ impl<'a> IntoIterator for &'a NixHealth {
     /// Return an iterator to iterate on the fields of [NixHealth]
     fn into_iter(self) -> Self::IntoIter {
         let items: Vec<Self::Item> = vec![
+            &self.rosetta,
             &self.min_nix_version,
             &self.flake_enabled,
             &self.max_jobs,
@@ -54,6 +56,7 @@ impl Check for NixHealth {
     type Report = Report<NoDetails>;
     fn check(nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Self {
         NixHealth {
+            rosetta: Rosetta::check(nix_info, nix_env),
             max_jobs: MaxJobs::check(nix_info, nix_env),
             caches: Caches::check(nix_info, nix_env),
             flake_enabled: FlakeEnabled::check(nix_info, nix_env),

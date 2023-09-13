@@ -24,6 +24,7 @@ tracing.workspace = true
 url = { version = "2.4", features = ["serde"] }
 colored = { version = "2.0", optional = true }
 shell-words = { version = "1.1.0", optional = true }
+is_proc_translated = { version = "0.1.1", optional = true }
 
 [features]
-ssr = ["dep:tokio", "dep:colored", "dep:shell-words"]
+ssr = ["dep:tokio", "dep:colored", "dep:shell-words", "dep:is_proc_translated"]
