@@ -13,7 +13,7 @@ use crate::{
 pub struct FlakeEnabled(pub ConfigVal<Vec<String>>);
 
 impl Check for FlakeEnabled {
-    fn check(nix_info: &info::NixInfo, _sys_info: &env::NixEnv) -> Self {
+    fn check(nix_info: &info::NixInfo, _nix_env: &env::NixEnv) -> Self {
         FlakeEnabled(nix_info.nix_config.experimental_features.clone())
     }
     fn name(&self) -> &'static str {

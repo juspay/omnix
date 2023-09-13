@@ -12,7 +12,7 @@ pub trait Check: Display {
     type Report = Report<WithDetails>;
 
     /// Run and create the health check
-    fn check(nix_info: &info::NixInfo, sys_info: &env::NixEnv) -> Self
+    fn check(nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Self
     where
         Self: Sized;
 

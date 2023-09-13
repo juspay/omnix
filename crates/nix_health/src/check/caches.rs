@@ -14,7 +14,7 @@ use crate::{
 pub struct Caches(pub ConfigVal<Vec<Url>>);
 
 impl Check for Caches {
-    fn check(nix_info: &info::NixInfo, _sys_info: &env::NixEnv) -> Self {
+    fn check(nix_info: &info::NixInfo, _nix_env: &env::NixEnv) -> Self {
         Caches(nix_info.nix_config.substituters.clone())
     }
     fn name(&self) -> &'static str {

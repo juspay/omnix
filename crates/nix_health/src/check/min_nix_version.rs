@@ -14,7 +14,7 @@ use crate::{
 pub struct MinNixVersion(pub NixVersion);
 
 impl Check for MinNixVersion {
-    fn check(nix_info: &info::NixInfo, _sys_info: &env::NixEnv) -> Self {
+    fn check(nix_info: &info::NixInfo, _nix_env: &env::NixEnv) -> Self {
         MinNixVersion(nix_info.nix_version.clone())
     }
     fn name(&self) -> &'static str {

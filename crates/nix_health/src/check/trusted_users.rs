@@ -12,14 +12,14 @@ use crate::{
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TrustedUsers {
     pub trusted_users: ConfigVal<Vec<String>>,
-    sys_info: env::NixEnv,
+    nix_env: env::NixEnv,
 }
 
 impl Check for TrustedUsers {
-    fn check(nix_info: &info::NixInfo, sys_info: &env::NixEnv) -> Self {
+    fn check(nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Self {
         TrustedUsers {
             trusted_users: nix_info.nix_config.trusted_users.clone(),
-            sys_info: sys_info.clone(),
+            nix_env: nix_env.clone(),
         }
     }
     fn name(&self) -> &'static str {
@@ -27,10 +27,10 @@ impl Check for TrustedUsers {
     }
     fn report(&self) -> Report<WithDetails> {
         let trusted_users = &self.trusted_users.value;
-        let current_user = &self.sys_info.current_user;
+        let current_user = &self.nix_env.current_user;
         if trusted_users.contains(current_user) {
             Report::Green
-        } else if self.sys_info.nix_system.has_configuration_nix() {
+        } else if self.nix_env.nix_system.has_configuration_nix() {
             Report::Red(WithDetails {
                 msg: format!("{} not present in trusted_users", current_user),
                 suggestion: format!(
