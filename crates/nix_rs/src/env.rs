@@ -1,9 +1,6 @@
 //! Information about the environment in which Nix will run
 use os_info;
 use serde::{Deserialize, Serialize};
-#[cfg(feature = "ssr")]
-use std::fs;
-use std::{env, io};
 use thiserror::Error;
 
 /// The environment in which Nix operates
@@ -13,6 +10,19 @@ pub struct NixEnv {
     pub current_user: String,
     /// Underlying nix system information
     pub nix_system: NixSystem,
+}
+
+impl NixEnv {
+    /// Determine [NixEnv] on the user's system
+    #[cfg(feature = "ssr")]
+    pub fn detect() -> Result<NixEnv, NixEnvError> {
+        let current_user = std::env::var("USER")?;
+        let nix_system = NixSystem::detect();
+        Ok(NixEnv {
+            current_user,
+            nix_system,
+        })
+    }
 }
 
 /// The system under which Nix is installed and operates
@@ -30,8 +40,8 @@ impl NixSystem {
     #[cfg(feature = "ssr")]
     pub fn detect() -> Self {
         let os_type = os_info::get().os_type();
-        fn is_symlink(file_path: &str) -> io::Result<bool> {
-            let metadata = fs::symlink_metadata(file_path)?;
+        fn is_symlink(file_path: &str) -> std::io::Result<bool> {
+            let metadata = std::fs::symlink_metadata(file_path)?;
             Ok(metadata.file_type().is_symlink())
         }
         match os_type {
@@ -51,21 +61,10 @@ impl NixSystem {
     }
 }
 
-/// Errors while trying to fetch system info
+/// Errors while trying to fetch [NixEnv]
+#[cfg(feature = "ssr")]
 #[derive(Error, Debug)]
 pub enum NixEnvError {
     #[error("Failed to fetch ENV: {0}")]
-    EnvVarError(#[from] env::VarError),
-}
-impl NixEnv {
-    /// Determine [NixEnv] on the user's system
-    #[cfg(feature = "ssr")]
-    pub async fn get_info() -> Result<NixEnv, NixEnvError> {
-        let current_user = env::var("USER")?;
-        let nix_system = NixSystem::detect();
-        Ok(NixEnv {
-            current_user,
-            nix_system,
-        })
-    }
+    EnvVarError(#[from] std::env::VarError),
 }
