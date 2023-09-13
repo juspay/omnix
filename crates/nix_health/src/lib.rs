@@ -50,7 +50,7 @@ impl<'a> IntoIterator for &'a NixHealth {
 
 impl Check for NixHealth {
     type Report = Report<NoDetails>;
-    fn check(nix_info: &info::NixInfo, sys_info: &system_rs::info::SysInfo) -> Self {
+    fn check(nix_info: &info::NixInfo, sys_info: &info::SysInfo) -> Self {
         NixHealth {
             max_jobs: MaxJobs::check(nix_info, sys_info),
             caches: Caches::check(nix_info, sys_info),

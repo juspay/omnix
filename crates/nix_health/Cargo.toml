@@ -21,7 +21,6 @@ tracing-subscriber.workspace = true
 tracing-subscriber-wasm.workspace = true
 url = { version = "2.4", features = ["serde"] }
 nix_rs.workspace = true
-system_rs.workspace = true
 
 [features]
-all = ["dep:tokio", "nix_rs/all", "system_rs/all"]
+all = ["dep:tokio", "nix_rs/all"]

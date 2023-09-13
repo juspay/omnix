@@ -12,7 +12,7 @@ use crate::{
 pub struct Caches(pub ConfigVal<Vec<Url>>);
 
 impl Check for Caches {
-    fn check(nix_info: &info::NixInfo, _sys_info: &system_rs::info::SysInfo) -> Self {
+    fn check(nix_info: &info::NixInfo, _sys_info: &info::SysInfo) -> Self {
         Caches(nix_info.nix_config.substituters.clone())
     }
     fn name(&self) -> &'static str {
