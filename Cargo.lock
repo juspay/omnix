@@ -1873,6 +1873,7 @@ version = "0.1.0"
 dependencies = [
  "cfg-if",
  "nix_rs",
+ "os_info",
  "regex",
  "serde",
  "serde_json",
