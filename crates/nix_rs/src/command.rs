@@ -2,18 +2,19 @@
 //!
 //! # Example
 //!
-//! ```no_run
+//! ```ignore
+//! use nix_rs::command::NixCmd;
 //! let cmd = NixCmd::default();
-//! cmd.run_with_args_returning_stdout(&["--version"]).await?;
+//! cmd.run_with_args_returning_stdout(&["--version"]);
 //! ```
 
 use std::fmt::{self, Display};
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
-#[cfg(feature = "all")]
+#[cfg(feature = "ssr")]
 use tokio::process::Command;
-#[cfg(feature = "all")]
+#[cfg(feature = "ssr")]
 use tracing::instrument;
 
 /// The `nix` command's global options.
@@ -26,7 +27,7 @@ pub struct NixCmd {
     pub refresh: Refresh,
 }
 
-/// Whether to refresh the flake, by passing --refresh to nix
+/// Whether to refresh the flake, by passing `--refresh` to nix
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Hash)]
 pub struct Refresh(bool);
 
@@ -46,17 +47,32 @@ impl Default for NixCmd {
     }
 }
 
-#[cfg(feature = "all")]
+/// Trace a user-copyable command line
+///
+/// [tracing::info!] the given [tokio::process::Command] with human-readable
+/// command-line string that can generally be copy-pasted by the user.
+///
+/// The command will be highlighted to distinguish it (for copying) from the
+/// rest of the instrumentation parameters.
+#[cfg(feature = "ssr")]
+#[instrument(name = "command")]
+pub fn trace_cmd(cmd: &tokio::process::Command) {
+    use colored::Colorize;
+    tracing::info!("️🐚 {}️", to_cli(cmd).bright_green().on_black());
+}
+
+#[cfg(feature = "ssr")]
 impl NixCmd {
     /// Return a [Command] for this [NixCmd] configuration
     pub fn command(&self) -> Command {
         let mut cmd = Command::new("nix");
+        cmd.kill_on_drop(true);
         cmd.args(self.args());
         cmd
     }
 
     /// Run nix with given args, interpreting stdout as JSON, parsing into `T`
-    #[cfg(feature = "all")]
+    #[cfg(feature = "ssr")]
     pub async fn run_with_args_expecting_json<T>(&self, args: &[&str]) -> Result<T, NixCmdError>
     where
         T: serde::de::DeserializeOwned,
@@ -67,7 +83,7 @@ impl NixCmd {
     }
 
     /// Run nix with given args, interpreting parsing stdout, via [std::str::FromStr], into `T`
-    #[cfg(feature = "all")]
+    #[cfg(feature = "ssr")]
     pub async fn run_with_args_expecting_fromstr<T>(&self, args: &[&str]) -> Result<T, NixCmdError>
     where
         T: std::str::FromStr,
@@ -80,11 +96,24 @@ impl NixCmd {
     }
 
     /// Run nix with given args, returning stdout.
-    #[cfg(feature = "all")]
-    async fn run_with_args_returning_stdout(&self, args: &[&str]) -> Result<Vec<u8>, CommandError> {
+    #[cfg(feature = "ssr")]
+    pub async fn run_with_args_returning_stdout(
+        &self,
+        args: &[&str],
+    ) -> Result<Vec<u8>, CommandError> {
         let mut cmd = self.command();
         cmd.args(args);
-        run_command(&mut cmd).await
+        trace_cmd(&cmd);
+        let out = cmd.output().await?;
+        if out.status.success() {
+            Ok(out.stdout)
+        } else {
+            let stderr = String::from_utf8(out.stderr)?;
+            Err(CommandError::ProcessFailed {
+                stderr,
+                exit_code: out.status.code(),
+            })
+        }
     }
 
     /// Convert this [NixCmd] configuration into a list of arguments for
@@ -100,6 +129,22 @@ impl NixCmd {
         }
         args
     }
+}
+
+/// Convert a Command to user-copyable CLI string
+#[cfg(feature = "ssr")]
+fn to_cli(cmd: &tokio::process::Command) -> String {
+    use std::ffi::OsStr;
+    let program = cmd.as_std().get_program().to_string_lossy().to_string();
+    let args = cmd
+        .as_std()
+        .get_args()
+        .collect::<Vec<&OsStr>>()
+        .into_iter()
+        .map(|s| s.to_string_lossy().to_string())
+        .collect::<Vec<String>>();
+    let cli = vec![program].into_iter().chain(args).collect::<Vec<String>>();
+    shell_words::join(cli)
 }
 
 /// Errors when running and interpreting the output of a nix command
@@ -128,30 +173,6 @@ impl Display for FromStrError {
 }
 
 impl std::error::Error for FromStrError {}
-
-/// Run the given command, returning its stdout.
-#[cfg(feature = "all")]
-#[allow(clippy::needless_pass_by_ref_mut)]
-pub async fn run_command(cmd: &mut tokio::process::Command) -> Result<Vec<u8>, CommandError> {
-    cmd.kill_on_drop(true);
-    run_command_(cmd).await
-}
-
-#[cfg(feature = "all")]
-#[instrument(name = "run-command", err)]
-async fn run_command_(cmd: &mut tokio::process::Command) -> Result<Vec<u8>, CommandError> {
-    tracing::info!("️🏃️ Running command");
-    let out = cmd.output().await?;
-    if out.status.success() {
-        Ok(out.stdout)
-    } else {
-        let stderr = String::from_utf8(out.stderr)?;
-        Err(CommandError::ProcessFailed {
-            stderr,
-            exit_code: out.status.code(),
-        })
-    }
-}
 
 #[derive(Error, Debug)]
 pub enum CommandError {

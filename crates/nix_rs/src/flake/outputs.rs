@@ -15,7 +15,7 @@ pub enum FlakeOutputs {
 
 impl FlakeOutputs {
     /// Run `nix flake show` on the given flake url
-    #[cfg(feature = "all")]
+    #[cfg(feature = "ssr")]
     #[tracing::instrument(name = "flake-show")]
     pub async fn from_nix(
         nix_cmd: &crate::command::NixCmd,
@@ -54,7 +54,7 @@ impl FlakeOutputs {
     ///
     /// # Example
     /// ```no_run
-    /// let tree : &nix_browser::nix::flake::outputs::FlakeOutputs = todo!();
+    /// let tree : &nix_rs::flake::outputs::FlakeOutputs = todo!();
     /// let val = tree.pop(&["packages", "aarch64-darwin", "default"]);
     /// ```
     pub fn pop(&mut self, path: &[&str]) -> Option<Self> {

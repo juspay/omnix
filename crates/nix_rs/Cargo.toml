@@ -1,7 +1,10 @@
 [package]
-edition = "2021"
+edition.workspace = true
 name = "nix_rs"
-version = "0.1.0"
+version = "0.1.7"
+license.workspace = true
+repository.workspace = true
+description = "Rust library for interacting with the Nix command"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -18,9 +21,9 @@ serde_json.workspace = true
 serde_with.workspace = true
 tokio = { version = "1.29", features = ["full"], optional = true }
 tracing.workspace = true
-tracing-subscriber.workspace = true
-tracing-subscriber-wasm.workspace = true
 url = { version = "2.4", features = ["serde"] }
+colored = { version = "2.0", optional = true }
+shell-words = { version = "1.1.0", optional = true }
 
 [features]
-all = ["dep:tokio"]
+ssr = ["dep:tokio", "dep:colored", "dep:shell-words"]

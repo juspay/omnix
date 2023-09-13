@@ -34,7 +34,9 @@ nix run
 ## Contributing
 
 - When you are done with your changes, run `just fmt` to **autoformat** the source tree; the CI checks for this.
-- Add tests if relevant. Run `just test` to run the **tests**.
+- Add tests if relevant, and run them:
+    - Run `just test` to run the **unit tests**.
+    - Run `just e2e` (requires `just watch` to be running) or `just e2e-release` to run the **end-to-end tests**
 - Add documentation wherever useful. To preview the **docs**, run `just doc`.
 
 ## Frontend tech
@@ -50,3 +52,12 @@ We use [Tailwind](https://tailwindcss.com/) for styling; 🎓 familiarize yourse
 #### Color palette
 
 See `tailwind.config.js` for colour aliases we use throughout the app. Instead of, say, `text-pink-500` we use `text-primary-500` ("primary" is more semantic than "pink").
+
+## Crates
+
+We publish the following crates from this repo:
+
+| Crate Link | Description | 
+|------------|-------------|
+| https://crates.io/crates/nix_rs | Rust interface to the Nix command line |
+| https://crates.io/crates/nix_health | Nix health check library and executable |

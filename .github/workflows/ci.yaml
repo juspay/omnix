@@ -1,0 +1,18 @@
+name: "CI"
+on:
+  # Run only when pushing to master branch, and making PRs
+  push:
+    branches:
+      - main
+  pull_request:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - run: nix build --no-link --print-out-paths .#e2e-playwright-test
+      - name: E2E tests
+        run: nix run .#e2e-playwright-test

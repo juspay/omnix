@@ -16,6 +16,19 @@ pub enum Report<T> {
 #[derive(Debug, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize, Clone)]
 pub struct NoDetails;
 
+impl<R> Report<R> {
+    pub fn is_green(&self) -> bool {
+        match self {
+            Report::Green => true,
+            Report::Red(_) => false,
+        }
+    }
+
+    pub fn is_red(&self) -> bool {
+        !self.is_green()
+    }
+}
+
 /// Details regarding a failed report
 #[derive(Debug, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize, Clone)]
 pub struct WithDetails {

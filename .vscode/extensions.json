@@ -4,6 +4,6 @@
         "mkhl.direnv",
         "jnoortheen.nix-ide",
         "bradlc.vscode-tailwindcss",
-        "bram209.leptos-language-server"
+        "ms-playwright.playwright"
     ]
 }

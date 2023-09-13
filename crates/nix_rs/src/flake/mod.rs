@@ -5,11 +5,11 @@ pub mod system;
 pub mod url;
 
 use serde::{Deserialize, Serialize};
-#[cfg(feature = "all")]
+#[cfg(feature = "ssr")]
 use tracing::instrument;
 
 use self::{outputs::FlakeOutputs, schema::FlakeSchema, system::System, url::FlakeUrl};
-#[cfg(feature = "all")]
+#[cfg(feature = "ssr")]
 use crate::command::NixCmdError;
 
 /// All the information about a Nix flake
@@ -26,8 +26,8 @@ pub struct Flake {
 
 impl Flake {
     /// Get [Flake] info for the given flake url
-    #[cfg(feature = "all")]
-    #[instrument(name = "flake")]
+    #[cfg(feature = "ssr")]
+    #[instrument(name = "flake", skip(nix_cmd))]
     pub async fn from_nix(
         nix_cmd: &crate::command::NixCmd,
         url: FlakeUrl,

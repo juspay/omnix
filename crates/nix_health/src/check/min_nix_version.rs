@@ -1,4 +1,7 @@
 use nix_rs::{info, system, version::NixVersion};
+
+use std::fmt::Display;
+
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -6,7 +9,7 @@ use crate::{
     traits::Check,
 };
 
-/// Check that [crate::version::NixVersion] is set to a good value.
+/// Check that [nix_rs::version::NixVersion] is set to a good value.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MinNixVersion(pub NixVersion);
 
@@ -31,5 +34,11 @@ impl Check for MinNixVersion {
                 suggestion: "See https://nixos.org/manual/nix/stable/command-ref/new-cli/nix3-upgrade-nix.html".into(),
             })
         }
+    }
+}
+
+impl Display for MinNixVersion {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "nix version = {}", self.0)
     }
 }

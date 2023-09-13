@@ -1,4 +1,7 @@
 use nix_rs::{config::ConfigVal, info, system};
+
+use std::fmt::Display;
+
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -6,7 +9,7 @@ use crate::{
     traits::Check,
 };
 
-/// Check that [crate::config::NixConfig::experimental_features] is set to a good value.
+/// Check that [nix_rs::config::NixConfig::experimental_features] is set to a good value.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct FlakeEnabled(pub ConfigVal<Vec<String>>);
 
@@ -27,5 +30,11 @@ impl Check for FlakeEnabled {
                 suggestion: "See https://nixos.wiki/wiki/Flakes#Enable_flakes".into(),
             })
         }
+    }
+}
+
+impl Display for FlakeEnabled {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "experimental-features = {}", self.0.value.join(" "))
     }
 }
