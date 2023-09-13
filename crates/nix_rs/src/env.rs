@@ -1,4 +1,6 @@
 //! Information about the environment in which Nix will run
+use std::fmt::Display;
+
 use os_info;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -34,6 +36,16 @@ pub enum NixSystem {
     NixOS,
     /// Nix is individually installed on Linux or macOS
     Other(os_info::Type),
+}
+
+impl Display for NixSystem {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            NixSystem::NixDarwin => write!(f, "nix-darwin"),
+            NixSystem::NixOS => write!(f, "NixOS"),
+            NixSystem::Other(os_type) => write!(f, "{}", os_type),
+        }
+    }
 }
 
 impl NixSystem {
