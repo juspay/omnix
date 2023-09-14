@@ -1,13 +1,13 @@
 //! Rust module for `nix --version`
 use regex::Regex;
-use serde::{Deserialize, Serialize};
+use serde_with::{DeserializeFromStr, SerializeDisplay};
 use std::{fmt, str::FromStr};
 use thiserror::Error;
 #[cfg(feature = "ssr")]
 use tracing::instrument;
 
 /// Nix version as parsed from `nix --version`
-#[derive(Clone, PartialOrd, PartialEq, Eq, Debug, Serialize, Deserialize)]
+#[derive(Clone, PartialOrd, PartialEq, Eq, Debug, SerializeDisplay, DeserializeFromStr)]
 pub struct NixVersion {
     pub major: u32,
     pub minor: u32,
@@ -18,9 +18,9 @@ pub struct NixVersion {
 pub enum BadNixVersion {
     #[error("Regex error: {0}")]
     Regex(#[from] regex::Error),
-    #[error("Parse error: `nix --version` cannot be parsed")]
+    #[error("Parse error (regex): `nix --version` cannot be parsed")]
     Parse(#[from] std::num::ParseIntError),
-    #[error("Parse error: `nix --version` cannot be parsed")]
+    #[error("Parse error (int): `nix --version` cannot be parsed")]
     Command,
 }
 
@@ -29,7 +29,9 @@ impl FromStr for NixVersion {
 
     /// Parse the string output of `nix --version` into a [NixVersion]
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let re = Regex::new(r"nix \(Nix\) (\d+)\.(\d+)\.(\d+)")?;
+        // NOTE: The parser is lenient in allowing pure nix version (produced
+        // by [Display] instance), so as to work with serde_with instances.
+        let re = Regex::new(r"(?:nix \(Nix\) )?(\d+)\.(\d+)\.(\d+)")?;
 
         let captures = re.captures(s).ok_or(BadNixVersion::Command)?;
         let major = captures[1].parse::<u32>()?;
@@ -84,8 +86,14 @@ async fn test_parse_nix_version() {
             patch: 0
         })
     );
+
+    // Parse simple nix version
     assert_eq!(
-        NixVersion::from_str("nix 2.4.0"),
-        Err(BadNixVersion::Command)
+        NixVersion::from_str("2.13.0"),
+        Ok(NixVersion {
+            major: 2,
+            minor: 13,
+            patch: 0
+        })
     );
 }
