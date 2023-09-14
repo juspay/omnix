@@ -1,76 +1,58 @@
-use std::fmt::Display;
-
-use nix_rs::{config::ConfigVal, env, info};
+use nix_rs::{env, info};
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-use crate::{
-    report::{Report, WithDetails},
-    traits::Check,
-};
+use crate::traits::*;
 
 /// Check that [nix_rs::config::NixConfig::substituters] is set to a good value.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Caches {
-    pub substituers: ConfigVal<Vec<Url>>,
-    pub config: CachesConfig
+    pub required_caches: Vec<Url>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct CachesConfig {
-    pub required_caches: Vec<Url>
-}
-
-impl Default for CachesConfig {
+impl Default for Caches {
     fn default() -> Self {
-        CachesConfig {
+        Caches {
             required_caches: vec![
                 Url::parse("https://cache.nixos.org").unwrap(),
                 // TODO: Hardcoding this to test failed reports
                 Url::parse("https://nix-community.cachix.org").unwrap(),
-            ]
+            ],
         }
     }
 }
 
-
-impl Check for Caches {
-    fn check(nix_info: &info::NixInfo, _nix_env: &env::NixEnv) -> Self {
-        Caches{
-            substituers: nix_info.nix_config.substituters.clone(),
-            // TODO: Get user input
-            config: CachesConfig::default()
-        }
-    }
-    fn name(&self) -> &'static str {
-        "Nix Caches in use"
-    }
-    fn report(&self) -> Report<WithDetails> {
-        let val = &self.substituers.value;
-        for required_cache in &self.config.required_caches {
-            if !val.contains(required_cache) {
-                return Report::Red(WithDetails {
-                    msg: format!("You are missing a required cache: {}", required_cache),
-                    // TODO: Suggestion should be smart. Use 'cachix use' if a cachix cache.
-                    suggestion: "Add substituters in /etc/nix/nix.conf or use 'cachix use'".into(),
-                });
-            }
-        }
-        Report::Green
-    }
-}
-
-impl Display for Caches {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "substituters = {}",
-            self.substituers
-                .value
+impl Checkable for Caches {
+    fn check(&self, nix_info: &info::NixInfo, _nix_env: &env::NixEnv) -> Option<Check> {
+        let val = &nix_info.nix_config.substituters.value;
+        let check = Check {
+            title: "Nix Caches in use",
+            info: format!(
+                "substituters = {}",
+                val.iter()
+                    .map(|url| url.to_string())
+                    .collect::<Vec<String>>()
+                    .join(" ")
+            ),
+            result: if self
+                .required_caches
                 .iter()
-                .map(|url| url.to_string())
-                .collect::<Vec<String>>()
-                .join(" ")
-        )
+                .all(|required_cache| val.contains(required_cache))
+            {
+                CheckResult::Green
+            } else {
+                CheckResult::Red {
+                    msg: format!(
+                        "You are missing a required cache: {}",
+                        self.required_caches
+                            .iter()
+                            .find(|required_cache| !val.contains(required_cache))
+                            .unwrap()
+                    ),
+                    suggestion: "Add in /etc/nix/nix.conf or use 'cachix use'".to_string(),
+                }
+            },
+        };
+        Some(check)
     }
 }
