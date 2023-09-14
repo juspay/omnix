@@ -5,7 +5,7 @@ use crate::traits::*;
 
 /// Check that [nix_rs::config::NixConfig::experimental_features] is set to a good value.
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
-pub struct FlakeEnabled();
+pub struct FlakeEnabled {}
 
 impl Checkable for FlakeEnabled {
     fn check(&self, nix_info: &info::NixInfo, _nix_env: &env::NixEnv) -> Option<Check> {

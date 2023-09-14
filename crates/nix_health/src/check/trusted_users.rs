@@ -5,7 +5,7 @@ use crate::traits::*;
 
 /// Check that [crate::nix::config::NixConfig::trusted_users] is set to a good value.
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
-pub struct TrustedUsers();
+pub struct TrustedUsers {}
 
 impl Checkable for TrustedUsers {
     fn check(&self, nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Option<Check> {

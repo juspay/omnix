@@ -5,21 +5,27 @@ use url::Url;
 use crate::traits::*;
 
 /// Check that [nix_rs::config::NixConfig::substituters] is set to a good value.
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
+#[serde(rename_all = "kebab-case")]
 pub struct Caches {
+    #[serde(default = "default_caches")]
     pub required_caches: Vec<Url>,
 }
 
 impl Default for Caches {
     fn default() -> Self {
         Caches {
-            required_caches: vec![
-                Url::parse("https://cache.nixos.org").unwrap(),
-                // TODO: Hardcoding this for now, so as to test failed reports
-                Url::parse("https://nix-community.cachix.org").unwrap(),
-            ],
+            required_caches: default_caches(),
         }
     }
+}
+
+fn default_caches() -> Vec<Url> {
+    vec![
+        Url::parse("https://cache.nixos.org").unwrap(),
+        // TODO: Hardcoding this for now, so as to test failed reports
+        Url::parse("https://nix-community.cachix.org").unwrap(),
+    ]
 }
 
 impl Checkable for Caches {
