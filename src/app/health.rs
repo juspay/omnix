@@ -45,7 +45,7 @@ fn ViewCheck(cx: Scope, check: Check) -> impl IntoView {
                 class="my-2 bg-white border-2 rounded-lg cursor-pointer hover:bg-primary-100 border-base-300"
             >
                 <summary class="p-4 text-xl font-bold">
-                    <ReportSummaryView green=(check.result == CheckResult::Green)/>
+                    <CheckResultSummaryView green=(check.result == CheckResult::Green)/>
                     {" "}
                     {check.title}
                 </summary>
@@ -77,7 +77,7 @@ fn ViewCheck(cx: Scope, check: Check) -> impl IntoView {
 }
 
 #[component]
-pub fn ReportSummaryView(cx: Scope, green: bool) -> impl IntoView {
+pub fn CheckResultSummaryView(cx: Scope, green: bool) -> impl IntoView {
     if green {
         view! { cx, <span class="text-green-500">{"✓"}</span> }
     } else {

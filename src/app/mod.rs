@@ -99,7 +99,7 @@ fn Dashboard(cx: Scope) -> impl IntoView {
     let healthy = Signal::derive(cx, move || {
         data.with_result(|checks| {
             checks
-                .into_iter()
+                .iter()
                 .all(|check| check.result == CheckResult::Green)
         })
     });
@@ -125,7 +125,7 @@ fn Dashboard(cx: Scope) -> impl IntoView {
                     {move || {
                         healthy
                             .with_result(move |green| {
-                                view! { cx, <ReportSummaryView green=*green/> }
+                                view! { cx, <CheckResultSummaryView green=*green/> }
                             })
                     }}
 
