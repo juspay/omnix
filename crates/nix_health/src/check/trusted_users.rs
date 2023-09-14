@@ -29,7 +29,7 @@ impl Checkable for TrustedUsers {
             CheckResult::Red { msg, suggestion }
         };
         let check = Check {
-            title: "Trusted Users",
+            title: "Trusted Users".to_string(),
             info: format!("trusted-users = {}", val.join(" ")),
             result,
         };

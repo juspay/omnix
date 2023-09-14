@@ -25,7 +25,7 @@ impl Checkable for MinNixVersion {
     fn check(&self, nix_info: &info::NixInfo, _nix_env: &env::NixEnv) -> Option<Check> {
         let val = &nix_info.nix_version;
         let check = Check {
-            title: "Minimum Nix Version",
+            title: "Minimum Nix Version".to_string(),
             info: format!("nix version = {}", val),
             result: if val >= &self.min_required {
                 CheckResult::Green

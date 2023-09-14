@@ -15,7 +15,7 @@ use leptos_extra::{
 use leptos_meta::*;
 use leptos_query::*;
 use leptos_router::*;
-use nix_health::traits::Check;
+use nix_health::traits::CheckResult;
 use nix_rs::{command::Refresh, flake::url::FlakeUrl};
 
 use crate::{app::flake::*, app::health::*, app::info::*, widget::*};
@@ -96,7 +96,13 @@ fn Dashboard(cx: Scope) -> impl IntoView {
     tracing::debug!("Rendering Dashboard page");
     let result = query::use_server_query(cx, || (), get_nix_health);
     let data = result.data;
-    let report = Signal::derive(cx, move || data.with_result(|v| v.report()));
+    let healthy = Signal::derive(cx, move || {
+        data.with_result(|checks| {
+            checks
+                .into_iter()
+                .all(|check| check.result == CheckResult::Green)
+        })
+    });
     // A Card component
     #[component]
     fn Card(cx: Scope, href: &'static str, children: Children) -> impl IntoView {
@@ -117,9 +123,9 @@ fn Dashboard(cx: Scope) -> impl IntoView {
                 <Card href="/health">
                     "Nix Health Check "
                     {move || {
-                        report
-                            .with_result(move |report| {
-                                view! { cx, <ReportSummaryView report/> }
+                        healthy
+                            .with_result(move |green| {
+                                view! { cx, <ReportSummaryView green=*green/> }
                             })
                     }}
 

@@ -10,7 +10,7 @@ pub trait Checkable {
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct Check {
     /// A user-facing title of this check
-    pub title: &'static str,
+    pub title: String,
 
     /// The information used to conduct this check
     /// TODO: Should be Markdown
@@ -29,4 +29,3 @@ pub enum CheckResult {
         suggestion: String,
     },
 }
-

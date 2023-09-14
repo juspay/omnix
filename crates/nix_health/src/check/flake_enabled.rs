@@ -11,7 +11,7 @@ impl Checkable for FlakeEnabled {
     fn check(&self, nix_info: &info::NixInfo, _nix_env: &env::NixEnv) -> Option<Check> {
         let val = &nix_info.nix_config.experimental_features.value;
         let check = Check {
-            title: "Flakes Enabled",
+            title: "Flakes Enabled".to_string(),
             info: format!("experimental-features = {}", val.join(" ")),
             result: if val.contains(&"flakes".to_string())
                 && val.contains(&"nix-command".to_string())

@@ -26,7 +26,7 @@ impl Checkable for Caches {
     fn check(&self, nix_info: &info::NixInfo, _nix_env: &env::NixEnv) -> Option<Check> {
         let val = &nix_info.nix_config.substituters.value;
         let check = Check {
-            title: "Nix Caches in use",
+            title: "Nix Caches in use".to_string(),
             info: format!(
                 "substituters = {}",
                 val.iter()

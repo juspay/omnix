@@ -63,7 +63,7 @@ impl Checkable for NixHealth {
             .into_iter()
             .all(|check| check.result == CheckResult::Green);
         let check = Check {
-            title: "Nix Health",
+            title: "Nix Health".to_string(),
             info: format!("{} checks", self.into_iter().count()),
             result: if all_green {
                 CheckResult::Green
