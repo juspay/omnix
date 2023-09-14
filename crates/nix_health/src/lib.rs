@@ -55,25 +55,3 @@ impl NixHealth {
             .collect()
     }
 }
-
-impl Checkable for NixHealth {
-    fn check(&self, nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Option<Check> {
-        let results = self.run_checks(nix_info, nix_env);
-        let all_green = results
-            .into_iter()
-            .all(|check| check.result == CheckResult::Green);
-        let check = Check {
-            title: "Nix Health".to_string(),
-            info: format!("{} checks", self.into_iter().count()),
-            result: if all_green {
-                CheckResult::Green
-            } else {
-                CheckResult::Red {
-                    msg: "Some checks failed".into(),
-                    suggestion: "".to_string(),
-                }
-            },
-        };
-        Some(check)
-    }
-}

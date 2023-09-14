@@ -15,7 +15,6 @@ use leptos_extra::{
 use leptos_meta::*;
 use leptos_query::*;
 use leptos_router::*;
-use nix_health::traits::CheckResult;
 use nix_rs::{command::Refresh, flake::url::FlakeUrl};
 
 use crate::{app::flake::*, app::health::*, app::info::*, widget::*};
