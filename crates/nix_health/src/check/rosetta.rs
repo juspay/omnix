@@ -8,7 +8,7 @@ use crate::{
     traits::Check,
 };
 
-/// Check that [nix_rs::config::NixConfig::experimental_features] is set to a good value.
+/// Check if Nix is being run under rosetta emulation on macOS
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Rosetta(pub bool);
 
