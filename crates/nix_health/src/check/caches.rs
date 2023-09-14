@@ -11,36 +11,52 @@ use crate::{
 
 /// Check that [nix_rs::config::NixConfig::substituters] is set to a good value.
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Caches(pub ConfigVal<Vec<Url>>);
+pub struct Caches {
+    pub substituers: ConfigVal<Vec<Url>>,
+    pub config: CachesConfig
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct CachesConfig {
+    pub required_caches: Vec<Url>
+}
+
+impl Default for CachesConfig {
+    fn default() -> Self {
+        CachesConfig {
+            required_caches: vec![
+                Url::parse("https://cache.nixos.org").unwrap(),
+                // TODO: Hardcoding this to test failed reports
+                Url::parse("https://nix-community.cachix.org").unwrap(),
+            ]
+        }
+    }
+}
+
 
 impl Check for Caches {
     fn check(nix_info: &info::NixInfo, _nix_env: &env::NixEnv) -> Self {
-        Caches(nix_info.nix_config.substituters.clone())
+        Caches{
+            substituers: nix_info.nix_config.substituters.clone(),
+            // TODO: Get user input
+            config: CachesConfig::default()
+        }
     }
     fn name(&self) -> &'static str {
         "Nix Caches in use"
     }
     fn report(&self) -> Report<WithDetails> {
-        let val = &self.0.value;
-        // TODO: Hardcoding this to test failed reports
-        // TODO: Make this customizable in a flake
-        let required_cache = Url::parse("https://nix-community.cachix.org").unwrap();
-        if val.contains(&Url::parse("https://cache.nixos.org").unwrap()) {
-            if val.contains(&required_cache) {
-                Report::Green
-            } else {
-                Report::Red(WithDetails {
+        let val = &self.substituers.value;
+        for required_cache in &self.config.required_caches {
+            if !val.contains(required_cache) {
+                return Report::Red(WithDetails {
                     msg: format!("You are missing a required cache: {}", required_cache),
                     // TODO: Suggestion should be smart. Use 'cachix use' if a cachix cache.
                     suggestion: "Add substituters in /etc/nix/nix.conf or use 'cachix use'".into(),
-                })
+                });
             }
-        } else {
-            Report::Red(WithDetails {
-                msg: "You are missing the official cache".into(),
-                suggestion: "Try looking in /etc/nix/nix.conf".into(),
-            })
         }
+        Report::Green
     }
 }
 
@@ -49,7 +65,7 @@ impl Display for Caches {
         write!(
             f,
             "substituters = {}",
-            self.0
+            self.substituers
                 .value
                 .iter()
                 .map(|url| url.to_string())

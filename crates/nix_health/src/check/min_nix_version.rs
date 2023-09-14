@@ -20,6 +20,7 @@ impl Check for MinNixVersion {
         "Minimum Nix Version"
     }
     fn report(&self) -> Report<WithDetails> {
+        // TODO: Make configurable
         let min_required = NixVersion {
             major: 2,
             minor: 13,

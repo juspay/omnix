@@ -105,7 +105,7 @@ fn ViewCheck(
 
 #[component]
 fn CachesView<'a>(cx: Scope, v: &'a Caches) -> impl IntoView {
-    view! { cx, <div>"The following caches are in use:" <ConfigValListView cfg=v.0.clone()/></div> }
+    view! { cx, <div>"The following caches are in use:" <ConfigValListView cfg=v.substituers.clone()/></div> }
 }
 
 #[component]
