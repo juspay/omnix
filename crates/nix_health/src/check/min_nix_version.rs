@@ -1,43 +1,41 @@
-use std::fmt::Display;
-
 use nix_rs::{env, info, version::NixVersion};
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    report::{Report, WithDetails},
-    traits::Check,
-};
+use crate::traits::*;
 
 /// Check that [nix_rs::version::NixVersion] is set to a good value.
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct MinNixVersion(pub NixVersion);
+pub struct MinNixVersion {
+    pub min_required: NixVersion,
+}
 
-impl Check for MinNixVersion {
-    fn check(nix_info: &info::NixInfo, _nix_env: &env::NixEnv) -> Self {
-        MinNixVersion(nix_info.nix_version.clone())
-    }
-    fn name(&self) -> &'static str {
-        "Minimum Nix Version"
-    }
-    fn report(&self) -> Report<WithDetails> {
-        let min_required = NixVersion {
-            major: 2,
-            minor: 13,
-            patch: 0,
-        };
-        if self.0 >= min_required {
-            Report::Green
-        } else {
-            Report::Red(WithDetails {
-                msg: format!("Your Nix version ({}) is too old; we require at least {}", self.0, min_required),
-                suggestion: "See https://nixos.org/manual/nix/stable/command-ref/new-cli/nix3-upgrade-nix.html".into(),
-            })
+impl Default for MinNixVersion {
+    fn default() -> Self {
+        MinNixVersion {
+            min_required: NixVersion {
+                major: 2,
+                minor: 13,
+                patch: 0,
+            },
         }
     }
 }
 
-impl Display for MinNixVersion {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "nix version = {}", self.0)
+impl Checkable for MinNixVersion {
+    fn check(&self, nix_info: &info::NixInfo, _nix_env: &env::NixEnv) -> Option<Check> {
+        let val = &nix_info.nix_version;
+        let check = Check {
+            title: "Minimum Nix Version".to_string(),
+            info: format!("nix version = {}", val),
+            result: if val >= &self.min_required {
+                CheckResult::Green
+            } else {
+                CheckResult::Red {
+                    msg: format!("Your Nix version ({}) is too old; we require at least {}", val, self.min_required),
+                    suggestion: "See https://nixos.org/manual/nix/stable/command-ref/new-cli/nix3-upgrade-nix.html".into(),
+                }
+            },
+        };
+        Some(check)
     }
 }
