@@ -45,7 +45,7 @@ fn ViewCheck(cx: Scope, check: Check) -> impl IntoView {
                 class="my-2 bg-white border-2 rounded-lg cursor-pointer hover:bg-primary-100 border-base-300"
             >
                 <summary class="p-4 text-xl font-bold">
-                    <CheckResultSummaryView green=(check.result == CheckResult::Green)/>
+                    <CheckResultSummaryView green=check.result.green()/>
                     {" "}
                     {check.title}
                 </summary>

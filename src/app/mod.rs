@@ -97,11 +97,7 @@ fn Dashboard(cx: Scope) -> impl IntoView {
     let result = query::use_server_query(cx, || (), get_nix_health);
     let data = result.data;
     let healthy = Signal::derive(cx, move || {
-        data.with_result(|checks| {
-            checks
-                .iter()
-                .all(|check| check.result == CheckResult::Green)
-        })
+        data.with_result(|checks| checks.iter().all(|check| check.result.green()))
     });
     // A Card component
     #[component]

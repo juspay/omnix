@@ -15,7 +15,7 @@ impl Default for Caches {
         Caches {
             required_caches: vec![
                 Url::parse("https://cache.nixos.org").unwrap(),
-                // TODO: Hardcoding this to test failed reports
+                // TODO: Hardcoding this for now, so as to test failed reports
                 Url::parse("https://nix-community.cachix.org").unwrap(),
             ],
         }
@@ -25,6 +25,20 @@ impl Default for Caches {
 impl Checkable for Caches {
     fn check(&self, nix_info: &info::NixInfo, _nix_env: &env::NixEnv) -> Option<Check> {
         let val = &nix_info.nix_config.substituters.value;
+        let result = if self.required_caches.iter().all(|c| val.contains(c)) {
+            CheckResult::Green
+        } else {
+            CheckResult::Red {
+                msg: format!(
+                    "You are missing a required cache: {}",
+                    self.required_caches
+                        .iter()
+                        .find(|required_cache| !val.contains(required_cache))
+                        .unwrap()
+                ),
+                suggestion: "Add in /etc/nix/nix.conf or use 'cachix use'".to_string(),
+            }
+        };
         let check = Check {
             title: "Nix Caches in use".to_string(),
             info: format!(
@@ -34,24 +48,7 @@ impl Checkable for Caches {
                     .collect::<Vec<String>>()
                     .join(" ")
             ),
-            result: if self
-                .required_caches
-                .iter()
-                .all(|required_cache| val.contains(required_cache))
-            {
-                CheckResult::Green
-            } else {
-                CheckResult::Red {
-                    msg: format!(
-                        "You are missing a required cache: {}",
-                        self.required_caches
-                            .iter()
-                            .find(|required_cache| !val.contains(required_cache))
-                            .unwrap()
-                    ),
-                    suggestion: "Add in /etc/nix/nix.conf or use 'cachix use'".to_string(),
-                }
-            },
+            result,
         };
         Some(check)
     }
