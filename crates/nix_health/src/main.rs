@@ -12,7 +12,7 @@ async fn main() -> anyhow::Result<()> {
     let nix_env = NixEnv::detect()
         .await
         .with_context(|| "Unable to gather system info")?;
-    let health = NixHealth::default();
+    let health = NixHealth::new(None);
     let checks = &health.run_checks(&nix_info, &nix_env);
     println!("Checking the health of your Nix setup:\n");
     for check in checks {

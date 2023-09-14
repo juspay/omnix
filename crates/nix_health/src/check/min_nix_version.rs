@@ -4,20 +4,26 @@ use serde::{Deserialize, Serialize};
 use crate::traits::*;
 
 /// Check that [nix_rs::version::NixVersion] is set to a good value.
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
+#[serde(rename_all = "kebab-case")]
 pub struct MinNixVersion {
+    #[serde(default = "default_min_required")]
     pub min_required: NixVersion,
 }
 
 impl Default for MinNixVersion {
     fn default() -> Self {
         MinNixVersion {
-            min_required: NixVersion {
-                major: 2,
-                minor: 13,
-                patch: 0,
-            },
+            min_required: default_min_required(),
         }
+    }
+}
+
+fn default_min_required() -> NixVersion {
+    NixVersion {
+        major: 2,
+        minor: 13,
+        patch: 0,
     }
 }
 
