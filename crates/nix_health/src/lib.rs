@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 use self::check::{
     caches::Caches, flake_enabled::FlakeEnabled, max_jobs::MaxJobs, min_nix_version::MinNixVersion,
-    trusted_users::TrustedUsers,
+    rosetta::Rosetta, trusted_users::TrustedUsers,
 };
 use self::traits::*;
 
@@ -30,6 +30,8 @@ pub struct NixHealth {
     pub nix_version: MinNixVersion,
     #[serde(default)]
     pub trusted_users: TrustedUsers,
+    #[serde(default)]
+    pub rosetta: Rosetta,
 }
 
 impl<'a> IntoIterator for &'a NixHealth {
@@ -39,6 +41,7 @@ impl<'a> IntoIterator for &'a NixHealth {
     /// Return an iterator to iterate on the fields of [NixHealth]
     fn into_iter(self) -> Self::IntoIter {
         let items: Vec<Self::Item> = vec![
+            &self.rosetta,
             &self.nix_version,
             &self.flake_enabled,
             &self.max_jobs,
