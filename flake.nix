@@ -34,7 +34,7 @@
       ];
       flake = {
         nix-health.default = {
-          min-nix-version.min-required = "2.18.0";
+          nix-version.min-required = "2.16.0";
           caches.required = [ "https://cache.garnix.io" ];
         };
       };
