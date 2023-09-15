@@ -12,7 +12,6 @@ use nix_rs::{command::NixCmd, env::NixEnv, info::NixInfo};
 async fn main() -> anyhow::Result<()> {
     human_panic::setup_panic!();
     let checks = run_checks().await?;
-    println!("Checking the health of your Nix setup:\n");
     for check in &checks {
         match &check.result {
             CheckResult::Green => {
@@ -50,8 +49,14 @@ async fn run_checks() -> anyhow::Result<Vec<Check>> {
         .await
         .with_context(|| "Unable to gather system info")?;
     let health: NixHealth = if Path::new("flake.nix").exists() {
-        NixHealth::from_flake(".#nix-health.default".into()).await
+        let flake_cfg = ".#nix-health.default".into();
+        println!(
+            "🩺️ Checking the health of your Nix setup, using config from local flake ({}):\n",
+            flake_cfg
+        );
+        NixHealth::from_flake(flake_cfg).await
     } else {
+        println!("🩺️️ Checking the health of your Nix setup:\n");
         Ok(NixHealth::default())
     }?;
     let checks = health.run_checks(&nix_info, &nix_env);
