@@ -1,10 +1,9 @@
 name: "CI"
 on:
-  # Run only when pushing to master branch, and making PRs
-  push:
-    branches:
-      - main
-  pull_request:
+  workflow_run:
+    workflows: ["Garnix CI"]
+    types:
+      - completed
 jobs:
   build:
     runs-on: ubuntu-latest
