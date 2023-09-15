@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 /// Use `FromStr` to parse a string into a `FlakeUrl`. Or `From` or `Into` if
 /// you know the URL is valid.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub struct FlakeUrl(String);
+pub struct FlakeUrl(pub String);
 
 impl FlakeUrl {
     /// Provide real-world examples of flake URLs

@@ -5,7 +5,6 @@ pub mod check;
 pub mod report;
 pub mod traits;
 
-use nix_rs::flake::url::FlakeUrl;
 use nix_rs::{env, info};
 use serde::{Deserialize, Serialize};
 
@@ -28,7 +27,7 @@ pub struct NixHealth {
     #[serde(default)]
     pub flake_enabled: FlakeEnabled,
     #[serde(default)]
-    pub min_nix_version: MinNixVersion,
+    pub nix_version: MinNixVersion,
     #[serde(default)]
     pub trusted_users: TrustedUsers,
 }
@@ -40,7 +39,7 @@ impl<'a> IntoIterator for &'a NixHealth {
     /// Return an iterator to iterate on the fields of [NixHealth]
     fn into_iter(self) -> Self::IntoIter {
         let items: Vec<Self::Item> = vec![
-            &self.min_nix_version,
+            &self.nix_version,
             &self.flake_enabled,
             &self.max_jobs,
             &self.caches,
@@ -51,12 +50,16 @@ impl<'a> IntoIterator for &'a NixHealth {
 }
 
 impl NixHealth {
-    pub fn new(m_flake: Option<FlakeUrl>) -> Self {
-        match m_flake {
-            None => Self::default(),
-            // cf. https://github.com/juspay/nix-browser/issues/60
-            Some(_) => unimplemented!("Per-flake health checks are not yet supported"),
-        }
+    /// Create [NixHealth] using configuration from the given flake
+    ///
+    /// Fallback to using the default health check config if the flake doesn't
+    /// override it.
+    #[cfg(feature = "ssr")]
+    pub async fn from_flake(
+        url: nix_rs::flake::url::FlakeUrl,
+    ) -> Result<Self, nix_rs::command::NixCmdError> {
+        use nix_rs::flake::eval::nix_eval_attr_json;
+        nix_eval_attr_json(url).await
     }
 
     /// Run all checks and collect the results
@@ -75,16 +78,16 @@ mod tests {
     fn test_json_deserialize_empty() {
         let json = r#"{}"#;
         let v: super::NixHealth = serde_json::from_str(json).unwrap();
-        assert_eq!(v.min_nix_version, MinNixVersion::default());
+        assert_eq!(v.nix_version, MinNixVersion::default());
         assert_eq!(v.caches, Caches::default());
         println!("{:?}", v);
     }
 
     #[test]
     fn test_json_deserialize_some() {
-        let json = r#"{ "min-nix-version": { "min-required": "2.17.0" } }"#;
+        let json = r#"{ "nix-version": { "min-required": "2.17.0" } }"#;
         let v: super::NixHealth = serde_json::from_str(json).unwrap();
-        assert_eq!(v.min_nix_version.min_required.to_string(), "2.17.0");
+        assert_eq!(v.nix_version.min_required.to_string(), "2.17.0");
         assert_eq!(v.caches, Caches::default());
     }
 }
