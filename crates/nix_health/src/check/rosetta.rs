@@ -24,13 +24,13 @@ impl Check for Rosetta {
         Rosetta(rosetta)
     }
     fn name(&self) -> &'static str {
-        "Rosetta not in use"
+        "Rosetta Disabled"
     }
     fn report(&self) -> Report<WithDetails> {
         if self.0 {
             Report::Red(WithDetails {
-                msg: "Rosetta emmulation enabled".to_string(),
-                suggestion: "?".to_string(),
+                msg: "Rosetta emulation can slow down builds".to_string(),
+                suggestion: "Remove rosetta, see the comment by @hruan here: https://developer.apple.com/forums/thread/669486".to_string(),
             })
         } else {
             Report::Green
