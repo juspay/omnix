@@ -52,7 +52,7 @@ impl<'a> IntoIterator for &'a NixHealth {
 impl NixHealth {
     /// Create [NixHealth] using configuration from the given flake
     ///
-    /// Fallback to using th default health check config if the flake doesn't
+    /// Fallback to using the default health check config if the flake doesn't
     /// override it.
     #[cfg(feature = "ssr")]
     pub async fn from_flake(
