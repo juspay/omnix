@@ -50,7 +50,7 @@ pub enum MacOSArch {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum AppleEmulation {
     None,
-    Rosetta
+    Rosetta,
 }
 
 impl AppleEmulation {
@@ -76,9 +76,7 @@ impl MacOSArch {
     #[cfg(feature = "ssr")]
     pub fn from(os_arch: Option<&str>) -> MacOSArch {
         match os_arch {
-            Some("arm64") => {
-                MacOSArch::Arm64(AppleEmulation::new())
-            }
+            Some("arm64") => MacOSArch::Arm64(AppleEmulation::new()),
             other => MacOSArch::Other(other.map(|s| s.to_string())),
         }
     }
