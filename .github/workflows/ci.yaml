@@ -1,7 +1,7 @@
 name: "CI"
 on:
-  workflow_run:
-    workflows: ["Garnix CI"]
+  check_run:
+    checks: ["Garnix CI"]
     types:
       - completed
 jobs:
