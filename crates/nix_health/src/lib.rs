@@ -5,7 +5,6 @@ pub mod check;
 pub mod report;
 pub mod traits;
 
-use nix_rs::flake::url::FlakeUrl;
 use nix_rs::{env, info};
 use serde::{Deserialize, Serialize};
 
@@ -51,12 +50,16 @@ impl<'a> IntoIterator for &'a NixHealth {
 }
 
 impl NixHealth {
-    pub fn new(m_flake: Option<FlakeUrl>) -> Self {
-        match m_flake {
-            None => Self::default(),
-            // cf. https://github.com/juspay/nix-browser/issues/60
-            Some(_) => unimplemented!("Per-flake health checks are not yet supported"),
-        }
+    /// Create [NixHealth] using configuration from the given flake
+    ///
+    /// Fallback to using th default health check config if the flake doesn't
+    /// override it.
+    #[cfg(feature = "ssr")]
+    pub async fn from_flake(
+        url: nix_rs::flake::url::FlakeUrl,
+    ) -> Result<Self, nix_rs::command::NixCmdError> {
+        use nix_rs::flake::eval::nix_eval_attr_json;
+        nix_eval_attr_json(url).await
     }
 
     /// Run all checks and collect the results
