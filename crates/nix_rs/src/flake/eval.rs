@@ -1,7 +1,6 @@
-use crate::command::{NixCmdError, NixCmd, CommandError};
+use crate::command::{CommandError, NixCmd, NixCmdError};
 
 use super::url::FlakeUrl;
-
 
 /// Run `nix eval <url> --json` and parse its JSON
 ///

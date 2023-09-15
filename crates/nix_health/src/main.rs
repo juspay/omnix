@@ -3,7 +3,7 @@ use std::path::Path;
 use anyhow::Context;
 use colored::Colorize;
 use nix_health::{traits::CheckResult, NixHealth};
-use nix_rs::{command::NixCmd, env::NixEnv, info::NixInfo, flake::eval::nix_eval_attr_json};
+use nix_rs::{command::NixCmd, env::NixEnv, flake::eval::nix_eval_attr_json, info::NixInfo};
 use serde::de::DeserializeOwned;
 
 #[tokio::main]
@@ -15,7 +15,7 @@ async fn main() -> anyhow::Result<()> {
     let nix_env = NixEnv::detect()
         .await
         .with_context(|| "Unable to gather system info")?;
-    let health : NixHealth = get_config().await?;
+    let health: NixHealth = get_config().await?;
     let checks = &health.run_checks(&nix_info, &nix_env);
     println!("Checking the health of your Nix setup:\n");
     for check in checks {
@@ -45,7 +45,10 @@ async fn main() -> anyhow::Result<()> {
     }
 }
 
-async fn get_config<T>() -> anyhow::Result<T> where T: Default + DeserializeOwned {
+async fn get_config<T>() -> anyhow::Result<T>
+where
+    T: Default + DeserializeOwned,
+{
     if Path::new("flake.nix").exists() {
         let v = nix_eval_attr_json(".#nix-health.default".into()).await?;
         Ok(v)

@@ -21,9 +21,7 @@ impl Default for Caches {
 }
 
 fn default_caches() -> Vec<Url> {
-    vec![
-        Url::parse("https://cache.nixos.org").unwrap(),
-    ]
+    vec![Url::parse("https://cache.nixos.org").unwrap()]
 }
 
 impl Checkable for Caches {

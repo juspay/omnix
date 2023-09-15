@@ -1,9 +1,9 @@
 //! Rust module for Nix flakes
+pub mod eval;
 pub mod outputs;
 pub mod schema;
 pub mod system;
 pub mod url;
-pub mod eval;
 
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "ssr")]
