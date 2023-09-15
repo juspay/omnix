@@ -23,8 +23,6 @@ impl Default for Caches {
 fn default_caches() -> Vec<Url> {
     vec![
         Url::parse("https://cache.nixos.org").unwrap(),
-        // TODO: Hardcoding this for now, so as to test failed reports
-        Url::parse("https://nix-community.cachix.org").unwrap(),
     ]
 }
 

@@ -3,6 +3,7 @@ pub mod outputs;
 pub mod schema;
 pub mod system;
 pub mod url;
+pub mod eval;
 
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "ssr")]

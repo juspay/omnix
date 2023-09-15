@@ -27,6 +27,12 @@
         (inputs.leptos-fullstack + /nix/flake-module.nix)
         ./e2e/flake-module.nix
       ];
+      flake = {
+        nix-health.default = {
+          min-nix-version.min-required = "2.18.0";
+          caches.required = [ "https://cache.garnix.io" ];
+        };
+      };
       perSystem = { config, self', pkgs, lib, system, ... }: {
         _module.args.pkgs = import inputs.nixpkgs {
           inherit system;
