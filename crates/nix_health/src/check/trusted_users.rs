@@ -15,10 +15,10 @@ impl Checkable for TrustedUsers {
             CheckResult::Green
         } else {
             let msg = format!("User '{}' not present in trusted_users", current_user);
-            let suggestion = if nix_env.nix_system.has_configuration_nix() {
+            let suggestion = if nix_env.os.has_configuration_nix() {
                 format!(
                     r#"Add `nix.trustedUsers = [ "root" "{}" ];` to your {} `configuration.nix`"#,
-                    current_user, nix_env.nix_system,
+                    current_user, nix_env.os,
                 )
             } else {
                 format!(

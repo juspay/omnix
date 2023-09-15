@@ -9,8 +9,8 @@ use serde::{Deserialize, Serialize};
 pub struct NixEnv {
     /// value of $USER
     pub current_user: String,
-    /// Underlying nix system information
-    pub nix_system: NixSystem,
+    /// Underlying OS in which Nix runs
+    pub os: OS,
 }
 
 impl NixEnv {
@@ -18,17 +18,14 @@ impl NixEnv {
     #[cfg(feature = "ssr")]
     pub async fn detect() -> Result<NixEnv, NixEnvError> {
         let current_user = std::env::var("USER")?;
-        let nix_system = NixSystem::detect().await;
-        Ok(NixEnv {
-            current_user,
-            nix_system,
-        })
+        let os = OS::detect().await;
+        Ok(NixEnv { current_user, os })
     }
 }
 
 /// The system under which Nix is installed and operates
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub enum NixSystem {
+pub enum OS {
     /// On macOS
     MacOS {
         /// Using https://github.com/LnL7/nix-darwin
@@ -82,10 +79,10 @@ impl MacOSArch {
     }
 }
 
-impl Display for NixSystem {
+impl Display for OS {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            NixSystem::MacOS {
+            OS::MacOS {
                 nix_darwin,
                 arch: _,
             } => {
@@ -95,13 +92,13 @@ impl Display for NixSystem {
                     write!(f, "macOS")
                 }
             }
-            NixSystem::NixOS => write!(f, "NixOS"),
-            NixSystem::Other(os_type) => write!(f, "{}", os_type),
+            OS::NixOS => write!(f, "NixOS"),
+            OS::Other(os_type) => write!(f, "{}", os_type),
         }
     }
 }
 
-impl NixSystem {
+impl OS {
     #[cfg(feature = "ssr")]
     pub async fn detect() -> Self {
         let os_info = tokio::task::spawn_blocking(os_info::get).await.unwrap();
@@ -116,21 +113,21 @@ impl NixSystem {
                 // To detect that we are on NixDarwin, we check if /etc/nix/nix.conf
                 // is a symlink (which nix-darwin manages like NixOS does)
                 let nix_darwin = is_symlink("/etc/nix/nix.conf").await.unwrap_or(false);
-                NixSystem::MacOS { nix_darwin, arch }
+                OS::MacOS { nix_darwin, arch }
             }
-            os_info::Type::NixOS => NixSystem::NixOS,
-            _ => NixSystem::Other(os_type),
+            os_info::Type::NixOS => OS::NixOS,
+            _ => OS::Other(os_type),
         }
     }
 
-    /// The Nix for this [NixSystem] is configured automatically through a `configuration.nix`
+    /// The Nix for this [OS] is configured automatically through a `configuration.nix`
     pub fn has_configuration_nix(&self) -> bool {
         match self {
-            NixSystem::MacOS {
+            OS::MacOS {
                 nix_darwin,
                 arch: _,
             } if *nix_darwin => true,
-            NixSystem::NixOS => true,
+            OS::NixOS => true,
             _ => false,
         }
     }

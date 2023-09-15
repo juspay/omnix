@@ -1,5 +1,5 @@
 use nix_rs::{
-    env::{self, AppleEmulation, MacOSArch, NixSystem},
+    env::{self, AppleEmulation, MacOSArch, OS},
     info,
 };
 use serde::{Deserialize, Serialize};
@@ -25,7 +25,7 @@ impl Checkable for Rosetta {
         if !self.enable {
             return None;
         }
-        let emulation = get_apple_emulation(&nix_env.nix_system)?;
+        let emulation = get_apple_emulation(&nix_env.os)?;
         let check = Check {
             title: "Rosetta Not Active".to_string(),
             info: format!("apple emulation = {:?}", emulation),
@@ -43,9 +43,9 @@ impl Checkable for Rosetta {
 }
 
 /// Return [AppleEmulation]. Return None if not an ARM mac.
-fn get_apple_emulation(system: &NixSystem) -> Option<AppleEmulation> {
+fn get_apple_emulation(system: &OS) -> Option<AppleEmulation> {
     match system {
-        NixSystem::MacOS {
+        OS::MacOS {
             nix_darwin: _,
             arch: MacOSArch::Arm64(apple_emulation),
         } => Some(apple_emulation.clone()),
