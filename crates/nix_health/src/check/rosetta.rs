@@ -1,19 +1,14 @@
-use std::fmt::Display;
-
 use nix_rs::{env, info};
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    report::{Report, WithDetails},
-    traits::Check,
-};
+use crate::traits::{Check, CheckResult, Checkable};
 
 /// Check if Nix is being run under rosetta emulation on macOS
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Rosetta(pub bool);
+#[derive(Debug, Default, Serialize, Deserialize, Clone)]
+pub struct Rosetta {}
 
-impl Check for Rosetta {
-    fn check(_nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Self {
+impl Checkable for Rosetta {
+    fn check(&self, _nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Option<Check> {
         let rosetta = match nix_env.nix_system {
             env::NixSystem::MacOS {
                 nix_darwin: _,
@@ -21,25 +16,18 @@ impl Check for Rosetta {
             } => rosetta,
             _ => false,
         };
-        Rosetta(rosetta)
-    }
-    fn name(&self) -> &'static str {
-        "Rosetta Disabled"
-    }
-    fn report(&self) -> Report<WithDetails> {
-        if self.0 {
-            Report::Red(WithDetails {
-                msg: "Rosetta emulation can slow down builds".to_string(),
-                suggestion: "Remove rosetta, see the comment by @hruan here: https://developer.apple.com/forums/thread/669486".to_string(),
-            })
-        } else {
-            Report::Green
-        }
-    }
-}
-
-impl Display for Rosetta {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "rosetta enabled = {}", self.0)
+        let check = Check {
+            title: "Rosetta Disabled".to_string(),
+            info: format!("rosetta enabled = {}", rosetta),
+            result: if rosetta {
+                CheckResult::Red {
+                    msg: "Rosetta emulation can slow down builds".to_string(),
+                    suggestion: "Remove rosetta, see the comment by @hruan here: https://developer.apple.com/forums/thread/669486".to_string(),
+                }
+            } else {
+                CheckResult::Green
+            },
+        };
+        Some(check)
     }
 }

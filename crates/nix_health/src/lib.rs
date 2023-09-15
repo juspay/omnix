@@ -31,6 +31,7 @@ pub struct NixHealth {
     pub min_nix_version: MinNixVersion,
     #[serde(default)]
     pub trusted_users: TrustedUsers,
+    #[serde(default)]
     pub rosetta: Rosetta,
 }
 
