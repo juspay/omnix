@@ -1,4 +1,7 @@
-use nix_rs::{env, info};
+use nix_rs::{
+    env::{self, MacOSArch, AppleEmulation},
+    info,
+};
 use serde::{Deserialize, Serialize};
 
 use crate::traits::{Check, CheckResult, Checkable};
@@ -12,8 +15,8 @@ impl Checkable for Rosetta {
         let rosetta = match nix_env.nix_system {
             env::NixSystem::MacOS {
                 nix_darwin: _,
-                rosetta,
-            } => rosetta,
+                arch: MacOSArch::Arm64(AppleEmulation::Rosetta),
+            } => true,
             _ => false,
         };
         let check = Check {
