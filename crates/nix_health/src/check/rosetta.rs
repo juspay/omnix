@@ -9,11 +9,22 @@ use crate::traits::{Check, CheckResult, Checkable};
 /// Check if Nix is being run under rosetta emulation
 ///
 /// Enabled only on ARM macs.
-#[derive(Debug, Default, Serialize, Deserialize, Clone)]
-pub struct Rosetta {}
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Rosetta {
+    enable: bool,
+}
+
+impl Default for Rosetta {
+    fn default() -> Self {
+        Self { enable: true }
+    }
+}
 
 impl Checkable for Rosetta {
     fn check(&self, _nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Option<Check> {
+        if !self.enable {
+            return None;
+        }
         let emulation = get_apple_emulation(&nix_env.nix_system)?;
         let check = Check {
             title: "Rosetta Not Active".to_string(),
