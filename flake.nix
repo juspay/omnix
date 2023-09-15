@@ -1,5 +1,10 @@
 {
   description = "WIP: nix-browser";
+  nixConfig = {
+    # https://garnix.io/docs/caching
+    extra-substituters = "https://cache.garnix.io";
+    extra-trusted-public-keys = "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=";
+  };
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";
@@ -27,6 +32,12 @@
         (inputs.leptos-fullstack + /nix/flake-module.nix)
         ./e2e/flake-module.nix
       ];
+      flake = {
+        nix-health.default = {
+          nix-version.min-required = "2.16.0";
+          caches.required = [ "https://cache.garnix.io" ];
+        };
+      };
       perSystem = { config, self', pkgs, lib, system, ... }: {
         _module.args.pkgs = import inputs.nixpkgs {
           inherit system;
