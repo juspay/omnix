@@ -10,6 +10,8 @@ use serde::{Deserialize, Serialize};
 
 /// A flake URL
 ///
+/// See [syntax here](https://nixos.org/manual/nix/stable/command-ref/new-cli/nix3-flake.html#url-like-syntax).
+///
 /// Use `FromStr` to parse a string into a `FlakeUrl`. Or `From` or `Into` if
 /// you know the URL is valid.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -24,6 +26,33 @@ impl FlakeUrl {
             "github:juspay/nix-browser".into(),
             "github:nixos/nixpkgs".into(),
         ]
+    }
+
+    /// Return `<url>#<root-attr>.default` if `<url>` is passed
+    ///
+    /// If `<url>#foo` is passed, return `<url>#<root-attr>.foo`.
+    pub fn with_fully_qualified_root_attr(&self, root_attr: &str) -> Self {
+        let (url, attr) = self.split_attr();
+        let name = attr.get_name();
+        FlakeUrl(format!("{}#{}.{}", url.0, root_attr, name))
+    }
+
+    /// Split the [FlakeAttr] out of the [FlakeUrl]
+    fn split_attr(&self) -> (Self, FlakeAttr) {
+        match self.0.split_once('#') {
+            Some((url, attr)) => (FlakeUrl(url.to_string()), FlakeAttr(Some(attr.to_string()))),
+            None => (self.clone(), FlakeAttr(None)),
+        }
+    }
+
+    /// Return the flake URL pointing to the sub-flake
+    pub fn sub_flake_url(&self, dir: String) -> FlakeUrl {
+        if dir == "." {
+            self.clone()
+        } else {
+            let sep = if self.0.contains('?') { '&' } else { '?' };
+            FlakeUrl(format!("{}{}dir={}", self.0, sep, dir))
+        }
     }
 }
 
@@ -62,5 +91,60 @@ impl FromStr for FlakeUrl {
 impl Display for FlakeUrl {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
+    }
+}
+
+/// The attribute output part of a [FlakeUrl]
+///
+/// Example: `foo` in `.#foo`.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct FlakeAttr(Option<String>);
+
+impl FlakeAttr {
+    /// Get the attribute name.
+    ///
+    /// If attribute exists, then return "default".
+    pub fn get_name(&self) -> String {
+        self.0.clone().unwrap_or_else(|| "default".to_string())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_flake_url() {
+        let url = FlakeUrl("github:srid/nixci".to_string());
+        assert_eq!(url.split_attr(), (url.clone(), FlakeAttr(None)));
+
+        let url = FlakeUrl("github:srid/nixci#extra-tests".to_string());
+        assert_eq!(
+            url.split_attr(),
+            (
+                FlakeUrl("github:srid/nixci".to_string()),
+                FlakeAttr(Some("extra-tests".to_string()))
+            )
+        );
+    }
+
+    #[test]
+    fn test_sub_flake_url() {
+        let url = FlakeUrl("github:srid/nixci".to_string());
+        assert_eq!(url.sub_flake_url(".".to_string()), url.clone());
+        assert_eq!(
+            url.sub_flake_url("dev".to_string()),
+            FlakeUrl("github:srid/nixci?dir=dev".to_string())
+        );
+    }
+
+    #[test]
+    fn test_sub_flake_url_with_query() {
+        let url = FlakeUrl("git+https://example.org/my/repo?ref=master".to_string());
+        assert_eq!(url.sub_flake_url(".".to_string()), url.clone());
+        assert_eq!(
+            url.sub_flake_url("dev".to_string()),
+            FlakeUrl("git+https://example.org/my/repo?ref=master&dir=dev".to_string())
+        );
     }
 }

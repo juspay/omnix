@@ -8,6 +8,7 @@ repository = "https://github.com/juspay/nix-browser"
 
 [workspace.dependencies]
 cfg-if = "1"
+clap = { version = "4.3", features = ["derive", "env"] }
 human-panic = "1.1.5"
 leptos = { version = "0.4", features = ["serde", "nightly"] }
 leptos_meta = { version = "0.4", features = ["nightly"] }
@@ -44,7 +45,7 @@ crate-type = ["cdylib", "rlib"]
 axum = { version = "0.6", features = ["json", "tokio"], optional = true }
 axum-macros = { version = "0.3", optional = true }
 cfg-if.workspace = true
-clap = { version = "4.3", features = ["derive", "env"] }
+clap.workspace = true
 console_error_panic_hook = "0.1"
 console_log = { version = "1" }
 http = { version = "0.2", optional = true }
