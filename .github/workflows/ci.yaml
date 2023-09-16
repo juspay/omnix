@@ -1,9 +1,7 @@
 name: "CI"
 on:
-  check_run:
-    checks: ["Garnix CI"]
-    types:
-      - completed
+  repository_dispatch:
+    types: [garnix-ci-success]
 jobs:
   build:
     runs-on: ubuntu-latest
