@@ -23,6 +23,11 @@ pub struct Check {
 
     /// The result of running this check
     pub result: CheckResult,
+
+    /// Whether this check is mandatory
+    ///
+    /// Failures are considered non-critical if this is false.
+    pub required: bool,
 }
 
 /// The result of a health [Check]

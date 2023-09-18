@@ -11,7 +11,12 @@ use nix_rs::{env, info};
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "kebab-case")]
 pub struct Direnv {
+    // FIXME: default is wrong
+    #[serde(default)]
     pub(crate) enable: bool,
+    #[serde(default)]
+    pub(crate) required: bool,
+    #[serde(default)]
     pub(crate) allowed: DirenvAllow,
 }
 
@@ -20,16 +25,29 @@ impl Default for Direnv {
         Self {
             // TODO: Add "Recommendation" status to [CheckResult]
             enable: true,
+            required: true,
             allowed: DirenvAllow::default(),
         }
     }
 }
 
 /// Check if `direnv allow` was run
-#[derive(Debug, Default, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "kebab-case")]
 pub struct DirenvAllow {
+    #[serde(default)]
     enable: bool,
+    #[serde(default)]
+    required: bool,
+}
+
+impl Default for DirenvAllow {
+    fn default() -> Self {
+        Self {
+            enable: true,
+            required: true,
+        }
+    }
 }
 
 #[cfg(feature = "ssr")]
@@ -51,6 +69,7 @@ impl Checkable for Direnv {
                     suggestion,
                 },
             },
+            required: self.required,
         };
         Some(check)
     }
@@ -83,6 +102,7 @@ impl Checkable for DirenvAllow {
                     suggestion,
                 },
             },
+            required: self.required,
         };
         Some(check)
     }

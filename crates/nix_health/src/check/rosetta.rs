@@ -11,12 +11,18 @@ use crate::traits::{Check, CheckResult, Checkable};
 /// Enabled only on ARM macs.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Rosetta {
+    #[serde(default)]
     enable: bool,
+    #[serde(default)]
+    required: bool,
 }
 
 impl Default for Rosetta {
     fn default() -> Self {
-        Self { enable: true }
+        Self {
+            enable: true,
+            required: true,
+        }
     }
 }
 
@@ -37,6 +43,7 @@ impl Checkable for Rosetta {
             } else {
                 CheckResult::Pass
             },
+            required: self.required,
         };
         Some(check)
     }

@@ -29,7 +29,11 @@ async fn main() -> anyhow::Result<()> {
                 println!("   {}", check.info.blue());
             }
             CheckResult::Fail { msg, suggestion } => {
-                println!("{}", format!("❌ {}", check.title).red().bold());
+                if check.required {
+                    println!("{}", format!("❌ {}", check.title).red().bold());
+                } else {
+                    println!("{}", format!("⚠️ {}", check.title).yellow().bold());
+                }
                 println!("   {}", check.info.blue());
                 println!("   {}", msg.yellow());
                 println!("   {}", suggestion);

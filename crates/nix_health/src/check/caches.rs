@@ -51,6 +51,7 @@ impl Checkable for Caches {
                     .join(" ")
             ),
             result,
+            required: true,
         };
         Some(check)
     }

@@ -32,6 +32,7 @@ impl Checkable for TrustedUsers {
             title: "Trusted Users".to_string(),
             info: format!("trusted-users = {}", val.join(" ")),
             result,
+            required: true,
         };
         Some(check)
     }

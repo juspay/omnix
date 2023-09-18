@@ -23,6 +23,7 @@ impl Checkable for FlakeEnabled {
                     suggestion: "See https://nixos.wiki/wiki/Flakes#Enable_flakes".into(),
                 }
             },
+            required: true,
         };
         Some(check)
     }

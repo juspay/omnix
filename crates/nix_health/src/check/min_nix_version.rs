@@ -41,6 +41,7 @@ impl Checkable for MinNixVersion {
                     suggestion: "See https://nixos.org/manual/nix/stable/command-ref/new-cli/nix3-upgrade-nix.html".into(),
                 }
             },
+            required: true,
         };
         Some(check)
     }

@@ -21,6 +21,7 @@ impl Checkable for MaxJobs {
                     suggestion: "Try editing /etc/nix/nix.conf".into(),
                 }
             },
+            required: true,
         };
         Some(check)
     }
