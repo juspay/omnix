@@ -4,11 +4,15 @@ use std::fmt::Display;
 use os_info;
 use serde::{Deserialize, Serialize};
 
+use crate::flake::url::FlakeUrl;
+
 /// The environment in which Nix operates
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct NixEnv {
-    /// value of $USER
+    /// Current user ($USER)
     pub current_user: String,
+    /// Current flake context
+    pub current_flake: Option<FlakeUrl>,
     /// Underlying OS in which Nix runs
     pub os: OS,
 }
@@ -16,10 +20,14 @@ pub struct NixEnv {
 impl NixEnv {
     /// Determine [NixEnv] on the user's system
     #[cfg(feature = "ssr")]
-    pub async fn detect() -> Result<NixEnv, NixEnvError> {
+    pub async fn detect(current_flake: Option<FlakeUrl>) -> Result<NixEnv, NixEnvError> {
         let current_user = std::env::var("USER")?;
         let os = OS::detect().await;
-        Ok(NixEnv { current_user, os })
+        Ok(NixEnv {
+            current_user,
+            current_flake,
+            os,
+        })
     }
 }
 

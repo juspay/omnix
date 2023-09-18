@@ -5,6 +5,7 @@ pub mod check;
 pub mod report;
 pub mod traits;
 
+use check::direnv::Direnv;
 use nix_rs::{env, info};
 use serde::{Deserialize, Serialize};
 
@@ -32,6 +33,8 @@ pub struct NixHealth {
     pub trusted_users: TrustedUsers,
     #[serde(default)]
     pub rosetta: Rosetta,
+    #[serde(default)]
+    pub direnv: Direnv,
 }
 
 impl<'a> IntoIterator for &'a NixHealth {
@@ -47,6 +50,7 @@ impl<'a> IntoIterator for &'a NixHealth {
             &self.max_jobs,
             &self.caches,
             &self.trusted_users,
+            &self.direnv,
         ];
         items.into_iter()
     }
@@ -62,7 +66,7 @@ impl NixHealth {
         url: nix_rs::flake::url::FlakeUrl,
     ) -> Result<Self, nix_rs::command::NixCmdError> {
         use nix_rs::flake::eval::nix_eval_attr_json;
-        nix_eval_attr_json(url).await
+        nix_eval_attr_json(&url).await
     }
 
     /// Run all checks and collect the results
