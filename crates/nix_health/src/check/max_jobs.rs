@@ -14,9 +14,9 @@ impl Checkable for MaxJobs {
             title: "Max Jobs".to_string(),
             info: format!("max-jobs = {}", max_jobs),
             result: if max_jobs > 1 {
-                CheckResult::Green
+                CheckResult::Pass
             } else {
-                CheckResult::Red {
+                CheckResult::Fail {
                     msg: "You are using only 1 core for nix builds".into(),
                     suggestion: "Try editing /etc/nix/nix.conf".into(),
                 }

@@ -29,10 +29,10 @@ pub struct Check {
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub enum CheckResult {
     /// The check passed
-    Green,
+    Pass,
 
     /// The check failed
-    Red {
+    Fail {
         /// TODO: Use markdown
         msg: String,
         /// TODO: Use markdown
@@ -43,6 +43,6 @@ pub enum CheckResult {
 impl CheckResult {
     /// When the check is green (ie., healthy)
     pub fn green(&self) -> bool {
-        matches!(self, Self::Green)
+        matches!(self, Self::Pass)
     }
 }

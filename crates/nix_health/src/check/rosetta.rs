@@ -30,12 +30,12 @@ impl Checkable for Rosetta {
             title: "Rosetta Not Active".to_string(),
             info: format!("apple emulation = {:?}", emulation),
             result: if emulation == AppleEmulation::Rosetta {
-                CheckResult::Red {
+                CheckResult::Fail {
                     msg: "Rosetta emulation will slow down Nix builds".to_string(),
                     suggestion: "Remove rosetta, see the comment by @hruan here: https://developer.apple.com/forums/thread/669486".to_string(),
                 }
             } else {
-                CheckResult::Green
+                CheckResult::Pass
             },
         };
         Some(check)

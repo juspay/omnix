@@ -34,9 +34,9 @@ impl Checkable for MinNixVersion {
             title: "Minimum Nix Version".to_string(),
             info: format!("nix version = {}", val),
             result: if val >= &self.min_required {
-                CheckResult::Green
+                CheckResult::Pass
             } else {
-                CheckResult::Red {
+                CheckResult::Fail {
                     msg: format!("Your Nix version ({}) is too old; we require at least {}", val, self.min_required),
                     suggestion: "See https://nixos.org/manual/nix/stable/command-ref/new-cli/nix3-upgrade-nix.html".into(),
                 }
