@@ -37,6 +37,7 @@
           nix-version.min-required = "2.16.0";
           caches.required = [ "https://cache.garnix.io" ];
           direnv.enable = true;
+          direnv.allowed.enable = true;
           # rosetta.enable = false;
         };
       };

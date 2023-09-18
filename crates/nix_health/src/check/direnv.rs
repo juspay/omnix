@@ -7,35 +7,71 @@ use crate::traits::{Check, CheckResult, Checkable};
 #[cfg(feature = "ssr")]
 use nix_rs::{env, info};
 
-/// Check if direnv is in use
-#[derive(Debug, Default, Serialize, Deserialize, Clone)]
+/// Check if direnv is installed
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "kebab-case")]
 pub struct Direnv {
+    pub(crate) enable: bool,
+    pub(crate) allowed: DirenvAllow,
+}
+
+impl Default for Direnv {
+    fn default() -> Self {
+        Self {
+            // TODO: Add "Recommendation" status to [CheckResult]
+            enable: true,
+            allowed: DirenvAllow::default(),
+        }
+    }
+}
+
+/// Check if `direnv allow` was run
+#[derive(Debug, Default, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "kebab-case")]
+pub struct DirenvAllow {
     enable: bool,
 }
 
 #[cfg(feature = "ssr")]
 impl Checkable for Direnv {
+    fn check(&self, _nix_info: &info::NixInfo, _nix_env: &env::NixEnv) -> Option<Check> {
+        if !self.enable {
+            return None;
+        }
+        let suggestion = format!("Install direnv <https://zero-to-flakes.com/direnv/#setup>");
+        let direnv_install = DirenvInstall::detect();
+        let check = Check {
+            title: "Direnv installation".to_string(),
+            // TODO: Show direnv path
+            info: format!("direnv install = {:?}", direnv_install),
+            result: match direnv_install {
+                Ok(_direnv_install) => CheckResult::Green,
+                Err(e) => CheckResult::Red {
+                    msg: format!("Unable to locate direnv install: {}", e),
+                    suggestion,
+                },
+            },
+        };
+        Some(check)
+    }
+}
+
+#[cfg(feature = "ssr")]
+impl Checkable for DirenvAllow {
     fn check(&self, _nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Option<Check> {
         if !self.enable {
             return None;
         }
         // This check is currently only relevant if the flake is local
-        // TODO: direnv check should still happen for non-flakes, if only to
-        // test that `direnv` is installed and working (if not activated on a
-        // local project).
         let local_path = nix_env
             .current_flake
             .as_ref()
             .and_then(|url| url.as_local_path())?;
-        let suggestion = format!("Install direnv <https://zero-to-flakes.com/direnv/#setup> and run `direnv allow` under `{}`", local_path.display());
-        let direnv_install = DirenvInstall::detect();
+        let suggestion = format!("Run `direnv allow` under `{}`", local_path.display());
         let check = Check {
             title: "Direnv activated".to_string(),
             // TODO: Show direnv path
-            info: format!(
-                "Local flake: {:?}; direnv install = {:?}",
-                local_path, direnv_install
-            ),
+            info: format!("Local flake: {:?}", local_path),
             result: match direnv_active(local_path) {
                 Ok(true) => CheckResult::Green,
                 Ok(false) => CheckResult::Red {
