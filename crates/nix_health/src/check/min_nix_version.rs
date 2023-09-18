@@ -7,23 +7,18 @@ use crate::traits::*;
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
 #[serde(rename_all = "kebab-case")]
 pub struct MinNixVersion {
-    #[serde(default = "default_min_required")]
     pub min_required: NixVersion,
 }
 
 impl Default for MinNixVersion {
     fn default() -> Self {
         MinNixVersion {
-            min_required: default_min_required(),
+            min_required: NixVersion {
+                major: 2,
+                minor: 13,
+                patch: 0,
+            },
         }
-    }
-}
-
-fn default_min_required() -> NixVersion {
-    NixVersion {
-        major: 2,
-        minor: 13,
-        patch: 0,
     }
 }
 

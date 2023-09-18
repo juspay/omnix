@@ -11,12 +11,8 @@ use nix_rs::{env, info};
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "kebab-case")]
 pub struct Direnv {
-    // FIXME: default is wrong
-    #[serde(default)]
     pub(crate) enable: bool,
-    #[serde(default)]
     pub(crate) required: bool,
-    #[serde(default)]
     pub(crate) allowed: DirenvAllow,
 }
 
@@ -35,9 +31,7 @@ impl Default for Direnv {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "kebab-case")]
 pub struct DirenvAllow {
-    #[serde(default)]
     enable: bool,
-    #[serde(default)]
     required: bool,
 }
 

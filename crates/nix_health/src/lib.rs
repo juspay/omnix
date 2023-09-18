@@ -68,8 +68,14 @@ impl NixHealth {
     pub async fn from_flake(
         url: nix_rs::flake::url::FlakeUrl,
     ) -> Result<Self, nix_rs::command::NixCmdError> {
+        use json_value_merge::Merge;
         use nix_rs::flake::eval::nix_eval_attr_json;
-        nix_eval_attr_json(&url).await
+        use serde_json::Value;
+        let mut default_value = serde_json::to_value(Self::default())?;
+        let v: Value = nix_eval_attr_json(&url).await?;
+        default_value.merge(&v);
+        let v = serde_json::from_value(default_value)?;
+        Ok(v)
     }
 
     /// Run all checks and collect the results

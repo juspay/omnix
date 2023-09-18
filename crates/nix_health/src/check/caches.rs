@@ -8,7 +8,6 @@ use crate::traits::*;
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
 #[serde(rename_all = "kebab-case")]
 pub struct Caches {
-    #[serde(default = "default_caches")]
     pub required: Vec<Url>,
 }
 
