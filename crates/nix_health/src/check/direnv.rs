@@ -1,9 +1,9 @@
-use std::path::Path;
-
-use nix_rs::{env, info};
 use serde::{Deserialize, Serialize};
 
+#[cfg(feature = "ssr")]
 use crate::traits::{Check, CheckResult, Checkable};
+#[cfg(feature = "ssr")]
+use nix_rs::{env, info};
 
 /// Check if direnv is in use
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -17,6 +17,7 @@ impl Default for Direnv {
     }
 }
 
+#[cfg(feature = "ssr")]
 impl Checkable for Direnv {
     fn check(&self, _nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Option<Check> {
         if !self.enable {
@@ -49,7 +50,8 @@ impl Checkable for Direnv {
 }
 
 /// Check if direnv was already activated in [project_dir]
-pub fn direnv_active(project_dir: &Path) -> anyhow::Result<bool> {
+#[cfg(feature = "ssr")]
+pub fn direnv_active(project_dir: &std::path::Path) -> anyhow::Result<bool> {
     let cmd = "direnv status | grep 'Found RC allowed true'";
     // TODO: Don't use `sh`
     let output = std::process::Command::new("sh")

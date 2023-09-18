@@ -6,14 +6,12 @@ pub mod report;
 pub mod traits;
 
 use check::direnv::Direnv;
-use nix_rs::{env, info};
 use serde::{Deserialize, Serialize};
 
 use self::check::{
     caches::Caches, flake_enabled::FlakeEnabled, max_jobs::MaxJobs, min_nix_version::MinNixVersion,
     rosetta::Rosetta, trusted_users::TrustedUsers,
 };
-use self::traits::*;
 
 /// Nix Health check information for user's install
 ///
@@ -37,8 +35,9 @@ pub struct NixHealth {
     pub direnv: Direnv,
 }
 
+#[cfg(feature = "ssr")]
 impl<'a> IntoIterator for &'a NixHealth {
-    type Item = &'a dyn Checkable;
+    type Item = &'a dyn traits::Checkable;
     type IntoIter = std::vec::IntoIter<Self::Item>;
 
     /// Return an iterator to iterate on the fields of [NixHealth]
@@ -70,7 +69,12 @@ impl NixHealth {
     }
 
     /// Run all checks and collect the results
-    pub fn run_checks(&self, nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Vec<Check> {
+    #[cfg(feature = "ssr")]
+    pub fn run_checks(
+        &self,
+        nix_info: &nix_rs::info::NixInfo,
+        nix_env: &nix_rs::env::NixEnv,
+    ) -> Vec<traits::Check> {
         self.into_iter()
             .flat_map(|c| c.check(nix_info, nix_env))
             .collect()

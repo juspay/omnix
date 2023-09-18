@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 /// Types that can do specific "health check" for Nix
 pub trait Checkable {
     /// Run and create the health check
+    ///
+    /// NOTE: Some checks may perform impure actions (IO, etc.)
     fn check(&self, nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Option<Check>;
 }
 
