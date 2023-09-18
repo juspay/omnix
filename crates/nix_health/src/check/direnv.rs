@@ -50,7 +50,7 @@ impl Checkable for Direnv {
         if !self.enable {
             return None;
         }
-        let suggestion = format!("Install direnv <https://zero-to-flakes.com/direnv/#setup>");
+        let suggestion = "Install direnv <https://zero-to-flakes.com/direnv/#setup>".to_string();
         let direnv_install = DirenvInstall::detect();
         let check = Check {
             title: "Direnv installation".to_string(),
