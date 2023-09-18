@@ -34,9 +34,9 @@ impl FlakeUrl {
     /// Applicable only if the flake URL uses the [Path-like
     /// syntax](https://nixos.org/manual/nix/stable/command-ref/new-cli/nix3-flake.html#path-like-syntax)
     pub fn as_local_path(&self) -> Option<&Path> {
-        if self.0.starts_with('.') || self.0.starts_with('/') || self.0.starts_with("path:") {
+        let s = self.0.strip_prefix("path:").unwrap_or(&self.0);
+        if s.starts_with('.') || s.starts_with('/') {
             // Strip query (`?..`) and attrs (`#..`)
-            let s = &self.0.strip_prefix("path:").unwrap_or(&self.0);
             let s = s.split('?').next().unwrap_or(s);
             let s = s.split('#').next().unwrap_or(s);
             Some(Path::new(s))
