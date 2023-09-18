@@ -15,9 +15,9 @@ watch $RUST_BACKTRACE="1":
 
 alias w := watch
 
-# Run 'cargo run' for nix-health CLI in watch mode
-watch-nix-health:
-    cargo watch -- cargo run --bin nix-health --features=ssr
+# Run 'cargo run' for nix-health CLI in watch mode. Example: just watch-nix-health github:nammayatri/nammayatri
+watch-nix-health *ARGS:
+    cargo watch -- cargo run --bin nix-health --features=ssr -- {{ARGS}}
 
 alias wh := watch-nix-health
 
