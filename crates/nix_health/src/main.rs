@@ -61,7 +61,7 @@ async fn run_checks(flake_url: Option<FlakeUrl>) -> anyhow::Result<Vec<Check>> {
     let health: NixHealth = match flake_url {
         Some(flake_url) => {
             println!(
-                "🩺️ Checking the health of your Nix setup, using config from local flake ({}):\n",
+                "🩺️ Checking the health of your Nix setup, using config from flake '{}':\n",
                 flake_url
             );
             NixHealth::from_flake(flake_url).await
