@@ -17,21 +17,14 @@ use self::check::{
 ///
 /// Each field represents an individual check which satisfies the [Checkable] trait.
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
-#[serde(rename_all = "kebab-case")]
+#[serde(default, rename_all = "kebab-case")]
 pub struct NixHealth {
-    #[serde(default)]
     pub max_jobs: MaxJobs,
-    #[serde(default)]
     pub caches: Caches,
-    #[serde(default)]
     pub flake_enabled: FlakeEnabled,
-    #[serde(default)]
     pub nix_version: MinNixVersion,
-    #[serde(default)]
     pub trusted_users: TrustedUsers,
-    #[serde(default)]
     pub rosetta: Rosetta,
-    #[serde(default)]
     pub direnv: Direnv,
 }
 
