@@ -1,5 +1,5 @@
 //! Information about the environment in which Nix will run
-use std::fmt::Display;
+use std::{fmt::Display, path::Path};
 
 use os_info;
 use serde::{Deserialize, Serialize};
@@ -28,6 +28,13 @@ impl NixEnv {
             current_flake,
             os,
         })
+    }
+
+    /// Return [NixEnv::current_flake] as a local path if it is one
+    pub fn current_local_flake(&self) -> Option<&Path> {
+        self.current_flake
+            .as_ref()
+            .and_then(|url| url.as_local_path())
     }
 }
 

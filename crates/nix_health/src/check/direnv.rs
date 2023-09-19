@@ -32,14 +32,12 @@ impl Checkable for Direnv {
             return checks;
         }
 
-        checks.push(install_check(self.required));
+        let direnv_install_check = install_check(self.required);
+        let direnv_installed = direnv_install_check.result.green();
+        checks.push(direnv_install_check);
 
         // This check is currently only relevant if the flake is local
-        if let Some(local_path) = nix_env
-            .current_flake
-            .as_ref()
-            .and_then(|url| url.as_local_path())
-        {
+        if direnv_installed && let Some(local_path) = nix_env.current_local_flake() {
             checks.push(activation_check(local_path, self.required));
         }
 
