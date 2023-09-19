@@ -91,8 +91,8 @@ impl NixHealth {
 ///
 /// Unlike `#[serde(default)]` this allows using the default struct value for
 /// all fields.
-fn deserialize_overriding_default<T>(v: serde_json::Value) -> Result<T,
-serde_json::Error>
+#[cfg(feature = "ssr")]
+fn deserialize_overriding_default<T>(v: serde_json::Value) -> Result<T, serde_json::Error>
 where
     T: Default + serde::Serialize + serde::de::DeserializeOwned,
 {
