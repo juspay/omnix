@@ -68,13 +68,8 @@ impl NixHealth {
     pub async fn from_flake(
         url: nix_rs::flake::url::FlakeUrl,
     ) -> Result<Self, nix_rs::command::NixCmdError> {
-        use json_value_merge::Merge;
         use nix_rs::flake::eval::nix_eval_attr_json;
-        use serde_json::Value;
-        let mut default_value = serde_json::to_value(Self::default())?;
-        let v: Value = nix_eval_attr_json(&url).await?;
-        default_value.merge(&v);
-        let v = serde_json::from_value(default_value)?;
+        let v = deserialize_overriding_default::<Self>(nix_eval_attr_json(&url).await?)?;
         Ok(v)
     }
 
@@ -89,6 +84,23 @@ impl NixHealth {
             .flat_map(|c| c.check(nix_info, nix_env))
             .collect()
     }
+}
+
+/// Like [serde_json::from_str] but merges with the [Default] value of
+/// [T] (for missing fields)
+///
+/// Unlike `#[serde(default)]` this allows using the default struct value for
+/// all fields.
+fn deserialize_overriding_default<T>(v: serde_json::Value) -> Result<T,
+serde_json::Error>
+where
+    T: Default + serde::Serialize + serde::de::DeserializeOwned,
+{
+    use json_value_merge::Merge;
+    let mut val = serde_json::to_value(T::default())?;
+    val.merge(&v);
+    let v = serde_json::from_value(val)?;
+    Ok(v)
 }
 
 #[cfg(test)]
