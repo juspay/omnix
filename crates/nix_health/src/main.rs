@@ -32,7 +32,7 @@ async fn main() -> anyhow::Result<()> {
                 if check.required {
                     println!("{}", format!("❌ {}", check.title).red().bold());
                 } else {
-                    println!("{}", format!("⚠️ {}", check.title).yellow().bold());
+                    println!("{}", format!("🟧 {}", check.title).yellow().bold());
                 }
                 println!("   {}", check.info.blue());
                 println!("   {}", msg.yellow());
@@ -41,11 +41,28 @@ async fn main() -> anyhow::Result<()> {
         }
         println!();
     }
-    if checks
+    let failed_checks: Vec<&Check> = checks
         .iter()
-        .any(|c| matches!(c.result, CheckResult::Red { .. }))
-    {
-        println!("{}", "!! Some checks failed (see above)".red().bold());
+        .filter(|c| matches!(c.result, CheckResult::Red { .. }))
+        .collect();
+    if !failed_checks.is_empty() {
+        let failed_required_checks = failed_checks
+            .iter()
+            .filter(|c| c.required)
+            .collect::<Vec<_>>();
+        if !failed_required_checks.is_empty() {
+            println!(
+                "{}",
+                "❌ Some required checks failed (see above)".red().bold()
+            );
+        } else {
+            println!(
+                "{}",
+                "✅ Some checks passed, but other non-required checks failed"
+                    .green()
+                    .bold()
+            );
+        }
         std::process::exit(1);
     } else {
         println!("{}", "✅ All checks passed".green().bold());

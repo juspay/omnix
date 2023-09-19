@@ -9,8 +9,7 @@ use nix_rs::{env, info};
 
 /// Check if direnv is installed
 #[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(rename_all = "kebab-case")]
-#[serde(default)]
+#[serde(default, rename_all = "kebab-case")]
 pub struct Direnv {
     pub(crate) enable: bool,
     pub(crate) required: bool,
@@ -83,7 +82,7 @@ impl Checkable for DirenvAllow {
             .and_then(|url| url.as_local_path())?;
         let suggestion = format!("Run `direnv allow` under `{}`", local_path.display());
         let check = Check {
-            title: "Direnv activated".to_string(),
+            title: "Direnv activation".to_string(),
             // TODO: Show direnv path
             info: format!("Local flake: {:?}", local_path),
             result: match direnv_active(local_path) {
