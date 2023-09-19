@@ -55,16 +55,17 @@ async fn run_checks(flake_url: Option<FlakeUrl>) -> anyhow::Result<Vec<Check>> {
     let nix_env = NixEnv::detect(flake_url.clone())
         .await
         .with_context(|| "Unable to gather system info")?;
+    let action_msg = format!(
+        "🩺️ Checking the health of your Nix setup ({} on {})",
+        &nix_info.nix_config.system.value, &nix_env.os
+    );
     let health: NixHealth = match flake_url {
         Some(flake_url) => {
-            println!(
-                "🩺️ Checking the health of your Nix setup, using config from flake '{}':\n",
-                flake_url
-            );
+            println!("{}, using config from flake '{}':\n", action_msg, flake_url);
             NixHealth::from_flake(flake_url).await
         }
         None => {
-            println!("🩺️️ Checking the health of your Nix setup:\n");
+            println!("{}:\n", action_msg);
             Ok(NixHealth::default())
         }
     }?;
