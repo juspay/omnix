@@ -32,22 +32,7 @@ impl Checkable for Direnv {
             return checks;
         }
 
-        let suggestion = "Install direnv <https://zero-to-flakes.com/direnv/#setup>".to_string();
-        let direnv_install = DirenvInstall::detect();
-        let check = Check {
-            title: "Direnv installation".to_string(),
-            // TODO: Show direnv path
-            info: format!("direnv install = {:?}", direnv_install),
-            result: match direnv_install {
-                Ok(_direnv_install) => CheckResult::Green,
-                Err(e) => CheckResult::Red {
-                    msg: format!("Unable to locate direnv install: {}", e),
-                    suggestion,
-                },
-            },
-            required: self.required,
-        };
-        checks.push(check);
+        checks.push(install_check(self.required));
 
         // This check is currently only relevant if the flake is local
         if let Some(local_path) = nix_env
@@ -55,31 +40,56 @@ impl Checkable for Direnv {
             .as_ref()
             .and_then(|url| url.as_local_path())
         {
-            let suggestion = format!("Run `direnv allow` under `{}`", local_path.display());
-            let check = Check {
-                title: "Direnv activation".to_string(),
-                // TODO: Show direnv path
-                info: format!(
-                    "Local flake: {:?} (`direnv allow` was run on this path)",
-                    local_path
-                ),
-                result: match direnv_active(local_path) {
-                    Ok(true) => CheckResult::Green,
-                    Ok(false) => CheckResult::Red {
-                        msg: "direnv is not active".to_string(),
-                        suggestion,
-                    },
-                    Err(e) => CheckResult::Red {
-                        msg: format!("Unable to check direnv status: {}", e),
-                        suggestion,
-                    },
-                },
-                required: self.required,
-            };
-            checks.push(check);
+            checks.push(activation_check(local_path, self.required));
         }
 
-        return checks;
+        checks
+    }
+}
+
+/// [Check] that direnv was installed.
+#[cfg(feature = "ssr")]
+fn install_check(required: bool) -> Check {
+    let suggestion = "Install direnv <https://zero-to-flakes.com/direnv/#setup>".to_string();
+    let direnv_install = DirenvInstall::detect();
+    Check {
+        title: "Direnv installation".to_string(),
+        // TODO: Show direnv path
+        info: format!("direnv install = {:?}", direnv_install),
+        result: match direnv_install {
+            Ok(_direnv_install) => CheckResult::Green,
+            Err(e) => CheckResult::Red {
+                msg: format!("Unable to locate direnv install: {}", e),
+                suggestion,
+            },
+        },
+        required,
+    }
+}
+
+/// [Check] that direnv was activated on the local flake
+#[cfg(feature = "ssr")]
+fn activation_check(local_flake: &std::path::Path, required: bool) -> Check {
+    let suggestion = format!("Run `direnv allow` under `{}`", local_flake.display());
+    Check {
+        title: "Direnv activation".to_string(),
+        // TODO: Show direnv path
+        info: format!(
+            "Local flake: {:?} (`direnv allow` was run on this path)",
+            local_flake
+        ),
+        result: match direnv_active(local_flake) {
+            Ok(true) => CheckResult::Green,
+            Ok(false) => CheckResult::Red {
+                msg: "direnv is not active".to_string(),
+                suggestion,
+            },
+            Err(e) => CheckResult::Red {
+                msg: format!("Unable to check direnv status: {}", e),
+                suggestion,
+            },
+        },
+        required,
     }
 }
 
