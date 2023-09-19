@@ -12,6 +12,7 @@ use nix_rs::{env, info};
 #[serde(default, rename_all = "kebab-case")]
 pub struct Direnv {
     pub(crate) enable: bool,
+    /// Whether to produce [Check::required] checks
     pub(crate) required: bool,
 }
 
@@ -57,7 +58,7 @@ fn install_check(required: bool) -> Check {
         result: match direnv_install {
             Ok(_direnv_install) => CheckResult::Green,
             Err(e) => CheckResult::Red {
-                msg: format!("Unable to locate direnv install: {}", e),
+                msg: format!("Unable to locate direnv: {}", e),
                 suggestion,
             },
         },
@@ -76,7 +77,7 @@ fn activation_check(local_flake: &std::path::Path, required: bool) -> Check {
             "Local flake: {:?} (`direnv allow` was run on this path)",
             local_flake
         ),
-        result: match direnv_active(local_flake) {
+        result: match is_direnv_active_on(local_flake) {
             Ok(true) => CheckResult::Green,
             Ok(false) => CheckResult::Red {
                 msg: "direnv is not active".to_string(),
@@ -91,6 +92,7 @@ fn activation_check(local_flake: &std::path::Path, required: bool) -> Check {
     }
 }
 
+/// Information about a direnv install
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
 pub struct DirenvInstall {
     /// Path to the direnv binary
@@ -104,6 +106,7 @@ pub struct DirenvInstall {
 }
 
 impl DirenvInstall {
+    /// Detect user's direnv installation
     #[cfg(feature = "ssr")]
     pub fn detect() -> anyhow::Result<Self> {
         let bin_path = which::which("direnv")?;
@@ -113,6 +116,8 @@ impl DirenvInstall {
         let out = String::from_utf8_lossy(&output.stdout);
         let mut bash_path = None;
         let mut direnv_config = None;
+        // NOTE: One day we'll switch to using JSON output
+        // https://github.com/direnv/direnv/pull/1142
         for line in out.lines() {
             if let Some(path) = line.strip_prefix("bash_path ") {
                 bash_path = Some(PathBuf::from(path));
@@ -136,13 +141,22 @@ impl DirenvInstall {
 
 /// Check if direnv was already activated in [project_dir]
 #[cfg(feature = "ssr")]
-pub fn direnv_active(project_dir: &std::path::Path) -> anyhow::Result<bool> {
-    let cmd = "direnv status | grep 'Found RC allowed true'";
-    // TODO: Don't use `sh`
-    let output = std::process::Command::new("sh")
-        .arg("-c")
-        .arg(cmd)
+pub fn is_direnv_active_on(project_dir: &std::path::Path) -> anyhow::Result<bool> {
+    let output = std::process::Command::new("direnv")
+        .arg("status")
         .current_dir(project_dir)
         .output()?;
-    Ok(output.status.success())
+    if output.status.success() {
+        let out = String::from_utf8_lossy(&output.stdout);
+        let mut allowed = false;
+        for line in out.lines() {
+            if line == "Found RC allowed true" {
+                allowed = true;
+                break;
+            }
+        }
+        Ok(allowed)
+    } else {
+        anyhow::bail!("Unable to run direnv status: {:?}", output.stderr)
+    }
 }
