@@ -21,7 +21,7 @@ impl Default for Direnv {
         Self {
             // TODO: Add "Recommendation" status to [CheckResult]
             enable: true,
-            required: true,
+            required: false,
             allowed: DirenvAllow::default(),
         }
     }
@@ -72,19 +72,22 @@ impl Checkable for Direnv {
 #[cfg(feature = "ssr")]
 impl Checkable for DirenvAllow {
     fn check(&self, _nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Option<Check> {
-        if !self.enable {
-            return None;
-        }
         // This check is currently only relevant if the flake is local
         let local_path = nix_env
             .current_flake
             .as_ref()
             .and_then(|url| url.as_local_path())?;
+        if !self.enable || !local_path.join(".envrc").exists() {
+            return None;
+        }
         let suggestion = format!("Run `direnv allow` under `{}`", local_path.display());
         let check = Check {
             title: "Direnv activation".to_string(),
             // TODO: Show direnv path
-            info: format!("Local flake: {:?}", local_path),
+            info: format!(
+                "Local flake: {:?} (`direnv allow` was run on this path)",
+                local_path
+            ),
             result: match direnv_active(local_path) {
                 Ok(true) => CheckResult::Green,
                 Ok(false) => CheckResult::Red {
