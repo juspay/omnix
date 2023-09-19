@@ -41,7 +41,7 @@ fn ViewCheck(cx: Scope, check: Check) -> impl IntoView {
     view! { cx,
         <div class="contents">
             <details
-                open=check.result != CheckResult::Pass
+                open=check.result != CheckResult::Green
                 class="my-2 bg-white border-2 rounded-lg cursor-pointer hover:bg-primary-100 border-base-300"
             >
                 <summary class="p-4 text-xl font-bold">
@@ -55,8 +55,8 @@ fn ViewCheck(cx: Scope, check: Check) -> impl IntoView {
                     </div>
                     <div class="flex flex-col justify-start space-y-4">
                         {match check.result {
-                            CheckResult::Pass => view! { cx, "" }.into_view(cx),
-                            CheckResult::Fail { msg, suggestion } => {
+                            CheckResult::Green => view! { cx, "" }.into_view(cx),
+                            CheckResult::Red { msg, suggestion } => {
                                 view! { cx,
                                     <h3 class="my-2 font-bold text-l"></h3>
                                     <div class="p-2 bg-red-400 rounded bg-border">{msg}</div>

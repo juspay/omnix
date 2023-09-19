@@ -57,8 +57,8 @@ impl Checkable for Direnv {
             // TODO: Show direnv path
             info: format!("direnv install = {:?}", direnv_install),
             result: match direnv_install {
-                Ok(_direnv_install) => CheckResult::Pass,
-                Err(e) => CheckResult::Fail {
+                Ok(_direnv_install) => CheckResult::Green,
+                Err(e) => CheckResult::Red {
                     msg: format!("Unable to locate direnv install: {}", e),
                     suggestion,
                 },
@@ -86,12 +86,12 @@ impl Checkable for DirenvAllow {
             // TODO: Show direnv path
             info: format!("Local flake: {:?}", local_path),
             result: match direnv_active(local_path) {
-                Ok(true) => CheckResult::Pass,
-                Ok(false) => CheckResult::Fail {
+                Ok(true) => CheckResult::Green,
+                Ok(false) => CheckResult::Red {
                     msg: "direnv is not active".to_string(),
                     suggestion,
                 },
-                Err(e) => CheckResult::Fail {
+                Err(e) => CheckResult::Red {
                     msg: format!("Unable to check direnv status: {}", e),
                     suggestion,
                 },

@@ -16,9 +16,9 @@ impl Checkable for FlakeEnabled {
             result: if val.contains(&"flakes".to_string())
                 && val.contains(&"nix-command".to_string())
             {
-                CheckResult::Pass
+                CheckResult::Green
             } else {
-                CheckResult::Fail {
+                CheckResult::Red {
                     msg: "Nix flakes are not enabled".into(),
                     suggestion: "See https://nixos.wiki/wiki/Flakes#Enable_flakes".into(),
                 }

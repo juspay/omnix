@@ -12,7 +12,7 @@ impl Checkable for TrustedUsers {
         let val = &nix_info.nix_config.trusted_users.value;
         let current_user = &nix_env.current_user;
         let result = if val.contains(current_user) {
-            CheckResult::Pass
+            CheckResult::Green
         } else {
             let msg = format!("User '{}' not present in trusted_users", current_user);
             let suggestion = if nix_env.os.has_configuration_nix() {
@@ -26,7 +26,7 @@ impl Checkable for TrustedUsers {
                     current_user
                 )
             };
-            CheckResult::Fail { msg, suggestion }
+            CheckResult::Red { msg, suggestion }
         };
         let check = Check {
             title: "Trusted Users".to_string(),

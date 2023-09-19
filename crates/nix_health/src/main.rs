@@ -24,11 +24,11 @@ async fn main() -> anyhow::Result<()> {
     let checks = run_checks(flake_url).await?;
     for check in &checks {
         match &check.result {
-            CheckResult::Pass => {
+            CheckResult::Green => {
                 println!("{}", format!("✅ {}", check.title).green().bold());
                 println!("   {}", check.info.blue());
             }
-            CheckResult::Fail { msg, suggestion } => {
+            CheckResult::Red { msg, suggestion } => {
                 if check.required {
                     println!("{}", format!("❌ {}", check.title).red().bold());
                 } else {
@@ -43,7 +43,7 @@ async fn main() -> anyhow::Result<()> {
     }
     if checks
         .iter()
-        .any(|c| matches!(c.result, CheckResult::Fail { .. }))
+        .any(|c| matches!(c.result, CheckResult::Red { .. }))
     {
         println!("{}", "!! Some checks failed (see above)".red().bold());
         std::process::exit(1);
