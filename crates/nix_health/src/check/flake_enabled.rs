@@ -9,7 +9,7 @@ use crate::traits::*;
 pub struct FlakeEnabled {}
 
 impl Checkable for FlakeEnabled {
-    fn check(&self, nix_info: &info::NixInfo, _nix_env: &env::NixEnv) -> Option<Check> {
+    fn check(&self, nix_info: &info::NixInfo, _nix_env: &env::NixEnv) -> Vec<Check> {
         let val = &nix_info.nix_config.experimental_features.value;
         let check = Check {
             title: "Flakes Enabled".to_string(),
@@ -26,6 +26,6 @@ impl Checkable for FlakeEnabled {
             },
             required: true,
         };
-        Some(check)
+        vec![check]
     }
 }

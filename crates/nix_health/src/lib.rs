@@ -1,4 +1,5 @@
 #![feature(associated_type_defaults)]
+#![feature(let_chains)]
 //! Health checks for the user's Nix install
 
 pub mod check;
@@ -35,7 +36,7 @@ impl<'a> IntoIterator for &'a NixHealth {
 
     /// Return an iterator to iterate on the fields of [NixHealth]
     fn into_iter(self) -> Self::IntoIter {
-        let mut items: Vec<Self::Item> = vec![
+        let items: Vec<Self::Item> = vec![
             &self.rosetta,
             &self.nix_version,
             &self.flake_enabled,
@@ -44,10 +45,6 @@ impl<'a> IntoIterator for &'a NixHealth {
             &self.trusted_users,
             &self.direnv,
         ];
-        // direnv has a sub-check
-        if self.direnv.enable {
-            items.push(&self.direnv.allowed);
-        }
         items.into_iter()
     }
 }

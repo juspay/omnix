@@ -26,11 +26,9 @@ impl Default for Rosetta {
 }
 
 impl Checkable for Rosetta {
-    fn check(&self, _nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Option<Check> {
-        if !self.enable {
-            return None;
-        }
-        let emulation = get_apple_emulation(&nix_env.os)?;
+    fn check(&self, _nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Vec<Check> {
+        let mut checks = vec![];
+        if self.enable && let Some(emulation) = get_apple_emulation(&nix_env.os) {
         let check = Check {
             title: "Rosetta Not Active".to_string(),
             info: format!("apple emulation = {:?}", emulation),
@@ -44,7 +42,9 @@ impl Checkable for Rosetta {
             },
             required: self.required,
         };
-        Some(check)
+        checks.push(check);
+    }
+        checks
     }
 }
 

@@ -9,7 +9,7 @@ use crate::traits::*;
 pub struct TrustedUsers {}
 
 impl Checkable for TrustedUsers {
-    fn check(&self, nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Option<Check> {
+    fn check(&self, nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Vec<Check> {
         let val = &nix_info.nix_config.trusted_users.value;
         let current_user = &nix_env.current_user;
         let result = if val.contains(current_user) {
@@ -35,6 +35,6 @@ impl Checkable for TrustedUsers {
             result,
             required: true,
         };
-        Some(check)
+        vec![check]
     }
 }

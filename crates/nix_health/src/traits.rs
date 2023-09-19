@@ -5,8 +5,9 @@ use serde::{Deserialize, Serialize};
 pub trait Checkable {
     /// Run and create the health check
     ///
-    /// NOTE: Some checks may perform impure actions (IO, etc.)
-    fn check(&self, nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Option<Check>;
+    /// NOTE: Some checks may perform impure actions (IO, etc.). Returning an
+    /// empty vector indicates that the check is skipped on this environment.
+    fn check(&self, nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Vec<Check>;
 }
 
 /// A health check

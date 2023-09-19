@@ -13,43 +13,25 @@ use nix_rs::{env, info};
 pub struct Direnv {
     pub(crate) enable: bool,
     pub(crate) required: bool,
-    pub(crate) allowed: DirenvAllow,
 }
 
 impl Default for Direnv {
     fn default() -> Self {
         Self {
-            // TODO: Add "Recommendation" status to [CheckResult]
             enable: true,
             required: false,
-            allowed: DirenvAllow::default(),
-        }
-    }
-}
-
-/// Check if `direnv allow` was run
-#[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(default, rename_all = "kebab-case")]
-pub struct DirenvAllow {
-    enable: bool,
-    required: bool,
-}
-
-impl Default for DirenvAllow {
-    fn default() -> Self {
-        Self {
-            enable: true,
-            required: true,
         }
     }
 }
 
 #[cfg(feature = "ssr")]
 impl Checkable for Direnv {
-    fn check(&self, _nix_info: &info::NixInfo, _nix_env: &env::NixEnv) -> Option<Check> {
+    fn check(&self, _nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Vec<Check> {
+        let mut checks = vec![];
         if !self.enable {
-            return None;
+            return checks;
         }
+
         let suggestion = "Install direnv <https://zero-to-flakes.com/direnv/#setup>".to_string();
         let direnv_install = DirenvInstall::detect();
         let check = Check {
@@ -65,43 +47,39 @@ impl Checkable for Direnv {
             },
             required: self.required,
         };
-        Some(check)
-    }
-}
+        checks.push(check);
 
-#[cfg(feature = "ssr")]
-impl Checkable for DirenvAllow {
-    fn check(&self, _nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Option<Check> {
         // This check is currently only relevant if the flake is local
-        let local_path = nix_env
+        if let Some(local_path) = nix_env
             .current_flake
             .as_ref()
-            .and_then(|url| url.as_local_path())?;
-        if !self.enable || !local_path.join(".envrc").exists() {
-            return None;
+            .and_then(|url| url.as_local_path())
+        {
+            let suggestion = format!("Run `direnv allow` under `{}`", local_path.display());
+            let check = Check {
+                title: "Direnv activation".to_string(),
+                // TODO: Show direnv path
+                info: format!(
+                    "Local flake: {:?} (`direnv allow` was run on this path)",
+                    local_path
+                ),
+                result: match direnv_active(local_path) {
+                    Ok(true) => CheckResult::Green,
+                    Ok(false) => CheckResult::Red {
+                        msg: "direnv is not active".to_string(),
+                        suggestion,
+                    },
+                    Err(e) => CheckResult::Red {
+                        msg: format!("Unable to check direnv status: {}", e),
+                        suggestion,
+                    },
+                },
+                required: self.required,
+            };
+            checks.push(check);
         }
-        let suggestion = format!("Run `direnv allow` under `{}`", local_path.display());
-        let check = Check {
-            title: "Direnv activation".to_string(),
-            // TODO: Show direnv path
-            info: format!(
-                "Local flake: {:?} (`direnv allow` was run on this path)",
-                local_path
-            ),
-            result: match direnv_active(local_path) {
-                Ok(true) => CheckResult::Green,
-                Ok(false) => CheckResult::Red {
-                    msg: "direnv is not active".to_string(),
-                    suggestion,
-                },
-                Err(e) => CheckResult::Red {
-                    msg: format!("Unable to check direnv status: {}", e),
-                    suggestion,
-                },
-            },
-            required: self.required,
-        };
-        Some(check)
+
+        return checks;
     }
 }
 

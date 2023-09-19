@@ -25,7 +25,7 @@ fn default_caches() -> Vec<Url> {
 }
 
 impl Checkable for Caches {
-    fn check(&self, nix_info: &info::NixInfo, _nix_env: &env::NixEnv) -> Option<Check> {
+    fn check(&self, nix_info: &info::NixInfo, _nix_env: &env::NixEnv) -> Vec<Check> {
         let val = &nix_info.nix_config.substituters.value;
         let result = if self.required.iter().all(|c| val.contains(c)) {
             CheckResult::Green
@@ -53,6 +53,6 @@ impl Checkable for Caches {
             result,
             required: true,
         };
-        Some(check)
+        vec![check]
     }
 }
