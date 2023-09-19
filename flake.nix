@@ -36,7 +36,7 @@
         nix-health.default = {
           nix-version.min-required = "2.16.0";
           caches.required = [ "https://cache.garnix.io" ];
-          # rosetta.enable = false;
+          direnv.required = true;
         };
       };
       perSystem = { config, self', pkgs, lib, system, ... }: {

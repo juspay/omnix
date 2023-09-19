@@ -1,31 +1,30 @@
+#[cfg(feature = "ssr")]
 use nix_rs::{env, info};
 use serde::{Deserialize, Serialize};
 use url::Url;
 
+#[cfg(feature = "ssr")]
 use crate::traits::*;
 
 /// Check that [nix_rs::config::NixConfig::substituters] is set to a good value.
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
 #[serde(rename_all = "kebab-case")]
+#[serde(default)]
 pub struct Caches {
-    #[serde(default = "default_caches")]
     pub required: Vec<Url>,
 }
 
 impl Default for Caches {
     fn default() -> Self {
         Caches {
-            required: default_caches(),
+            required: vec![Url::parse("https://cache.nixos.org").unwrap()],
         }
     }
 }
 
-fn default_caches() -> Vec<Url> {
-    vec![Url::parse("https://cache.nixos.org").unwrap()]
-}
-
+#[cfg(feature = "ssr")]
 impl Checkable for Caches {
-    fn check(&self, nix_info: &info::NixInfo, _nix_env: &env::NixEnv) -> Option<Check> {
+    fn check(&self, nix_info: &info::NixInfo, _nix_env: &env::NixEnv) -> Vec<Check> {
         let val = &nix_info.nix_config.substituters.value;
         let result = if self.required.iter().all(|c| val.contains(c)) {
             CheckResult::Green
@@ -51,7 +50,8 @@ impl Checkable for Caches {
                     .join(" ")
             ),
             result,
+            required: true,
         };
-        Some(check)
+        vec![check]
     }
 }

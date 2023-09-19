@@ -3,6 +3,7 @@
 //! See <https://nixos.org/manual/nix/stable/command-ref/new-cli/nix3-flake.html#url-like-syntax>
 use std::{
     fmt::{Display, Formatter},
+    path::Path,
     str::FromStr,
 };
 
@@ -26,6 +27,22 @@ impl FlakeUrl {
             "github:juspay/nix-browser".into(),
             "github:nixos/nixpkgs".into(),
         ]
+    }
+
+    /// Return the local path if the flake URL is a local path
+    ///
+    /// Applicable only if the flake URL uses the [Path-like
+    /// syntax](https://nixos.org/manual/nix/stable/command-ref/new-cli/nix3-flake.html#path-like-syntax)
+    pub fn as_local_path(&self) -> Option<&Path> {
+        let s = self.0.strip_prefix("path:").unwrap_or(&self.0);
+        if s.starts_with('.') || s.starts_with('/') {
+            // Strip query (`?..`) and attrs (`#..`)
+            let s = s.split('?').next().unwrap_or(s);
+            let s = s.split('#').next().unwrap_or(s);
+            Some(Path::new(s))
+        } else {
+            None
+        }
     }
 
     /// Return `<url>#<root-attr>.default` if `<url>` is passed
@@ -126,6 +143,42 @@ mod tests {
                 FlakeAttr(Some("extra-tests".to_string()))
             )
         );
+    }
+
+    #[test]
+    fn test_as_local_flake() {
+        let url = FlakeUrl("github:srid/nixci".to_string());
+        assert_eq!(url.as_local_path(), None);
+
+        let url = FlakeUrl(".".to_string());
+        assert_eq!(url.as_local_path().map(|p| p.to_str().unwrap()), Some("."));
+
+        let url = FlakeUrl("/foo".to_string());
+        assert_eq!(url.as_local_path(), Some(std::path::Path::new("/foo")));
+
+        let url = FlakeUrl("./foo?q=bar".to_string());
+        assert_eq!(url.as_local_path(), Some(std::path::Path::new("./foo")));
+
+        let url = FlakeUrl("./foo#attr".to_string());
+        assert_eq!(url.as_local_path(), Some(std::path::Path::new("./foo")));
+
+        let url = FlakeUrl("/foo?q=bar#attr".to_string());
+        assert_eq!(url.as_local_path(), Some(std::path::Path::new("/foo")));
+
+        let url = FlakeUrl("path:.".to_string());
+        assert_eq!(url.as_local_path(), Some(std::path::Path::new(".")));
+
+        let url = FlakeUrl("path:./foo".to_string());
+        assert_eq!(url.as_local_path(), Some(std::path::Path::new("./foo")));
+
+        let url = FlakeUrl("path:./foo?q=bar".to_string());
+        assert_eq!(url.as_local_path(), Some(std::path::Path::new("./foo")));
+
+        let url = FlakeUrl("path:./foo#attr".to_string());
+        assert_eq!(url.as_local_path(), Some(std::path::Path::new("./foo")));
+
+        let url = FlakeUrl("path:/foo?q=bar#attr".to_string());
+        assert_eq!(url.as_local_path(), Some(std::path::Path::new("/foo")));
     }
 
     #[test]

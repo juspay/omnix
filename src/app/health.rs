@@ -92,7 +92,8 @@ pub async fn get_nix_health(_unit: ()) -> Result<Vec<nix_health::traits::Check>,
     use nix_health::NixHealth;
     use nix_rs::{env, info};
     let nix_info = info::NixInfo::from_nix(&nix_rs::command::NixCmd::default()).await?;
-    let nix_env = env::NixEnv::detect().await?;
+    // TODO: Use Some(flake_url)? With what UX?
+    let nix_env = env::NixEnv::detect(None).await?;
     let health = NixHealth::default();
     let checks = health.run_checks(&nix_info, &nix_env);
     Ok(checks)

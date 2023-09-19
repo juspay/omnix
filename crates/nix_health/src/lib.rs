@@ -1,41 +1,37 @@
 #![feature(associated_type_defaults)]
+#![feature(let_chains)]
 //! Health checks for the user's Nix install
 
 pub mod check;
 pub mod report;
 pub mod traits;
 
-use nix_rs::{env, info};
+use check::direnv::Direnv;
 use serde::{Deserialize, Serialize};
 
 use self::check::{
     caches::Caches, flake_enabled::FlakeEnabled, max_jobs::MaxJobs, min_nix_version::MinNixVersion,
     rosetta::Rosetta, trusted_users::TrustedUsers,
 };
-use self::traits::*;
 
 /// Nix Health check information for user's install
 ///
 /// Each field represents an individual check which satisfies the [Checkable] trait.
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
-#[serde(rename_all = "kebab-case")]
+#[serde(default, rename_all = "kebab-case")]
 pub struct NixHealth {
-    #[serde(default)]
     pub max_jobs: MaxJobs,
-    #[serde(default)]
     pub caches: Caches,
-    #[serde(default)]
     pub flake_enabled: FlakeEnabled,
-    #[serde(default)]
     pub nix_version: MinNixVersion,
-    #[serde(default)]
     pub trusted_users: TrustedUsers,
-    #[serde(default)]
     pub rosetta: Rosetta,
+    pub direnv: Direnv,
 }
 
+#[cfg(feature = "ssr")]
 impl<'a> IntoIterator for &'a NixHealth {
-    type Item = &'a dyn Checkable;
+    type Item = &'a dyn traits::Checkable;
     type IntoIter = std::vec::IntoIter<Self::Item>;
 
     /// Return an iterator to iterate on the fields of [NixHealth]
@@ -47,6 +43,7 @@ impl<'a> IntoIterator for &'a NixHealth {
             &self.max_jobs,
             &self.caches,
             &self.trusted_users,
+            &self.direnv,
         ];
         items.into_iter()
     }
@@ -62,11 +59,16 @@ impl NixHealth {
         url: nix_rs::flake::url::FlakeUrl,
     ) -> Result<Self, nix_rs::command::NixCmdError> {
         use nix_rs::flake::eval::nix_eval_attr_json;
-        nix_eval_attr_json(url).await
+        nix_eval_attr_json(&url).await
     }
 
     /// Run all checks and collect the results
-    pub fn run_checks(&self, nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Vec<Check> {
+    #[cfg(feature = "ssr")]
+    pub fn run_checks(
+        &self,
+        nix_info: &nix_rs::info::NixInfo,
+        nix_env: &nix_rs::env::NixEnv,
+    ) -> Vec<traits::Check> {
         self.into_iter()
             .flat_map(|c| c.check(nix_info, nix_env))
             .collect()

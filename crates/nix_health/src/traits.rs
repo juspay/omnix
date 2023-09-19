@@ -1,10 +1,13 @@
-use nix_rs::{env, info};
 use serde::{Deserialize, Serialize};
 
 /// Types that can do specific "health check" for Nix
+#[cfg(feature = "ssr")]
 pub trait Checkable {
     /// Run and create the health check
-    fn check(&self, nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Option<Check>;
+    ///
+    /// NOTE: Some checks may perform impure actions (IO, etc.). Returning an
+    /// empty vector indicates that the check is skipped on this environment.
+    fn check(&self, nix_info: &nix_rs::info::NixInfo, nix_env: &nix_rs::env::NixEnv) -> Vec<Check>;
 }
 
 /// A health check
@@ -21,6 +24,11 @@ pub struct Check {
 
     /// The result of running this check
     pub result: CheckResult,
+
+    /// Whether this check is mandatory
+    ///
+    /// Failures are considered non-critical if this is false.
+    pub required: bool,
 }
 
 /// The result of a health [Check]

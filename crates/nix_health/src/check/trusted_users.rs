@@ -1,14 +1,16 @@
-use nix_rs::{env, info};
 use serde::{Deserialize, Serialize};
 
+#[cfg(feature = "ssr")]
 use crate::traits::*;
 
 /// Check that [crate::nix::config::NixConfig::trusted_users] is set to a good value.
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
+#[serde(default)]
 pub struct TrustedUsers {}
 
+#[cfg(feature = "ssr")]
 impl Checkable for TrustedUsers {
-    fn check(&self, nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Option<Check> {
+    fn check(&self, nix_info: &nix_rs::info::NixInfo, nix_env: &nix_rs::env::NixEnv) -> Vec<Check> {
         let val = &nix_info.nix_config.trusted_users.value;
         let current_user = &nix_env.current_user;
         let result = if val.contains(current_user) {
@@ -32,7 +34,8 @@ impl Checkable for TrustedUsers {
             title: "Trusted Users".to_string(),
             info: format!("trusted-users = {}", val.join(" ")),
             result,
+            required: true,
         };
-        Some(check)
+        vec![check]
     }
 }

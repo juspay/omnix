@@ -6,7 +6,7 @@ use super::url::FlakeUrl;
 ///
 /// If the flake does not output the given attribute, return the [Default]
 /// value of `T`.
-pub async fn nix_eval_attr_json<T>(url: FlakeUrl) -> Result<T, NixCmdError>
+pub async fn nix_eval_attr_json<T>(url: &FlakeUrl) -> Result<T, NixCmdError>
 where
     T: Default + serde::de::DeserializeOwned,
 {
