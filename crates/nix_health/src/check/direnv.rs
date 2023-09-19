@@ -37,8 +37,8 @@ impl Checkable for Direnv {
         let direnv_installed = direnv_install_check.result.green();
         checks.push(direnv_install_check);
 
-        // This check is currently only relevant if the flake is local
-        if direnv_installed && let Some(local_path) = nix_env.current_local_flake() {
+        // This check is currently only relevant if the flake is local and an `.envrc` exists.
+        if direnv_installed && let Some(local_path) = nix_env.current_local_flake() && local_path.join(".envrc").exists() {
             checks.push(activation_check(local_path, self.required));
         }
 
@@ -72,15 +72,11 @@ fn activation_check(local_flake: &std::path::Path, required: bool) -> Check {
     let suggestion = format!("Run `direnv allow` under `{}`", local_flake.display());
     Check {
         title: "Direnv activation".to_string(),
-        // TODO: Show direnv path
-        info: format!(
-            "Local flake: {:?} (`direnv allow` was run on this path)",
-            local_flake
-        ),
+        info: format!("Local flake: {:?} (has .envrc)", local_flake),
         result: match is_direnv_active_on(local_flake) {
             Ok(true) => CheckResult::Green,
             Ok(false) => CheckResult::Red {
-                msg: "direnv is not active".to_string(),
+                msg: "direnv was not allowed on this project".to_string(),
                 suggestion,
             },
             Err(e) => CheckResult::Red {
