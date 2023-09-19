@@ -22,6 +22,7 @@ async fn main() -> anyhow::Result<()> {
         .flake_url
         .map(|url| url.with_fully_qualified_root_attr("nix-health"));
     let checks = run_checks(flake_url).await?;
+    let mut res = AllChecksResult::new();
     for check in &checks {
         match &check.result {
             CheckResult::Green => {
@@ -29,6 +30,7 @@ async fn main() -> anyhow::Result<()> {
                 println!("   {}", check.info.blue());
             }
             CheckResult::Red { msg, suggestion } => {
+                res.register_failure(check.required);
                 if check.required {
                     println!("{}", format!("❌ {}", check.title).red().bold());
                 } else {
@@ -41,33 +43,7 @@ async fn main() -> anyhow::Result<()> {
         }
         println!();
     }
-    let failed_checks: Vec<&Check> = checks
-        .iter()
-        .filter(|c| matches!(c.result, CheckResult::Red { .. }))
-        .collect();
-    if !failed_checks.is_empty() {
-        let failed_required_checks = failed_checks
-            .iter()
-            .filter(|c| c.required)
-            .collect::<Vec<_>>();
-        if !failed_required_checks.is_empty() {
-            println!(
-                "{}",
-                "❌ Some required checks failed (see above)".red().bold()
-            );
-        } else {
-            println!(
-                "{}",
-                "✅ Some checks passed, but other non-required checks failed"
-                    .green()
-                    .bold()
-            );
-        }
-        std::process::exit(1);
-    } else {
-        println!("{}", "✅ All checks passed".green().bold());
-        Ok(())
-    }
+    std::process::exit(res.report())
 }
 
 /// Run health checks, taking current directory flake into account if there is
@@ -94,4 +70,47 @@ async fn run_checks(flake_url: Option<FlakeUrl>) -> anyhow::Result<Vec<Check>> {
     }?;
     let checks = health.run_checks(&nix_info, &nix_env);
     Ok(checks)
+}
+
+/// A convenient type to aggregate check failures, and summary report at end.
+enum AllChecksResult {
+    Pass,
+    PassSomeFail,
+    Fail,
+}
+
+impl AllChecksResult {
+    fn new() -> Self {
+        AllChecksResult::Pass
+    }
+
+    fn register_failure(&mut self, required: bool) {
+        if required {
+            *self = AllChecksResult::Fail;
+        } else if matches!(self, AllChecksResult::Pass) {
+            *self = AllChecksResult::PassSomeFail;
+        }
+    }
+
+    fn report(self) -> i32 {
+        match self {
+            AllChecksResult::Pass => {
+                println!("{}", "✅ All checks passed".green().bold());
+                0
+            }
+            AllChecksResult::PassSomeFail => {
+                println!(
+                    "{}",
+                    "✅ Some checks passed, but other non-required checks failed"
+                        .green()
+                        .bold()
+                );
+                0
+            }
+            AllChecksResult::Fail => {
+                println!("{}", "❌ Some required checks failed".red().bold());
+                1
+            }
+        }
+    }
 }
