@@ -5,7 +5,7 @@ use crate::traits::*;
 
 /// Check that [nix_rs::version::NixVersion] is set to a good value.
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
-#[serde(rename_all = "kebab-case")]
+#[serde(default, rename_all = "kebab-case")]
 pub struct MinNixVersion {
     pub min_required: NixVersion,
 }

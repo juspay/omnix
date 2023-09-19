@@ -10,6 +10,7 @@ use crate::traits::{Check, CheckResult, Checkable};
 ///
 /// Enabled only on ARM macs.
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(default)]
 pub struct Rosetta {
     enable: bool,
     required: bool,

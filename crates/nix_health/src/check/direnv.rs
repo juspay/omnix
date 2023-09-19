@@ -10,6 +10,7 @@ use nix_rs::{env, info};
 /// Check if direnv is installed
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "kebab-case")]
+#[serde(default)]
 pub struct Direnv {
     pub(crate) enable: bool,
     pub(crate) required: bool,
@@ -29,7 +30,7 @@ impl Default for Direnv {
 
 /// Check if `direnv allow` was run
 #[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(rename_all = "kebab-case")]
+#[serde(default, rename_all = "kebab-case")]
 pub struct DirenvAllow {
     enable: bool,
     required: bool,

@@ -5,6 +5,7 @@ use crate::traits::{Check, CheckResult, Checkable};
 
 /// Check that [nix_rs::config::NixConfig::max_jobs] is set to a good value.
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
+#[serde(default)]
 pub struct MaxJobs {}
 
 impl Checkable for MaxJobs {

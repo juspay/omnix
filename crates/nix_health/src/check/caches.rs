@@ -7,6 +7,7 @@ use crate::traits::*;
 /// Check that [nix_rs::config::NixConfig::substituters] is set to a good value.
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
 #[serde(rename_all = "kebab-case")]
+#[serde(default)]
 pub struct Caches {
     pub required: Vec<Url>,
 }
