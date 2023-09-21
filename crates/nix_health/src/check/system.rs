@@ -28,6 +28,7 @@ impl Default for System {
     }
 }
 
+#[cfg(feature = "ssr")]
 impl System {
     fn check_memory(&self, total_memory: ByteSize) -> CheckResult {
         if let Some(min_ram) = self.min_ram {

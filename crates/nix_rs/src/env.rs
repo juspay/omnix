@@ -36,6 +36,7 @@ impl NixEnv {
         );
 
         let nix_disk = get_nix_disk(&sys)?;
+        // TODO: Should these use logging?
         println!("Nix disk => {:?}", nix_disk);
         println!(
             "Space available / total => {:?} / {:?}",
