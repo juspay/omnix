@@ -60,7 +60,9 @@ impl NixEnv {
             nix_disk.map(|d| bytes_human_readable(d.total_space()))
         );
         println!(
-            "Memory available / total => {} / {}",
+            "Memory used / free / available / total => {} / {} / {} / {}",
+            bytes_human_readable(sys.used_memory()),
+            bytes_human_readable(sys.free_memory()),
             bytes_human_readable(sys.available_memory()),
             bytes_human_readable(sys.total_memory())
         );

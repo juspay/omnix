@@ -110,6 +110,7 @@
         };
 
         devShells.default = pkgs.mkShell {
+          name = "nix-browser";
           inputsFrom = [
             config.treefmt.build.devShell
             self'.devShells.nix-browser
