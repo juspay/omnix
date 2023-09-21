@@ -1,5 +1,5 @@
 //! Information about the environment in which Nix will run
-use std::{fmt::Display, path::Path};
+use std::{collections::HashMap, fmt::Display, path::Path};
 
 use bytesize::ByteSize;
 use os_info;
@@ -20,7 +20,6 @@ pub struct NixEnv {
     /// Total disk space of the volume where /nix exists.
     ///
     /// This is either root volume or the dedicated /nix volume.
-    /// TODO: Find the actual volume where `/nix` exists.
     pub total_disk_space: ByteSize,
     /// Total memory
     pub total_memory: ByteSize,
@@ -87,15 +86,17 @@ fn to_bytesize(bytes: u64) -> ByteSize {
 
 /// Get the disk where /nix exists
 fn get_nix_disk(sys: &sysinfo::System) -> Result<&sysinfo::Disk, NixEnvError> {
-    let root = Path::new("/");
-    let root_nix = Path::new("/nix");
-    for disk in sys.disks() {
-        let mount_point = disk.mount_point();
-        if mount_point == root || mount_point == root_nix {
-            return Ok(disk);
-        }
-    }
-    Err(NixEnvError::NoDisk)
+    let by_mount_point: HashMap<&Path, &sysinfo::Disk> = sys
+        .disks()
+        .iter()
+        .map(|disk| (disk.mount_point(), disk))
+        .collect();
+    // Lookup /nix first, then /.
+    by_mount_point
+        .get(Path::new("/nix"))
+        .copied()
+        .or_else(|| by_mount_point.get(Path::new("/")).copied())
+        .ok_or(NixEnvError::NoDisk)
 }
 
 /// The system under which Nix is installed and operates
