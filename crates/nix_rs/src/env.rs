@@ -85,6 +85,7 @@ fn to_bytesize(bytes: u64) -> ByteSize {
 }
 
 /// Get the disk where /nix exists
+#[cfg(feature = "ssr")]
 fn get_nix_disk(sys: &sysinfo::System) -> Result<&sysinfo::Disk, NixEnvError> {
     let by_mount_point: HashMap<&Path, &sysinfo::Disk> = sys
         .disks()

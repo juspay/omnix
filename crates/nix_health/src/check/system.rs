@@ -77,6 +77,7 @@ impl Checkable for System {
                 ),
                 result: self
                     .check_memory(nix_env.total_memory)
+                    // TODO: instead of chain, return multiple checks
                     .chain(self.check_disk_space(nix_env.total_disk_space)),
                 required: self.required,
             };
