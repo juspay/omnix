@@ -1990,6 +1990,7 @@ name = "nix_health"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "bytesize",
  "cfg-if",
  "clap",
  "colored",

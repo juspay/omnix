@@ -51,4 +51,24 @@ impl CheckResult {
     pub fn green(&self) -> bool {
         matches!(self, Self::Green)
     }
+
+    /// Chain another [CheckResult]
+    pub fn chain(&self, other: Self) -> Self {
+        match (self, &other) {
+            (Self::Green, Self::Green) => Self::Green,
+            (Self::Green, Self::Red { .. }) => other.clone(),
+            (Self::Red { .. }, Self::Green) => self.clone(),
+            (
+                Self::Red { msg, suggestion },
+                Self::Red {
+                    msg: msg2,
+                    suggestion: suggestion2,
+                },
+            ) => Self::Red {
+                // TODO: Once we have Markdown, format this accordingly
+                msg: format!("{}. {}", msg, msg2),
+                suggestion: format!("{}. {}", suggestion, suggestion2),
+            },
+        }
+    }
 }

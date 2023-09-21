@@ -37,6 +37,10 @@
           nix-version.min-required = "2.16.0";
           caches.required = [ "https://cache.garnix.io" ];
           direnv.required = true;
+          system = {
+            min_ram = "16G";
+            # min_disk_space = "2T";
+          };
         };
       };
       perSystem = { config, self', pkgs, lib, system, ... }: {
