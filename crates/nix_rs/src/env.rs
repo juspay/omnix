@@ -27,7 +27,8 @@ impl NixEnv {
 
         let current_user = std::env::var("USER")?;
         let os = OS::detect().await;
-        let sys = System::new_with_specifics(sysinfo::RefreshKind::new().with_disks_list());
+        let sys =
+            System::new_with_specifics(sysinfo::RefreshKind::new().with_disks_list().with_memory());
         let mut nix_disk: Option<&Disk> = None;
         let root = Path::new("/");
         let root_nix = Path::new("/nix");
@@ -52,11 +53,16 @@ impl NixEnv {
                 format!("{} B", bytes)
             }
         };
-        println!("Nix disk: {:?}", nix_disk);
+        println!("Nix disk => {:?}", nix_disk);
         println!(
-            "Space: {:?} / {:?}",
+            "Space available / total => {:?} / {:?}",
             nix_disk.map(|d| bytes_human_readable(d.available_space())),
             nix_disk.map(|d| bytes_human_readable(d.total_space()))
+        );
+        println!(
+            "Memory available / total => {} / {}",
+            bytes_human_readable(sys.available_memory()),
+            bytes_human_readable(sys.total_memory())
         );
         Ok(NixEnv {
             current_user,
