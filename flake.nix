@@ -87,6 +87,9 @@
             nativeBuildInputs = (oa.nativeBuildInputs or [ ]) ++ [
               pkgs.nix # cargo tests need nix
             ];
+            buildInputs = (oa.buildInputs or [ ]) ++ lib.optionals pkgs.stdenv.isDarwin (with pkgs.darwin.apple_sdk.frameworks; [
+              IOKit
+            ]);
             cargoTestCommand = lib.getExe run-test;
             meta.description = "WIP: nix-browser";
           };
@@ -119,6 +122,9 @@
             cargo-expand
             config.process-compose.cargo-doc-live.outputs.package
           ];
+          buildInputs = lib.optionals pkgs.stdenv.isDarwin (with pkgs.darwin.apple_sdk.frameworks; [
+            IOKit
+          ]);
           shellHook = ''
             echo
             echo "🍎🍎 Run 'just <recipe>' to get started"

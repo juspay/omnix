@@ -15,14 +15,49 @@ pub struct NixEnv {
     pub current_flake: Option<FlakeUrl>,
     /// Underlying OS in which Nix runs
     pub os: OS,
+    // Disk space available to Nix
+    // pub disk: sysinfo::Disk,
 }
 
 impl NixEnv {
     /// Determine [NixEnv] on the user's system
     #[cfg(feature = "ssr")]
     pub async fn detect(current_flake: Option<FlakeUrl>) -> Result<NixEnv, NixEnvError> {
+        use sysinfo::{Disk, DiskExt, System, SystemExt};
+
         let current_user = std::env::var("USER")?;
         let os = OS::detect().await;
+        let sys = System::new_with_specifics(sysinfo::RefreshKind::new().with_disks_list());
+        let mut nix_disk: Option<&Disk> = None;
+        let root = Path::new("/");
+        let root_nix = Path::new("/nix");
+        for disk in sys.disks() {
+            let mount_point = disk.mount_point();
+            if mount_point == root || mount_point == root_nix {
+                nix_disk = Some(disk);
+                break;
+            }
+        }
+        let bytes_human_readable = |bytes| {
+            let kb = bytes / 1024;
+            let mb = kb / 1024;
+            let gb = mb / 1024;
+            if gb > 0 {
+                format!("{} GB", gb)
+            } else if mb > 0 {
+                format!("{} MB", mb)
+            } else if kb > 0 {
+                format!("{} KB", kb)
+            } else {
+                format!("{} B", bytes)
+            }
+        };
+        println!("Nix disk: {:?}", nix_disk);
+        println!(
+            "Space: {:?} / {:?}",
+            nix_disk.map(|d| bytes_human_readable(d.available_space())),
+            nix_disk.map(|d| bytes_human_readable(d.total_space()))
+        );
         Ok(NixEnv {
             current_user,
             current_flake,
