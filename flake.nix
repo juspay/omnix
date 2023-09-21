@@ -106,6 +106,9 @@
             nativeBuildInputs = [
               pkgs.nix # cargo tests need nix
             ];
+            buildInputs = lib.optionals pkgs.stdenv.isDarwin (with pkgs.darwin.apple_sdk.frameworks; [
+              IOKit
+            ]);
             cargoExtraArgs = "-p nix_health --features ssr";
             # Disable tests on macOS for https://github.com/garnix-io/issues/issues/69
             # If/when we move to Jenkins, this won't be necessary.
