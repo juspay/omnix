@@ -1,8 +1,10 @@
 //! Information about the environment in which Nix will run
 use std::{fmt::Display, path::Path};
 
+use bytesize::ByteSize;
 use os_info;
 use serde::{Deserialize, Serialize};
+use sysinfo::{DiskExt, SystemExt};
 
 use crate::flake::url::FlakeUrl;
 
@@ -15,61 +17,45 @@ pub struct NixEnv {
     pub current_flake: Option<FlakeUrl>,
     /// Underlying OS in which Nix runs
     pub os: OS,
-    // Disk space available to Nix
-    // pub disk: sysinfo::Disk,
+    /// Total disk space of the volume where /nix exists.
+    ///
+    /// This is either root volume or the dedicated /nix volume.
+    /// TODO: Find the actual volume where `/nix` exists.
+    pub total_disk_space: ByteSize,
+    /// Total memory
+    pub total_memory: ByteSize,
 }
 
 impl NixEnv {
     /// Determine [NixEnv] on the user's system
     #[cfg(feature = "ssr")]
     pub async fn detect(current_flake: Option<FlakeUrl>) -> Result<NixEnv, NixEnvError> {
-        use sysinfo::{Disk, DiskExt, System, SystemExt};
-
         let current_user = std::env::var("USER")?;
         let os = OS::detect().await;
-        let sys =
-            System::new_with_specifics(sysinfo::RefreshKind::new().with_disks_list().with_memory());
-        let mut nix_disk: Option<&Disk> = None;
-        let root = Path::new("/");
-        let root_nix = Path::new("/nix");
-        for disk in sys.disks() {
-            let mount_point = disk.mount_point();
-            if mount_point == root || mount_point == root_nix {
-                nix_disk = Some(disk);
-                break;
-            }
-        }
-        let bytes_human_readable = |bytes| {
-            let kb = bytes / 1024;
-            let mb = kb / 1024;
-            let gb = mb / 1024;
-            if gb > 0 {
-                format!("{} GB", gb)
-            } else if mb > 0 {
-                format!("{} MB", mb)
-            } else if kb > 0 {
-                format!("{} KB", kb)
-            } else {
-                format!("{} B", bytes)
-            }
-        };
+        let sys = sysinfo::System::new_with_specifics(
+            sysinfo::RefreshKind::new().with_disks_list().with_memory(),
+        );
+
+        let nix_disk = get_nix_disk(&sys)?;
         println!("Nix disk => {:?}", nix_disk);
         println!(
             "Space available / total => {:?} / {:?}",
-            nix_disk.map(|d| bytes_human_readable(d.available_space())),
-            nix_disk.map(|d| bytes_human_readable(d.total_space()))
+            to_bytesize(nix_disk.available_space()),
+            to_bytesize(nix_disk.total_space())
         );
         println!(
             "Memory used / free / available / total => {} / {} / {} / {}",
-            bytes_human_readable(sys.used_memory()),
-            bytes_human_readable(sys.free_memory()),
-            bytes_human_readable(sys.available_memory()),
-            bytes_human_readable(sys.total_memory())
+            to_bytesize(sys.used_memory()),
+            to_bytesize(sys.free_memory()),
+            to_bytesize(sys.available_memory()),
+            to_bytesize(sys.total_memory())
         );
         Ok(NixEnv {
             current_user,
             current_flake,
             os,
+            total_disk_space: to_bytesize(nix_disk.total_space()),
+            total_memory: to_bytesize(sys.total_memory()),
         })
     }
 
@@ -79,6 +65,37 @@ impl NixEnv {
             .as_ref()
             .and_then(|url| url.as_local_path())
     }
+}
+
+/// Convert bytes to a closest [ByteSize]
+///
+/// Useful for displaying disk space and memory which are typically in GBs / TBs
+fn to_bytesize(bytes: u64) -> ByteSize {
+    let kb = bytes / 1024;
+    let mb = kb / 1024;
+    let gb = mb / 1024;
+    if gb > 0 {
+        ByteSize::gib(gb)
+    } else if mb > 0 {
+        ByteSize::mib(mb)
+    } else if kb > 0 {
+        ByteSize::kib(kb)
+    } else {
+        ByteSize::b(bytes)
+    }
+}
+
+/// Get the disk where /nix exists
+fn get_nix_disk(sys: &sysinfo::System) -> Result<&sysinfo::Disk, NixEnvError> {
+    let root = Path::new("/");
+    let root_nix = Path::new("/nix");
+    for disk in sys.disks() {
+        let mount_point = disk.mount_point();
+        if mount_point == root || mount_point == root_nix {
+            return Ok(disk);
+        }
+    }
+    Err(NixEnvError::NoDisk)
 }
 
 /// The system under which Nix is installed and operates
@@ -197,4 +214,7 @@ impl OS {
 pub enum NixEnvError {
     #[error("Failed to fetch ENV: {0}")]
     EnvVarError(#[from] std::env::VarError),
+
+    #[error("Unable to find root disk or /nix volume")]
+    NoDisk,
 }
