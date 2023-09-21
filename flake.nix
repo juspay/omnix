@@ -51,6 +51,20 @@
           ];
         };
 
+        imports = [
+          # TODO: Factor out rust nix in its own module, then move this there as
+          # let binding.
+          ({ pkgs, lib, ... }: {
+            options.rustBuildInputs = lib.mkOption {
+              type = lib.types.listOf lib.types.package;
+              description = "Packages to be added to buildInputs of all rust packages and devShells";
+              default = lib.optionals pkgs.stdenv.isDarwin (with pkgs.darwin.apple_sdk.frameworks; [
+                IOKit
+              ]);
+            };
+          })
+        ];
+
         # Add your auto-formatters here.
         # cf. https://numtide.github.io/treefmt/
         treefmt.config = {
@@ -91,9 +105,7 @@
             nativeBuildInputs = (oa.nativeBuildInputs or [ ]) ++ [
               pkgs.nix # cargo tests need nix
             ];
-            buildInputs = (oa.buildInputs or [ ]) ++ lib.optionals pkgs.stdenv.isDarwin (with pkgs.darwin.apple_sdk.frameworks; [
-              IOKit
-            ]);
+            buildInputs = (oa.buildInputs or [ ]) ++ config.rustBuildInputs;
             cargoTestCommand = lib.getExe run-test;
             meta.description = "WIP: nix-browser";
           };
@@ -106,9 +118,7 @@
             nativeBuildInputs = [
               pkgs.nix # cargo tests need nix
             ];
-            buildInputs = lib.optionals pkgs.stdenv.isDarwin (with pkgs.darwin.apple_sdk.frameworks; [
-              IOKit
-            ]);
+            buildInputs = config.rustBuildInputs;
             cargoExtraArgs = "-p nix_health --features ssr";
             # Disable tests on macOS for https://github.com/garnix-io/issues/issues/69
             # If/when we move to Jenkins, this won't be necessary.
@@ -130,9 +140,7 @@
             cargo-expand
             config.process-compose.cargo-doc-live.outputs.package
           ];
-          buildInputs = lib.optionals pkgs.stdenv.isDarwin (with pkgs.darwin.apple_sdk.frameworks; [
-            IOKit
-          ]);
+          buildInputs = config.rustBuildInputs;
           shellHook = ''
             echo
             echo "🍎🍎 Run 'just <recipe>' to get started"
