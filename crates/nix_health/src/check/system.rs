@@ -30,41 +30,6 @@ impl Default for System {
 }
 
 #[cfg(feature = "ssr")]
-impl System {
-    fn check_memory(&self, total_memory: ByteSize) -> CheckResult {
-        if let Some(min_ram) = self.min_ram {
-            if total_memory < min_ram {
-                CheckResult::Red {
-                    msg: format!("Total memory is less than {}", min_ram),
-                    suggestion: "Add more memory".to_string(),
-                }
-            } else {
-                CheckResult::Green
-            }
-        } else {
-            CheckResult::Green
-        }
-    }
-
-    fn check_disk_space(&self, total_disk_space: ByteSize) -> CheckResult {
-        if let Some(min_disk_space) = self.min_disk_space {
-            if total_disk_space < min_disk_space {
-                CheckResult::Red {
-                    msg: format!("Total disk space is less than {}", min_disk_space),
-                    suggestion:
-                        "The Nix store requires a lot of disk space. Please add more disk space"
-                            .to_string(),
-                }
-            } else {
-                CheckResult::Green
-            }
-        } else {
-            CheckResult::Green
-        }
-    }
-}
-
-#[cfg(feature = "ssr")]
 impl Checkable for System {
     fn check(
         &self,
@@ -80,7 +45,14 @@ impl Checkable for System {
                         "min ram = {:?}; total = {:?}",
                         min_ram, nix_env.total_memory
                     ),
-                    result: self.check_memory(nix_env.total_memory),
+                    result: if nix_env.total_memory < min_ram {
+                        CheckResult::Red {
+                            msg: format!("Total memory is less than {}", min_ram),
+                            suggestion: "Add more memory".to_string(),
+                        }
+                    } else {
+                        CheckResult::Green
+                    },
                     required: self.required,
                 });
             };
@@ -91,7 +63,16 @@ impl Checkable for System {
                         "min disk space = {:?}; total = {:?}",
                         min_disk_space, nix_env.total_disk_space
                     ),
-                    result: self.check_disk_space(nix_env.total_disk_space),
+                    result: if nix_env.total_disk_space < min_disk_space {
+                        CheckResult::Red {
+                            msg: format!("Total disk space is less than {}", min_disk_space),
+                            suggestion:
+                                "The Nix store requires a lot of disk space. Please add more disk space"
+                                    .to_string(),
+                        }
+                    } else {
+                        CheckResult::Green
+                    },
                     required: self.required,
                 });
             };
