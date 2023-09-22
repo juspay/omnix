@@ -1,6 +1,7 @@
 //! Information about the environment in which Nix will run
 use std::{fmt::Display, path::Path};
 
+use bytesize::ByteSize;
 use os_info;
 use serde::{Deserialize, Serialize};
 
@@ -15,18 +16,32 @@ pub struct NixEnv {
     pub current_flake: Option<FlakeUrl>,
     /// Underlying OS in which Nix runs
     pub os: OS,
+    /// Total disk space of the volume where /nix exists.
+    ///
+    /// This is either root volume or the dedicated /nix volume.
+    pub total_disk_space: ByteSize,
+    /// Total memory
+    pub total_memory: ByteSize,
 }
 
 impl NixEnv {
     /// Determine [NixEnv] on the user's system
     #[cfg(feature = "ssr")]
     pub async fn detect(current_flake: Option<FlakeUrl>) -> Result<NixEnv, NixEnvError> {
+        use sysinfo::{DiskExt, SystemExt};
         let current_user = std::env::var("USER")?;
         let os = OS::detect().await;
+        let sys = sysinfo::System::new_with_specifics(
+            sysinfo::RefreshKind::new().with_disks_list().with_memory(),
+        );
+        let total_disk_space = to_bytesize(get_nix_disk(&sys)?.total_space());
+        let total_memory = to_bytesize(sys.total_memory());
         Ok(NixEnv {
             current_user,
             current_flake,
             os,
+            total_disk_space,
+            total_memory,
         })
     }
 
@@ -36,6 +51,23 @@ impl NixEnv {
             .as_ref()
             .and_then(|url| url.as_local_path())
     }
+}
+
+/// Get the disk where /nix exists
+#[cfg(feature = "ssr")]
+fn get_nix_disk(sys: &sysinfo::System) -> Result<&sysinfo::Disk, NixEnvError> {
+    use sysinfo::{DiskExt, SystemExt};
+    let by_mount_point: std::collections::HashMap<&Path, &sysinfo::Disk> = sys
+        .disks()
+        .iter()
+        .map(|disk| (disk.mount_point(), disk))
+        .collect();
+    // Lookup /nix first, then /.
+    by_mount_point
+        .get(Path::new("/nix"))
+        .copied()
+        .or_else(|| by_mount_point.get(Path::new("/")).copied())
+        .ok_or(NixEnvError::NoDisk)
 }
 
 /// The system under which Nix is installed and operates
@@ -154,4 +186,38 @@ impl OS {
 pub enum NixEnvError {
     #[error("Failed to fetch ENV: {0}")]
     EnvVarError(#[from] std::env::VarError),
+
+    #[error("Unable to find root disk or /nix volume")]
+    NoDisk,
+}
+
+/// Convert bytes to a closest [ByteSize]
+///
+/// Useful for displaying disk space and memory which are typically in GBs / TBs
+#[cfg(feature = "ssr")]
+fn to_bytesize(bytes: u64) -> ByteSize {
+    let kb = bytes / 1024;
+    let mb = kb / 1024;
+    let gb = mb / 1024;
+    if gb > 0 {
+        ByteSize::gib(gb)
+    } else if mb > 0 {
+        ByteSize::mib(mb)
+    } else if kb > 0 {
+        ByteSize::kib(kb)
+    } else {
+        ByteSize::b(bytes)
+    }
+}
+
+/// Test for [to_bytesize]
+#[cfg(feature = "ssr")]
+#[test]
+fn test_to_bytesize() {
+    assert_eq!(to_bytesize(0), ByteSize::b(0));
+    assert_eq!(to_bytesize(1), ByteSize::b(1));
+    assert_eq!(to_bytesize(1023), ByteSize::b(1023));
+    assert_eq!(to_bytesize(1024), ByteSize::kib(1));
+    assert_eq!(to_bytesize(1024 * 1024), ByteSize::mib(1));
+    assert_eq!(to_bytesize(1024 * 1024 * 1024), ByteSize::gib(1));
 }
