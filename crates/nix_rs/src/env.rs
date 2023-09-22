@@ -85,6 +85,17 @@ fn to_bytesize(bytes: u64) -> ByteSize {
     }
 }
 
+/// Test for [to_bytesize]
+#[test]
+fn test_to_bytesize() {
+    assert_eq!(to_bytesize(0), ByteSize::b(0));
+    assert_eq!(to_bytesize(1), ByteSize::b(1));
+    assert_eq!(to_bytesize(1023), ByteSize::b(1023));
+    assert_eq!(to_bytesize(1024), ByteSize::kib(1));
+    assert_eq!(to_bytesize(1024 * 1024), ByteSize::mib(1));
+    assert_eq!(to_bytesize(1024 * 1024 * 1024), ByteSize::gib(1));
+}
+
 /// Get the disk where /nix exists
 #[cfg(feature = "ssr")]
 fn get_nix_disk(sys: &sysinfo::System) -> Result<&sysinfo::Disk, NixEnvError> {

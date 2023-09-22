@@ -21,9 +21,10 @@ impl Default for System {
         Self {
             enable: true,
             required: false,
+            // RAM requirements vary between projects.
             min_ram: None,
             // 1TiB is recommended for nix
-            min_disk_space: Some(ByteSize::gib(1024)),
+            min_disk_space: Some(ByteSize::gb(1024)),
         }
     }
 }
@@ -50,7 +51,9 @@ impl System {
             if total_disk_space < min_disk_space {
                 CheckResult::Red {
                     msg: format!("Total disk space is less than {}", min_disk_space),
-                    suggestion: "Add more disk space".to_string(),
+                    suggestion:
+                        "The Nix store requires a lot of disk space. Please add more disk space"
+                            .to_string(),
                 }
             } else {
                 CheckResult::Green
@@ -70,20 +73,29 @@ impl Checkable for System {
     ) -> Vec<Check> {
         let mut checks = vec![];
         if self.enable {
-            let check = Check {
-                title: "System resources".to_string(),
-                info: format!(
-                    "total mem = {:?}; total disk space = {:?}",
-                    nix_env.total_memory, nix_env.total_disk_space
-                ),
-                result: self
-                    .check_memory(nix_env.total_memory)
-                    // TODO: instead of chain, return multiple checks
-                    .chain(self.check_disk_space(nix_env.total_disk_space)),
-                required: self.required,
+            if let Some(min_ram) = self.min_ram {
+                checks.push(Check {
+                    title: "RAM".to_string(),
+                    info: format!(
+                        "min ram = {:?}; total = {:?}",
+                        min_ram, nix_env.total_memory
+                    ),
+                    result: self.check_memory(nix_env.total_memory),
+                    required: self.required,
+                });
             };
-            checks.push(check);
-        }
+            if let Some(min_disk_space) = self.min_disk_space {
+                checks.push(Check {
+                    title: "Disk Space".to_string(),
+                    info: format!(
+                        "min disk space = {:?}; total = {:?}",
+                        min_disk_space, nix_env.total_disk_space
+                    ),
+                    result: self.check_disk_space(nix_env.total_disk_space),
+                    required: self.required,
+                });
+            };
+        };
         checks
     }
 }
