@@ -34,28 +34,14 @@ impl NixEnv {
         let sys = sysinfo::System::new_with_specifics(
             sysinfo::RefreshKind::new().with_disks_list().with_memory(),
         );
-
-        let nix_disk = get_nix_disk(&sys)?;
-        // TODO: Should these use logging?
-        println!("Nix disk => {:?}", nix_disk);
-        println!(
-            "Space available / total => {:?} / {:?}",
-            to_bytesize(nix_disk.available_space()),
-            to_bytesize(nix_disk.total_space())
-        );
-        println!(
-            "Memory used / free / available / total => {} / {} / {} / {}",
-            to_bytesize(sys.used_memory()),
-            to_bytesize(sys.free_memory()),
-            to_bytesize(sys.available_memory()),
-            to_bytesize(sys.total_memory())
-        );
+        let total_disk_space = to_bytesize(get_nix_disk(&sys)?.total_space());
+        let total_memory = to_bytesize(sys.total_memory());
         Ok(NixEnv {
             current_user,
             current_flake,
             os,
-            total_disk_space: to_bytesize(nix_disk.total_space()),
-            total_memory: to_bytesize(sys.total_memory()),
+            total_disk_space,
+            total_memory,
         })
     }
 
@@ -65,35 +51,6 @@ impl NixEnv {
             .as_ref()
             .and_then(|url| url.as_local_path())
     }
-}
-
-/// Convert bytes to a closest [ByteSize]
-///
-/// Useful for displaying disk space and memory which are typically in GBs / TBs
-fn to_bytesize(bytes: u64) -> ByteSize {
-    let kb = bytes / 1024;
-    let mb = kb / 1024;
-    let gb = mb / 1024;
-    if gb > 0 {
-        ByteSize::gib(gb)
-    } else if mb > 0 {
-        ByteSize::mib(mb)
-    } else if kb > 0 {
-        ByteSize::kib(kb)
-    } else {
-        ByteSize::b(bytes)
-    }
-}
-
-/// Test for [to_bytesize]
-#[test]
-fn test_to_bytesize() {
-    assert_eq!(to_bytesize(0), ByteSize::b(0));
-    assert_eq!(to_bytesize(1), ByteSize::b(1));
-    assert_eq!(to_bytesize(1023), ByteSize::b(1023));
-    assert_eq!(to_bytesize(1024), ByteSize::kib(1));
-    assert_eq!(to_bytesize(1024 * 1024), ByteSize::mib(1));
-    assert_eq!(to_bytesize(1024 * 1024 * 1024), ByteSize::gib(1));
 }
 
 /// Get the disk where /nix exists
@@ -231,4 +188,33 @@ pub enum NixEnvError {
 
     #[error("Unable to find root disk or /nix volume")]
     NoDisk,
+}
+
+/// Convert bytes to a closest [ByteSize]
+///
+/// Useful for displaying disk space and memory which are typically in GBs / TBs
+fn to_bytesize(bytes: u64) -> ByteSize {
+    let kb = bytes / 1024;
+    let mb = kb / 1024;
+    let gb = mb / 1024;
+    if gb > 0 {
+        ByteSize::gib(gb)
+    } else if mb > 0 {
+        ByteSize::mib(mb)
+    } else if kb > 0 {
+        ByteSize::kib(kb)
+    } else {
+        ByteSize::b(bytes)
+    }
+}
+
+/// Test for [to_bytesize]
+#[test]
+fn test_to_bytesize() {
+    assert_eq!(to_bytesize(0), ByteSize::b(0));
+    assert_eq!(to_bytesize(1), ByteSize::b(1));
+    assert_eq!(to_bytesize(1023), ByteSize::b(1023));
+    assert_eq!(to_bytesize(1024), ByteSize::kib(1));
+    assert_eq!(to_bytesize(1024 * 1024), ByteSize::mib(1));
+    assert_eq!(to_bytesize(1024 * 1024 * 1024), ByteSize::gib(1));
 }

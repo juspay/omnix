@@ -38,6 +38,7 @@
           caches.required = [ "https://cache.garnix.io" ];
           direnv.required = true;
           system = {
+            required = true;
             min_ram = "16G";
             # min_disk_space = "2T";
           };
