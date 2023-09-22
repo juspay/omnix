@@ -1,10 +1,9 @@
 //! Information about the environment in which Nix will run
-use std::{collections::HashMap, fmt::Display, path::Path};
+use std::{fmt::Display, path::Path};
 
 use bytesize::ByteSize;
 use os_info;
 use serde::{Deserialize, Serialize};
-use sysinfo::{DiskExt, SystemExt};
 
 use crate::flake::url::FlakeUrl;
 
@@ -29,6 +28,7 @@ impl NixEnv {
     /// Determine [NixEnv] on the user's system
     #[cfg(feature = "ssr")]
     pub async fn detect(current_flake: Option<FlakeUrl>) -> Result<NixEnv, NixEnvError> {
+        use sysinfo::{DiskExt, SystemExt};
         let current_user = std::env::var("USER")?;
         let os = OS::detect().await;
         let sys = sysinfo::System::new_with_specifics(
@@ -56,7 +56,8 @@ impl NixEnv {
 /// Get the disk where /nix exists
 #[cfg(feature = "ssr")]
 fn get_nix_disk(sys: &sysinfo::System) -> Result<&sysinfo::Disk, NixEnvError> {
-    let by_mount_point: HashMap<&Path, &sysinfo::Disk> = sys
+    use sysinfo::{DiskExt, SystemExt};
+    let by_mount_point: std::collections::HashMap<&Path, &sysinfo::Disk> = sys
         .disks()
         .iter()
         .map(|disk| (disk.mount_point(), disk))
@@ -193,6 +194,7 @@ pub enum NixEnvError {
 /// Convert bytes to a closest [ByteSize]
 ///
 /// Useful for displaying disk space and memory which are typically in GBs / TBs
+#[cfg(feature = "ssr")]
 fn to_bytesize(bytes: u64) -> ByteSize {
     let kb = bytes / 1024;
     let mb = kb / 1024;
@@ -209,6 +211,7 @@ fn to_bytesize(bytes: u64) -> ByteSize {
 }
 
 /// Test for [to_bytesize]
+#[cfg(feature = "ssr")]
 #[test]
 fn test_to_bytesize() {
     assert_eq!(to_bytesize(0), ByteSize::b(0));
