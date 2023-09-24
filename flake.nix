@@ -25,13 +25,16 @@
   outputs = inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       systems = import inputs.systems;
+
       imports = [
         inputs.treefmt-nix.flakeModule
         inputs.process-compose-flake.flakeModule
         inputs.cargo-doc-live.flakeModule
         (inputs.leptos-fullstack + /nix/flake-module.nix)
+        ./rust.nix
         ./e2e/flake-module.nix
       ];
+
       flake = {
         nix-health.default = {
           nix-version.min-required = "2.16.0";
@@ -44,6 +47,7 @@
           };
         };
       };
+
       perSystem = { config, self', pkgs, lib, system, ... }: {
         _module.args.pkgs = import inputs.nixpkgs {
           inherit system;
@@ -51,20 +55,6 @@
             inputs.rust-overlay.overlays.default
           ];
         };
-
-        imports = [
-          # TODO: Factor out rust nix in its own module, then move this there as
-          # let binding.
-          ({ pkgs, lib, ... }: {
-            options.rustBuildInputs = lib.mkOption {
-              type = lib.types.listOf lib.types.package;
-              description = "Packages to be added to buildInputs of all rust packages and devShells";
-              default = lib.optionals pkgs.stdenv.isDarwin (with pkgs.darwin.apple_sdk.frameworks; [
-                IOKit
-              ]);
-            };
-          })
-        ];
 
         # Add your auto-formatters here.
         # cf. https://numtide.github.io/treefmt/
@@ -77,71 +67,17 @@
           };
         };
 
-        leptos-fullstack.overrideCraneArgs = oa:
-          let
-            # 'cargo leptos test' doesn't run tests for all crates in the
-            # workspace. We do it here.
-            run-test = pkgs.writeShellApplication {
-              name = "run-test";
-              text = ''
-                set -xe
-
-                ${oa.cargoTestCommand}
-
-                # Disable tests on macOS for https://github.com/garnix-io/issues/issues/69
-                # If/when we move to Jenkins, this won't be necessary.
-                ${if !pkgs.stdenv.isDarwin
-                  then ''
-                    # Run `cargo test` using the same settings as `cargo leptos test`
-                    # In particular: target-dir and features
-                    cargo test --target-dir=target/server --no-default-features --features=ssr
-                    cargo test --target-dir=target/front --no-default-features --features=hydrate
-                  ''
-                  else ""
-                }
-              '';
-            };
-          in
-          {
-            nativeBuildInputs = (oa.nativeBuildInputs or [ ]) ++ [
-              pkgs.nix # cargo tests need nix
-            ];
-            buildInputs = (oa.buildInputs or [ ]) ++ config.rustBuildInputs;
-            cargoTestCommand = lib.getExe run-test;
-            meta.description = "WIP: nix-browser";
-          };
-
-        packages = {
-          default = self'.packages.nix-browser;
-          nix-health = config.leptos-fullstack.craneLib.buildPackage {
-            inherit (config.leptos-fullstack) src;
-            pname = "nix-health";
-            nativeBuildInputs = [
-              pkgs.nix # cargo tests need nix
-            ];
-            buildInputs = config.rustBuildInputs;
-            cargoExtraArgs = "-p nix_health --features ssr";
-            # Disable tests on macOS for https://github.com/garnix-io/issues/issues/69
-            # If/when we move to Jenkins, this won't be necessary.
-            doCheck = !pkgs.stdenv.isDarwin;
-          };
-        };
-
         devShells.default = pkgs.mkShell {
           name = "nix-browser";
           inputsFrom = [
             config.treefmt.build.devShell
-            self'.devShells.nix-browser
+            self'.devShells.rust
             self'.devShells.e2e-playwright
           ];
           packages = with pkgs; [
             just
             nixci
-            cargo-watch
-            cargo-expand
-            config.process-compose.cargo-doc-live.outputs.package
           ];
-          buildInputs = config.rustBuildInputs;
           shellHook = ''
             echo
             echo "🍎🍎 Run 'just <recipe>' to get started"
