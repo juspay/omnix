@@ -51,7 +51,7 @@
           nativeBuildInputs = [
             pkgs.nix # cargo tests need nix
           ];
-          buildInputs = config.rustBuildInputs;
+          buildInputs = rustBuildInputs;
           cargoExtraArgs = "-p nix_health --features ssr";
           # Disable tests on macOS for https://github.com/garnix-io/issues/issues/69
           # If/when we move to Jenkins, this won't be necessary.
@@ -66,6 +66,7 @@
         packages = with pkgs; [
           cargo-watch
           cargo-expand
+          cargo-nextest
           config.process-compose.cargo-doc-live.outputs.package
         ];
         buildInputs = rustBuildInputs;
