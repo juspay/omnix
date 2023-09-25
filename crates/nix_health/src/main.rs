@@ -101,10 +101,9 @@ impl AllChecksResult {
             }
             AllChecksResult::PassSomeFail => {
                 println!(
-                    "{}",
-                    "✅ Some checks passed, but other non-required checks failed"
-                        .green()
-                        .bold()
+                    "{}, {}",
+                    "✅ Required checks passed".green().bold(),
+                    "but some non-required checks failed".yellow().bold()
                 );
                 0
             }
