@@ -34,6 +34,53 @@ To run nix-health along with health check configuration specified in a project f
 nix run "github:juspay/nix-browser#nix-health" github:nammayatri/nammayatri
 ```
 
+## Configuring in `flake.nix`
+
+To add project specific health checks or configure them, you can add the following flake output:
+
+```nix
+{
+  outputs = inputs: {
+    nix-health.default = {
+      # Add configuration here
+      caches.required = [ "https://ourproject.cachix.org" ];
+    };
+  };
+}
+```
+
+To see all available configuration options that can go under the `nix-health.default` attrset, run `nix-health --dump-schema`.
+
+<details><summary>Sample output of <tt>nix-health --dump-schema</tt></summary>
+<pre><code>{
+  "max-jobs": {},
+  "caches": {
+    "required": [
+      "https://cache.nixos.org/"
+    ]
+  },
+  "flake-enabled": {},
+  "nix-version": {
+    "min-required": "2.13.0"
+  },
+  "system": {
+    "enable": true,
+    "required": false,
+    "min_ram": null,
+    "min_disk_space": "1024.0 GB"
+  },
+  "trusted-users": {},
+  "rosetta": {
+    "enable": true,
+    "required": true
+  },
+  "direnv": {
+    "enable": true,
+    "required": false
+  }
+}</pre></code>
+</details>
+
 ## Release Tasks
 
 - [ ] Finalize behaviour and config schema
