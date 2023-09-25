@@ -12,12 +12,22 @@ use nix_rs::{command::NixCmd, env::NixEnv, flake::url::FlakeUrl, info::NixInfo};
 pub struct Args {
     /// Include health checks defined in the given flake
     pub flake_url: Option<FlakeUrl>,
+
+    /// Dump the config schema of the health checks (useful when adding them to
+    /// a flake.nix)
+    #[arg(long = "dump-schema")]
+    pub dump_schema: bool,
 }
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     human_panic::setup_panic!();
     let args = Args::parse();
+    if args.dump_schema {
+        println!("{}", NixHealth::schema()?);
+        return Ok(());
+    }
+
     let flake_url = args
         .flake_url
         .map(|url| url.with_fully_qualified_root_attr("nix-health"));
