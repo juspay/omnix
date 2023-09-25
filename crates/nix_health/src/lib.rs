@@ -51,12 +51,12 @@ impl<'a> IntoIterator for &'a NixHealth {
     }
 }
 
+#[cfg(feature = "ssr")]
 impl NixHealth {
     /// Create [NixHealth] using configuration from the given flake
     ///
     /// Fallback to using the default health check config if the flake doesn't
     /// override it.
-    #[cfg(feature = "ssr")]
     pub async fn from_flake(
         url: nix_rs::flake::url::FlakeUrl,
     ) -> Result<Self, nix_rs::command::NixCmdError> {
@@ -65,7 +65,6 @@ impl NixHealth {
     }
 
     /// Run all checks and collect the results
-    #[cfg(feature = "ssr")]
     pub fn run_checks(
         &self,
         nix_info: &nix_rs::info::NixInfo,

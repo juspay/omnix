@@ -36,7 +36,7 @@ nix run "github:juspay/nix-browser#nix-health" github:nammayatri/nammayatri
 
 ## Release Tasks
 
-- [ ] Finalize code and outputs
+- [ ] Finalize behaviour and config schema
 - [ ] Documentation, esp. on flake.nix overrides
     - Do we need a blog post?
-- [ ] Release to crates.io and open nixpkgs PR
+- [ ] Release to crates.io (including `nix_rs`) and open nixpkgs PR
