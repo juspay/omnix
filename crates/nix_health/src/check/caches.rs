@@ -24,20 +24,29 @@ impl Default for Caches {
 
 #[cfg(feature = "ssr")]
 impl Checkable for Caches {
-    fn check(&self, nix_info: &info::NixInfo, _nix_env: &env::NixEnv) -> Vec<Check> {
+    fn check(&self, nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Vec<Check> {
         let val = &nix_info.nix_config.substituters.value;
-        let result = if self.required.iter().all(|c| val.contains(c)) {
+        let missing_caches = self
+            .required
+            .iter()
+            .filter(|required_cache| !val.contains(required_cache))
+            .collect::<Vec<_>>();
+        let result = if missing_caches.is_empty() {
             CheckResult::Green
         } else {
             CheckResult::Red {
                 msg: format!(
-                    "You are missing a required cache: {}",
-                    self.required
+                    "You are missing some required caches: {}",
+                    missing_caches
                         .iter()
-                        .find(|required_cache| !val.contains(required_cache))
-                        .unwrap()
+                        .map(|url| url.to_string())
+                        .collect::<Vec<_>>()
+                        .join(" ")
                 ),
-                suggestion: "Add in /etc/nix/nix.conf or use 'cachix use'".to_string(),
+                suggestion: format!(
+                    "Caches can be added in your {}. Cachix caches can also be added using `cachix use <name>`.",
+                    nix_env.os.configuration_nix_label().unwrap_or("/etc/nix/nix.conf".to_string())
+                )
             }
         };
         let check = Check {
@@ -46,7 +55,7 @@ impl Checkable for Caches {
                 "substituters = {}",
                 val.iter()
                     .map(|url| url.to_string())
-                    .collect::<Vec<String>>()
+                    .collect::<Vec<_>>()
                     .join(" ")
             ),
             result,

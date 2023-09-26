@@ -10,14 +10,16 @@ nix-health[^old] is a program that checks the health of your Nix install. Additi
 | --- | --- |
 | Flakes are enabled | - |
 | Nix version is not too old | Yes |
-| Nix runs natively (no rosetta) | Yes |
+| Nix runs natively (no rosetta)[^macos] | Yes |
 | Builds use multiple cores (`max-jobs`) | Yes |
 | Nix Caches in use | Yes |
 | $USER is in `trusted-users` | - |
 | Direnv: installed and activated | Yes |
 | Min RAM / Disk space | Yes |
 
-Note that some checks are considered non-essential. For eg., the disk space check looks for 1TB+ disk space, but if the user is on a laptop with 256GB SSD, the check will report a warning instead of failing.
+[^macos]: This check is only performed on macOS with Apple Silicon.
+
+Note that some checks are considered non-essential. For eg., the disk space check looks for 1TB+ disk space, but if the user is on a laptop with 256GB SSD, the check will report a warning instead of failing. This can also be configured in per-project basis from `flake.nix` (see below).
 
 ## Usage
 
@@ -36,7 +38,7 @@ nix run "github:juspay/nix-browser#nix-health" github:nammayatri/nammayatri
 
 ## Configuring in `flake.nix`
 
-To add project specific health checks or configure them, you can add the following flake output:
+To add project specific health checks or configure health checks, add the following flake output:
 
 ```nix
 {

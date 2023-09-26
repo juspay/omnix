@@ -169,13 +169,18 @@ impl OS {
 
     /// The Nix for this [OS] is configured automatically through a `configuration.nix`
     pub fn has_configuration_nix(&self) -> bool {
+        self.configuration_nix_label().is_some()
+    }
+
+    pub fn configuration_nix_label(&self) -> Option<String> {
+        // TODO: This should return Markdown
         match self {
             OS::MacOS {
                 nix_darwin,
                 arch: _,
-            } if *nix_darwin => true,
-            OS::NixOS => true,
-            _ => false,
+            } if *nix_darwin => Some("nix-darwin configuration".to_string()),
+            OS::NixOS => Some("nixos configuration".to_string()),
+            _ => None,
         }
     }
 }
