@@ -74,6 +74,10 @@ impl NixHealth {
             .flat_map(|c| c.check(nix_info, nix_env))
             .collect()
     }
+
+    pub fn schema() -> Result<String, serde_json::Error> {
+        serde_json::to_string_pretty(&NixHealth::default())
+    }
 }
 
 #[cfg(test)]
