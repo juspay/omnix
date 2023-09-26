@@ -44,7 +44,7 @@ impl Checkable for Caches {
                         .join(" ")
                 ),
                 suggestion: format!(
-                    "Caches can be added in your {}. Cachix caches can also be added using `cachix use <name>`.",
+                    "Caches can be added in your {}. Cachix caches can also be added using `nix run nixpkgs#cachix use <name>`.",
                     nix_env.os.configuration_nix_label().unwrap_or("/etc/nix/nix.conf".to_string())
                 )
             }

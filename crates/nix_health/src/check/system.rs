@@ -48,7 +48,7 @@ impl Checkable for System {
                     result: if nix_env.total_memory < min_ram {
                         CheckResult::Red {
                             msg: format!("Total memory is less than {}", min_ram),
-                            suggestion: "Add more memory".to_string(),
+                            suggestion: "Please add more memory to your system".to_string(),
                         }
                     } else {
                         CheckResult::Green
@@ -67,7 +67,7 @@ impl Checkable for System {
                         CheckResult::Red {
                             msg: format!("Total disk space is less than {}", min_disk_space),
                             suggestion:
-                                "The Nix store requires a lot of disk space. Please add more disk space"
+                                "The Nix store tends to use a lot of disk space. Please add more disk space"
                                     .to_string(),
                         }
                     } else {
