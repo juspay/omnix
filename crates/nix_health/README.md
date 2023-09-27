@@ -55,37 +55,31 @@ To add project specific health checks or configure health checks, add the follow
 }
 ```
 
-To see all available configuration options that can go under the `nix-health.default` attrset, run `nix-health --dump-schema`.
+To see all available configuration options, run `nix-health --dump-schema`. This will dump the schema of the configuration in JSON format. Convert that to a Nix attrset to see what can be added under the `nix-health.default` attrset of your flake.
 
-**Sample output of `nix-health --dump-schema`**
-
-```nix
+```sh-session
+$ nix-health --dump-schema > schema.json
+$ nix eval --impure --expr 'builtins.fromJSON (builtins.readFile ./schema.json)' | nix run nixpkgs#alejandra -- --quiet
 {
-  "max-jobs": {},
-  "caches": {
-    "required": [
-      "https://cache.nixos.org/"
-    ]
-  },
-  "flake-enabled": {},
-  "nix-version": {
-    "min-required": "2.13.0"
-  },
-  "system": {
-    "enable": true,
-    "required": false,
-    "min_ram": null,
-    "min_disk_space": "1024.0 GB"
-  },
-  "trusted-users": {},
-  "rosetta": {
-    "enable": true,
-    "required": true
-  },
-  "direnv": {
-    "enable": true,
-    "required": false
-  }
+  caches = {required = ["https://cache.nixos.org/"];};
+  direnv = {
+    enable = true;
+    required = false;
+  };
+  flake-enabled = {};
+  max-jobs = {};
+  nix-version = {min-required = "2.13.0";};
+  rosetta = {
+    enable = true;
+    required = true;
+  };
+  system = {
+    enable = true;
+    min_disk_space = "1024.0 GB";
+    min_ram = null;
+    required = false;
+  };
+  trusted-users = {};
 }
 ```
 
