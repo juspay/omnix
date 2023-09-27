@@ -18,7 +18,7 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tracing-subscriber-wasm = "0.1"
 wasm-bindgen = "=0.2.87"                                            # The version here must match the pinned stuff in Nix flakes.
-nix_rs = { version = "0.1", path = "./crates/nix_rs" }
+nix_rs = { version = "0.2", path = "./crates/nix_rs" }
 nix_health = { path = "./crates/nix_health" }
 leptos_extra = { path = "./crates/leptos_extra" }
 thiserror = "1.0"
