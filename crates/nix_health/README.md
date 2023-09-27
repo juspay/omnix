@@ -40,7 +40,7 @@ To run nix-health along with health check configuration specified in a project f
 nix run "github:juspay/nix-browser#nix-health" github:nammayatri/nammayatri
 ```
 
-## Configuring in `flake.nix`
+## Configuring in `flake.nix` {#conf}
 
 To add project specific health checks or configure health checks, add the following flake output:
 
@@ -82,10 +82,3 @@ $ nix eval --impure --expr 'builtins.fromJSON (builtins.readFile ./schema.json)'
   trusted-users = {};
 }
 ```
-
-## Release Tasks
-
-- [ ] Finalize behaviour and config schema
-- [ ] Documentation, esp. on flake.nix overrides
-    - Do we need a blog post?
-- [ ] Release to crates.io (including `nix_rs`) and open nixpkgs PR
