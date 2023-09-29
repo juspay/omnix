@@ -167,11 +167,6 @@ impl OS {
         }
     }
 
-    /// The Nix for this [OS] is configured automatically through a `configuration.nix`
-    pub fn has_configuration_nix(&self) -> bool {
-        self.nix_system_config_label().is_some()
-    }
-
     /// Return the label for nix-darwin or NixOS system
     pub fn nix_system_config_label(&self) -> Option<String> {
         // TODO: This should return Markdown

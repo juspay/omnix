@@ -17,16 +17,15 @@ impl Checkable for TrustedUsers {
             CheckResult::Green
         } else {
             let msg = format!("User '{}' not present in trusted_users", current_user);
-            let suggestion = if nix_env.os.has_configuration_nix() {
-                format!(
-                    r#"Add `nix.trustedUsers = [ "root" "{}" ];` to your {} `configuration.nix`"#,
-                    current_user, nix_env.os,
-                )
-            } else {
-                format!(
+            let suggestion = match nix_env.os.nix_system_config_label() {
+                Some(conf_label) => format!(
+                    r#"Add `nix.trustedUsers = [ "root" "{}" ];` to your {}"#,
+                    current_user, conf_label,
+                ),
+                None => format!(
                     r#"Run 'echo "trusted-users = root {}" | sudo tee -a /etc/nix/nix.conf && sudo pkill nix-daemon'"#,
                     current_user
-                )
+                ),
             };
             CheckResult::Red { msg, suggestion }
         };
