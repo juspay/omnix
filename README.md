@@ -1,4 +1,6 @@
-# WIP: nix-browser
+# nix-browser
+
+🚧 This project is a work in progress. The ultimate goal is to create something that inspires people towards [Nix](https://zero-to-flakes.com/).
 
 ## Getting Started
 
@@ -6,7 +8,7 @@
 1. [Setup `direnv`](https://zero-to-flakes.com/direnv)
 1. Clone this repo, `cd` to it, and run `direnv allow`.
 
-This will automatically activate the nix develop shell. Open VSCode and install recommended extensions, making sure direnv activates in VSCode as well.
+This will automatically activate the nix develop shell. Open VSCode and install recommended extensions, ensuring that direnv activates in VSCode as well.
 
 > [!NOTE] 
 > If you would like to **learn the tools & technology** involved in this project, follow along this README noting the places where the emoji 🎓 is used.
