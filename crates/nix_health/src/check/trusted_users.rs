@@ -23,7 +23,7 @@ impl Checkable for TrustedUsers {
                     current_user, conf_label,
                 ),
                 None => format!(
-                    r#"Run 'echo "trusted-users = root {}" | sudo tee -a /etc/nix/nix.conf && sudo pkill nix-daemon'"#,
+                    r#"Set `trusted-users = root {}` in /etc/nix/nix.conf and then restart the Nix daemon using `sudo pkill nix-daemon`"#,
                     current_user
                 ),
             };

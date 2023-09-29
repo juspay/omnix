@@ -43,6 +43,7 @@ impl Checkable for Caches {
                         .collect::<Vec<_>>()
                         .join(" ")
                 ),
+                // TODO: Be smart about 'cachix use'
                 suggestion: format!(
                     "Caches can be added in your {}. Cachix caches can also be added using `nix run nixpkgs#cachix use <name>`.",
                     nix_env.os.nix_config_label()
