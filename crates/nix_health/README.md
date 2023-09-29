@@ -8,6 +8,8 @@ slug: /health
 
 [^1]: nix-health originally began as a script <https://github.com/srid/nix-health> which is now deprecated.
 
+<img width="751" alt="image" src="https://github.com/juspay/nix-browser/assets/3998/abbbc54b-d888-42fb-a2a8-31d9ae142d6a">
+
 ## Checks performed
 
 | Check | Configurable in `flake.nix`? |
