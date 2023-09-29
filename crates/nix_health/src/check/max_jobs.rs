@@ -12,7 +12,7 @@ pub struct MaxJobs {}
 
 #[cfg(feature = "ssr")]
 impl Checkable for MaxJobs {
-    fn check(&self, nix_info: &info::NixInfo, _nix_env: &env::NixEnv) -> Vec<Check> {
+    fn check(&self, nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Vec<Check> {
         let max_jobs = nix_info.nix_config.max_jobs.value;
         let check = Check {
             title: "Max Jobs".to_string(),
@@ -22,7 +22,10 @@ impl Checkable for MaxJobs {
             } else {
                 CheckResult::Red {
                     msg: "You are using only 1 core for nix builds".into(),
-                    suggestion: "Try editing /etc/nix/nix.conf".into(),
+                    suggestion: format!(
+                        "Set `max-jobs = auto` in {}",
+                        nix_env.os.nix_config_label()
+                    ),
                 }
             },
             required: true,
