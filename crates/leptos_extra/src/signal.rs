@@ -3,9 +3,9 @@ use leptos::*;
 use tracing::instrument;
 
 /// [provide_context] a new signal of type `T` in the current scope
-pub fn provide_signal<T: 'static>(cx: Scope, default: T) {
-    let sig = create_rw_signal(cx, default);
-    provide_context(cx, sig);
+pub fn provide_signal<T: 'static>(default: T) {
+    let sig = create_rw_signal(default);
+    provide_context(sig);
 }
 
 /// [use_context] the signal of type `T` in the current scope
@@ -13,8 +13,8 @@ pub fn provide_signal<T: 'static>(cx: Scope, default: T) {
 /// If the signal was not provided in a top-level scope (via [provide_signal])
 /// this method will panic after tracing an error.
 #[instrument(name = "use_signal")]
-pub fn use_signal<T>(cx: Scope) -> RwSignal<T> {
-    use_context(cx)
+pub fn use_signal<T>() -> RwSignal<T> {
+    use_context()
         .ok_or_else(|| {
             // This happens if the dev forgets to call `provide_signal::<T>` in
             // the parent scope
@@ -30,7 +30,7 @@ pub fn use_signal<T>(cx: Scope) -> RwSignal<T> {
 
 /// Extends [SignalWith] to add a `with_result` method that operates on the
 /// inner value, avoiding the need to clone it.
-pub trait SignalWithResult<T, E>: SignalWith<Option<Result<T, E>>> {
+pub trait SignalWithResult<T, E>: SignalWith<Value = Option<Result<T, E>>> {
     /// Like [SignalWith::with] but operates on the inner [Result] value without cloning it.
     fn with_result<U>(&self, f: impl Fn(&T) -> U + 'static) -> Option<Result<U, E>>
     where

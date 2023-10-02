@@ -10,10 +10,10 @@ repository = "https://github.com/juspay/nix-browser"
 cfg-if = "1"
 clap = { version = "4.3", features = ["derive", "env"] }
 human-panic = "1.1.5"
-leptos = { version = "0.4", features = ["serde", "nightly"] }
-leptos_meta = { version = "0.4", features = ["nightly"] }
-leptos_router = { version = "0.4", features = ["nightly"] }
-leptos_query = "0.2"
+leptos = { version = "0.5", features = ["serde", "nightly"] }
+leptos_meta = { version = "0.5", features = ["nightly"] }
+leptos_router = { version = "0.5", features = ["nightly"] }
+leptos_query = "0.3"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tracing-subscriber-wasm = "0.1"
@@ -53,7 +53,7 @@ http = { version = "0.2", optional = true }
 human-panic.workspace = true
 hyper = { version = "0.14", features = ["server"], optional = true }
 leptos.workspace = true
-leptos_axum = { version = "0.4", optional = true }
+leptos_axum = { version = "0.5", optional = true }
 leptos_meta.workspace = true
 leptos_router.workspace = true
 leptos_query.workspace = true

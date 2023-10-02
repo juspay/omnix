@@ -21,23 +21,22 @@ use crate::{app::flake::*, app::health::*, app::info::*, widget::*};
 
 /// Main frontend application container
 #[component]
-pub fn App(cx: Scope) -> impl IntoView {
-    provide_meta_context(cx);
-    provide_query_client(cx);
+pub fn App() -> impl IntoView {
+    provide_meta_context();
+    provide_query_client();
     provide_signal::<FlakeUrl>(
-        cx,
         FlakeUrl::suggestions()
             .first()
             .map(Clone::clone)
             .unwrap_or_default(),
     );
-    provide_signal::<Refresh>(cx, false.into()); // refresh flag is unused, but we may add it to UI later.
+    provide_signal::<Refresh>(false.into()); // refresh flag is unused, but we may add it to UI later.
 
-    view! { cx,
+    view! {
         <Stylesheet id="leptos" href="/pkg/nix-browser.css"/>
         <Title formatter=|s| format!("{s} ― nix-browser")/>
-        <Router fallback=|cx| {
-            view! { cx, <NotFound/> }
+        <Router fallback=|| {
+            view! { <NotFound/> }
         }>
             <Body class="overflow-y-scroll"/>
             <div class="flex justify-center w-full min-h-screen bg-center bg-cover bg-base-200">
@@ -65,9 +64,9 @@ pub fn App(cx: Scope) -> impl IntoView {
 ///
 /// TODO Switch to breadcrumbs, as it simplifes the design overall.
 #[component]
-fn Nav(cx: Scope) -> impl IntoView {
+fn Nav() -> impl IntoView {
     let class = "px-3 py-2";
-    view! { cx,
+    view! {
         <nav class="flex flex-row w-full mb-8 text-white md:rounded-b bg-primary-800">
             <A exact=true href="/" class=class>
                 "Dashboard"
@@ -91,26 +90,26 @@ fn Nav(cx: Scope) -> impl IntoView {
 
 /// Home page
 #[component]
-fn Dashboard(cx: Scope) -> impl IntoView {
+fn Dashboard() -> impl IntoView {
     tracing::debug!("Rendering Dashboard page");
-    let result = query::use_server_query(cx, || (), get_nix_health);
+    let result = query::use_server_query(|| (), get_nix_health);
     let data = result.data;
-    let healthy = Signal::derive(cx, move || {
+    let healthy = Signal::derive(move || {
         data.with_result(|checks| checks.iter().all(|check| check.result.green()))
     });
     // A Card component
     #[component]
-    fn Card(cx: Scope, href: &'static str, children: Children) -> impl IntoView {
-        view! { cx,
+    fn Card(href: &'static str, children: Children) -> impl IntoView {
+        view! {
             <A
                 href=href
                 class="flex items-center justify-center w-48 h-48 p-2 m-2 border-2 rounded-lg shadow border-base-400 active:shadow-none bg-base-100 hover:bg-primary-200"
             >
-                <span class="text-3xl text-base-800">{children(cx)}</span>
+                <span class="text-3xl text-base-800">{children()}</span>
             </A>
         }
     }
-    view! { cx,
+    view! {
         <Title text="Dashboard"/>
         <h1 class="text-5xl font-bold">"Dashboard"</h1>
         <div id="cards" class="flex flex-row flex-wrap">
@@ -120,7 +119,7 @@ fn Dashboard(cx: Scope) -> impl IntoView {
                     {move || {
                         healthy
                             .with_result(move |green| {
-                                view! { cx, <CheckResultSummaryView green=*green/> }
+                                view! { <CheckResultSummaryView green=*green/> }
                             })
                     }}
 
@@ -134,8 +133,8 @@ fn Dashboard(cx: Scope) -> impl IntoView {
 
 /// About page
 #[component]
-fn About(cx: Scope) -> impl IntoView {
-    view! { cx,
+fn About() -> impl IntoView {
+    view! {
         <Title text="About"/>
         <h1 class="text-5xl font-bold">"About"</h1>
         <p>

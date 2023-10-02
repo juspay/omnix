@@ -29,14 +29,13 @@ pub fn query_options<V>() -> QueryOptions<V> {
 /// * `fetcher`: The server fn to call
 #[instrument(
     name = "use_server_query",
-    skip(cx, k, fetcher),
+    skip(k, fetcher),
     fields(
         fetcher = std::any::type_name::<F>(),
         render_mode=LEPTOS_MODE
     )
 )]
 pub fn use_server_query<K, V, F, Fu>(
-    cx: Scope,
     k: impl Fn() -> K + 'static,
     fetcher: F,
 ) -> QueryResult<ServerFnResult<V>, impl RefetchFn>
@@ -49,7 +48,6 @@ where
     let span = tracing::Span::current();
     tracing::debug!("use_query");
     leptos_query::use_query(
-        cx,
         k,
         move |k| {
             let _enter = span.enter();
@@ -77,7 +75,6 @@ const LEPTOS_MODE: &str = {
 /// * `query`: The value to pass to [invalidate_query]
 #[component]
 pub fn RefetchQueryButton<K, V, R, F>(
-    cx: Scope,
     result: QueryResult<ServerFnResult<V>, R>,
     query: F,
 ) -> impl IntoView
@@ -87,14 +84,14 @@ where
     R: RefetchFn,
     F: Fn() -> K + 'static,
 {
-    view! { cx,
+    view! {
         <button
             class="p-1 text-white shadow border-1 bg-primary-700 disabled:bg-base-400 disabled:text-black"
             disabled=move || result.is_fetching.get()
             on:click=move |_| {
                 let k = query();
                 tracing::debug!("Invalidating query");
-                use_query_client(cx).invalidate_query::<K, ServerFnResult<V>>(k);
+                use_query_client().invalidate_query::<K, ServerFnResult<V>>(k);
             }
         >
 

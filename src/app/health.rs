@@ -10,11 +10,11 @@ use crate::widget::*;
 
 /// Nix health checks
 #[component]
-pub fn NixHealthRoute(cx: Scope) -> impl IntoView {
+pub fn NixHealthRoute() -> impl IntoView {
     let title = "Nix Health";
-    let result = query::use_server_query(cx, || (), get_nix_health);
+    let result = query::use_server_query(|| (), get_nix_health);
     let data = result.data;
-    view! { cx,
+    view! {
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
         <RefetchQueryButton result query=|| ()/>
@@ -24,8 +24,8 @@ pub fn NixHealthRoute(cx: Scope) -> impl IntoView {
                     <For
                         each=move || data.get().unwrap_or(Ok(vec![])).unwrap_or(vec![])
                         key=|check| check.title.clone()
-                        view=move |cx, check| {
-                            view! { cx, <ViewCheck check/> }
+                        children=move |check| {
+                            view! { <ViewCheck check/> }
                         }
                     />
 
@@ -37,8 +37,8 @@ pub fn NixHealthRoute(cx: Scope) -> impl IntoView {
 }
 
 #[component]
-fn ViewCheck(cx: Scope, check: Check) -> impl IntoView {
-    view! { cx,
+fn ViewCheck(check: Check) -> impl IntoView {
+    view! {
         <div class="contents">
             <details
                 open=check.result != CheckResult::Green
@@ -55,9 +55,9 @@ fn ViewCheck(cx: Scope, check: Check) -> impl IntoView {
                     </div>
                     <div class="flex flex-col justify-start space-y-4">
                         {match check.result {
-                            CheckResult::Green => view! { cx, "" }.into_view(cx),
+                            CheckResult::Green => view! { "" }.into_view(),
                             CheckResult::Red { msg, suggestion } => {
-                                view! { cx,
+                                view! {
                                     <h3 class="my-2 font-bold text-l"></h3>
                                     <div class="p-2 bg-red-400 rounded bg-border">{msg}</div>
                                     <h3 class="my-2 font-bold text-l"></h3>
@@ -65,7 +65,7 @@ fn ViewCheck(cx: Scope, check: Check) -> impl IntoView {
                                         {suggestion}
                                     </div>
                                 }
-                                    .into_view(cx)
+                                    .into_view()
                             }
                         }}
 
@@ -77,11 +77,11 @@ fn ViewCheck(cx: Scope, check: Check) -> impl IntoView {
 }
 
 #[component]
-pub fn CheckResultSummaryView(cx: Scope, green: bool) -> impl IntoView {
+pub fn CheckResultSummaryView(green: bool) -> impl IntoView {
     if green {
-        view! { cx, <span class="text-green-500">{"✓"}</span> }
+        view! { <span class="text-green-500">{"✓"}</span> }
     } else {
-        view! { cx, <span class="text-red-500">{"✗"}</span> }
+        view! { <span class="text-red-500">{"✗"}</span> }
     }
 }
 

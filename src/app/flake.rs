@@ -23,13 +23,13 @@ use crate::widget::*;
 
 /// Nix flake dashboard
 #[component]
-pub fn NixFlakeRoute(cx: Scope) -> impl IntoView {
+pub fn NixFlakeRoute() -> impl IntoView {
     let suggestions = FlakeUrl::suggestions();
-    let url = use_signal::<FlakeUrl>(cx);
-    let refresh = use_signal::<Refresh>(cx);
+    let url = use_signal::<FlakeUrl>();
+    let refresh = use_signal::<Refresh>();
     let query = move || (url(), refresh());
-    let result = query::use_server_query(cx, query, get_flake);
-    view! { cx,
+    let result = query::use_server_query(query, get_flake);
+    view! {
         <Title text="Nix Flake"/>
         <h1 class="text-5xl font-bold">{"Nix Flake"}</h1>
         <TextInput id="nix-flake-input" label="Load a Nix Flake" val=url suggestions/>
@@ -39,18 +39,18 @@ pub fn NixFlakeRoute(cx: Scope) -> impl IntoView {
 }
 
 #[component]
-pub fn NixFlakeHomeRoute(cx: Scope) -> impl IntoView {
-    let url = use_signal::<FlakeUrl>(cx);
-    let refresh = use_signal::<Refresh>(cx);
+pub fn NixFlakeHomeRoute() -> impl IntoView {
+    let url = use_signal::<FlakeUrl>();
+    let refresh = use_signal::<Refresh>();
     let query = move || (url(), refresh());
-    let result = query::use_server_query(cx, query, get_flake);
+    let result = query::use_server_query(query, get_flake);
     let data = result.data;
-    view! { cx,
+    view! {
         <div class="p-2 my-1">
             <SuspenseWithErrorHandling>
                 {move || {
                     data.with_result(move |flake| {
-                        view! { cx, <FlakeView flake/> }
+                        view! { <FlakeView flake/> }
                     })
                 }}
 
@@ -60,13 +60,13 @@ pub fn NixFlakeHomeRoute(cx: Scope) -> impl IntoView {
 }
 
 #[component]
-pub fn NixFlakeRawRoute(cx: Scope) -> impl IntoView {
-    let url = use_signal::<FlakeUrl>(cx);
-    let refresh = use_signal::<Refresh>(cx);
+pub fn NixFlakeRawRoute() -> impl IntoView {
+    let url = use_signal::<FlakeUrl>();
+    let refresh = use_signal::<Refresh>();
     let query = move || (url(), refresh());
-    let result = query::use_server_query(cx, query, get_flake);
+    let result = query::use_server_query(query, get_flake);
     let data = result.data;
-    view! { cx,
+    view! {
         <div>
             <A href="/flake">"< Back"</A>
         </div>
@@ -74,7 +74,7 @@ pub fn NixFlakeRawRoute(cx: Scope) -> impl IntoView {
             <SuspenseWithErrorHandling>
                 {move || {
                     data.with_result(move |r| {
-                        view! { cx, <FlakeOutputsRawView outs=&r.output/> }
+                        view! { <FlakeOutputsRawView outs=&r.output/> }
                     })
                 }}
 
@@ -84,8 +84,8 @@ pub fn NixFlakeRawRoute(cx: Scope) -> impl IntoView {
 }
 
 #[component]
-fn FlakeView<'a>(cx: Scope, flake: &'a Flake) -> impl IntoView {
-    view! { cx,
+fn FlakeView<'a>(flake: &'a Flake) -> impl IntoView {
+    view! {
         <div class="flex flex-col my-4">
             <h3 class="text-lg font-bold">{flake.url.to_string()}</h3>
             <div class="text-sm italic text-gray-600">
@@ -101,8 +101,8 @@ fn FlakeView<'a>(cx: Scope, flake: &'a Flake) -> impl IntoView {
 }
 
 #[component]
-fn SectionHeading(cx: Scope, title: &'static str) -> impl IntoView {
-    view! { cx,
+fn SectionHeading(title: &'static str) -> impl IntoView {
+    view! {
         <h3 class="p-2 mt-4 mb-2 font-bold bg-gray-300 border-b-2 border-l-2 border-black text-l">
             {title}
         </h3>
@@ -110,9 +110,9 @@ fn SectionHeading(cx: Scope, title: &'static str) -> impl IntoView {
 }
 
 #[component]
-fn FlakeSchemaView<'a>(cx: Scope, schema: &'a FlakeSchema) -> impl IntoView {
+fn FlakeSchemaView<'a>(schema: &'a FlakeSchema) -> impl IntoView {
     let system = &schema.system.clone();
-    view! { cx,
+    view! {
         <div>
             <h2 class="my-2 ">
                 <div class="text-xl font-bold text-primary-600">{system.human_readable()}</div>
@@ -133,7 +133,7 @@ fn FlakeSchemaView<'a>(cx: Scope, schema: &'a FlakeSchema) -> impl IntoView {
                     .map(|v| {
                         let default = "formatter".to_string();
                         let k = v.name.as_ref().unwrap_or(&default);
-                        view! { cx, <FlakeValView k v/> }
+                        view! { <FlakeValView k v/> }
                     })}
 
                 <SectionHeading title="Other"/>
@@ -141,8 +141,10 @@ fn FlakeSchemaView<'a>(cx: Scope, schema: &'a FlakeSchema) -> impl IntoView {
                     .other
                     .as_ref()
                     .map(|v| {
-                        // TODO: Use a non-recursive rendering component?
-                        view! { cx, <FlakeOutputsRawView outs=&FlakeOutputs::Attrset(v.clone())/> }
+                        view! {
+                            // TODO: Use a non-recursive rendering component?
+                            <FlakeOutputsRawView outs=&FlakeOutputs::Attrset(v.clone())/>
+                        }
                     })}
 
             </div>
@@ -151,13 +153,9 @@ fn FlakeSchemaView<'a>(cx: Scope, schema: &'a FlakeSchema) -> impl IntoView {
 }
 
 #[component]
-fn BTreeMapView<'a>(
-    cx: Scope,
-    title: &'static str,
-    tree: &'a BTreeMap<String, Val>,
-) -> impl IntoView {
+fn BTreeMapView<'a>(title: &'static str, tree: &'a BTreeMap<String, Val>) -> impl IntoView {
     (!tree.is_empty()).then(move || {
-        view! { cx,
+        view! {
             <SectionHeading title/>
             <BTreeMapBodyView tree/>
         }
@@ -165,17 +163,17 @@ fn BTreeMapView<'a>(
 }
 
 #[component]
-fn BTreeMapBodyView<'a>(cx: Scope, tree: &'a BTreeMap<String, Val>) -> impl IntoView {
-    view! { cx,
+fn BTreeMapBodyView<'a>(tree: &'a BTreeMap<String, Val>) -> impl IntoView {
+    view! {
         <div class="flex flex-wrap justify-start">
-            {tree.iter().map(|(k, v)| view! { cx, <FlakeValView k v/> }).collect_view(cx)}
+            {tree.iter().map(|(k, v)| view! { <FlakeValView k v/> }).collect_view()}
         </div>
     }
 }
 
 #[component]
-fn FlakeValView<'a>(cx: Scope, k: &'a String, v: &'a Val) -> impl IntoView {
-    view! { cx,
+fn FlakeValView<'a>(k: &'a String, v: &'a Val) -> impl IntoView {
+    view! {
         <div
             title=format!("{:?}", v.type_)
             class="flex flex-col p-2 my-2 mr-2 space-y-2 bg-white border-4 border-gray-300 rounded hover:border-gray-400"
@@ -188,14 +186,14 @@ fn FlakeValView<'a>(cx: Scope, k: &'a String, v: &'a Val) -> impl IntoView {
                 .name
                 .as_ref()
                 .map(|v| {
-                    view! { cx, <div class="font-mono text-xs text-gray-500">{v}</div> }
+                    view! { <div class="font-mono text-xs text-gray-500">{v}</div> }
                 })}
 
             {v
                 .description
                 .as_ref()
                 .map(|v| {
-                    view! { cx, <div class="font-light">{v}</div> }
+                    view! { <div class="font-light">{v}</div> }
                 })}
 
         </div>
@@ -207,9 +205,9 @@ fn FlakeValView<'a>(cx: Scope, k: &'a String, v: &'a Val) -> impl IntoView {
 ///
 /// WARNING: This may cause performance problems if the tree is large.
 #[component]
-fn FlakeOutputsRawView<'a>(cx: Scope, outs: &'a FlakeOutputs) -> impl IntoView {
-    fn view_val<'b>(cx: Scope, val: &'b Val) -> View {
-        view! { cx,
+fn FlakeOutputsRawView<'a>(outs: &'a FlakeOutputs) -> impl IntoView {
+    fn view_val<'b>(val: &'b Val) -> View {
+        view! {
             <span>
                 <b>{val.name.clone()}</b>
                 " ("
@@ -218,12 +216,12 @@ fn FlakeOutputsRawView<'a>(cx: Scope, outs: &'a FlakeOutputs) -> impl IntoView {
                 <em>{val.description.clone()}</em>
             </span>
         }
-        .into_view(cx)
+        .into_view()
     }
 
     #[component]
-    fn TypeView<'b>(cx: Scope, type_: &'b Type) -> impl IntoView {
-        view! { cx,
+    fn TypeView<'b>(type_: &'b Type) -> impl IntoView {
+        view! {
             <span>
                 {match type_ {
                     Type::NixosModule => "nixosModule ❄️",
@@ -237,23 +235,23 @@ fn FlakeOutputsRawView<'a>(cx: Scope, outs: &'a FlakeOutputs) -> impl IntoView {
         }
     }
     match outs {
-        FlakeOutputs::Val(v) => view_val(cx, v),
-        FlakeOutputs::Attrset(v) => view! { cx,
+        FlakeOutputs::Val(v) => view_val(v),
+        FlakeOutputs::Attrset(v) => view! {
             <ul class="list-disc">
                 {v
                     .iter()
                     .map(|(k, v)| {
-                        view! { cx,
+                        view! {
                             <li class="ml-4">
                                 <span class="px-2 py-1 font-bold text-primary-500">{k}</span>
                                 <FlakeOutputsRawView outs=v/>
                             </li>
                         }
                     })
-                    .collect_view(cx)}
+                    .collect_view()}
             </ul>
         }
-        .into_view(cx),
+        .into_view(),
     }
 }
 

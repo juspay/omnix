@@ -19,9 +19,9 @@ pub fn hydrate() {
     use crate::app::*;
     use leptos::*;
 
-    logging::setup_client_logging();
+    crate::logging::setup_client_logging();
     tracing::info!("Hydrating app");
-    leptos::mount_to_body(move |cx| {
-        view! { cx, <App/> }
+    leptos::mount_to_body(move || {
+        view! { <App/> }
     });
 }

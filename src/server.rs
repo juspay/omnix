@@ -34,7 +34,7 @@ async fn create_server(
 ) -> axum::Server<AddrIncoming, IntoMakeService<axum::Router>> {
     tracing::debug!("Firing up Leptos app with config: {:?}", leptos_options);
     leptos_query::suppress_query_load(true); // https://github.com/nicoburniske/leptos_query/issues/6
-    let routes = generate_route_list(|cx| view! { cx, <App/> }).await;
+    let routes = generate_route_list(|| view! { <App/> });
     leptos_query::suppress_query_load(false);
     let client_dist = ServeDir::new(leptos_options.site_root.clone());
     let leptos_options_clone = leptos_options.clone(); // A copy to move to the closure below.
@@ -44,7 +44,7 @@ async fn create_server(
         // server functions API routes
         .route("/api/*fn_name", post(leptos_axum::handle_server_fns))
         // application routes
-        .leptos_routes(&leptos_options, routes, |cx| view! { cx, <App/> })
+        .leptos_routes(&leptos_options, routes, || view! { <App/> })
         // static files are served as fallback (but *before* falling back to
         // error handler)
         .fallback_service(client_dist.clone().not_found_service(not_found_service))
@@ -73,8 +73,7 @@ async fn not_found_handler(
     options: LeptosOptions,
     req: Request<Body>,
 ) -> Result<AxumResponse, Infallible> {
-    let handler =
-        leptos_axum::render_app_to_stream(options.to_owned(), move |cx| view! { cx, <App/> });
+    let handler = leptos_axum::render_app_to_stream(options.to_owned(), move || view! { <App/> });
     Ok(handler(req).await.into_response())
 }
 

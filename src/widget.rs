@@ -12,8 +12,8 @@ use leptos_router::*;
 
 // A loading spinner
 #[component]
-pub fn Spinner(cx: Scope) -> impl IntoView {
-    view! { cx,
+pub fn Spinner() -> impl IntoView {
+    view! {
         <div
             class="animate-spin inline-block w-6 h-6 border-[3px] border-current border-t-transparent text-blue-600 rounded-full"
             role="status"
@@ -26,8 +26,8 @@ pub fn Spinner(cx: Scope) -> impl IntoView {
 
 /// A `<a>` link
 #[component]
-pub fn Link(cx: Scope, link: &'static str, text: &'static str) -> impl IntoView {
-    view! { cx,
+pub fn Link(link: &'static str, text: &'static str) -> impl IntoView {
+    view! {
         <A href=link class="text-primary-100 hover:no-underline">
             {text}
         </A>
@@ -36,8 +36,8 @@ pub fn Link(cx: Scope, link: &'static str, text: &'static str) -> impl IntoView 
 
 /// A `<a>` link that links to an external site
 #[component]
-pub fn LinkExternal(cx: Scope, link: &'static str, text: &'static str) -> impl IntoView {
-    view! { cx,
+pub fn LinkExternal(link: &'static str, text: &'static str) -> impl IntoView {
+    view! {
         <a
             href=link
             class="underline text-primary-500 hover:no-underline"
@@ -51,14 +51,13 @@ pub fn LinkExternal(cx: Scope, link: &'static str, text: &'static str) -> impl I
 
 /// 404 page
 #[component]
-pub fn NotFound(cx: Scope) -> impl IntoView {
+pub fn NotFound() -> impl IntoView {
     cfg_if! { if #[cfg(feature="ssr")] {
-        if let Some(response) = use_context::<ResponseOptions>(cx) {
+        if let Some(response) = use_context::<ResponseOptions>() {
             response.set_status(StatusCode::NOT_FOUND);
         }
     }}
-    view! { cx,
-        // The HTML for 404 not found
+    view! {
         <div class="grid w-full min-h-screen bg-center bg-cover bg-base-100 place-items-center">
             <div class="z-0 flex items-center justify-center col-start-1 row-start-1 text-center">
                 <div class="flex flex-col space-y-3">
@@ -76,9 +75,9 @@ pub fn NotFound(cx: Scope) -> impl IntoView {
 
 /// Display errors to the user
 #[component]
-pub fn Errors(cx: Scope, errors: Errors) -> impl IntoView {
+pub fn Errors(errors: Errors) -> impl IntoView {
     tracing::error!("Errors: {:?}", errors);
-    view! { cx,
+    view! {
         <div class="flex flex-col justify-center overflow-auto">
             <header class="p-2 text-xl font-bold text-white bg-error-500">"💣 ERROR 💣"</header>
             <div class="p-2 font-mono text-sm text-left whitespace-pre-wrap bg-black">
@@ -86,7 +85,7 @@ pub fn Errors(cx: Scope, errors: Errors) -> impl IntoView {
                     {errors
                         .into_iter()
                         .map(|(k, e)| {
-                            view! { cx,
+                            view! {
                                 <li class="mb-4">
                                     <header class="px-2 mb-2 font-bold text-gray-100">
                                         {format!("{:?}", k)}
@@ -97,7 +96,7 @@ pub fn Errors(cx: Scope, errors: Errors) -> impl IntoView {
                                 </li>
                             }
                         })
-                        .collect_view(cx)}
+                        .collect_view()}
                 </ul>
             </div>
         </div>
@@ -106,13 +105,13 @@ pub fn Errors(cx: Scope, errors: Errors) -> impl IntoView {
 
 /// Like [Suspense] but also handles errors using [ErrorBoundary]
 #[component(transparent)]
-pub fn SuspenseWithErrorHandling(cx: Scope, children: ChildrenFn) -> impl IntoView {
-    let children = store_value(cx, children);
-    view! { cx,
-        <Suspense fallback=move || view! { cx, <Spinner/> }>
-            <ErrorBoundary fallback=|cx, errors| {
-                view! { cx, <Errors errors=errors.get()/> }
-            }>{children.with_value(|c| c(cx))}</ErrorBoundary>
+pub fn SuspenseWithErrorHandling(children: ChildrenFn) -> impl IntoView {
+    let children = store_value(children);
+    view! {
+        <Suspense fallback=move || view! { <Spinner/> }>
+            <ErrorBoundary fallback=|errors| {
+                view! { <Errors errors=errors.get()/> }
+            }>{children.with_value(|c| c())}</ErrorBoundary>
         </Suspense>
     }
 }
@@ -129,7 +128,6 @@ pub fn SuspenseWithErrorHandling(cx: Scope, children: ChildrenFn) -> impl IntoVi
 /// * `val`: The [RwSignal] mirror'ing the input element value
 #[component]
 pub fn TextInput<K>(
-    cx: Scope,
     id: &'static str,
     label: &'static str,
     /// Initial suggestions to show in the datalist
@@ -143,8 +141,8 @@ where
     let datalist_id = &format!("{}-datalist", id);
     // Input query to the server fn
     // Errors in input element (based on [FromStr::from_str])
-    let (input_err, set_input_err) = create_signal(cx, None::<String>);
-    view! { cx,
+    let (input_err, set_input_err) = create_signal(None::<String>);
+    view! {
         <label for=id>{label}</label>
         <input
             list=datalist_id
@@ -168,8 +166,8 @@ where
         <datalist id=datalist_id>
             {suggestions
                 .iter()
-                .map(|s| view! { cx, <option value=s.to_string()></option> })
-                .collect_view(cx)}
+                .map(|s| view! { <option value=s.to_string()></option> })
+                .collect_view()}
 
         </datalist>
     }

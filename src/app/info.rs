@@ -16,11 +16,11 @@ use crate::widget::*;
 
 /// Nix information
 #[component]
-pub fn NixInfoRoute(cx: Scope) -> impl IntoView {
+pub fn NixInfoRoute() -> impl IntoView {
     let title = "Nix Info";
-    let result = query::use_server_query(cx, || (), get_nix_info);
+    let result = query::use_server_query(|| (), get_nix_info);
     let data = result.data;
-    view! { cx,
+    view! {
         <Title text=title/>
         <h1 class="text-5xl font-bold">{title}</h1>
         <RefetchQueryButton result query=|| ()/>
@@ -28,7 +28,7 @@ pub fn NixInfoRoute(cx: Scope) -> impl IntoView {
             <SuspenseWithErrorHandling>
                 {move || {
                     data.with_result(move |info| {
-                        view! { cx, <NixInfoView info/> }
+                        view! { <NixInfoView info/> }
                     })
                 }}
 
@@ -38,8 +38,8 @@ pub fn NixInfoRoute(cx: Scope) -> impl IntoView {
 }
 
 #[component]
-fn NixInfoView<'a>(cx: Scope, info: &'a NixInfo) -> impl IntoView {
-    view! { cx,
+fn NixInfoView<'a>(info: &'a NixInfo) -> impl IntoView {
+    view! {
         <div class="flex flex-col p-4 space-y-8 bg-white border-2 rounded border-base-400">
             <div>
                 <b>
@@ -60,8 +60,8 @@ fn NixInfoView<'a>(cx: Scope, info: &'a NixInfo) -> impl IntoView {
 }
 
 #[component]
-fn NixVersionView<'a>(cx: Scope, version: &'a NixVersion) -> impl IntoView {
-    view! { cx,
+fn NixVersionView<'a>(version: &'a NixVersion) -> impl IntoView {
+    view! {
         <a href=nix_rs::refs::RELEASE_HISTORY class="font-mono hover:underline" target="_blank">
             {format!("{}", version)}
         </a>
@@ -69,21 +69,19 @@ fn NixVersionView<'a>(cx: Scope, version: &'a NixVersion) -> impl IntoView {
 }
 
 #[component]
-fn NixConfigView(cx: Scope, config: NixConfig) -> impl IntoView {
+fn NixConfigView(config: NixConfig) -> impl IntoView {
     #[component]
-    fn ConfigRow(cx: Scope, key: &'static str, title: String, children: Children) -> impl IntoView {
-        view! { cx,
-            // TODO: Use a nice Tailwind tooltip here, instead of "title"
-            // attribute.
+    fn ConfigRow(key: &'static str, title: String, children: Children) -> impl IntoView {
+        view! {
             <tr title=title>
                 <td class="px-4 py-2 font-semibold text-base-700">{key}</td>
                 <td class="px-4 py-2 text-left">
-                    <code>{children(cx)}</code>
+                    <code>{children()}</code>
                 </td>
             </tr>
         }
     }
-    view! { cx,
+    view! {
         <div class="py-1 my-1 rounded bg-primary-50">
             <table class="text-right">
                 // FIXME: so many clones
@@ -104,25 +102,24 @@ fn NixConfigView(cx: Scope, config: NixConfig) -> impl IntoView {
             </table>
         </div>
     }
-    .into_view(cx)
+    .into_view()
 }
 
 #[component]
-pub fn ConfigValListView<T>(cx: Scope, cfg: ConfigVal<Vec<T>>) -> impl IntoView
+pub fn ConfigValListView<T>(cfg: ConfigVal<Vec<T>>) -> impl IntoView
 where
     T: Display,
 {
-    view! { cx,
-        // Render a list of T items in the list 'self'
+    view! {
         <div class="flex flex-col space-y-4">
             {cfg
                 .value
                 .into_iter()
-                .map(|item| view! { cx, <li class="list-disc">{item.to_string()}</li> })
-                .collect_view(cx)}
+                .map(|item| view! { <li class="list-disc">{item.to_string()}</li> })
+                .collect_view()}
         </div>
     }
-    .into_view(cx)
+    .into_view()
 }
 
 /// Determine [NixInfo] on the user's system
