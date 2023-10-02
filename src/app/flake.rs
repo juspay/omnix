@@ -1,5 +1,8 @@
 //! UI for /flake segment of the app
 
+// https://github.com/leptos-rs/leptos/issues/1825
+#![allow(clippy::needless_lifetimes)]
+
 use std::collections::BTreeMap;
 
 use leptos::*;
@@ -206,7 +209,7 @@ fn FlakeValView<'a>(k: &'a String, v: &'a Val) -> impl IntoView {
 /// WARNING: This may cause performance problems if the tree is large.
 #[component]
 fn FlakeOutputsRawView<'a>(outs: &'a FlakeOutputs) -> impl IntoView {
-    fn view_val<'b>(val: &'b Val) -> View {
+    fn view_val(val: &Val) -> View {
         view! {
             <span>
                 <b>{val.name.clone()}</b>

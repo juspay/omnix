@@ -1,5 +1,8 @@
 //! Nix info UI
 
+// https://github.com/leptos-rs/leptos/issues/1825
+#![allow(clippy::needless_lifetimes)]
+
 use std::fmt::Display;
 
 use leptos::*;
