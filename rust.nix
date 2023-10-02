@@ -6,6 +6,9 @@
     let
       rustBuildInputs = lib.optionals pkgs.stdenv.isDarwin (with pkgs.darwin.apple_sdk.frameworks; [
         IOKit
+        # For when we start using Tauri
+        Carbon
+        WebKit
       ]);
     in
     {
