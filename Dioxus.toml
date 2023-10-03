@@ -25,7 +25,7 @@ style = []
 # Javascript code file
 script = []
 
-# FIXME: Need to `cd assets` before running `dx bundle` due to a Dioxus design issue
+# FIXME: Need to `cd assets` before running `dx bundle` due to https://github.com/DioxusLabs/dioxus/issues/1283
 [bundle]
 name = "Nix Browser"
 identifier = "in.juspay.nix-browser"
