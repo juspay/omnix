@@ -18,7 +18,8 @@ This will automatically activate the nix develop shell. Open VSCode and install 
 [Instructions for the WIP port to Dioxus below]
 
 ```
-dx server --hot-reload
+dx serve --hot-reload
+tailwind -i ./css/input.css -o ./assets/tailwind.css --watch
 ```
 
 ## Running locally
