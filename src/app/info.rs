@@ -42,17 +42,13 @@ fn NixInfoView<'a>(cx: Scope, info: &'a NixInfo) -> impl IntoView {
     view! { cx,
         <div class="flex flex-col p-4 space-y-8 bg-white border-2 rounded border-base-400">
             <div>
-                <b>
-                    Nix Version
-                </b>
+                <b>Nix Version</b>
                 <div class="p-1 my-1 rounded bg-primary-50">
                     <NixVersionView version=&info.nix_version/>
                 </div>
             </div>
             <div>
-                <b>
-                    Nix Config
-                </b>
+                <b>Nix Config</b>
                 <NixConfigView config=info.nix_config.clone()/>
             </div>
         </div>

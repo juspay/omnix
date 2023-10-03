@@ -61,8 +61,12 @@ impl FlakeOutputs {
         let mut curr = self;
         let mut path = path.iter().peekable();
         while let Some(part) = path.next() {
-            let Self::Attrset(v) = curr else { return None; };
-            let Entry::Occupied(entry) = v.entry(part.to_string()) else { return None; };
+            let Self::Attrset(v) = curr else {
+                return None;
+            };
+            let Entry::Occupied(entry) = v.entry(part.to_string()) else {
+                return None;
+            };
             if path.peek().is_none() {
                 return Some(entry.remove());
             } else {
