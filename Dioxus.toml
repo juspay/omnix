@@ -15,7 +15,7 @@ watch_path = ["src", "assets"]
 
 [web.resource]
 # CSS style file
-style = ["./assets/tailwind.css"]
+style = ["tailwind.css"]
 # Javascript code file
 script = []
 
@@ -25,13 +25,19 @@ style = []
 # Javascript code file
 script = []
 
+# FIXME: /assets is not in 'dx serve'
 [bundle]
 name = "Nix Browser"
 identifier = "in.juspay.nix-browser"
-icon = ["images/128x128.png"]        # ["32x32.png", "128x128.png", "128x128@2x.png"]
+icon = [
+    "assets/images/128x128.png",
+] # ["32x32.png", "128x128.png", "128x128@2x.png"]
 version = "1.0.0"
 # TODO: Must add these files
-resources = ["assets", "images/**/*.png"] # , "secrets/public_key.txt"]
+resources = [
+    "assets/**/tailwind.css",
+    "assets/images/**/*.png",
+] # , "secrets/public_key.txt"]
 copyright = "Copyright (c) Juspay 2023. All rights reserved."
 category = "Developer Tool"
 short_description = "WIP: nix-browser"
