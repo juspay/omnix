@@ -9,8 +9,7 @@ mod info;
 
 use dioxus::prelude::*;
 use dioxus_router::prelude::*;
-
-use crate::widget::*;
+use nix_rs::flake::url::FlakeUrl;
 
 #[derive(Routable, PartialEq, Debug, Clone)]
 enum Route {
@@ -22,15 +21,24 @@ enum Route {
 
 /// Main frontend application container
 pub fn App(cx: Scope) -> Element {
+    use_shared_state_provider(cx, || {
+        FlakeUrl::suggestions()
+            .first()
+            .map(Clone::clone)
+            .unwrap_or_default()
+    });
+    let urlst = use_shared_state::<FlakeUrl>(cx).unwrap();
+    let x = &*urlst.read();
+    let mut count = use_state(cx, || 0);
     // TODO: per-route title
+    // This should also be in desktop window title bar.
     render! {
         body {
             div { class: "flex justify-center w-full min-h-screen bg-center bg-cover bg-base-200",
                 div { class: "flex flex-col items-stretch mx-auto sm:container sm:max-w-screen-md",
                     main { class: "flex flex-col px-2 mb-8 space-y-3 text-center",
                         Nav {}
-                        p { "It is WIP" }
-                        ul { li { "Tailwind works" } }
+                        Router::<Route> {}
                         img { src: "images/128x128.png" }
                     }
                 }
@@ -88,7 +96,6 @@ fn Nav(cx: Scope) -> Element {
 /// About page
 fn About(cx: Scope) -> Element {
     render! {
-        h1 { "About" }
         h1 { class: "text-5xl font-bold", "About" }
         p {
             "nix-browser is still work in progress. Track its development "
