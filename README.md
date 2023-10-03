@@ -13,6 +13,14 @@ This will automatically activate the nix develop shell. Open VSCode and install 
 > [!NOTE] 
 > If you would like to **learn the tools & technology** involved in this project, follow along this README noting the places where the emoji 🎓 is used.
 
+## !! Dioxus port !! 
+
+[Instructions for the WIP port to Dioxus below]
+
+```
+dx server --hot-reload
+```
+
 ## Running locally
 
 In nix shell,

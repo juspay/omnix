@@ -37,9 +37,6 @@ homepage = "https://github.com/juspay/nix-browser"
 [package.metadata.docs.rs]
 all-features = true
 
-[lib]
-crate-type = ["cdylib", "rlib"]
-
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
@@ -74,6 +71,9 @@ wasm-bindgen.workspace = true
 nix_rs.workspace = true
 nix_health.workspace = true
 leptos_extra.workspace = true
+dioxus = "0.4.0"
+dioxus-desktop = "0.4.0"
+dioxus-router = { version = "0.4.1", features = ["tokio"] }
 
 [features]
 default = [
@@ -104,22 +104,3 @@ ssr = [
     "nix_rs/ssr",
     "nix_health/ssr",
 ]
-
-# Defines a size-optimized profile for the WASM bundle in release mode
-[profile.wasm-release]
-inherits = "release"
-opt-level = 'z'
-lto = true
-codegen-units = 1
-panic = "abort"
-
-[package.metadata.leptos]
-site-addr = "127.0.0.1:3000"
-tailwind-input-file = "css/input.css"
-assets-dir = "assets"
-bin-features = ["ssr"]
-lib-features = ["hydrate"]
-# The profile to use for the lib target when compiling for release
-#
-# Optional. Defaults to "release".
-lib-profile-release = "wasm-release"

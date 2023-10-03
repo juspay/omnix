@@ -11,7 +11,7 @@ alias f := fmt
 
 # Run the project locally
 watch $RUST_BACKTRACE="1":
-    cargo leptos watch
+    dx serve --hot-reload
 
 alias w := watch
 
