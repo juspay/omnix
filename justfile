@@ -11,7 +11,8 @@ alias f := fmt
 
 # CI=true for https://github.com/tauri-apps/tauri/issues/3055#issuecomment-1624389208)
 bundle $CI="true":
-    dx bundle
+    # HACK (change PWD): Because of an issue with Dioxus
+    cd assets && dx bundle 
     nix run nixpkgs#eza -- -T ./dist/bundle/macos/nix-browser.app
 
 # Run the project locally

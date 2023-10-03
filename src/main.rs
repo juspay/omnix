@@ -21,7 +21,10 @@ fn App(cx: Scope) -> Element {
     render! {
         div { class: "md:container mx-auto",
             h1 { class: "text-3xl font-bold text-green-400", "nix-browser (Dioxus)" }
-            p { "It is WIP.. Need to make Tailwind work" }
+            p { "It is WIP" }
+            ul {
+                li { "Tailwind works" }
+            }
             img { src: "images/128x128.png" }
         }
     }

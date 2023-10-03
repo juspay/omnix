@@ -9,6 +9,7 @@
         # For when we start using Tauri
         Carbon
         WebKit
+        Security
       ]);
     in
     {

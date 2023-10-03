@@ -18,8 +18,11 @@ This will automatically activate the nix develop shell. Open VSCode and install 
 [Instructions for the WIP port to Dioxus below]
 
 ```
-dx serve --hot-reload
+dx serve --hot-reload # just watch
 tailwind -i ./css/input.css -o ./assets/tailwind.css --watch
+
+# Create the mac app
+just bundle
 ```
 
 ## Running locally

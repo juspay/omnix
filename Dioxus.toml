@@ -25,19 +25,14 @@ style = []
 # Javascript code file
 script = []
 
-# FIXME: /assets is not in 'dx serve'
+# FIXME: Need to `cd assets` before running `dx bundle` due to a Dioxus design issue
 [bundle]
 name = "Nix Browser"
 identifier = "in.juspay.nix-browser"
-icon = [
-    "assets/images/128x128.png",
-] # ["32x32.png", "128x128.png", "128x128@2x.png"]
+icon = ["images/128x128.png"]        # ["32x32.png", "128x128.png", "128x128@2x.png"]
 version = "1.0.0"
 # TODO: Must add these files
-resources = [
-    "assets/**/tailwind.css",
-    "assets/images/**/*.png",
-] # , "secrets/public_key.txt"]
+resources = ["**/tailwind.css", "images/**/*.png"] # , "secrets/public_key.txt"]
 copyright = "Copyright (c) Juspay 2023. All rights reserved."
 category = "Developer Tool"
 short_description = "WIP: nix-browser"
