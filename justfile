@@ -9,6 +9,10 @@ fmt:
 
 alias f := fmt
 
+# CI=true for https://github.com/tauri-apps/tauri/issues/3055#issuecomment-1624389208)
+bundle $CI="true":
+    dx bundle
+
 # Run the project locally
 watch $RUST_BACKTRACE="1":
     dx serve --hot-reload

@@ -13,7 +13,7 @@ async fn main() {
     dioxus_desktop::launch_cfg(
         App,
         dioxus_desktop::Config::new()
-            .with_custom_head(r#"<link rel="stylesheet" href="dioxus://assets/tailwind.css">"#.to_string()),
+            .with_custom_head(r#"<link rel="stylesheet" href="assets/tailwind.css">"#.to_string()),
     )
 }
 
@@ -21,7 +21,7 @@ fn App(cx: Scope) -> Element {
     render! {
         div { class: "md:container mx-auto",
             h1 { class: "text-3xl font-bold text-green-400", "nix-browser (Dioxus)" }
-            p { "It is WIP!" }
+            p { "It is WIP.. Need to make Tailwind work" }
         }
     }
 }
