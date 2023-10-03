@@ -27,9 +27,6 @@ pub fn App(cx: Scope) -> Element {
             .map(Clone::clone)
             .unwrap_or_default()
     });
-    let urlst = use_shared_state::<FlakeUrl>(cx).unwrap();
-    let x = &*urlst.read();
-    let mut count = use_state(cx, || 0);
     // TODO: per-route title
     // This should also be in desktop window title bar.
     render! {
@@ -50,12 +47,8 @@ pub fn App(cx: Scope) -> Element {
 // Home page
 fn Dashboard(cx: Scope) -> Element {
     tracing::debug!("Rendering Dashboard page");
-    /* let result = query::use_server_query(cx, || (), get_nix_health);
-    let data = result.data;
-    let healthy = Signal::derive(cx, move || {
-        data.with_result(|checks| checks.iter().all(|check| check.result.green()))
-    });
-    */
+    let health_fut = use_future(cx, (), |_| async move { health::get_nix_health().await });
+    let health = health_fut.value();
     // A Card component
     #[inline_props]
     fn Card<'a>(cx: Scope, href: &'static str, children: Element<'a>) -> Element<'a> {
@@ -70,6 +63,21 @@ fn Dashboard(cx: Scope) -> Element {
     render! {
         h1 { class: "text-5xl font-bold", "Dashboard" }
         div { id: "cards", class: "flex flex-row flex-wrap",
+            Card { href: "/health",
+                "Nix Health Check "
+                match health {
+                    Some(Ok(checks)) => {
+                        if checks.iter().all(|check| check.result.green()) {
+                            "✅"
+                        } else {
+                            "❌"
+                        }
+                    },
+                    // TODO: Error handling in dioxus?
+                    Some(Err(_)) => "?",
+                    None => "⏳",
+                }
+            }
             Card { href: "/info", "Nix Info ℹ️" }
             Card { href: "/flake", "Flake Overview ❄️️" }
         }

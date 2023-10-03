@@ -12,7 +12,7 @@ use crate::widget::*;
 #[component]
 pub fn NixHealthRoute(cx: Scope) -> impl IntoView {
     let title = "Nix Health";
-    let result = query::use_server_query(cx, || (), get_nix_health);
+    let result = query::use_server_query(cx, || (), get_nix_health_old);
     let data = result.data;
     view! { cx,
         <Title text=title/>
@@ -88,7 +88,21 @@ pub fn CheckResultSummaryView(cx: Scope, green: bool) -> impl IntoView {
 /// Get [NixHealth] information
 #[instrument(name = "nix-health")]
 #[server(GetNixHealth, "/api")]
-pub async fn get_nix_health(_unit: ()) -> Result<Vec<nix_health::traits::Check>, ServerFnError> {
+pub async fn get_nix_health_old(
+    _unit: (),
+) -> Result<Vec<nix_health::traits::Check>, ServerFnError> {
+    use nix_health::NixHealth;
+    use nix_rs::{env, info};
+    let nix_info = info::NixInfo::from_nix(&nix_rs::command::NixCmd::default()).await?;
+    // TODO: Use Some(flake_url)? With what UX?
+    let nix_env = env::NixEnv::detect(None).await?;
+    let health = NixHealth::default();
+    let checks = health.run_checks(&nix_info, &nix_env);
+    Ok(checks)
+}
+
+#[instrument(name = "nix-health")]
+pub async fn get_nix_health() -> anyhow::Result<Vec<nix_health::traits::Check>> {
     use nix_health::NixHealth;
     use nix_rs::{env, info};
     let nix_info = info::NixInfo::from_nix(&nix_rs::command::NixCmd::default()).await?;
