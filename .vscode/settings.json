@@ -13,6 +13,9 @@
         "rust": "html",
         "*.rs": "html"
     },
+    "tailwindCSS.experimental.classRegex": [
+        "class: \"(.*)\""
+    ],
     "files.associations": {
         "*.css": "tailwindcss"
     }
