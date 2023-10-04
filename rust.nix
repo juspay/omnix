@@ -10,6 +10,7 @@
         Carbon
         WebKit
         Security
+        Cocoa
       ]);
     in
     {
