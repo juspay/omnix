@@ -7,8 +7,9 @@ mod widget;
 
 #[tokio::main]
 async fn main() {
-    // use clap::Parser;
-    // let args = crate::cli::Args::parse();
+    use clap::Parser;
+    let args = crate::cli::Args::parse();
+    crate::logging::setup_server_logging(&args.verbosity);
 
     // FIXME: remove dioxus:/ for release
     dioxus_desktop::launch_cfg(

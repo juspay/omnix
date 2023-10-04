@@ -11,7 +11,6 @@ use tracing_subscriber::filter::{Directive, LevelFilter};
 use tracing_subscriber::EnvFilter;
 
 /// Setup server-side logging using [tracing_subscriber]
-#[cfg(feature = "ssr")]
 pub fn setup_server_logging(verbosity: &Verbosity) {
     tracing_subscriber::fmt()
         .with_env_filter(verbosity.log_filter())

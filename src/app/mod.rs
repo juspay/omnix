@@ -29,7 +29,6 @@ enum Route {
         Info {},
 }
 
-#[inline_props]
 fn Wrapper(cx: Scope) -> Element {
     render! {
         Nav {}
@@ -68,6 +67,7 @@ fn Dashboard(cx: Scope) -> Element {
     #[inline_props]
     fn Card<'a>(cx: Scope, href: &'static str, children: Element<'a>) -> Element<'a> {
         render! {
+            // TODO: Use Link
             a {
                 href: "{href}",
                 class: "flex items-center justify-center w-48 h-48 p-2 m-2 border-2 rounded-lg shadow border-base-400 active:shadow-none bg-base-100 hover:bg-primary-200",
