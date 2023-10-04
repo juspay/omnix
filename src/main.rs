@@ -9,7 +9,7 @@ mod widget;
 async fn main() {
     use clap::Parser;
     let args = crate::cli::Args::parse();
-    crate::logging::setup_server_logging(&args.verbosity);
+    crate::logging::setup_logging(&args.verbosity);
 
     // FIXME: remove dioxus:/ for release
     dioxus_desktop::launch_cfg(
