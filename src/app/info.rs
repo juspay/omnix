@@ -2,10 +2,7 @@
 
 use std::fmt::Display;
 
-use leptos::*;
-use leptos_extra::query::{self, RefetchQueryButton};
-use leptos_extra::signal::SignalWithResult;
-use leptos_meta::*;
+use dioxus::prelude::*;
 use nix_rs::{
     config::{ConfigVal, NixConfig},
     info::NixInfo,
@@ -14,6 +11,11 @@ use nix_rs::{
 
 use crate::widget::*;
 
+pub fn Info(cx: Scope) -> Element {
+    render! { pre { "TODO" } }
+}
+
+/*
 /// Nix information
 #[component]
 pub fn NixInfoRoute(cx: Scope) -> impl IntoView {
@@ -127,3 +129,5 @@ pub async fn get_nix_info(_unit: ()) -> Result<NixInfo, ServerFnError> {
     let v = NixInfo::from_nix(&nix_rs::command::NixCmd::default()).await?;
     Ok(v)
 }
+
+*/

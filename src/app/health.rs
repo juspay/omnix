@@ -1,13 +1,14 @@
 //! Nix health check UI
 
-use leptos::*;
-use leptos_extra::query::{self, RefetchQueryButton};
-use leptos_meta::*;
+use dioxus::prelude::*;
 use nix_health::traits::{Check, CheckResult};
 use tracing::instrument;
 
-use crate::widget::*;
+pub fn Health(cx: Scope) -> Element {
+    render! { pre { "TODO" } }
+}
 
+/*
 /// Nix health checks
 #[component]
 pub fn NixHealthRoute(cx: Scope) -> impl IntoView {
@@ -100,6 +101,7 @@ pub async fn get_nix_health_old(
     let checks = health.run_checks(&nix_info, &nix_env);
     Ok(checks)
 }
+*/
 
 #[instrument(name = "nix-health")]
 pub async fn get_nix_health() -> anyhow::Result<Vec<nix_health::traits::Check>> {

@@ -11,12 +11,31 @@ use dioxus::prelude::*;
 use dioxus_router::prelude::*;
 use nix_rs::flake::url::FlakeUrl;
 
+use crate::app::{flake::Flake, health::Health, info::Info};
+
 #[derive(Routable, PartialEq, Debug, Clone)]
+#[rustfmt::skip]
 enum Route {
-    #[route("/")]
-    Dashboard {},
-    #[route("/about")]
-    About {},
+    #[layout(Wrapper)]
+        #[route("/")]
+        Dashboard {},
+        #[route("/about")]
+        About {},
+        #[route("/flake")]
+        Flake {},
+        #[route("/health")]
+        Health {},
+        #[route("/info")]
+        Info {},
+}
+
+#[inline_props]
+fn Wrapper(cx: Scope) -> Element {
+    render! {
+        Nav {}
+        Outlet::<Route> {}
+        footer { class: "flex flex-row justify-center w-full p-4", img { src: "images/128x128.png", width: "32", height: "32" } }
+    }
 }
 
 /// Main frontend application container
@@ -33,11 +52,7 @@ pub fn App(cx: Scope) -> Element {
         body {
             div { class: "flex justify-center w-full min-h-screen bg-center bg-cover bg-base-200",
                 div { class: "flex flex-col items-stretch mx-auto sm:container sm:max-w-screen-md",
-                    main { class: "flex flex-col px-2 mb-8 space-y-3 text-center",
-                        Nav {}
-                        Router::<Route> {}
-                        img { src: "images/128x128.png" }
-                    }
+                    main { class: "flex flex-col px-2 mb-8 space-y-3 text-center", Router::<Route> {} }
                 }
             }
         }
@@ -90,12 +105,13 @@ fn Dashboard(cx: Scope) -> Element {
 fn Nav(cx: Scope) -> Element {
     let class = "px-3 py-2";
     render! {
+        // TODO: active/inactive styling
         nav { class: "flex flex-row w-full mb-8 text-white md:rounded-b bg-primary-800",
-            a { href: "/", class: class, "Dashboard" }
-            a { href: "/flake", class: class, "Flake" }
-            a { href: "/health", class: class, "Nix Health" }
-            a { href: "/info", class: class, "Nix Info" }
-            a { href: "/about", class: class, "About" }
+            Link { to: Route::Dashboard {}, class: class, "Dashboard" }
+            Link { to: Route::Flake {}, class: class, "Flake" }
+            Link { to: Route::Health {}, class: class, "Nix Health" }
+            Link { to: Route::Info {}, class: class, "Nix Info" }
+            Link { to: Route::About {}, class: class, "About" }
             div { class: "flex-grow font-bold text-end {class}", "🌍 nix-browser" }
         }
     }

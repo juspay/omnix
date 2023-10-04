@@ -2,13 +2,7 @@
 
 use std::collections::BTreeMap;
 
-use leptos::*;
-use leptos_extra::{
-    query::{self, RefetchQueryButton},
-    signal::{use_signal, SignalWithResult},
-};
-use leptos_meta::*;
-use leptos_router::*;
+use dioxus::prelude::*;
 use nix_rs::{
     command::Refresh,
     flake::{
@@ -19,7 +13,10 @@ use nix_rs::{
     },
 };
 
-use crate::widget::*;
+pub fn Flake(cx: Scope) -> Element {
+    render! { pre { "TODO" } }
+}
+/*
 
 /// Nix flake dashboard
 #[component]
@@ -269,3 +266,5 @@ pub async fn get_flake(args: (FlakeUrl, Refresh)) -> Result<Flake, ServerFnError
     let v = Flake::from_nix(nix_cmd, url).await?;
     Ok(v)
 }
+
+*/
