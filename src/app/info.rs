@@ -9,8 +9,6 @@ use nix_rs::{
     version::NixVersion,
 };
 
-use crate::widget::*;
-
 pub fn Info(cx: Scope) -> Element {
     render! { pre { "TODO" } }
 }
