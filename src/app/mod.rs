@@ -6,12 +6,13 @@
 mod flake;
 mod health;
 mod info;
+mod state;
 
 use dioxus::prelude::*;
 use dioxus_router::prelude::*;
 use nix_rs::flake::url::FlakeUrl;
 
-use crate::app::{flake::Flake, health::Health, info::Info};
+use crate::app::{flake::Flake, health::Health, info::Info, state::AppState};
 
 #[derive(Routable, PartialEq, Debug, Clone)]
 #[rustfmt::skip]
@@ -39,6 +40,7 @@ fn Wrapper(cx: Scope) -> Element {
 
 /// Main frontend application container
 pub fn App(cx: Scope) -> Element {
+    use_context_provider(cx, AppState::default);
     use_shared_state_provider(cx, || {
         FlakeUrl::suggestions()
             .first()
@@ -61,10 +63,13 @@ pub fn App(cx: Scope) -> Element {
 // Home page
 fn Dashboard(cx: Scope) -> Element {
     tracing::debug!("Rendering Dashboard page");
-    let health_fut = use_future(cx, (), |_| async move { health::get_nix_health().await });
-    let health = health_fut.value();
+    let state = AppState::use_state(cx);
+    use_future(cx, (), |_| async move {
+        state.update_health_checks().await;
+    });
+    let health_checks = &*state.health_checks.read();
     // A Card component
-    #[inline_props]
+    #[component]
     fn Card<'a>(cx: Scope, href: &'static str, children: Element<'a>) -> Element<'a> {
         render! {
             // TODO: Use Link
@@ -80,7 +85,7 @@ fn Dashboard(cx: Scope) -> Element {
         div { id: "cards", class: "flex flex-row flex-wrap",
             Card { href: "/health",
                 "Nix Health Check "
-                match health {
+                match health_checks {
                     Some(Ok(checks)) => {
                         if checks.iter().all(|check| check.result.green()) {
                             "✅"

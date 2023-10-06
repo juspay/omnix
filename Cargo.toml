@@ -73,10 +73,11 @@ wasm-bindgen.workspace = true
 nix_rs.workspace = true
 nix_health.workspace = true
 leptos_extra.workspace = true
-dioxus = "0.4.0"
-dioxus-desktop = "0.4.0"
-dioxus-router = { version = "0.4.1", features = ["tokio"] }
-dioxus-std = { version = "0.4.0", features = ["utils", "clipboard"] }
+dioxus = { git = "https://github.com/DioxusLabs/dioxus.git", rev = "459f24d5e9ef0e03a3bbd037342c60bbde409dbf" }
+dioxus-desktop = { git = "https://github.com/DioxusLabs/dioxus.git", rev = "459f24d5e9ef0e03a3bbd037342c60bbde409dbf" }
+dioxus-router = { git = "https://github.com/DioxusLabs/dioxus.git", rev = "459f24d5e9ef0e03a3bbd037342c60bbde409dbf" }
+dioxus-signals = { git = "https://github.com/DioxusLabs/dioxus.git", rev = "459f24d5e9ef0e03a3bbd037342c60bbde409dbf" }
+dioxus-std = { version = "0.4.0", features = ["clipboard", "utils"] }
 
 [features]
 default = [

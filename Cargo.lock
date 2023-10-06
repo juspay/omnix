@@ -405,6 +405,9 @@ name = "bitflags"
 version = "2.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b4682ae6287fcf752ecaabbfcc7b6f9b72aa33933dc23a554d853aea8eea8635"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "bitvec"
@@ -870,6 +873,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "constcat"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f272d0c4cf831b4fa80ee529c7707f76585986e910e1fbce1d7921970bc1a241"
+
+[[package]]
 name = "convert_case"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1155,12 +1164,25 @@ version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "734b13d4894daf5cee7d4a1d7960da207acd7d4b4e427c05c201a2ba87a5c032"
 dependencies = [
- "dioxus-core",
- "dioxus-core-macro",
- "dioxus-hooks",
- "dioxus-hot-reload",
- "dioxus-html",
- "dioxus-rsx",
+ "dioxus-core 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "dioxus-core-macro 0.4.0",
+ "dioxus-hooks 0.4.0",
+ "dioxus-hot-reload 0.4.0",
+ "dioxus-html 0.4.0",
+ "dioxus-rsx 0.4.0",
+]
+
+[[package]]
+name = "dioxus"
+version = "0.4.2"
+source = "git+https://github.com/DioxusLabs/dioxus.git?rev=459f24d5e9ef0e03a3bbd037342c60bbde409dbf#459f24d5e9ef0e03a3bbd037342c60bbde409dbf"
+dependencies = [
+ "dioxus-core 0.4.2 (git+https://github.com/DioxusLabs/dioxus.git?rev=459f24d5e9ef0e03a3bbd037342c60bbde409dbf)",
+ "dioxus-core-macro 0.4.2",
+ "dioxus-hooks 0.4.2",
+ "dioxus-hot-reload 0.4.2",
+ "dioxus-html 0.4.2",
+ "dioxus-rsx 0.4.2",
 ]
 
 [[package]]
@@ -1181,12 +1203,41 @@ dependencies = [
 ]
 
 [[package]]
+name = "dioxus-core"
+version = "0.4.2"
+source = "git+https://github.com/DioxusLabs/dioxus.git?rev=459f24d5e9ef0e03a3bbd037342c60bbde409dbf#459f24d5e9ef0e03a3bbd037342c60bbde409dbf"
+dependencies = [
+ "bumpalo",
+ "futures-channel",
+ "futures-util",
+ "longest-increasing-subsequence",
+ "rustc-hash",
+ "serde",
+ "slab",
+ "smallbox",
+ "tracing",
+]
+
+[[package]]
 name = "dioxus-core-macro"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e98f3e3fc1fb1f8796e30a5eaa6e037ca44105bdee3a70ed66721ac8b720c931"
 dependencies = [
- "dioxus-rsx",
+ "dioxus-rsx 0.4.0",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.29",
+]
+
+[[package]]
+name = "dioxus-core-macro"
+version = "0.4.2"
+source = "git+https://github.com/DioxusLabs/dioxus.git?rev=459f24d5e9ef0e03a3bbd037342c60bbde409dbf#459f24d5e9ef0e03a3bbd037342c60bbde409dbf"
+dependencies = [
+ "constcat",
+ "dioxus-core 0.4.2 (git+https://github.com/DioxusLabs/dioxus.git?rev=459f24d5e9ef0e03a3bbd037342c60bbde409dbf)",
+ "dioxus-rsx 0.4.2",
  "proc-macro2",
  "quote",
  "syn 2.0.29",
@@ -1200,21 +1251,19 @@ checksum = "2ea539174bb236e0e7dc9c12b19b88eae3cb574dedbd0252a2d43ea7e6de13e2"
 
 [[package]]
 name = "dioxus-desktop"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9cfd6773b6ed9f2aea084e3d3f8da57a39d644682a73083d2e6ae84a57ecb5c9"
+version = "0.4.2"
+source = "git+https://github.com/DioxusLabs/dioxus.git?rev=459f24d5e9ef0e03a3bbd037342c60bbde409dbf#459f24d5e9ef0e03a3bbd037342c60bbde409dbf"
 dependencies = [
  "async-trait",
  "core-foundation",
- "dioxus-core",
- "dioxus-hot-reload",
- "dioxus-html",
+ "dioxus-core 0.4.2 (git+https://github.com/DioxusLabs/dioxus.git?rev=459f24d5e9ef0e03a3bbd037342c60bbde409dbf)",
+ "dioxus-hot-reload 0.4.2",
+ "dioxus-html 0.4.2",
  "dioxus-interpreter-js",
  "dunce",
  "futures-channel",
  "futures-util",
  "infer",
- "log",
  "objc",
  "objc_id",
  "rfd",
@@ -1223,6 +1272,7 @@ dependencies = [
  "slab",
  "thiserror",
  "tokio",
+ "tracing",
  "urlencoding",
  "webbrowser",
  "wry",
@@ -1234,7 +1284,7 @@ version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "808e553203e4c2534e186a8a9da0f4032027ff5413067307ea8ecbd793e37f57"
 dependencies = [
- "dioxus-core",
+ "dioxus-core 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "dioxus-debug-cell",
  "futures-channel",
  "log",
@@ -1243,14 +1293,40 @@ dependencies = [
 ]
 
 [[package]]
+name = "dioxus-hooks"
+version = "0.4.2"
+source = "git+https://github.com/DioxusLabs/dioxus.git?rev=459f24d5e9ef0e03a3bbd037342c60bbde409dbf#459f24d5e9ef0e03a3bbd037342c60bbde409dbf"
+dependencies = [
+ "dioxus-core 0.4.2 (git+https://github.com/DioxusLabs/dioxus.git?rev=459f24d5e9ef0e03a3bbd037342c60bbde409dbf)",
+ "dioxus-debug-cell",
+ "futures-channel",
+ "slab",
+ "thiserror",
+ "tracing",
+]
+
+[[package]]
 name = "dioxus-hot-reload"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ceb8aca167a64e4b0afaff447b13052402a9ade3f21b9e7d031b6b72669994a"
 dependencies = [
- "dioxus-core",
- "dioxus-html",
- "dioxus-rsx",
+ "dioxus-core 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "dioxus-html 0.4.0",
+ "dioxus-rsx 0.4.0",
+ "interprocess-docfix",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "dioxus-hot-reload"
+version = "0.4.2"
+source = "git+https://github.com/DioxusLabs/dioxus.git?rev=459f24d5e9ef0e03a3bbd037342c60bbde409dbf#459f24d5e9ef0e03a3bbd037342c60bbde409dbf"
+dependencies = [
+ "dioxus-core 0.4.2 (git+https://github.com/DioxusLabs/dioxus.git?rev=459f24d5e9ef0e03a3bbd037342c60bbde409dbf)",
+ "dioxus-html 0.4.2",
+ "dioxus-rsx 0.4.2",
  "interprocess-docfix",
  "serde",
  "serde_json",
@@ -1264,10 +1340,28 @@ checksum = "fb712fe56650dafddb626f8aed3d6ae194706c0299e175e99b45464add8b7af1"
 dependencies = [
  "async-channel",
  "async-trait",
- "dioxus-core",
+ "dioxus-core 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "enumset",
  "euclid",
- "keyboard-types",
+ "keyboard-types 0.6.2",
+ "serde",
+ "serde-value",
+ "serde_json",
+ "serde_repr",
+ "web-sys",
+]
+
+[[package]]
+name = "dioxus-html"
+version = "0.4.2"
+source = "git+https://github.com/DioxusLabs/dioxus.git?rev=459f24d5e9ef0e03a3bbd037342c60bbde409dbf#459f24d5e9ef0e03a3bbd037342c60bbde409dbf"
+dependencies = [
+ "async-channel",
+ "async-trait",
+ "dioxus-core 0.4.2 (git+https://github.com/DioxusLabs/dioxus.git?rev=459f24d5e9ef0e03a3bbd037342c60bbde409dbf)",
+ "enumset",
+ "euclid",
+ "keyboard-types 0.7.0",
  "serde",
  "serde-value",
  "serde_json",
@@ -1278,36 +1372,33 @@ dependencies = [
 
 [[package]]
 name = "dioxus-interpreter-js"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b2d35a6680cb2cf003a6c84fcaaa6d2a60b930efe4750910977b4e513bd73826"
+version = "0.4.2"
+source = "git+https://github.com/DioxusLabs/dioxus.git?rev=459f24d5e9ef0e03a3bbd037342c60bbde409dbf#459f24d5e9ef0e03a3bbd037342c60bbde409dbf"
 
 [[package]]
 name = "dioxus-router"
-version = "0.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cdeab6aa76cd7dfb05355f69834eb57c14d77c0489981d9b9815e5ebf41ea9f7"
+version = "0.4.2"
+source = "git+https://github.com/DioxusLabs/dioxus.git?rev=459f24d5e9ef0e03a3bbd037342c60bbde409dbf#459f24d5e9ef0e03a3bbd037342c60bbde409dbf"
 dependencies = [
  "anyhow",
- "dioxus",
+ "dioxus 0.4.2",
  "dioxus-router-macro",
  "futures-util",
  "gloo",
  "gloo-utils",
  "js-sys",
- "log",
  "thiserror",
- "tokio",
+ "tracing",
  "url",
+ "urlencoding",
  "wasm-bindgen",
  "web-sys",
 ]
 
 [[package]]
 name = "dioxus-router-macro"
-version = "0.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f1ccc3e764b77995c42e87cc2be93f69886a72ac3c4ca0162abcc5244442bc6"
+version = "0.4.2"
+source = "git+https://github.com/DioxusLabs/dioxus.git?rev=459f24d5e9ef0e03a3bbd037342c60bbde409dbf#459f24d5e9ef0e03a3bbd037342c60bbde409dbf"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1321,10 +1412,32 @@ version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "531a6b418fb75d08389920c024d1c082b500844cf50ccb16ad8d9ee33a1907a1"
 dependencies = [
- "dioxus-core",
+ "dioxus-core 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "proc-macro2",
  "quote",
  "syn 2.0.29",
+]
+
+[[package]]
+name = "dioxus-rsx"
+version = "0.4.2"
+source = "git+https://github.com/DioxusLabs/dioxus.git?rev=459f24d5e9ef0e03a3bbd037342c60bbde409dbf#459f24d5e9ef0e03a3bbd037342c60bbde409dbf"
+dependencies = [
+ "dioxus-core 0.4.2 (git+https://github.com/DioxusLabs/dioxus.git?rev=459f24d5e9ef0e03a3bbd037342c60bbde409dbf)",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.29",
+]
+
+[[package]]
+name = "dioxus-signals"
+version = "0.0.0"
+source = "git+https://github.com/DioxusLabs/dioxus.git?rev=459f24d5e9ef0e03a3bbd037342c60bbde409dbf#459f24d5e9ef0e03a3bbd037342c60bbde409dbf"
+dependencies = [
+ "dioxus-core 0.4.2 (git+https://github.com/DioxusLabs/dioxus.git?rev=459f24d5e9ef0e03a3bbd037342c60bbde409dbf)",
+ "generational-box",
+ "simple_logger",
+ "tracing",
 ]
 
 [[package]]
@@ -1336,7 +1449,7 @@ dependencies = [
  "async-broadcast",
  "cfg-if",
  "copypasta",
- "dioxus",
+ "dioxus 0.4.0",
  "js-sys",
  "uuid",
 ]
@@ -1786,6 +1899,14 @@ dependencies = [
  "libc",
  "system-deps",
  "x11",
+]
+
+[[package]]
+name = "generational-box"
+version = "0.0.0"
+source = "git+https://github.com/DioxusLabs/dioxus.git?rev=459f24d5e9ef0e03a3bbd037342c60bbde409dbf#459f24d5e9ef0e03a3bbd037342c60bbde409dbf"
+dependencies = [
+ "bumpalo",
 ]
 
 [[package]]
@@ -2668,6 +2789,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "keyboard-types"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b750dcadc39a09dbadd74e118f6dd6598df77fa01df0cfcdc52c28dece74528a"
+dependencies = [
+ "bitflags 2.4.0",
+ "serde",
+ "unicode-segmentation",
+]
+
+[[package]]
 name = "kuchiki"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3196,9 +3328,10 @@ dependencies = [
  "clap",
  "console_error_panic_hook",
  "console_log",
- "dioxus",
+ "dioxus 0.4.2",
  "dioxus-desktop",
  "dioxus-router",
+ "dioxus-signals",
  "dioxus-std",
  "http",
  "human-panic",
@@ -3374,6 +3507,15 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "num_threads"
+version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2819ce041d2ee131036f4fc9d6ae7ae125a3a40e97ba64d04fe799ad9dabbb44"
+dependencies = [
+ "libc",
 ]
 
 [[package]]
@@ -4555,6 +4697,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f27f6278552951f1f2b8cf9da965d10969b2efdea95a6ec47987ab46edfe263a"
 
 [[package]]
+name = "simple_logger"
+version = "4.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2230cd5c29b815c9b699fb610b49a5ed65588f3509d9f0108be3a885da629333"
+dependencies = [
+ "colored",
+ "log",
+ "time",
+ "windows-sys 0.42.0",
+]
+
+[[package]]
 name = "siphasher"
 version = "0.3.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4907,6 +5061,8 @@ checksum = "17f6bb557fd245c28e6411aa56b6403c689ad95061f50e4be16c274e70a17e48"
 dependencies = [
  "deranged",
  "itoa 1.0.9",
+ "libc",
+ "num_threads",
  "serde",
  "time-core",
  "time-macros",
@@ -5724,6 +5880,21 @@ name = "windows-metadata"
 version = "0.44.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ee78911e3f4ce32c1ad9d3c7b0bd95389662ad8d8f1a3155688fed70bd96e2b6"
+
+[[package]]
+name = "windows-sys"
+version = "0.42.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5a3e1820f08b8513f676f7ab6c1f99ff312fb97b553d30ff4dd86f9f15728aa7"
+dependencies = [
+ "windows_aarch64_gnullvm 0.42.2",
+ "windows_aarch64_msvc 0.42.2",
+ "windows_i686_gnu 0.42.2",
+ "windows_i686_msvc 0.42.2",
+ "windows_x86_64_gnu 0.42.2",
+ "windows_x86_64_gnullvm 0.42.2",
+ "windows_x86_64_msvc 0.42.2",
+]
 
 [[package]]
 name = "windows-sys"

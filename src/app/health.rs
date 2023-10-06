@@ -4,33 +4,39 @@ use dioxus::prelude::*;
 use nix_health::traits::{Check, CheckResult};
 use tracing::instrument;
 
+use crate::app::state::AppState;
+
 /// Nix health checks
 pub fn Health(cx: Scope) -> Element {
+    let state = AppState::use_state(cx);
+    use_future(cx, (), |_| async move {
+        state.update_health_checks().await;
+    });
+    let health_checks = &*state.health_checks.read();
     let title = "Nix Health";
-    let health_fut = use_future(cx, (), |_| async move { get_nix_health().await });
-    let health = health_fut.value()?;
     render! {
         h1 { class: "text-5xl font-bold", title }
         // TODO
         // RefetchQueryButton { result, query: || () }
         div { class: "my-1",
-            match health {
-                Ok(checks) => render! {
+            match health_checks {
+                None => render! { "⏳" },
+                Some(Ok(checks)) => render! {
                   div { class: "flex flex-col items-stretch justify-start space-y-8 text-left",
-                    checks.iter().map(|check| {
-                            rsx! ( ViewCheck { check: check } )
-                    })
-                }
+                    for check in checks {
+                        ViewCheck { check: check.clone() }
+                    }
+                  }
                 },
-                Err(_) => render! { "?" }
+                Some(Err(_)) => render! { "?" }
             }
 
         }
     }
 }
 
-#[inline_props]
-fn ViewCheck<'a>(cx: Scope, check: &'a Check) -> Element {
+#[component]
+fn ViewCheck(cx: Scope, check: Check) -> Element {
     render! {
         div { class: "contents",
             details {
