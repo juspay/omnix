@@ -29,20 +29,24 @@ impl NixEnv {
     #[cfg(feature = "ssr")]
     pub async fn detect(current_flake: Option<FlakeUrl>) -> Result<NixEnv, NixEnvError> {
         use sysinfo::{DiskExt, SystemExt};
-        let current_user = std::env::var("USER")?;
         let os = OS::detect().await;
-        let sys = sysinfo::System::new_with_specifics(
-            sysinfo::RefreshKind::new().with_disks_list().with_memory(),
-        );
-        let total_disk_space = to_bytesize(get_nix_disk(&sys)?.total_space());
-        let total_memory = to_bytesize(sys.total_memory());
-        Ok(NixEnv {
-            current_user,
-            current_flake,
-            os,
-            total_disk_space,
-            total_memory,
+        tokio::task::spawn_blocking(|| {
+            let current_user = std::env::var("USER")?;
+            let sys = sysinfo::System::new_with_specifics(
+                sysinfo::RefreshKind::new().with_disks_list().with_memory(),
+            );
+            let total_disk_space = to_bytesize(get_nix_disk(&sys)?.total_space());
+            let total_memory = to_bytesize(sys.total_memory());
+            Ok(NixEnv {
+                current_user,
+                current_flake,
+                os,
+                total_disk_space,
+                total_memory,
+            })
         })
+        .await
+        .unwrap()
     }
 
     /// Return [NixEnv::current_flake] as a local path if it is one
