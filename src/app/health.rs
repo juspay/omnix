@@ -2,6 +2,8 @@
 
 use dioxus::prelude::*;
 use nix_health::traits::{Check, CheckResult};
+use nix_rs::command::NixCmdError;
+use thiserror::Error;
 use tracing::instrument;
 
 use crate::app::state::AppState;
@@ -176,7 +178,7 @@ pub async fn get_nix_health_old(
 */
 
 #[instrument(name = "nix-health")]
-pub async fn get_nix_health() -> anyhow::Result<Vec<nix_health::traits::Check>> {
+pub async fn get_nix_health() -> Result<Vec<nix_health::traits::Check>, NixHealthError> {
     use nix_health::NixHealth;
     use nix_rs::{env, info};
     let nix_info = info::NixInfo::from_nix(&nix_rs::command::NixCmd::default()).await?;
@@ -185,4 +187,13 @@ pub async fn get_nix_health() -> anyhow::Result<Vec<nix_health::traits::Check>> 
     let health = NixHealth::default();
     let checks = health.run_checks(&nix_info, &nix_env);
     Ok(checks)
+}
+
+#[derive(Error, Debug)]
+pub enum NixHealthError {
+    #[error("Command error: {0}")]
+    CmdError(#[from] NixCmdError),
+
+    #[error("Nix env error: {0}")]
+    NixEnvError(#[from] nix_rs::env::NixEnvError),
 }

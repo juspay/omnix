@@ -40,11 +40,7 @@ fn Wrapper(cx: Scope) -> Element {
 
 /// Main frontend application container
 pub fn App(cx: Scope) -> Element {
-    use_context_provider(cx, AppState::default);
-    let state = AppState::use_state(cx);
-    use_future(cx, (), |_| async move {
-        state.initialize().await;
-    });
+    AppState::provide_state(cx);
     use_shared_state_provider(cx, || {
         FlakeUrl::suggestions()
             .first()
