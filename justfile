@@ -6,6 +6,8 @@ default:
 # Auto-format the source tree
 fmt:
     treefmt
+    find src/app/ -name \*.rs | xargs -n 1 dx fmt -f
+
 
 alias f := fmt
 
