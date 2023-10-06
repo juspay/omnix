@@ -41,6 +41,10 @@ fn Wrapper(cx: Scope) -> Element {
 /// Main frontend application container
 pub fn App(cx: Scope) -> Element {
     use_context_provider(cx, AppState::default);
+    let state = AppState::use_state(cx);
+    use_future(cx, (), |_| async move {
+        state.initialize().await;
+    });
     use_shared_state_provider(cx, || {
         FlakeUrl::suggestions()
             .first()
@@ -64,9 +68,6 @@ pub fn App(cx: Scope) -> Element {
 fn Dashboard(cx: Scope) -> Element {
     tracing::debug!("Rendering Dashboard page");
     let state = AppState::use_state(cx);
-    use_future(cx, (), |_| async move {
-        state.update_health_checks().await;
-    });
     let health_checks = &*state.health_checks.read();
     // A Card component
     #[component]

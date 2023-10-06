@@ -9,17 +9,23 @@ use crate::app::state::AppState;
 /// Nix health checks
 pub fn Health(cx: Scope) -> Element {
     let state = AppState::use_state(cx);
-    use_future(cx, (), |_| async move {
-        state.update_health_checks().await;
-    });
-    let health_checks = &*state.health_checks.read();
+    let health_checks = state.health_checks.read();
     let title = "Nix Health";
     render! {
         h1 { class: "text-5xl font-bold", title }
         // TODO
         // RefetchQueryButton { result, query: || () }
+        button {
+            class: "p-1 shadow border-1 bg-blue-700 ",
+            onclick: move |_event| {
+                cx.spawn_forever(async move {
+                    state.update_health_checks().await;
+                });
+            },
+            "Refresh"
+        }
         div { class: "my-1",
-            match health_checks {
+            match &*health_checks {
                 None => render! { "⏳" },
                 Some(Ok(checks)) => render! {
                   div { class: "flex flex-col items-stretch justify-start space-y-8 text-left",
