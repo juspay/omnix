@@ -28,15 +28,14 @@ pub fn Health(cx: Scope) -> Element {
             match &*health_checks {
                 None => render! { "⏳" },
                 Some(Ok(checks)) => render! {
-                  div { class: "flex flex-col items-stretch justify-start space-y-8 text-left",
+                div { class: "flex flex-col items-stretch justify-start space-y-8 text-left",
                     for check in checks {
                         ViewCheck { check: check.clone() }
                     }
-                  }
+                }
                 },
                 Some(Err(_)) => render! { "?" }
             }
-
         }
     }
 }
@@ -54,9 +53,7 @@ fn ViewCheck(cx: Scope, check: Check) -> Element {
                     check.title.clone()
                 }
                 div { class: "p-4",
-                    div { class: "p-2 my-2 font-mono text-sm bg-black text-base-100",
-                        check.info.clone()
-                    }
+                    div { class: "p-2 my-2 font-mono text-sm bg-black text-base-100", check.info.clone() }
                     div { class: "flex flex-col justify-start space-y-4",
                         match check.result.clone() {
                             CheckResult::Green => render! { "" },
@@ -77,13 +74,9 @@ fn ViewCheck(cx: Scope, check: Check) -> Element {
 #[component]
 pub fn CheckResultSummaryView(cx: Scope, green: bool) -> Element {
     if *green {
-        render! {
-                span { class: "text-green-500", "✓" }
-        }
+        render! { span { class: "text-green-500", "✓" } }
     } else {
-        render! {
-                span { class: "text-red-500", "✗" }
-        }
+        render! { span { class: "text-red-500", "✗" } }
     }
 }
 
