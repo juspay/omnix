@@ -18,7 +18,7 @@ pub fn Health(cx: Scope) -> Element {
         button {
             class: "p-1 shadow border-1 bg-blue-700 ",
             onclick: move |_event| {
-                cx.spawn_forever(async move {
+                cx.spawn(async move {
                     state.update_health_checks().await;
                 });
             },
@@ -74,7 +74,7 @@ fn ViewCheck(cx: Scope, check: Check) -> Element {
     }
 }
 
-#[inline_props]
+#[component]
 pub fn CheckResultSummaryView(cx: Scope, green: bool) -> Element {
     if *green {
         render! {
