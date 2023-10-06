@@ -8,7 +8,7 @@ use super::health::get_nix_health;
 
 #[derive(Clone, Copy, Default)]
 pub struct AppState {
-    // pub nix_info: Signal<Option<Result<nix_rs::info::NixInfo>>>,
+    pub nix_info: Signal<Option<Result<nix_rs::info::NixInfo>>>,
     // pub nix_env: Signal<Option<Result<nix_rs::env::NixEnv>>>,
     pub health_checks: Signal<Option<Result<Vec<nix_health::traits::Check>>>>,
 }
@@ -16,10 +16,26 @@ pub struct AppState {
 impl AppState {
     pub async fn initialize(&self) {
         tracing::info!("Initializing app state");
+        if self.nix_info.read().is_none() {
+            self.update_nix_info().await;
+        }
         if self.health_checks.read().is_none() {
             self.update_health_checks().await;
         }
     }
+
+    pub async fn update_nix_info(&self) {
+        tracing::info!("Updating nix info ...");
+        let nix_info = nix_rs::info::NixInfo::from_nix(&nix_rs::command::NixCmd::default())
+            .await
+            .map_err(|e| e.into());
+        tracing::info!("Got nix info, about to mut");
+        self.nix_info.with_mut(move |x| {
+            *x = Some(nix_info);
+            tracing::info!("Updated nix info");
+        });
+    }
+
     pub async fn update_health_checks(&self) {
         tracing::info!("Updating health checks ...");
         let checks = get_nix_health().await;
