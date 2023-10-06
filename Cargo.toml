@@ -57,8 +57,3 @@ dioxus-desktop = { git = "https://github.com/DioxusLabs/dioxus.git", rev = "459f
 dioxus-router = { git = "https://github.com/DioxusLabs/dioxus.git", rev = "459f24d5e9ef0e03a3bbd037342c60bbde409dbf" }
 dioxus-signals = { git = "https://github.com/DioxusLabs/dioxus.git", rev = "459f24d5e9ef0e03a3bbd037342c60bbde409dbf" }
 dioxus-std = { version = "0.4.0", features = ["clipboard", "utils"] }
-
-[features]
-# TODO: remove this now unnecessary flag
-default = ["ssr"]
-ssr = ["nix_rs/ssr", "nix_health/ssr"]

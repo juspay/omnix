@@ -1,9 +1,7 @@
-#[cfg(feature = "ssr")]
 use nix_rs::{env, info};
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-#[cfg(feature = "ssr")]
 use crate::traits::*;
 
 /// Check that [nix_rs::config::NixConfig::substituters] is set to a good value.
@@ -22,7 +20,6 @@ impl Default for Caches {
     }
 }
 
-#[cfg(feature = "ssr")]
 impl Checkable for Caches {
     fn check(&self, nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Vec<Check> {
         let val = &nix_info.nix_config.substituters.value;

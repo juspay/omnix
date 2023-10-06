@@ -3,10 +3,10 @@
 use std::{fmt::Display, hash::Hash, str::FromStr};
 
 use cfg_if::cfg_if;
-#[cfg(feature = "ssr")]
+
 use http::status::StatusCode;
 use leptos::*;
-#[cfg(feature = "ssr")]
+
 use leptos_axum::ResponseOptions;
 use leptos_router::*;
 

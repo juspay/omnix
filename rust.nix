@@ -31,10 +31,7 @@
                 # If/when we move to Jenkins, this won't be necessary.
                 ${if !pkgs.stdenv.isDarwin
                   then ''
-                    # Run `cargo test` using the same settings as `cargo leptos test`
-                    # In particular: target-dir and features
-                    cargo test --target-dir=target/server --no-default-features --features=ssr
-                    cargo test --target-dir=target/front --no-default-features --features=hydrate
+                    cargo test 
                   ''
                   else ""
                 }
@@ -58,7 +55,7 @@
           nativeBuildInputs = [
             pkgs.nix # cargo tests need nix
           ];
-          cargoExtraArgs = "-p nix_health --features ssr";
+          cargoExtraArgs = "-p nix_health";
           # Disable tests on macOS for https://github.com/garnix-io/issues/issues/69
           # If/when we move to Jenkins, this won't be necessary.
           doCheck = !pkgs.stdenv.isDarwin;

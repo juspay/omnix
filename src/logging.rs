@@ -19,7 +19,6 @@ pub struct Verbosity {
     pub verbose: u8,
 }
 
-#[cfg(feature = "ssr")]
 impl Verbosity {
     /// Return the log filter for CLI flag.
     fn log_filter(&self) -> EnvFilter {

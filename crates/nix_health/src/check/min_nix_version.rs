@@ -1,9 +1,8 @@
 use nix_rs::version::NixVersion;
-#[cfg(feature = "ssr")]
+
 use nix_rs::{env, info};
 use serde::{Deserialize, Serialize};
 
-#[cfg(feature = "ssr")]
 use crate::traits::*;
 
 /// Check that [nix_rs::version::NixVersion] is set to a good value.
@@ -25,7 +24,6 @@ impl Default for MinNixVersion {
     }
 }
 
-#[cfg(feature = "ssr")]
 impl Checkable for MinNixVersion {
     fn check(&self, nix_info: &info::NixInfo, _nix_env: &env::NixEnv) -> Vec<Check> {
         let val = &nix_info.nix_version;

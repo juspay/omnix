@@ -26,7 +26,7 @@ pub struct NixEnv {
 
 impl NixEnv {
     /// Determine [NixEnv] on the user's system
-    #[cfg(feature = "ssr")]
+
     pub async fn detect(current_flake: Option<FlakeUrl>) -> Result<NixEnv, NixEnvError> {
         use sysinfo::{DiskExt, SystemExt};
         let os = OS::detect().await;
@@ -58,7 +58,7 @@ impl NixEnv {
 }
 
 /// Get the disk where /nix exists
-#[cfg(feature = "ssr")]
+
 fn get_nix_disk(sys: &sysinfo::System) -> Result<&sysinfo::Disk, NixEnvError> {
     use sysinfo::{DiskExt, SystemExt};
     let by_mount_point: std::collections::HashMap<&Path, &sysinfo::Disk> = sys
@@ -102,7 +102,6 @@ pub enum AppleEmulation {
 }
 
 impl AppleEmulation {
-    #[cfg(feature = "ssr")]
     pub fn new() -> Self {
         use is_proc_translated::is_proc_translated;
         if is_proc_translated() {
@@ -113,7 +112,6 @@ impl AppleEmulation {
     }
 }
 
-#[cfg(feature = "ssr")]
 impl Default for AppleEmulation {
     fn default() -> Self {
         Self::new()
@@ -121,7 +119,6 @@ impl Default for AppleEmulation {
 }
 
 impl MacOSArch {
-    #[cfg(feature = "ssr")]
     pub fn from(os_arch: Option<&str>) -> MacOSArch {
         match os_arch {
             Some("arm64") => MacOSArch::Arm64(AppleEmulation::new()),
@@ -150,7 +147,6 @@ impl Display for OS {
 }
 
 impl OS {
-    #[cfg(feature = "ssr")]
     pub async fn detect() -> Self {
         let os_info = tokio::task::spawn_blocking(os_info::get).await.unwrap();
         let os_type = os_info.os_type();
@@ -192,7 +188,7 @@ impl OS {
 }
 
 /// Errors while trying to fetch [NixEnv]
-#[cfg(feature = "ssr")]
+
 #[derive(thiserror::Error, Debug)]
 pub enum NixEnvError {
     #[error("Failed to fetch ENV: {0}")]
@@ -205,7 +201,7 @@ pub enum NixEnvError {
 /// Convert bytes to a closest [ByteSize]
 ///
 /// Useful for displaying disk space and memory which are typically in GBs / TBs
-#[cfg(feature = "ssr")]
+
 fn to_bytesize(bytes: u64) -> ByteSize {
     let kb = bytes / 1024;
     let mb = kb / 1024;
@@ -222,7 +218,7 @@ fn to_bytesize(bytes: u64) -> ByteSize {
 }
 
 /// Test for [to_bytesize]
-#[cfg(feature = "ssr")]
+
 #[test]
 fn test_to_bytesize() {
     assert_eq!(to_bytesize(0), ByteSize::b(0));

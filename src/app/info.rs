@@ -4,7 +4,6 @@ use std::fmt::Display;
 
 use dioxus::prelude::*;
 use nix_rs::{config::NixConfig, info::NixInfo, version::NixVersion};
-use tracing::instrument;
 
 use crate::app::state::AppState;
 
@@ -110,10 +109,4 @@ where
             }
         }
     }
-}
-
-#[instrument(name = "nix-info")]
-pub async fn get_nix_info(_unit: ()) -> anyhow::Result<NixInfo> {
-    let v = NixInfo::from_nix(&nix_rs::command::NixCmd::default()).await?;
-    Ok(v)
 }
