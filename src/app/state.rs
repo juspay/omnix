@@ -5,6 +5,10 @@ use std::fmt::Display;
 use dioxus::prelude::{use_context, use_context_provider, use_future, Scope};
 use dioxus_signals::Signal;
 use nix_health::NixHealth;
+use nix_rs::{
+    command::NixCmdError,
+    flake::{url::FlakeUrl, Flake},
+};
 use tracing::instrument;
 
 /// Catch all error to use in UI components
@@ -30,6 +34,9 @@ pub struct AppState {
     pub nix_info: Signal<Option<Result<nix_rs::info::NixInfo, SystemError>>>,
     pub nix_env: Signal<Option<Result<nix_rs::env::NixEnv, SystemError>>>,
     pub health_checks: Signal<Option<Result<Vec<nix_health::traits::Check>, SystemError>>>,
+
+    pub flake_url: Signal<FlakeUrl>,
+    pub flake: Signal<Option<Result<Flake, NixCmdError>>>,
 }
 
 impl AppState {
@@ -111,6 +118,22 @@ impl AppState {
         self.health_checks.with_mut(move |x| {
             *x = Some(health_checks);
             tracing::info!("Updated health checks");
+        });
+    }
+
+    #[instrument(name = "update-flake", skip(self))]
+    pub async fn update_flake(&self) {
+        tracing::info!("Updating flake ...");
+        let flake_url = self.flake_url.read().clone();
+        let flake = tokio::spawn(async move {
+            Flake::from_nix(&nix_rs::command::NixCmd::default(), flake_url.clone()).await
+        })
+        .await
+        .unwrap();
+        tracing::info!("Got flake, about to mut");
+        self.flake.with_mut(move |x| {
+            *x = Some(flake);
+            tracing::info!("Updated flake");
         });
     }
 

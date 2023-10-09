@@ -3,199 +3,171 @@
 use std::collections::BTreeMap;
 
 use dioxus::prelude::*;
-use nix_rs::{
-    command::Refresh,
-    flake::{
-        outputs::{FlakeOutputs, Type, Val},
-        schema::FlakeSchema,
-        url::FlakeUrl,
-        Flake,
-    },
+use nix_rs::flake::{
+    outputs::{FlakeOutputs, Type, Val},
+    schema::FlakeSchema,
+    Flake,
 };
 
-pub fn Flake(cx: Scope) -> Element {
-    render! { pre { "TODO" } }
-}
-/*
+use crate::app::state::AppState;
 
+/*
 /// Nix flake dashboard
 #[component]
-pub fn NixFlakeRoute(cx: Scope) -> impl IntoView {
+pub fn Flake(cx: Scope) -> Element {
     let suggestions = FlakeUrl::suggestions();
-    let url = use_signal::<FlakeUrl>(cx);
-    let refresh = use_signal::<Refresh>(cx);
-    let query = move || (url(), refresh());
-    let result = query::use_server_query(cx, query, get_flake);
-    view! { cx,
-        <Title text="Nix Flake"/>
-        <h1 class="text-5xl font-bold">{"Nix Flake"}</h1>
-        <TextInput id="nix-flake-input" label="Load a Nix Flake" val=url suggestions/>
-        <RefetchQueryButton result query/>
-        <Outlet/>
+    let url = AppState::use_state(cx);
+    let refresh = AppState::use_state(cx);
+    let result = query::use_server_query(cx, move || (url.read(), refresh.read()), get_flake);
+    render! {
+        h1 { "Nix Flake" }
+        h1 { class: "text-5xl font-bold", "Nix Flake" }
+        TextInput { id: "nix-flake-input", label: "Load a Nix Flake", val: url.read(), suggestions }
+        // RefetchQueryButton { result: result, query: move || (url.read(), refresh.read()) }
+        Outlet {}
     }
 }
+*/
 
 #[component]
-pub fn NixFlakeHomeRoute(cx: Scope) -> impl IntoView {
-    let url = use_signal::<FlakeUrl>(cx);
-    let refresh = use_signal::<Refresh>(cx);
-    let query = move || (url(), refresh());
-    let result = query::use_server_query(cx, query, get_flake);
-    let data = result.data;
-    view! { cx,
-        <div class="p-2 my-1">
-            <SuspenseWithErrorHandling>
-                {move || {
-                    data.with_result(move |flake| {
-                        view! { cx, <FlakeView flake/> }
-                    })
-                }}
-
-            </SuspenseWithErrorHandling>
-        </div>
-    }
-}
-
-#[component]
-pub fn NixFlakeRawRoute(cx: Scope) -> impl IntoView {
-    let url = use_signal::<FlakeUrl>(cx);
-    let refresh = use_signal::<Refresh>(cx);
-    let query = move || (url(), refresh());
-    let result = query::use_server_query(cx, query, get_flake);
-    let data = result.data;
-    view! { cx,
-        <div>
-            <A href="/flake">"< Back"</A>
-        </div>
-        <div class="px-4 py-2 font-mono text-xs text-left text-gray-500 border-2 border-black">
-            <SuspenseWithErrorHandling>
-                {move || {
-                    data.with_result(move |r| {
-                        view! { cx, <FlakeOutputsRawView outs=&r.output/> }
-                    })
-                }}
-
-            </SuspenseWithErrorHandling>
-        </div>
-    }
-}
-
-#[component]
-fn FlakeView<'a>(cx: Scope, flake: &'a Flake) -> impl IntoView {
-    view! { cx,
-        <div class="flex flex-col my-4">
-            <h3 class="text-lg font-bold">{flake.url.to_string()}</h3>
-            <div class="text-sm italic text-gray-600">
-                <A href="/flake/raw" exact=true>
-                    "View raw output"
-                </A>
-            </div>
-            <div>
-                <FlakeSchemaView schema=&flake.schema/>
-            </div>
-        </div>
-    }
-}
-
-#[component]
-fn SectionHeading(cx: Scope, title: &'static str) -> impl IntoView {
-    view! { cx,
-        <h3 class="p-2 mt-4 mb-2 font-bold bg-gray-300 border-b-2 border-l-2 border-black text-l">
-            {title}
-        </h3>
-    }
-}
-
-#[component]
-fn FlakeSchemaView<'a>(cx: Scope, schema: &'a FlakeSchema) -> impl IntoView {
-    let system = &schema.system.clone();
-    view! { cx,
-        <div>
-            <h2 class="my-2 ">
-                <div class="text-xl font-bold text-primary-600">{system.human_readable()}</div>
-                " "
-                <span class="font-mono text-xs text-gray-500">"(" {system.to_string()} ")"</span>
-            </h2>
-
-            <div class="text-left">
-                <BTreeMapView title="Packages" tree=&schema.packages/>
-                <BTreeMapView title="Legacy Packages" tree=&schema.legacy_packages/>
-                <BTreeMapView title="Dev Shells" tree=&schema.devshells/>
-                <BTreeMapView title="Checks" tree=&schema.checks/>
-                <BTreeMapView title="Apps" tree=&schema.apps/>
-                <SectionHeading title="Formatter"/>
-                {schema
-                    .formatter
-                    .as_ref()
-                    .map(|v| {
-                        let default = "formatter".to_string();
-                        let k = v.name.as_ref().unwrap_or(&default);
-                        view! { cx, <FlakeValView k v/> }
-                    })}
-
-                <SectionHeading title="Other"/>
-                {schema
-                    .other
-                    .as_ref()
-                    .map(|v| {
-                        // TODO: Use a non-recursive rendering component?
-                        view! { cx, <FlakeOutputsRawView outs=&FlakeOutputs::Attrset(v.clone())/> }
-                    })}
-
-            </div>
-        </div>
-    }
-}
-
-#[component]
-fn BTreeMapView<'a>(
-    cx: Scope,
-    title: &'static str,
-    tree: &'a BTreeMap<String, Val>,
-) -> impl IntoView {
-    (!tree.is_empty()).then(move || {
-        view! { cx,
-            <SectionHeading title/>
-            <BTreeMapBodyView tree/>
+pub fn Flake(cx: Scope) -> Element {
+    let state = AppState::use_state(cx);
+    use_future(cx, (), |_| async move { state.update_flake().await });
+    let flake = state.flake.read();
+    render! {
+        div { class: "p-2 my-1",
+            match &*flake {
+                None => render! { "⏳" },
+                Some(Ok(flake)) => render! { FlakeView { flake: flake.clone() } },
+                Some(Err(e)) => render! { "Error: {e}" }
+            }
         }
-    })
+    }
 }
 
+/*
 #[component]
-fn BTreeMapBodyView<'a>(cx: Scope, tree: &'a BTreeMap<String, Val>) -> impl IntoView {
-    view! { cx,
-        <div class="flex flex-wrap justify-start">
-            {tree.iter().map(|(k, v)| view! { cx, <FlakeValView k v/> }).collect_view(cx)}
-        </div>
+pub fn NixFlakeRawRoute(cx: Scope) -> Element {
+    let url = AppState::use_state(cx);
+    let refresh = AppState::use_state(cx);
+    let result = query::use_server_query(cx, move || (url.read(), refresh.read()), get_flake);
+    let data = result;
+    render! {
+        div {
+            A { href: "/flake", "⬅ Back" }
+            div { class: "px-4 py-2 font-mono text-xs text-left text-gray-500 border-2 border-black",
+                match &*data {
+                    None => render! { "⏳" },
+                    Some(Ok(r)) => render! { FlakeOutputsRawView { outs: &r.output } },
+                    Some(Err(_)) => render! { "?" }
+                }
+            }
+        }
+    }
+}
+*/
+
+#[component]
+pub fn FlakeView(cx: Scope, flake: Flake) -> Element {
+    render! {
+        div { class: "flex flex-col my-4",
+            h3 { class: "text-lg font-bold", flake.url.to_string() }
+            div { class: "text-sm italic text-gray-600",
+                // A { href: "/flake/raw", exact: true, "View raw output" }
+            }
+            div {
+                FlakeSchemaView { schema: flake.schema.clone() }
+            }
+        }
     }
 }
 
 #[component]
-fn FlakeValView<'a>(cx: Scope, k: &'a String, v: &'a Val) -> impl IntoView {
-    view! { cx,
-        <div
-            title=format!("{:?}", v.type_)
-            class="flex flex-col p-2 my-2 mr-2 space-y-2 bg-white border-4 border-gray-300 rounded hover:border-gray-400"
-        >
-            <div class="flex flex-row justify-start space-x-2 font-bold text-primary-500">
-                <div>{v.type_.to_icon()}</div>
-                <div>{k}</div>
-            </div>
-            {v
-                .name
-                .as_ref()
-                .map(|v| {
-                    view! { cx, <div class="font-mono text-xs text-gray-500">{v}</div> }
-                })}
+pub fn SectionHeading(cx: Scope, title: &'static str) -> Element {
+    render! {
+        h3 { class: "p-2 mt-4 mb-2 font-bold bg-gray-300 border-b-2 border-l-2 border-black text-l",
+        "{title}" }
+    }
+}
 
-            {v
-                .description
-                .as_ref()
-                .map(|v| {
-                    view! { cx, <div class="font-light">{v}</div> }
-                })}
+#[component]
+pub fn FlakeSchemaView(cx: Scope, schema: FlakeSchema) -> Element {
+    let system = schema.system.clone();
+    render! {
+        div {
+            h2 { class: "my-2",
+                div { class: "text-xl font-bold text-primary-600", "{system.human_readable()}" }
+                span { class: "font-mono text-xs text-gray-500",
+                "(",
+                "{system }",
+                ")" }
+            }
+            div { class: "text-left",
+                BtreeMapView { title: "Packages", tree: schema.packages.clone() }
+                BtreeMapView { title: "Legacy Packages", tree: schema.legacy_packages.clone() }
+                BtreeMapView { title: "Dev Shells", tree: schema.devshells.clone() }
+                BtreeMapView { title: "Checks", tree: schema.checks.clone() }
+                BtreeMapView { title: "Apps", tree: schema.apps.clone() }
+                SectionHeading { title: "Formatter" }
+                match schema.formatter.as_ref() {
+                    Some(v) => {
+                        let k = v.name.clone().unwrap_or("formatter".to_string());
+                        render! { FlakeValView { k: k.clone(), v: v.clone() } }
+                    },
+                    None => render! { "" } // No-op for None
+                }
+                SectionHeading { title: "Other" }
+                match &schema.other {
+                    Some(v) => render! { FlakeOutputsRawView { outs: FlakeOutputs::Attrset(v.clone()) } },
+                    None => render! { "" } // No-op for None
+                }
+            }
+        }
+    }
+}
 
-        </div>
+#[component]
+pub fn BtreeMapView(cx: Scope, title: &'static str, tree: BTreeMap<String, Val>) -> Element {
+    render! {
+        div {
+            SectionHeading { title: title }
+            BtreeMapBodyView { tree: tree }
+        }
+    }
+}
+
+#[component]
+pub fn BtreeMapBodyView<'a>(cx: Scope, tree: &'a BTreeMap<String, Val>) -> Element {
+    render! {
+        div { class: "flex flex-wrap justify-start",
+            for (k, v) in tree.iter() {
+                FlakeValView { k: k.clone(), v: v.clone() }
+            }
+        }
+    }
+}
+
+#[component]
+pub fn FlakeValView(cx: Scope, k: String, v: Val) -> Element {
+    let title = format!("{:?}", v.type_);
+    render! {
+        div {
+            title: "{title}",
+            class: "flex flex-col p-2 my-2 mr-2 space-y-2 bg-white border-4 border-gray-300 rounded hover:border-gray-400",
+            div {
+                class: "flex flex-row justify-start space-x-2 font-bold text-primary-500",
+                div { v.type_.to_icon() }
+                div { "{k}" }
+            }
+            match &v.name {
+                Some(name_val) => render! { div { class: "font-mono text-xs text-gray-500", "{name_val}" } },
+                None => render! { "" } // No-op for None
+            }
+            match &v.description {
+                Some(desc_val) => render! { div { class: "font-light", "{desc_val}" } },
+                None => render! { "" } // No-op for None
+            }
+        }
     }
 }
 
@@ -204,67 +176,46 @@ fn FlakeValView<'a>(cx: Scope, k: &'a String, v: &'a Val) -> impl IntoView {
 ///
 /// WARNING: This may cause performance problems if the tree is large.
 #[component]
-fn FlakeOutputsRawView<'a>(cx: Scope, outs: &'a FlakeOutputs) -> impl IntoView {
-    fn view_val<'b>(cx: Scope, val: &'b Val) -> View {
-        view! { cx,
-            <span>
-                <b>{val.name.clone()}</b>
-                " ("
-                <TypeView type_=&val.type_/>
-                ") "
-                <em>{val.description.clone()}</em>
-            </span>
+pub fn FlakeOutputsRawView(cx: Scope, outs: FlakeOutputs) -> Element {
+    #[component]
+    fn ValView<'a>(cx: Scope, val: &'a Val) -> Element {
+        render! {
+            span {
+                b { val.name.clone() },
+                " (",
+                TypeView { type_: &val.type_ },
+                ") ",
+                em { val.description.clone() }
+            }
         }
-        .into_view(cx)
     }
 
     #[component]
-    fn TypeView<'b>(cx: Scope, type_: &'b Type) -> impl IntoView {
-        view! { cx,
-            <span>
-                {match type_ {
+    pub fn TypeView<'a>(cx: Scope, type_: &'a Type) -> Element {
+        render! {
+            span {
+                match type_ {
                     Type::NixosModule => "nixosModule ❄️",
                     Type::Derivation => "derivation 📦",
                     Type::App => "app 📱",
                     Type::Template => "template 🏗️",
                     Type::Unknown => "unknown ❓",
-                }}
-
-            </span>
+                }
+            }
         }
     }
+
     match outs {
-        FlakeOutputs::Val(v) => view_val(cx, v),
-        FlakeOutputs::Attrset(v) => view! { cx,
-            <ul class="list-disc">
-                {v
-                    .iter()
-                    .map(|(k, v)| {
-                        view! { cx,
-                            <li class="ml-4">
-                                <span class="px-2 py-1 font-bold text-primary-500">{k}</span>
-                                <FlakeOutputsRawView outs=v/>
-                            </li>
-                        }
-                    })
-                    .collect_view(cx)}
-            </ul>
-        }
-        .into_view(cx),
+        FlakeOutputs::Val(v) => render! { ValView {val: v} },
+        FlakeOutputs::Attrset(v) => render! {
+            ul { class: "list-disc",
+                for (k, v) in v.iter() {
+                    li { class: "ml-4",
+                        span { class: "px-2 py-1 font-bold text-primary-500", "{k}" }
+                        FlakeOutputsRawView { outs: v.clone() }
+                    }
+                }
+            }
+        },
     }
 }
-
-/// Get [Flake] info for the given flake url
-#[server(GetFlake, "/api")]
-pub async fn get_flake(args: (FlakeUrl, Refresh)) -> Result<Flake, ServerFnError> {
-    use nix_rs::command::NixCmd;
-    let (url, refresh) = args;
-    let nix_cmd = &NixCmd {
-        refresh,
-        ..NixCmd::default()
-    };
-    let v = Flake::from_nix(nix_cmd, url).await?;
-    Ok(v)
-}
-
-*/
