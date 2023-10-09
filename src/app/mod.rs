@@ -67,11 +67,11 @@ fn Dashboard(cx: Scope) -> Element {
     let health_checks = &*state.health_checks.read();
     // A Card component
     #[component]
-    fn Card<'a>(cx: Scope, href: &'static str, children: Element<'a>) -> Element<'a> {
+    fn Card<'a>(cx: Scope, href: Route, children: Element<'a>) -> Element<'a> {
         render! {
             // TODO: Use Link
-            a {
-                href: "{href}",
+            Link {
+                to: "{href}",
                 class: "flex items-center justify-center w-48 h-48 p-2 m-2 border-2 rounded-lg shadow border-base-400 active:shadow-none bg-base-100 hover:bg-primary-200",
                 span { class: "text-3xl text-base-800", children }
             }
@@ -80,7 +80,7 @@ fn Dashboard(cx: Scope) -> Element {
     render! {
         h1 { class: "text-5xl font-bold", "Dashboard" }
         div { id: "cards", class: "flex flex-row flex-wrap",
-            Card { href: "/health",
+            Card { href: Route::Health {},
                 "Nix Health Check "
                 match health_checks {
                     Some(Ok(checks)) => {
@@ -95,8 +95,8 @@ fn Dashboard(cx: Scope) -> Element {
                     None => "⏳",
                 }
             }
-            Card { href: "/info", "Nix Info ℹ️" }
-            Card { href: "/flake", "Flake Overview ❄️️" }
+            Card { href: Route::Info {}, "Nix Info ℹ️" }
+            Card { href: Route::Flake {}, "Flake Overview ❄️️" }
         }
     }
 }
