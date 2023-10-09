@@ -57,7 +57,7 @@ fn NixVersionView<'a>(cx: Scope, version: &'a NixVersion) -> Element {
 
 #[component]
 fn NixConfigView(cx: Scope, config: NixConfig) -> Element {
-    let ConfigRow = |key: &'static str, title: String, children: Element<'a>| {
+    let config_row = |key: &'static str, title: String, children: Element<'a>| {
         render! {
             tr { title: "{title}",
                 td { class: "px-4 py-2 font-semibold text-base-700", "{key}" }
@@ -71,22 +71,22 @@ fn NixConfigView(cx: Scope, config: NixConfig) -> Element {
         div { class: "py-1 my-1 rounded bg-primary-50",
             table { class: "text-right",
                 tbody {
-                    ConfigRow (
+                    config_row (
                         "Local System",
                         config.system.description.clone(),
                         render! { "{config.system.value}" }
                     ),
-                    ConfigRow (
+                    config_row (
                         "Max Jobs",
                         config.max_jobs.description.clone(),
                         render! {"{config.max_jobs.value}"}
                     ),
-                    ConfigRow (
+                    config_row (
                         "Cores per build",
                         config.cores.description.clone(),
                         render! { "{config.cores.value}" }
                     ),
-                    ConfigRow (
+                    config_row (
                         "Nix Caches",
                         config.substituters.clone().description,
                         render! { ConfigValList { items: config.substituters.value.clone() } }

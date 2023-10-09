@@ -1,6 +1,5 @@
 //! Command-line interface
 use clap::Parser;
-use std::net::SocketAddr;
 
 use crate::logging;
 
