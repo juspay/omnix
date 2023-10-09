@@ -49,8 +49,8 @@
 
       packages = {
         default = self'.packages.nix-browser;
-        nix-health = config.dioxus-desktop-template.craneLib.buildPackage {
-          inherit (config.dioxus-desktop-template) src;
+        nix-health = config.dioxus-desktop.craneLib.buildPackage {
+          inherit (config.dioxus-desktop) src;
           pname = "nix-health";
           nativeBuildInputs = [
             pkgs.nix # cargo tests need nix
