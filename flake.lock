@@ -41,15 +41,16 @@
     "dioxus-desktop-template": {
       "flake": false,
       "locked": {
-        "lastModified": 1696553608,
-        "narHash": "sha256-yEN3pRkfEx9ydEeFJkXOxQ+VcQsuqPrxN5F+2flb9uw=",
-        "owner": "srid",
+        "lastModified": 1696867010,
+        "narHash": "sha256-YJp9d85PKpBgXsLpIgdrRH9FIcDUa/DfKiOUojJBP4w=",
+        "owner": "shivaraj-bh",
         "repo": "dioxus-desktop-template",
-        "rev": "25a09db72113f7a9d9cb85c6d96e97a18139d260",
+        "rev": "8ba3a7e1fd970b9f695bb591883e5f04cf4a23fd",
         "type": "github"
       },
       "original": {
-        "owner": "srid",
+        "owner": "shivaraj-bh",
+        "ref": "linux-pkg",
         "repo": "dioxus-desktop-template",
         "type": "github"
       }

@@ -18,7 +18,9 @@
     process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
     cargo-doc-live.url = "github:srid/cargo-doc-live";
 
-    dioxus-desktop-template.url = "github:srid/dioxus-desktop-template";
+    # dioxus-desktop-template.url = "github:srid/dioxus-desktop-template";
+    # https://github.com/srid/dioxus-desktop-template/pull/4
+    dioxus-desktop-template.url = "github:shivaraj-bh/dioxus-desktop-template/linux-pkg";
     dioxus-desktop-template.flake = false;
   };
 
