@@ -34,7 +34,6 @@
         inputs.cargo-doc-live.flakeModule
         (inputs.dioxus-desktop-template + /nix/flake-module.nix)
         ./rust.nix
-        ./e2e/flake-module.nix
       ];
 
       flake = {
@@ -73,7 +72,6 @@
           inputsFrom = [
             config.treefmt.build.devShell
             self'.devShells.rust
-            self'.devShells.e2e-playwright
           ];
           packages = with pkgs; [
             just

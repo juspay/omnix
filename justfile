@@ -38,14 +38,6 @@ alias wh := watch-nix-health
 test:
     cargo test
 
-# Run end-to-end tests against release server
-e2e-release:
-    nix run .#e2e-playwright-test
-
-# Run end-to-end tests against `just watch` server
-e2e:
-    cd e2e && TEST_PORT=3000 playwright test --project chromium
-
 # Run docs server (live reloading)
 doc:
     cargo-doc-live
