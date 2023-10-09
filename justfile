@@ -34,10 +34,9 @@ watch-nix-health *ARGS:
 
 alias wh := watch-nix-health
 
-# Run tests (backend & frontend)
+# Run tests
 test:
     cargo test
-    cargo leptos test
 
 # Run end-to-end tests against release server
 e2e-release:

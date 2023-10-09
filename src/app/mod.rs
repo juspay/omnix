@@ -151,7 +151,6 @@ pub fn App(cx: Scope) -> impl IntoView {
     provide_signal::<Refresh>(cx, false.into()); // refresh flag is unused, but we may add it to UI later.
 
     view! { cx,
-        <Stylesheet id="leptos" href="/pkg/nix-browser.css"/>
         <Title formatter=|s| format!("{s} ― nix-browser")/>
         <Router fallback=|cx| {
             view! { cx, <NotFound/> }
