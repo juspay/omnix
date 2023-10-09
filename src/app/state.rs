@@ -49,11 +49,17 @@ impl AppState {
     #[instrument(name = "update-nix-info", skip(self))]
     pub async fn update_nix_info(&self) {
         tracing::info!("Updating nix info ...");
-        let nix_info = nix_rs::info::NixInfo::from_nix(&nix_rs::command::NixCmd::default())
-            .await
-            .map_err(|e| SystemError {
-                message: format!("Error getting nix info: {:?}", e),
-            });
+        // NOTE: Without tokio::spawn, this will run in main desktop thread,
+        // and will hang at some point.
+        let nix_info = tokio::spawn(async move {
+            nix_rs::info::NixInfo::from_nix(&nix_rs::command::NixCmd::default())
+                .await
+                .map_err(|e| SystemError {
+                    message: format!("Error getting nix info: {:?}", e),
+                })
+        })
+        .await
+        .unwrap();
         tracing::info!("Got nix info, about to mut");
         self.nix_info.with_mut(move |x| {
             *x = Some(nix_info);
@@ -64,9 +70,13 @@ impl AppState {
     #[instrument(name = "update-nix-env", skip(self))]
     pub async fn update_nix_env(&self) {
         tracing::info!("Updating nix env ...");
-        let nix_env = nix_rs::env::NixEnv::detect(None)
-            .await
-            .map_err(|e| e.to_string().into());
+        let nix_env = tokio::spawn(async move {
+            nix_rs::env::NixEnv::detect(None)
+                .await
+                .map_err(|e| e.to_string().into())
+        })
+        .await
+        .unwrap();
         tracing::info!("Got nix env, about to mut");
         self.nix_env.with_mut(move |x| {
             *x = Some(nix_env);
