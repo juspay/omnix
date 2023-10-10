@@ -6,28 +6,11 @@ use dioxus::prelude::*;
 use nix_rs::flake::{
     outputs::{FlakeOutputs, Type, Val},
     schema::FlakeSchema,
+    url::FlakeUrl,
     Flake,
 };
 
 use crate::app::state::AppState;
-
-/*
-/// Nix flake dashboard
-#[component]
-pub fn Flake(cx: Scope) -> Element {
-    let suggestions = FlakeUrl::suggestions();
-    let url = AppState::use_state(cx);
-    let refresh = AppState::use_state(cx);
-    let result = query::use_server_query(cx, move || (url.read(), refresh.read()), get_flake);
-    render! {
-        h1 { "Nix Flake" }
-        h1 { class: "text-5xl font-bold", "Nix Flake" }
-        TextInput { id: "nix-flake-input", label: "Load a Nix Flake", val: url.read(), suggestions }
-        // RefetchQueryButton { result: result, query: move || (url.read(), refresh.read()) }
-        Outlet {}
-    }
-}
-*/
 
 #[component]
 pub fn Flake(cx: Scope) -> Element {
@@ -36,6 +19,19 @@ pub fn Flake(cx: Scope) -> Element {
     let flake = state.flake.read();
     render! {
         div { class: "p-2 my-1",
+            input {
+                class: "w-full p-1 font-mono",
+                id: "nix-flake-input",
+                "type": "text",
+                value: "{state.flake_url}",
+                onchange: move |ev| {
+                    let url : FlakeUrl = ev.value.clone().into();
+                    tracing::info!("setting flake url set to {}", &url);
+                    cx.spawn(async move {
+                        state.set_flake_url(&url).await;
+                    })
+                }
+            }
             match &*flake {
                 None => render! { "⏳" },
                 Some(Ok(flake)) => render! { FlakeView { flake: flake.clone() } },

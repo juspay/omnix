@@ -121,6 +121,13 @@ impl AppState {
         });
     }
 
+    #[instrument(name = "set-flake-url", skip(self))]
+    pub async fn set_flake_url(&self, url: &FlakeUrl) {
+        // TODO: Can we use derived signals here?
+        self.flake_url.set(url.clone());
+        self.update_flake().await;
+    }
+
     #[instrument(name = "update-flake", skip(self))]
     pub async fn update_flake(&self) {
         tracing::info!("Updating flake ...");

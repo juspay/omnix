@@ -15,7 +15,7 @@ pub fn Health(cx: Scope) -> Element {
         // TODO
         // RefetchQueryButton { result, query: || () }
         button {
-            class: "p-1 shadow border-1 bg-blue-700 ",
+            class: "p-1 shadow-lg border-1 bg-blue-700 text-white rounded-md hover:bg-blue-800",
             onclick: move |_event| {
                 cx.spawn(async move {
                     state.update_health_checks().await;

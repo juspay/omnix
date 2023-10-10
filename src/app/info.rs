@@ -16,7 +16,7 @@ pub fn Info(cx: Scope) -> Element {
     render! {
         h1 { class: "text-5xl font-bold", title }
         button {
-            class: "p-1 shadow border-1 bg-blue-700",
+            class: "p-1 shadow-lg border-1 bg-blue-700 text-white rounded-md hover:bg-blue-800",
             onclick: move |_event| {
                 cx.spawn(async move {
                     state.update_nix_info().await;
