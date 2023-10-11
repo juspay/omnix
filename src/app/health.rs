@@ -5,7 +5,7 @@ use nix_health::traits::{Check, CheckResult};
 
 use crate::{
     app::state::AppState,
-    widget::{Loader, RefreshButton},
+    app::widget::{Loader, RefreshButton},
 };
 
 /// Nix health checks
@@ -13,15 +13,16 @@ pub fn Health(cx: Scope) -> Element {
     let state = AppState::use_state(cx);
     let health_checks = state.health_checks.read();
     let title = "Nix Health";
-    let busy = (*health_checks).is_loading_or_refreshing();
-    let click_event = move |_event| {
-        cx.spawn(async move {
-            state.update_health_checks().await;
-        });
-    };
     render! {
         h1 { class: "text-5xl font-bold", title }
-        RefreshButton { busy: busy, handler: click_event }
+        RefreshButton {
+            busy: (*health_checks).is_loading_or_refreshing(),
+            handler: move |_event| {
+                cx.spawn(async move {
+                    state.update_health_checks().await;
+                });
+            }
+        }
         div { class: "my-1",
             match (*health_checks).current_value() {
                 None => render! { Loader {}},

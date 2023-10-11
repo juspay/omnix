@@ -7,7 +7,7 @@ use nix_rs::{config::NixConfig, info::NixInfo, version::NixVersion};
 
 use crate::{
     app::state::AppState,
-    widget::{Loader, RefreshButton},
+    app::widget::{Loader, RefreshButton},
 };
 
 /// Nix information
@@ -16,11 +16,10 @@ pub fn Info(cx: Scope) -> Element {
     let title = "Nix Info";
     let state = AppState::use_state(cx);
     let nix_info = state.nix_info.read();
-    let busy = (*nix_info).is_loading_or_refreshing();
     render! {
         h1 { class: "text-5xl font-bold", title }
         RefreshButton {
-            busy: busy,
+            busy: (*nix_info).is_loading_or_refreshing(),
             handler: move |_event| {
                 cx.spawn(async move {
                     state.update_nix_info().await;

@@ -7,6 +7,7 @@ mod flake;
 mod health;
 mod info;
 mod state;
+mod widget;
 
 use dioxus::prelude::*;
 use dioxus_router::prelude::*;

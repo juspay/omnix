@@ -16,7 +16,7 @@ where
         "bg-blue-700 text-white hover:bg-blue-800"
     };
     render! {
-            button {
+        button {
             class: "p-1 shadow-lg border-1 {button_cls} rounded-md",
             disabled: *busy,
             onclick: handler,

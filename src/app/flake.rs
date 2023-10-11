@@ -12,8 +12,8 @@ use nix_rs::flake::{
 };
 
 use crate::{
+    app::widget::RefreshButton,
     app::{state::AppState, Route},
-    widget::RefreshButton,
 };
 
 #[component]
@@ -22,11 +22,12 @@ pub fn Flake(cx: Scope) -> Element {
     let fut = use_future(cx, (), |_| async move { state.update_flake().await });
     let _ = fut.state();
     let flake = state.flake.read();
-    let flake_url = state.flake_url.read();
-    let busy = (*flake).is_loading_or_refreshing();
     render! {
         h1 { class: "text-5xl font-bold", "Flake dashboard" }
-        RefreshButton { busy: busy, handler: move |_| { fut.restart() } }
+        RefreshButton {
+            busy: (*flake).is_loading_or_refreshing(),
+            handler: move |_| { fut.restart() }
+        }
         div { class: "p-2 my-1",
             input {
                 class: "w-full p-1 font-mono",
