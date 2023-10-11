@@ -6,7 +6,7 @@ default:
 # Auto-format the source tree
 fmt:
     treefmt
-    find src/app/ -name \*.rs | grep -v state.rs | xargs -n 1 dx fmt -f
+    find src/app/ -name \*.rs | grep -v state.rs | xargs -n1 sh -c 'echo "📔 $1"; dx fmt -f $1' sh
 
 
 alias f := fmt
