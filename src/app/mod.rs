@@ -113,14 +113,14 @@ fn Dashboard(cx: Scope) -> Element {
 /// TODO Switch to breadcrumbs, as it simplifes the design overall.
 fn Nav(cx: Scope) -> Element {
     let class = "px-3 py-2";
+    let active_class = "bg-white text-primary-800 font-bold";
     render! {
-        // TODO: active/inactive styling
         nav { class: "flex flex-row w-full mb-8 text-white md:rounded-b bg-primary-800",
-            Link { to: Route::Dashboard {}, class: class, "Dashboard" }
-            Link { to: Route::Flake {}, class: class, "Flake" }
-            Link { to: Route::Health {}, class: class, "Nix Health" }
-            Link { to: Route::Info {}, class: class, "Nix Info" }
-            Link { to: Route::About {}, class: class, "About" }
+            Link { to: Route::Dashboard {}, class: class, active_class: active_class, "Dashboard" }
+            Link { to: Route::Flake {}, class: class, active_class: active_class, "Flake" }
+            Link { to: Route::Health {}, class: class, active_class: active_class, "Nix Health" }
+            Link { to: Route::Info {}, class: class, active_class: active_class, "Nix Info" }
+            Link { to: Route::About {}, class: class, active_class: active_class, "About" }
             div { class: "flex-grow font-bold text-end {class}", "🌍 nix-browser" }
         }
     }
