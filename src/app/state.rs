@@ -35,7 +35,7 @@ impl From<String> for SystemError {
 
 #[derive(Default, Clone, Copy, Debug)]
 pub struct AppState {
-    pub nix_info: Signal<Option<Result<nix_rs::info::NixInfo, SystemError>>>,
+    pub nix_info: Signal<Datum<Result<nix_rs::info::NixInfo, SystemError>>>,
     pub nix_env: Signal<Option<Result<nix_rs::env::NixEnv, SystemError>>>,
     pub health_checks: Signal<Datum<Result<Vec<nix_health::traits::Check>, SystemError>>>,
 
@@ -54,6 +54,7 @@ impl AppState {
     #[instrument(name = "update-nix-info", skip(self))]
     pub async fn update_nix_info(&self) {
         tracing::info!("Updating nix info ...");
+        self.nix_info.with_mut(move |x| x.mark_refreshing());
         // NOTE: Without tokio::spawn, this will run in main desktop thread,
         // and will hang at some point.
         let nix_info = tokio::spawn(async move {
@@ -67,7 +68,7 @@ impl AppState {
         .unwrap();
         tracing::info!("Got nix info, about to mut");
         self.nix_info.with_mut(move |x| {
-            *x = Some(nix_info);
+            x.set_value(nix_info);
             tracing::info!("Updated nix info");
         });
     }

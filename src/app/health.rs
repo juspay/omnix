@@ -3,7 +3,10 @@
 use dioxus::prelude::*;
 use nix_health::traits::{Check, CheckResult};
 
-use crate::app::state::AppState;
+use crate::{
+    app::state::AppState,
+    widget::{Loader, RefreshButton},
+};
 
 /// Nix health checks
 pub fn Health(cx: Scope) -> Element {
@@ -11,31 +14,17 @@ pub fn Health(cx: Scope) -> Element {
     let health_checks = state.health_checks.read();
     let title = "Nix Health";
     let busy = (*health_checks).is_loading_or_refreshing();
-    let buttonCls = if busy {
-        "bg-gray-400 text-white"
-    } else {
-        "bg-blue-700 text-white hover:bg-blue-800"
+    let click_event = move |_event| {
+        cx.spawn(async move {
+            state.update_health_checks().await;
+        });
     };
     render! {
         h1 { class: "text-5xl font-bold", title }
-        // TODO
-        // RefetchQueryButton { result, query: || () }
-        button {
-            class: "p-1 shadow-lg border-1 {buttonCls} rounded-md",
-            disabled: busy,
-            onclick: move |_event| {
-                cx.spawn(async move {
-                    state.update_health_checks().await;
-                });
-            },
-            "Refresh "
-            if busy {
-                render! { "⏳" }
-            }
-        }
+        RefreshButton { busy: busy, handler: click_event }
         div { class: "my-1",
             match (*health_checks).current_value() {
-                None => render! { "" },
+                None => render! { Loader {}},
                 Some(Ok(checks)) => render! {
                 div { class: "flex flex-col items-stretch justify-start space-y-8 text-left",
                     for check in checks {
