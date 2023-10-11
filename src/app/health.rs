@@ -33,7 +33,7 @@ pub fn Health(cx: Scope) -> Element {
                     }
                 }
                 },
-                Some(Err(_)) => render! { "?" }
+                Some(Err(err)) => render! { "{err}" }
             }
         }
     }

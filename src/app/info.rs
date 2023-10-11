@@ -30,7 +30,7 @@ pub fn Info(cx: Scope) -> Element {
                 Some(v) =>
                     match v.as_ref() {
                         Ok(info) => render! { NixInfoView { info: info.clone() } },
-                        Err(_) => render! { "?" }
+                        Err(err) => render! { "{err}" }
                     }
             }
         }
