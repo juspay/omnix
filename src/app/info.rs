@@ -5,30 +5,32 @@ use std::fmt::Display;
 use dioxus::prelude::*;
 use nix_rs::{config::NixConfig, info::NixInfo, version::NixVersion};
 
-use crate::app::state::AppState;
+use crate::{
+    app::state::AppState,
+    app::widget::{Loader, RefreshButton},
+};
 
 /// Nix information
 #[component]
 pub fn Info(cx: Scope) -> Element {
     let title = "Nix Info";
     let state = AppState::use_state(cx);
-    let nix_info = state.nix_info.as_ref();
+    let nix_info = state.nix_info.read();
     render! {
         h1 { class: "text-5xl font-bold", title }
-        button {
-            class: "p-1 shadow-lg border-1 bg-blue-700 text-white rounded-md hover:bg-blue-800",
-            onclick: move |_event| {
+        RefreshButton {
+            busy: (*nix_info).is_loading_or_refreshing(),
+            handler: move |_event| {
                 cx.spawn(async move {
                     state.update_nix_info().await;
                 });
-            },
-            "Refresh"
+            }
         }
         div { class: "my-1",
-            match nix_info {
-                None => render! { "⏳" },
+            match (*nix_info).current_value() {
+                None => render! { Loader {}},
                 Some(v) =>
-                    match v.as_ref() {
+                    match v {
                         Ok(info) => render! { NixInfoView { info: info.clone() } },
                         Err(err) => render! { "{err}" }
                     }

@@ -3,7 +3,6 @@ use dioxus_desktop::WindowBuilder;
 mod app;
 mod cli;
 mod logging;
-// mod widget;
 
 #[tokio::main]
 async fn main() {

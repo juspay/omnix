@@ -11,7 +11,10 @@ use nix_rs::flake::{
     Flake,
 };
 
-use crate::app::{state::AppState, Route};
+use crate::{
+    app::widget::RefreshButton,
+    app::{state::AppState, widget::Loader, Route},
+};
 
 #[component]
 pub fn Flake(cx: Scope) -> Element {
@@ -20,6 +23,11 @@ pub fn Flake(cx: Scope) -> Element {
     let _ = fut.state();
     let flake = state.flake.read();
     render! {
+        h1 { class: "text-5xl font-bold", "Flake dashboard" }
+        RefreshButton {
+            busy: (*flake).is_loading_or_refreshing(),
+            handler: move |_| { fut.restart() }
+        }
         div { class: "p-2 my-1",
             input {
                 class: "w-full p-1 font-mono",
@@ -33,8 +41,8 @@ pub fn Flake(cx: Scope) -> Element {
                     fut.restart();
                 }
             }
-            match &*flake {
-                None => render! { "⏳" },
+            match (*flake).current_value() {
+                None => render! { Loader {} },
                 Some(Ok(flake)) => render! { FlakeView { flake: flake.clone() } },
                 Some(Err(e)) => render! { "Error: {e}" }
             }
@@ -51,7 +59,7 @@ pub fn FlakeRaw(cx: Scope) -> Element {
         div {
             Link { to: Route::Flake {}, "⬅ Back" }
             div { class: "px-4 py-2 font-mono text-xs text-left text-gray-500 border-2 border-black",
-                match &*flake {
+                match (*flake).current_value() {
                     None => render! { "⏳" },
                     Some(Ok(r)) => render! { FlakeOutputsRawView { outs: r.output.clone() } },
                     Some(Err(_)) => render! { "?" }
