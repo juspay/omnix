@@ -10,17 +10,6 @@ pub enum Datum<T> {
 }
 
 impl<T> Datum<T> {
-    /// Get the inner value if available
-    pub fn as_ref(&self) -> Option<&T> {
-        match self {
-            Datum::Loading => None,
-            Datum::Available {
-                value: x,
-                refreshing: _,
-            } => Some(x),
-        }
-    }
-
     pub fn is_loading_or_refreshing(&self) -> bool {
         matches!(
             self,
@@ -32,6 +21,7 @@ impl<T> Datum<T> {
         )
     }
 
+    /// Get the inner value if available
     pub fn current_value(&self) -> Option<&T> {
         match self {
             Datum::Loading => None,

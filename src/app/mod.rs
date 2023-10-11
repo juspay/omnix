@@ -18,6 +18,7 @@ use crate::app::{
     health::Health,
     info::Info,
     state::AppState,
+    widget::Loader,
 };
 
 #[derive(Routable, PartialEq, Debug, Clone)]
@@ -55,8 +56,6 @@ pub fn App(cx: Scope) -> Element {
             .map(Clone::clone)
             .unwrap_or_default()
     });
-    // TODO: per-route title
-    // This should also be in desktop window title bar.
     render! {
         body {
             div { class: "flex justify-center w-full min-h-screen bg-center bg-cover bg-base-200",
@@ -77,7 +76,6 @@ fn Dashboard(cx: Scope) -> Element {
     #[component]
     fn Card<'a>(cx: Scope, href: Route, children: Element<'a>) -> Element<'a> {
         render! {
-            // TODO: Use Link
             Link {
                 to: "{href}",
                 class: "flex items-center justify-center w-48 h-48 p-2 m-2 border-2 rounded-lg shadow border-base-400 active:shadow-none bg-base-100 hover:bg-primary-200",
@@ -90,17 +88,16 @@ fn Dashboard(cx: Scope) -> Element {
         div { id: "cards", class: "flex flex-row flex-wrap",
             Card { href: Route::Health {},
                 "Nix Health Check "
-                match (*health_checks).as_ref() {
-                    Some(Ok(checks)) => {
+                match (*health_checks).current_value() {
+                    Some(Ok(checks)) => render! {
                         if checks.iter().all(|check| check.result.green()) {
                             "✅"
                         } else {
                             "❌"
                         }
                     },
-                    // TODO: Error handling in dioxus?
-                    Some(Err(_)) => "?",
-                    None => "⏳",
+                    Some(Err(err)) => render! { "{err}" },
+                    None => render! { Loader {} },
                 }
             }
             Card { href: Route::Info {}, "Nix Info ℹ️" }

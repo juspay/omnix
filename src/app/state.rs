@@ -106,7 +106,7 @@ impl AppState {
                 .map_err(|e| Into::<SystemError>::into(e.to_string()))?;
             let nix_info = self.nix_info.read();
             let nix_info: &nix_rs::info::NixInfo = nix_info
-                .as_ref()
+                .current_value()
                 .unwrap()
                 .as_ref()
                 .map_err(|e| Into::<SystemError>::into(e.to_string()))?;
