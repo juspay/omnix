@@ -1,7 +1,10 @@
 //! Nix flake outputs
 
 use serde::{Deserialize, Serialize};
-use std::collections::{btree_map::Entry, BTreeMap};
+use std::{
+    collections::{btree_map::Entry, BTreeMap},
+    fmt::Display,
+};
 
 /// Represents the "outputs" of a flake
 ///
@@ -111,5 +114,11 @@ impl Type {
             Self::Template => "🏗️",
             Self::Unknown => "❓",
         }
+    }
+}
+
+impl Display for Type {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&format!("{:?}", self))
     }
 }

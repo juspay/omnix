@@ -143,10 +143,9 @@ pub fn BtreeMapBodyView<'a>(cx: Scope, tree: &'a BTreeMap<String, Val>) -> Eleme
 
 #[component]
 pub fn FlakeValView(cx: Scope, k: String, v: Val) -> Element {
-    let title = format!("{:?}", v.type_);
     render! {
         div {
-            title: "{title}",
+            title: "{v.type_}",
             class: "flex flex-col p-2 my-2 mr-2 space-y-2 bg-white border-4 border-gray-300 rounded hover:border-gray-400",
             div { class: "flex flex-row justify-start space-x-2 font-bold text-primary-500",
                 div { v.type_.to_icon() }
