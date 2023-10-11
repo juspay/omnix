@@ -46,31 +46,28 @@ pub struct AppState {
 impl AppState {
     pub async fn initialize(&self) {
         tracing::info!("Initializing app state");
-        self.update_nix_info().await;
-        self.update_nix_env().await;
         self.update_health_checks().await;
     }
 
     #[instrument(name = "update-nix-info", skip(self))]
     pub async fn update_nix_info(&self) {
         tracing::info!("Updating nix info ...");
-        self.nix_info.with_mut(move |x| x.mark_refreshing());
-        // NOTE: Without tokio::spawn, this will run in main desktop thread,
-        // and will hang at some point.
-        let nix_info = tokio::spawn(async move {
-            nix_rs::info::NixInfo::from_nix(&nix_rs::command::NixCmd::default())
-                .await
-                .map_err(|e| SystemError {
-                    message: format!("Error getting nix info: {:?}", e),
-                })
+        Datum::refresh_with(self.nix_info, async {
+            // NOTE: Without tokio::spawn, this will run in main desktop thread,
+            // and will hang at some point.
+            let nix_info = tokio::spawn(async move {
+                nix_rs::info::NixInfo::from_nix(&nix_rs::command::NixCmd::default())
+                    .await
+                    .map_err(|e| SystemError {
+                        message: format!("Error getting nix info: {:?}", e),
+                    })
+            })
+            .await
+            .unwrap();
+            tracing::info!("Got nix info, about to mut");
+            nix_info
         })
-        .await
-        .unwrap();
-        tracing::info!("Got nix info, about to mut");
-        self.nix_info.with_mut(move |x| {
-            x.set_value(nix_info);
-            tracing::info!("Updated nix info");
-        });
+        .await;
     }
 
     #[instrument(name = "update-nix-env", skip(self))]
@@ -93,32 +90,32 @@ impl AppState {
     #[instrument(name = "update-health-checks", skip(self))]
     pub async fn update_health_checks(&self) {
         tracing::info!("Updating health checks ...");
-        self.health_checks.with_mut(move |x| x.mark_refreshing());
-        // Update depenencies
-        self.update_nix_info().await;
-        self.update_nix_env().await;
-        let get_nix_health = move || -> Result<Vec<nix_health::traits::Check>, SystemError> {
-            let nix_env = self.nix_env.read();
-            let nix_env: &nix_rs::env::NixEnv = nix_env
-                .as_ref()
-                .unwrap()
-                .as_ref()
-                .map_err(|e| Into::<SystemError>::into(e.to_string()))?;
-            let nix_info = self.nix_info.read();
-            let nix_info: &nix_rs::info::NixInfo = nix_info
-                .current_value()
-                .unwrap()
-                .as_ref()
-                .map_err(|e| Into::<SystemError>::into(e.to_string()))?;
-            let health_checks = NixHealth::default().run_checks(nix_info, nix_env);
-            Ok(health_checks)
-        };
-        let health_checks = get_nix_health();
-        tracing::info!("Got health checks, about to mut");
-        self.health_checks.with_mut(move |x| {
-            x.set_value(health_checks);
-            tracing::info!("Updated health checks");
-        });
+        Datum::refresh_with(self.health_checks, async {
+            // Update depenencies
+            self.update_nix_info().await;
+            self.update_nix_env().await;
+            let get_nix_health = move || -> Result<Vec<nix_health::traits::Check>, SystemError> {
+                let nix_env = self.nix_env.read();
+                let nix_env: &nix_rs::env::NixEnv = nix_env
+                    .as_ref()
+                    .unwrap()
+                    .as_ref()
+                    .map_err(|e| Into::<SystemError>::into(e.to_string()))?;
+                let nix_info = self.nix_info.read();
+                let nix_info: &nix_rs::info::NixInfo =
+                    nix_info
+                        .current_value()
+                        .unwrap()
+                        .as_ref()
+                        .map_err(|e| Into::<SystemError>::into(e.to_string()))?;
+                let health_checks = NixHealth::default().run_checks(nix_info, nix_env);
+                Ok(health_checks)
+            };
+            let health_checks = get_nix_health();
+            tracing::info!("Got health checks, about to mut");
+            health_checks
+        })
+        .await;
     }
 
     #[instrument(name = "set-flake-url", skip(self))]

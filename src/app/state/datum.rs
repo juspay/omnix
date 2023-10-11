@@ -1,3 +1,7 @@
+use std::future::Future;
+
+use dioxus_signals::Signal;
+
 /// Represent loading/refreshing state of UI data
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Datum<T> {
@@ -33,6 +37,7 @@ impl<T> Datum<T> {
     }
 
     pub fn set_value(&mut self, value: T) {
+        tracing::info!("🍒 Setting {} datum value", std::any::type_name::<T>());
         *self = Datum::Available {
             value,
             refreshing: false,
@@ -48,8 +53,27 @@ impl<T> Datum<T> {
             if *refreshing {
                 panic!("Cannot refresh already refreshing data");
             }
-            println!("🍎 refreshing...");
+            tracing::info!(
+                "🍒 Marking {} datum as refreshing",
+                std::any::type_name::<T>()
+            );
             *refreshing = true;
         }
+    }
+
+    /// Refresh the datum [Signal] using the given function
+    ///
+    /// Refresh state is automatically set.
+    pub async fn refresh_with<F>(signal: Signal<Self>, f: F)
+    where
+        F: Future<Output = T>,
+    {
+        signal.with_mut(move |x| {
+            x.mark_refreshing();
+        });
+        let val = f.await;
+        signal.with_mut(move |x| {
+            x.set_value(val);
+        });
     }
 }
