@@ -16,7 +16,8 @@ use crate::app::{state::AppState, Route};
 #[component]
 pub fn Flake(cx: Scope) -> Element {
     let state = AppState::use_state(cx);
-    use_future(cx, (), |_| async move { state.update_flake().await });
+    let fut = use_future(cx, (), |_| async move { state.update_flake().await });
+    let _ = fut.state();
     let flake = state.flake.read();
     render! {
         div { class: "p-2 my-1",
@@ -26,11 +27,10 @@ pub fn Flake(cx: Scope) -> Element {
                 "type": "text",
                 value: "{state.flake_url}",
                 onchange: move |ev| {
-                    let url : FlakeUrl = ev.value.clone().into();
-                    tracing::info!("setting flake url set to {}", &url);
-                    cx.spawn(async move {
-                        state.set_flake_url(&url).await;
-                    })
+                    let url: FlakeUrl = ev.value.clone().into();
+                    tracing::info!("setting flake url set to {}", & url);
+                    state.flake_url.set(url);
+                    fut.restart();
                 }
             }
             match &*flake {
@@ -69,9 +69,7 @@ pub fn FlakeView(cx: Scope, flake: Flake) -> Element {
             div { class: "text-sm italic text-gray-600",
                 Link { to: Route::FlakeRaw {}, "View raw output" }
             }
-            div {
-                FlakeSchemaView { schema: flake.schema.clone() }
-            }
+            div { FlakeSchemaView { schema: flake.schema.clone() } }
         }
     }
 }
@@ -80,7 +78,8 @@ pub fn FlakeView(cx: Scope, flake: Flake) -> Element {
 pub fn SectionHeading(cx: Scope, title: &'static str) -> Element {
     render! {
         h3 { class: "p-2 mt-4 mb-2 font-bold bg-gray-300 border-b-2 border-l-2 border-black text-l",
-        "{title}" }
+            "{title}"
+        }
     }
 }
 
@@ -91,10 +90,7 @@ pub fn FlakeSchemaView(cx: Scope, schema: FlakeSchema) -> Element {
         div {
             h2 { class: "my-2",
                 div { class: "text-xl font-bold text-primary-600", "{system.human_readable()}" }
-                span { class: "font-mono text-xs text-gray-500",
-                "(",
-                "{system }",
-                ")" }
+                span { class: "font-mono text-xs text-gray-500", "(", "{system }", ")" }
             }
             div { class: "text-left",
                 BtreeMapView { title: "Packages", tree: &schema.packages }
@@ -109,7 +105,7 @@ pub fn FlakeSchemaView(cx: Scope, schema: FlakeSchema) -> Element {
                         render! { FlakeValView { k: k.clone(), v: v.clone() } }
                     },
                     None => render! { "" } // No-op for None
-                }
+                },
                 SectionHeading { title: "Other" }
                 match &schema.other {
                     Some(v) => render! { FlakeOutputsRawView { outs: FlakeOutputs::Attrset(v.clone()) } },
@@ -138,7 +134,7 @@ pub fn BtreeMapView<'a>(
 pub fn BtreeMapBodyView<'a>(cx: Scope, tree: &'a BTreeMap<String, Val>) -> Element {
     render! {
         div { class: "flex flex-wrap justify-start",
-            for (k, v) in tree.iter() {
+            for (k , v) in tree.iter() {
                 FlakeValView { k: k.clone(), v: v.clone() }
             }
         }
@@ -152,15 +148,14 @@ pub fn FlakeValView(cx: Scope, k: String, v: Val) -> Element {
         div {
             title: "{title}",
             class: "flex flex-col p-2 my-2 mr-2 space-y-2 bg-white border-4 border-gray-300 rounded hover:border-gray-400",
-            div {
-                class: "flex flex-row justify-start space-x-2 font-bold text-primary-500",
+            div { class: "flex flex-row justify-start space-x-2 font-bold text-primary-500",
                 div { v.type_.to_icon() }
                 div { "{k}" }
             }
             match &v.name {
                 Some(name_val) => render! { div { class: "font-mono text-xs text-gray-500", "{name_val}" } },
                 None => render! { "" } // No-op for None
-            }
+            },
             match &v.description {
                 Some(desc_val) => render! { div { class: "font-light", "{desc_val}" } },
                 None => render! { "" } // No-op for None
@@ -179,10 +174,10 @@ pub fn FlakeOutputsRawView(cx: Scope, outs: FlakeOutputs) -> Element {
     fn ValView<'a>(cx: Scope, val: &'a Val) -> Element {
         render! {
             span {
-                b { val.name.clone() },
-                " (",
-                TypeView { type_: &val.type_ },
-                ") ",
+                b { val.name.clone() }
+                " ("
+                TypeView { type_: &val.type_ }
+                ") "
                 em { val.description.clone() }
             }
         }
@@ -204,10 +199,10 @@ pub fn FlakeOutputsRawView(cx: Scope, outs: FlakeOutputs) -> Element {
     }
 
     match outs {
-        FlakeOutputs::Val(v) => render! { ValView {val: v} },
+        FlakeOutputs::Val(v) => render! { ValView { val: v } },
         FlakeOutputs::Attrset(v) => render! {
             ul { class: "list-disc",
-                for (k, v) in v.iter() {
+                for (k , v) in v.iter() {
                     li { class: "ml-4",
                         span { class: "px-2 py-1 font-bold text-primary-500", "{k}" }
                         FlakeOutputsRawView { outs: v.clone() }
