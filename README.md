@@ -13,24 +13,15 @@ This will automatically activate the nix develop shell. Open VSCode and install 
 > [!NOTE] 
 > If you would like to **learn the tools & technology** involved in this project, follow along this README noting the places where the emoji 🎓 is used.
 
-## !! Dioxus port !! 
-
-[Instructions for the WIP port to Dioxus below]
-
-```
-dx serve --hot-reload # just watch
-tailwind -i ./css/input.css -o ./assets/tailwind.css --watch
-
-# Create the mac app
-just bundle
-```
-
 ## Running locally
 
 In nix shell,
 
 ```
+# In one terminal,
 just watch
+# In another,
+just tw
 ```
 
 ## Nix workflows
@@ -50,14 +41,13 @@ nix run
 - When you are done with your changes, run `just fmt` to **autoformat** the source tree; the CI checks for this.
 - Add tests if relevant, and run them:
     - Run `just test` to run the **unit tests**.
-    - Run `just e2e` (requires `just watch` to be running) or `just e2e-release` to run the **end-to-end tests**
 - Add documentation wherever useful. To preview the **docs**, run `just doc`.
 
-## Frontend tech
+## Tech
 
 ### Rust wasm
 
-We use [Leptos](https://leptos.dev/). With sufficient knowledge of Rust, you can 🎓 read the [Leptos Book](https://leptos-rs.github.io/leptos/) to get familiar with reactive frontend programming in Rust.
+We use [Dioxus](https://dioxuslabs.com/) to build the desktop app using web technologies.
 
 ### Styling
 
