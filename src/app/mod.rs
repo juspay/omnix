@@ -12,7 +12,12 @@ use dioxus::prelude::*;
 use dioxus_router::prelude::*;
 use nix_rs::flake::url::FlakeUrl;
 
-use crate::app::{flake::Flake, health::Health, info::Info, state::AppState};
+use crate::app::{
+    flake::{Flake, FlakeRaw},
+    health::Health,
+    info::Info,
+    state::AppState,
+};
 
 #[derive(Routable, PartialEq, Debug, Clone)]
 #[rustfmt::skip]
@@ -24,6 +29,8 @@ enum Route {
         About {},
         #[route("/flake")]
         Flake {},
+        #[route("/flake/raw")]
+        FlakeRaw {},
         #[route("/health")]
         Health {},
         #[route("/info")]

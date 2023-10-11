@@ -3,6 +3,7 @@
 use std::collections::BTreeMap;
 
 use dioxus::prelude::*;
+use dioxus_router::prelude::Link;
 use nix_rs::flake::{
     outputs::{FlakeOutputs, Type, Val},
     schema::FlakeSchema,
@@ -10,7 +11,7 @@ use nix_rs::flake::{
     Flake,
 };
 
-use crate::app::state::AppState;
+use crate::app::{state::AppState, Route};
 
 #[component]
 pub fn Flake(cx: Scope) -> Element {
@@ -41,27 +42,24 @@ pub fn Flake(cx: Scope) -> Element {
     }
 }
 
-/*
 #[component]
-pub fn NixFlakeRawRoute(cx: Scope) -> Element {
-    let url = AppState::use_state(cx);
-    let refresh = AppState::use_state(cx);
-    let result = query::use_server_query(cx, move || (url.read(), refresh.read()), get_flake);
-    let data = result;
+pub fn FlakeRaw(cx: Scope) -> Element {
+    let state = AppState::use_state(cx);
+    use_future(cx, (), |_| async move { state.update_flake().await });
+    let flake = state.flake.read();
     render! {
         div {
-            A { href: "/flake", "⬅ Back" }
+            Link { to: Route::Flake {}, "⬅ Back" }
             div { class: "px-4 py-2 font-mono text-xs text-left text-gray-500 border-2 border-black",
-                match &*data {
+                match &*flake {
                     None => render! { "⏳" },
-                    Some(Ok(r)) => render! { FlakeOutputsRawView { outs: &r.output } },
+                    Some(Ok(r)) => render! { FlakeOutputsRawView { outs: r.output.clone() } },
                     Some(Err(_)) => render! { "?" }
                 }
             }
         }
     }
 }
-*/
 
 #[component]
 pub fn FlakeView(cx: Scope, flake: Flake) -> Element {
@@ -69,7 +67,7 @@ pub fn FlakeView(cx: Scope, flake: Flake) -> Element {
         div { class: "flex flex-col my-4",
             h3 { class: "text-lg font-bold", flake.url.to_string() }
             div { class: "text-sm italic text-gray-600",
-                // A { href: "/flake/raw", exact: true, "View raw output" }
+                Link { to: Route::FlakeRaw {}, "View raw output" }
             }
             div {
                 FlakeSchemaView { schema: flake.schema.clone() }
@@ -99,11 +97,11 @@ pub fn FlakeSchemaView(cx: Scope, schema: FlakeSchema) -> Element {
                 ")" }
             }
             div { class: "text-left",
-                BtreeMapView { title: "Packages", tree: schema.packages.clone() }
-                BtreeMapView { title: "Legacy Packages", tree: schema.legacy_packages.clone() }
-                BtreeMapView { title: "Dev Shells", tree: schema.devshells.clone() }
-                BtreeMapView { title: "Checks", tree: schema.checks.clone() }
-                BtreeMapView { title: "Apps", tree: schema.apps.clone() }
+                BtreeMapView { title: "Packages", tree: &schema.packages }
+                BtreeMapView { title: "Legacy Packages", tree: &schema.legacy_packages }
+                BtreeMapView { title: "Dev Shells", tree: &schema.devshells }
+                BtreeMapView { title: "Checks", tree: &schema.checks }
+                BtreeMapView { title: "Apps", tree: &schema.apps }
                 SectionHeading { title: "Formatter" }
                 match schema.formatter.as_ref() {
                     Some(v) => {
@@ -123,7 +121,11 @@ pub fn FlakeSchemaView(cx: Scope, schema: FlakeSchema) -> Element {
 }
 
 #[component]
-pub fn BtreeMapView(cx: Scope, title: &'static str, tree: BTreeMap<String, Val>) -> Element {
+pub fn BtreeMapView<'a>(
+    cx: Scope,
+    title: &'static str,
+    tree: &'a BTreeMap<String, Val>,
+) -> Element {
     render! {
         div {
             SectionHeading { title: title }
