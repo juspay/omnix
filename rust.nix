@@ -30,7 +30,7 @@
           nativeBuildInputs = (oa.nativeBuildInputs or [ ]) ++ [
             pkgs.nix # cargo tests need nix
           ];
-          cargoTestCommand = lib.getExe run-test;
+          # cargoTestCommand = lib.getExe run-test;
           meta.description = "WIP: nix-browser";
         };
     };
