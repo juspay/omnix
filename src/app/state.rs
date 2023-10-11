@@ -128,18 +128,17 @@ impl AppState {
     #[instrument(name = "update-flake", skip(self))]
     pub async fn update_flake(&self) {
         tracing::info!("Updating flake ...");
-        self.flake.with_mut(move |x| x.mark_refreshing());
-        let flake_url = self.flake_url.read().clone();
-        let flake = tokio::spawn(async move {
-            Flake::from_nix(&nix_rs::command::NixCmd::default(), flake_url.clone()).await
+        Datum::refresh_with(self.flake, async {
+            let flake_url = self.flake_url.read().clone();
+            let flake = tokio::spawn(async move {
+                Flake::from_nix(&nix_rs::command::NixCmd::default(), flake_url.clone()).await
+            })
+            .await
+            .unwrap();
+            tracing::info!("Got flake, about to mut");
+            flake
         })
-        .await
-        .unwrap();
-        tracing::info!("Got flake, about to mut");
-        self.flake.with_mut(move |x| {
-            x.set_value(flake);
-            tracing::info!("Updated flake");
-        });
+        .await;
     }
 
     /// Get the [AppState] from context

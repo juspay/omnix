@@ -13,7 +13,7 @@ use nix_rs::flake::{
 
 use crate::{
     app::widget::RefreshButton,
-    app::{state::AppState, Route},
+    app::{state::AppState, widget::Loader, Route},
 };
 
 #[component]
@@ -42,7 +42,7 @@ pub fn Flake(cx: Scope) -> Element {
                 }
             }
             match (*flake).current_value() {
-                None => render! { "⏳" },
+                None => render! { Loader {} },
                 Some(Ok(flake)) => render! { FlakeView { flake: flake.clone() } },
                 Some(Err(e)) => render! { "Error: {e}" }
             }
