@@ -12,7 +12,7 @@ use crate::app::state::AppState;
 pub fn Info(cx: Scope) -> Element {
     let title = "Nix Info";
     let state = AppState::use_state(cx);
-    let nix_info = state.nix_info.read();
+    let nix_info = state.nix_info.as_ref();
     render! {
         h1 { class: "text-5xl font-bold", title }
         button {
@@ -25,10 +25,13 @@ pub fn Info(cx: Scope) -> Element {
             "Refresh"
         }
         div { class: "my-1",
-            match &*nix_info {
+            match nix_info {
                 None => render! { "⏳" },
-                Some(Ok(info)) => render! { NixInfoView { info: info.clone() } },
-                Some(Err(_)) => render! { "?" }
+                Some(v) =>
+                    match v.as_ref() {
+                        Ok(info) => render! { NixInfoView { info: info.clone() } },
+                        Err(_) => render! { "?" }
+                    }
             }
         }
     }
@@ -40,7 +43,7 @@ fn NixInfoView(cx: Scope, info: NixInfo) -> Element {
         div { class: "flex flex-col p-4 space-y-8 bg-white border-2 rounded border-base-400",
             div {
                 b { "Nix Version" }
-                div { class: "p-1 my-1 rounded bg-primary-50", NixVersionView { version: &info.nix_version } }
+                div { class: "p-1 my-1 rounded bg-primary-50", NixVersionView { version: info.nix_version } }
             }
             div {
                 b { "Nix Config" }
@@ -51,7 +54,7 @@ fn NixInfoView(cx: Scope, info: NixInfo) -> Element {
 }
 
 #[component]
-fn NixVersionView<'a>(cx: Scope, version: &'a NixVersion) -> Element {
+fn NixVersionView(cx: Scope, version: NixVersion) -> Element {
     render! {a { href: nix_rs::refs::RELEASE_HISTORY, class: "font-mono hover:underline", target: "_blank", "{version}" }}
 }
 
@@ -89,7 +92,7 @@ fn NixConfigView(cx: Scope, config: NixConfig) -> Element {
                     config_row (
                         "Nix Caches",
                         config.substituters.clone().description,
-                        render! { ConfigValList { items: config.substituters.value.clone() } }
+                        render! { ConfigValList { items: &config.substituters.value } }
                     )
                 }
             }
@@ -98,7 +101,7 @@ fn NixConfigView(cx: Scope, config: NixConfig) -> Element {
 }
 
 #[component]
-fn ConfigValList<T>(cx: Scope, items: Vec<T>) -> Element
+fn ConfigValList<T, 'a>(cx: Scope, items: &'a Vec<T>) -> Element
 where
     T: Display,
 {

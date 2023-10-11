@@ -7,7 +7,7 @@ use thiserror::Error;
 use tracing::instrument;
 
 /// Nix version as parsed from `nix --version`
-#[derive(Clone, PartialOrd, PartialEq, Eq, Debug, SerializeDisplay, DeserializeFromStr)]
+#[derive(Clone, Copy, PartialOrd, PartialEq, Eq, Debug, SerializeDisplay, DeserializeFromStr)]
 pub struct NixVersion {
     pub major: u32,
     pub minor: u32,
