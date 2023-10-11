@@ -71,7 +71,7 @@ pub fn App(cx: Scope) -> Element {
 fn Dashboard(cx: Scope) -> Element {
     tracing::debug!("Rendering Dashboard page");
     let state = AppState::use_state(cx);
-    let health_checks = &*state.health_checks.read();
+    let health_checks = state.health_checks.read();
     // A Card component
     #[component]
     fn Card<'a>(cx: Scope, href: Route, children: Element<'a>) -> Element<'a> {
@@ -89,7 +89,7 @@ fn Dashboard(cx: Scope) -> Element {
         div { id: "cards", class: "flex flex-row flex-wrap",
             Card { href: Route::Health {},
                 "Nix Health Check "
-                match health_checks {
+                match (*health_checks).as_ref() {
                     Some(Ok(checks)) => {
                         if checks.iter().all(|check| check.result.green()) {
                             "✅"

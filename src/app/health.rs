@@ -10,22 +10,32 @@ pub fn Health(cx: Scope) -> Element {
     let state = AppState::use_state(cx);
     let health_checks = state.health_checks.read();
     let title = "Nix Health";
+    let busy = (*health_checks).is_loading_or_refreshing();
+    let buttonCls = if busy {
+        "bg-gray-400 text-white"
+    } else {
+        "bg-blue-700 text-white hover:bg-blue-800"
+    };
     render! {
         h1 { class: "text-5xl font-bold", title }
         // TODO
         // RefetchQueryButton { result, query: || () }
         button {
-            class: "p-1 shadow-lg border-1 bg-blue-700 text-white rounded-md hover:bg-blue-800",
+            class: "p-1 shadow-lg border-1 {buttonCls} rounded-md",
+            disabled: busy,
             onclick: move |_event| {
                 cx.spawn(async move {
                     state.update_health_checks().await;
                 });
             },
-            "Refresh"
+            "Refresh "
+            if busy {
+                render! { "⏳" }
+            }
         }
         div { class: "my-1",
-            match &*health_checks {
-                None => render! { "⏳" },
+            match (*health_checks).current_value() {
+                None => render! { "" },
                 Some(Ok(checks)) => render! {
                 div { class: "flex flex-col items-stretch justify-start space-y-8 text-left",
                     for check in checks {

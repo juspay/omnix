@@ -37,7 +37,7 @@ impl From<String> for SystemError {
 pub struct AppState {
     pub nix_info: Signal<Option<Result<nix_rs::info::NixInfo, SystemError>>>,
     pub nix_env: Signal<Option<Result<nix_rs::env::NixEnv, SystemError>>>,
-    pub health_checks: Signal<Option<Result<Vec<nix_health::traits::Check>, SystemError>>>,
+    pub health_checks: Signal<Datum<Result<Vec<nix_health::traits::Check>, SystemError>>>,
 
     pub flake_url: Signal<FlakeUrl>,
     pub flake: Signal<Datum<Result<Flake, NixCmdError>>>,
@@ -46,15 +46,9 @@ pub struct AppState {
 impl AppState {
     pub async fn initialize(&self) {
         tracing::info!("Initializing app state");
-        if self.nix_info.read().is_none() {
-            self.update_nix_info().await;
-        }
-        if self.nix_env.read().is_none() {
-            self.update_nix_env().await;
-        }
-        if self.health_checks.read().is_none() {
-            self.update_health_checks().await;
-        }
+        self.update_nix_info().await;
+        self.update_nix_env().await;
+        self.update_health_checks().await;
     }
 
     #[instrument(name = "update-nix-info", skip(self))]
@@ -98,6 +92,7 @@ impl AppState {
     #[instrument(name = "update-health-checks", skip(self))]
     pub async fn update_health_checks(&self) {
         tracing::info!("Updating health checks ...");
+        self.health_checks.with_mut(move |x| x.mark_refreshing());
         // Update depenencies
         self.update_nix_info().await;
         self.update_nix_env().await;
@@ -120,7 +115,7 @@ impl AppState {
         let health_checks = get_nix_health();
         tracing::info!("Got health checks, about to mut");
         self.health_checks.with_mut(move |x| {
-            *x = Some(health_checks);
+            x.set_value(health_checks);
             tracing::info!("Updated health checks");
         });
     }
@@ -135,6 +130,7 @@ impl AppState {
     #[instrument(name = "update-flake", skip(self))]
     pub async fn update_flake(&self) {
         tracing::info!("Updating flake ...");
+        self.flake.with_mut(move |x| x.mark_refreshing());
         let flake_url = self.flake_url.read().clone();
         let flake = tokio::spawn(async move {
             Flake::from_nix(&nix_rs::command::NixCmd::default(), flake_url.clone()).await
@@ -143,7 +139,7 @@ impl AppState {
         .unwrap();
         tracing::info!("Got flake, about to mut");
         self.flake.with_mut(move |x| {
-            *x = Datum::Available(flake);
+            x.set_value(flake);
             tracing::info!("Updated flake");
         });
     }
