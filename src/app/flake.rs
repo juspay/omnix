@@ -33,7 +33,7 @@ pub fn Flake(cx: Scope) -> Element {
                     fut.restart();
                 }
             }
-            match &*flake {
+            match (*flake).as_ref() {
                 None => render! { "⏳" },
                 Some(Ok(flake)) => render! { FlakeView { flake: flake.clone() } },
                 Some(Err(e)) => render! { "Error: {e}" }
@@ -51,7 +51,7 @@ pub fn FlakeRaw(cx: Scope) -> Element {
         div {
             Link { to: Route::Flake {}, "⬅ Back" }
             div { class: "px-4 py-2 font-mono text-xs text-left text-gray-500 border-2 border-black",
-                match &*flake {
+                match (*flake).as_ref() {
                     None => render! { "⏳" },
                     Some(Ok(r)) => render! { FlakeOutputsRawView { outs: r.output.clone() } },
                     Some(Err(_)) => render! { "?" }

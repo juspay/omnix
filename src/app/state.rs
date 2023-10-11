@@ -1,5 +1,7 @@
 //! Application state
 
+mod datum;
+
 use std::fmt::Display;
 
 use dioxus::prelude::{use_context, use_context_provider, use_future, Scope};
@@ -10,6 +12,8 @@ use nix_rs::{
     flake::{url::FlakeUrl, Flake},
 };
 use tracing::instrument;
+
+use self::datum::Datum;
 
 /// Catch all error to use in UI components
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -36,7 +40,7 @@ pub struct AppState {
     pub health_checks: Signal<Option<Result<Vec<nix_health::traits::Check>, SystemError>>>,
 
     pub flake_url: Signal<FlakeUrl>,
-    pub flake: Signal<Option<Result<Flake, NixCmdError>>>,
+    pub flake: Signal<Datum<Result<Flake, NixCmdError>>>,
 }
 
 impl AppState {
@@ -139,7 +143,7 @@ impl AppState {
         .unwrap();
         tracing::info!("Got flake, about to mut");
         self.flake.with_mut(move |x| {
-            *x = Some(flake);
+            *x = Datum::Available(flake);
             tracing::info!("Updated flake");
         });
     }
