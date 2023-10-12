@@ -38,7 +38,7 @@ impl AppState {
 
     #[instrument(name = "update-nix-info", skip(self))]
     pub async fn update_nix_info(&self) {
-        tracing::info!("Updating nix info ...");
+        tracing::debug!("Updating nix info ...");
         Datum::refresh_with(self.nix_info, async {
             // NOTE: Without tokio::spawn, this will run in main desktop thread,
             // and will hang at some point.
@@ -51,7 +51,7 @@ impl AppState {
             })
             .await
             .unwrap();
-            tracing::info!("Got nix info, about to mut");
+            tracing::debug!("Got nix info, about to mut");
             nix_info
         })
         .await;
@@ -59,7 +59,7 @@ impl AppState {
 
     #[instrument(name = "update-nix-env", skip(self))]
     pub async fn update_nix_env(&self) {
-        tracing::info!("Updating nix env ...");
+        tracing::debug!("Updating nix env ...");
         Datum::refresh_with(self.nix_env, async {
             let nix_env = tokio::spawn(async move {
                 nix_rs::env::NixEnv::detect(None)
@@ -68,7 +68,7 @@ impl AppState {
             })
             .await
             .unwrap();
-            tracing::info!("Got nix env, about to mut");
+            tracing::debug!("Got nix env, about to mut");
             nix_env
         })
         .await;
@@ -76,7 +76,7 @@ impl AppState {
 
     #[instrument(name = "update-health-checks", skip(self))]
     pub async fn update_health_checks(&self) {
-        tracing::info!("Updating health checks ...");
+        tracing::debug!("Updating health checks ...");
         Datum::refresh_with(self.health_checks, async {
             // Update depenencies
             self.update_nix_info().await;
@@ -99,7 +99,7 @@ impl AppState {
                 Ok(health_checks)
             };
             let health_checks = get_nix_health();
-            tracing::info!("Got health checks, about to mut");
+            tracing::debug!("Got health checks, about to mut");
             health_checks
         })
         .await;
@@ -114,7 +114,7 @@ impl AppState {
 
     #[instrument(name = "update-flake", skip(self))]
     pub async fn update_flake(&self) {
-        tracing::info!("Updating flake ...");
+        tracing::debug!("Updating flake ...");
         Datum::refresh_with(self.flake, async {
             let flake_url = self.flake_url.read().clone();
             let flake = tokio::spawn(async move {
@@ -122,7 +122,7 @@ impl AppState {
             })
             .await
             .unwrap();
-            tracing::info!("Got flake, about to mut");
+            tracing::debug!("Got flake, about to mut");
             flake
         })
         .await;

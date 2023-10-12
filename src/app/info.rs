@@ -23,7 +23,7 @@ pub fn Info(cx: Scope) -> Element {
                 });
             }
         }
-        (*nix_info).render_with(cx, |v| render! { NixInfoView { info: v.clone() } })
+        nix_info.render_with(cx, |v| render! { NixInfoView { info: v.clone() } })
     }
 }
 

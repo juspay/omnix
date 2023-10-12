@@ -39,7 +39,7 @@ pub fn Flake(cx: Scope) -> Element {
                 }
             }
             RefreshButton { busy: busy, handler: move |_| { fut.restart() } }
-            (*flake).render_with(cx, |v| render! { FlakeView { flake: v.clone() } })
+            flake.render_with(cx, |v| render! { FlakeView { flake: v.clone() } })
         }
     }
 }
@@ -53,7 +53,7 @@ pub fn FlakeRaw(cx: Scope) -> Element {
         div {
             Link { to: Route::Flake {}, "⬅ Back" }
             div { class: "px-4 py-2 font-mono text-xs text-left text-gray-500 border-2 border-black",
-                (*flake).render_with(cx, |v| render! { FlakeOutputsRawView { outs: v.output.clone() } } )
+                flake.render_with(cx, |v| render! { FlakeOutputsRawView { outs: v.output.clone() } } )
             }
         }
     }

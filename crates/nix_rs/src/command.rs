@@ -104,8 +104,6 @@ impl NixCmd {
         cmd.args(args);
         trace_cmd(&cmd);
         let out = cmd.output().await?;
-        tracing::info!("stdout: WAITING ...");
-        tracing::info!("stdout: DONE");
         if out.status.success() {
             Ok(out.stdout)
         } else {

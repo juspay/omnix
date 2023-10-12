@@ -20,7 +20,7 @@ pub fn Health(cx: Scope) -> Element {
                 });
             }
         }
-        (*health_checks).render_with(cx, |checks| render! {
+        health_checks.render_with(cx, |checks| render! {
             div { class: "flex flex-col items-stretch justify-start space-y-8 text-left",
                 for check in checks {
                         ViewCheck { check: check.clone() }

@@ -41,7 +41,7 @@ impl<T> Datum<T> {
     ///
     /// Use [refresh_with] if the value is produced by a long-running task.
     fn set_value(&mut self, value: T) {
-        tracing::info!("🍒 Setting {} datum value", std::any::type_name::<T>());
+        tracing::debug!("🍒 Setting {} datum value", std::any::type_name::<T>());
         *self = Datum::Available {
             value,
             refreshing: false,
@@ -61,7 +61,7 @@ impl<T> Datum<T> {
             if *refreshing {
                 panic!("Cannot refresh already refreshing data");
             }
-            tracing::info!(
+            tracing::debug!(
                 "🍒 Marking {} datum as refreshing",
                 std::any::type_name::<T>()
             );
