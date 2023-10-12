@@ -1,6 +1,9 @@
 use std::future::Future;
 
+use dioxus::prelude::*;
 use dioxus_signals::Signal;
+
+use crate::app::widget::Loader;
 
 /// Represent loading/refreshing state of UI data
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
@@ -75,5 +78,20 @@ impl<T> Datum<T> {
         signal.with_mut(move |x| {
             x.set_value(val);
         });
+    }
+
+    /// Render the datum with the given component
+    pub fn render_with<'a>(
+        &self,
+        cx: &'a Scoped<'a, Self>,
+        component: Component<Self>,
+    ) -> Element<'a> {
+        match self {
+            Datum::Loading => render! { Loader {} },
+            Datum::Available {
+                value,
+                refreshing: _,
+            } => component(cx),
+        }
     }
 }
