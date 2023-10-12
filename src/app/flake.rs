@@ -102,12 +102,12 @@ pub fn FlakeSchemaView<'a>(cx: Scope, schema: &'a FlakeSchema) -> Element {
                         let k = v.name.clone().unwrap_or("formatter".to_string());
                         render! { FlakeValView { k: k.clone(), v: v.clone() } }
                     },
-                    None => render! { "" } // No-op for None
+                    None => render! { "" }
                 },
                 SectionHeading { title: "Other" }
                 match &schema.other {
                     Some(v) => render! { FlakeOutputsRawView { outs: FlakeOutputs::Attrset(v.clone()) } },
-                    None => render! { "" } // No-op for None
+                    None => render! { "" }
                 }
             }
         }

@@ -58,6 +58,8 @@ pub fn App(cx: Scope) -> Element {
     });
     render! {
         body {
+            // Can't do this, because Tauri window has its own scrollbar. :-/
+            // class: "overflow-y-scroll",
             div { class: "flex justify-center w-full min-h-screen bg-center bg-cover bg-base-200",
                 div { class: "flex flex-col items-stretch mx-auto sm:container sm:max-w-screen-md",
                     main { class: "flex flex-col px-2 mb-8 space-y-3 text-center", Router::<Route> {} }
@@ -101,7 +103,7 @@ fn Dashboard(cx: Scope) -> Element {
                 }
             }
             Card { href: Route::Info {}, "Nix Info ℹ️" }
-            Card { href: Route::Flake {}, "Flake Overview ❄️️" }
+            Card { href: Route::Flake {}, "Flake Dashboard ❄️️" }
         }
     }
 }

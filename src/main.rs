@@ -1,4 +1,4 @@
-use dioxus_desktop::WindowBuilder;
+use dioxus_desktop::{LogicalSize, WindowBuilder};
 
 mod app;
 mod cli;
@@ -14,6 +14,10 @@ async fn main() {
         app::App,
         dioxus_desktop::Config::new()
             .with_custom_head(r#" <link rel="stylesheet" href="tailwind.css"> "#.to_string())
-            .with_window(WindowBuilder::new().with_title("nix-browser")),
+            .with_window(
+                WindowBuilder::new()
+                    .with_title("nix-browser")
+                    .with_inner_size(LogicalSize::new(900, 600)),
+            ),
     )
 }
