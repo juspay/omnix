@@ -3,8 +3,6 @@ use std::{fmt::Display, future::Future};
 use dioxus::prelude::*;
 use dioxus_signals::Signal;
 
-use crate::app::widget::Loader;
-
 /// Represent loading/refreshing state of UI data
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Datum<T> {

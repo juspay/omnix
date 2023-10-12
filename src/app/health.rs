@@ -3,10 +3,7 @@
 use dioxus::prelude::*;
 use nix_health::traits::{Check, CheckResult};
 
-use crate::{
-    app::state::AppState,
-    app::widget::{Loader, RefreshButton},
-};
+use crate::{app::state::AppState, app::widget::RefreshButton};
 
 /// Nix health checks
 pub fn Health(cx: Scope) -> Element {
@@ -23,19 +20,13 @@ pub fn Health(cx: Scope) -> Element {
                 });
             }
         }
-        div { class: "my-1",
-            match (*health_checks).current_value() {
-                None => render! { Loader {}},
-                Some(Ok(checks)) => render! {
-                div { class: "flex flex-col items-stretch justify-start space-y-8 text-left",
-                    for check in checks {
+        (*health_checks).render_with(cx, |checks| render! {
+            div { class: "flex flex-col items-stretch justify-start space-y-8 text-left",
+                for check in checks {
                         ViewCheck { check: check.clone() }
-                    }
                 }
-                },
-                Some(Err(err)) => render! { "{err}" }
             }
-        }
+        })
     }
 }
 

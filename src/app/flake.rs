@@ -13,7 +13,7 @@ use nix_rs::flake::{
 
 use crate::{
     app::widget::RefreshButton,
-    app::{state::AppState, widget::Loader, Route},
+    app::{state::AppState, Route},
 };
 
 #[component]
