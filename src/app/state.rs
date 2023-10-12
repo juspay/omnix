@@ -15,24 +15,10 @@ use tracing::instrument;
 
 use self::datum::Datum;
 
-/// Catch all error to use in UI components
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct SystemError {
-    pub message: String,
-}
-
-impl Display for SystemError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(&self.message)
-    }
-}
-
-impl From<String> for SystemError {
-    fn from(message: String) -> Self {
-        Self { message }
-    }
-}
-
+/// Our dioxus application state is a struct of [Signal]
+///
+/// They use [Datum] which is a glorified [Option] to distinguis between initial
+/// loading and subsequent refreshing.
 #[derive(Default, Clone, Copy, Debug)]
 pub struct AppState {
     pub nix_info: Signal<Datum<Result<nix_rs::info::NixInfo, SystemError>>>,
@@ -46,6 +32,7 @@ pub struct AppState {
 impl AppState {
     pub async fn initialize(&self) {
         tracing::info!("Initializing app state");
+        // Initializing health checks automatially initializes other signals.
         self.update_health_checks().await;
     }
 
@@ -152,5 +139,23 @@ impl AppState {
         use_future(cx, (), |_| async move {
             state.initialize().await;
         });
+    }
+}
+
+/// Catch all error to use in UI components
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct SystemError {
+    pub message: String,
+}
+
+impl Display for SystemError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.message)
+    }
+}
+
+impl From<String> for SystemError {
+    fn from(message: String) -> Self {
+        Self { message }
     }
 }
