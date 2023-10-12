@@ -20,7 +20,6 @@ use crate::{
 pub fn Flake(cx: Scope) -> Element {
     let state = AppState::use_state(cx);
     let fut = use_future(cx, (), |_| async move { state.update_flake().await });
-    let _ = fut.state();
     let flake = state.flake.read();
     let busy = (*flake).is_loading_or_refreshing();
     render! {
@@ -54,11 +53,7 @@ pub fn FlakeRaw(cx: Scope) -> Element {
         div {
             Link { to: Route::Flake {}, "⬅ Back" }
             div { class: "px-4 py-2 font-mono text-xs text-left text-gray-500 border-2 border-black",
-                match (*flake).current_value() {
-                    None => render! { "⏳" },
-                    Some(Ok(r)) => render! { FlakeOutputsRawView { outs: r.output.clone() } },
-                    Some(Err(_)) => render! { "?" }
-                }
+                (*flake).render_with(cx, |v| render! { FlakeOutputsRawView { outs: v.output.clone() } } )
             }
         }
     }
@@ -72,7 +67,7 @@ pub fn FlakeView(cx: Scope, flake: Flake) -> Element {
             div { class: "text-sm italic text-gray-600",
                 Link { to: Route::FlakeRaw {}, "View raw output" }
             }
-            div { FlakeSchemaView { schema: flake.schema.clone() } }
+            div { FlakeSchemaView { schema: &flake.schema } }
         }
     }
 }
@@ -87,7 +82,7 @@ pub fn SectionHeading(cx: Scope, title: &'static str) -> Element {
 }
 
 #[component]
-pub fn FlakeSchemaView(cx: Scope, schema: FlakeSchema) -> Element {
+pub fn FlakeSchemaView<'a>(cx: Scope, schema: &'a FlakeSchema) -> Element {
     let system = schema.system.clone();
     render! {
         div {
