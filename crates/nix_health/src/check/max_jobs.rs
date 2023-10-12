@@ -1,8 +1,6 @@
-#[cfg(feature = "ssr")]
 use nix_rs::{env, info};
 use serde::{Deserialize, Serialize};
 
-#[cfg(feature = "ssr")]
 use crate::traits::*;
 
 /// Check that [nix_rs::config::NixConfig::max_jobs] is set to a good value.
@@ -10,7 +8,6 @@ use crate::traits::*;
 #[serde(default)]
 pub struct MaxJobs {}
 
-#[cfg(feature = "ssr")]
 impl Checkable for MaxJobs {
     fn check(&self, nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Vec<Check> {
         let max_jobs = nix_info.nix_config.max_jobs.value;

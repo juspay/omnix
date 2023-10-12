@@ -18,8 +18,8 @@
     process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
     cargo-doc-live.url = "github:srid/cargo-doc-live";
 
-    leptos-fullstack.url = "github:srid/leptos-fullstack";
-    leptos-fullstack.flake = false;
+    dioxus-desktop-template.url = "github:srid/dioxus-desktop-template";
+    dioxus-desktop-template.flake = false;
   };
 
   outputs = inputs:
@@ -30,9 +30,8 @@
         inputs.treefmt-nix.flakeModule
         inputs.process-compose-flake.flakeModule
         inputs.cargo-doc-live.flakeModule
-        (inputs.leptos-fullstack + /nix/flake-module.nix)
+        (inputs.dioxus-desktop-template + /nix/flake-module.nix)
         ./rust.nix
-        ./e2e/flake-module.nix
       ];
 
       flake = {
@@ -63,7 +62,6 @@
           programs = {
             nixpkgs-fmt.enable = true;
             rustfmt.enable = true;
-            leptosfmt.enable = true;
           };
         };
 
@@ -72,7 +70,6 @@
           inputsFrom = [
             config.treefmt.build.devShell
             self'.devShells.rust
-            self'.devShells.e2e-playwright
           ];
           packages = with pkgs; [
             just

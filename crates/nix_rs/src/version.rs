@@ -3,11 +3,11 @@ use regex::Regex;
 use serde_with::{DeserializeFromStr, SerializeDisplay};
 use std::{fmt, str::FromStr};
 use thiserror::Error;
-#[cfg(feature = "ssr")]
+
 use tracing::instrument;
 
 /// Nix version as parsed from `nix --version`
-#[derive(Clone, PartialOrd, PartialEq, Eq, Debug, SerializeDisplay, DeserializeFromStr)]
+#[derive(Clone, Copy, PartialOrd, PartialEq, Eq, Debug, SerializeDisplay, DeserializeFromStr)]
 pub struct NixVersion {
     pub major: u32,
     pub minor: u32,
@@ -48,7 +48,7 @@ impl FromStr for NixVersion {
 
 impl NixVersion {
     /// Get the output of `nix --version`
-    #[cfg(feature = "ssr")]
+
     #[instrument(name = "version")]
     pub async fn from_nix(
         nix_cmd: &super::command::NixCmd,
@@ -66,7 +66,6 @@ impl fmt::Display for NixVersion {
     }
 }
 
-#[cfg(feature = "ssr")]
 #[tokio::test]
 async fn test_run_nix_version() {
     let nix_version = NixVersion::from_nix(&crate::command::NixCmd::default())
@@ -75,7 +74,6 @@ async fn test_run_nix_version() {
     println!("Nix version: {}", nix_version);
 }
 
-#[cfg(feature = "ssr")]
 #[tokio::test]
 async fn test_parse_nix_version() {
     assert_eq!(

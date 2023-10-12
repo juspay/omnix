@@ -1,7 +1,6 @@
 use bytesize::ByteSize;
 use serde::{Deserialize, Serialize};
 
-#[cfg(feature = "ssr")]
 use crate::traits::{Check, CheckResult, Checkable};
 
 /// Check if the system has enough resources
@@ -29,7 +28,6 @@ impl Default for System {
     }
 }
 
-#[cfg(feature = "ssr")]
 impl Checkable for System {
     fn check(
         &self,

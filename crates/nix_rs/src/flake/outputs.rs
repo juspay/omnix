@@ -1,7 +1,10 @@
 //! Nix flake outputs
 
 use serde::{Deserialize, Serialize};
-use std::collections::{btree_map::Entry, BTreeMap};
+use std::{
+    collections::{btree_map::Entry, BTreeMap},
+    fmt::Display,
+};
 
 /// Represents the "outputs" of a flake
 ///
@@ -15,7 +18,7 @@ pub enum FlakeOutputs {
 
 impl FlakeOutputs {
     /// Run `nix flake show` on the given flake url
-    #[cfg(feature = "ssr")]
+
     #[tracing::instrument(name = "flake-show")]
     pub async fn from_nix(
         nix_cmd: &crate::command::NixCmd,
@@ -111,5 +114,11 @@ impl Type {
             Self::Template => "🏗️",
             Self::Unknown => "❓",
         }
+    }
+}
+
+impl Display for Type {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&format!("{:?}", self))
     }
 }

@@ -38,6 +38,22 @@
         "type": "github"
       }
     },
+    "dioxus-desktop-template": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1696953583,
+        "narHash": "sha256-g+8wFUOSVLVN63DAlcj1OhYjOD3pkSFH5BCt6Gs0y6I=",
+        "owner": "srid",
+        "repo": "dioxus-desktop-template",
+        "rev": "a3c76b656c9fbddbde423c800bcab46876b5026e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "srid",
+        "repo": "dioxus-desktop-template",
+        "type": "github"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -105,22 +121,6 @@
       "original": {
         "owner": "numtide",
         "repo": "flake-utils",
-        "type": "github"
-      }
-    },
-    "leptos-fullstack": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1694027158,
-        "narHash": "sha256-XzDBUA5jzTFDiLJtgvknAb9MuXwEGXmAd/ZoTqVUg+o=",
-        "owner": "srid",
-        "repo": "leptos-fullstack",
-        "rev": "4203055c17476616bec375cd7e471e91f70d26d0",
-        "type": "github"
-      },
-      "original": {
-        "owner": "srid",
-        "repo": "leptos-fullstack",
         "type": "github"
       }
     },
@@ -193,8 +193,8 @@
       "inputs": {
         "cargo-doc-live": "cargo-doc-live",
         "crane": "crane",
+        "dioxus-desktop-template": "dioxus-desktop-template",
         "flake-parts": "flake-parts",
-        "leptos-fullstack": "leptos-fullstack",
         "nixpkgs": "nixpkgs",
         "process-compose-flake": "process-compose-flake",
         "rust-overlay": "rust-overlay_2",

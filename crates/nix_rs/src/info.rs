@@ -13,7 +13,7 @@ pub struct NixInfo {
 
 impl NixInfo {
     /// Determine [NixInfo] on the user's system
-    #[cfg(feature = "ssr")]
+
     pub async fn from_nix(
         nix_cmd: &crate::command::NixCmd,
     ) -> Result<NixInfo, crate::command::NixCmdError> {

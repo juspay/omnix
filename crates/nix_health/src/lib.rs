@@ -30,7 +30,6 @@ pub struct NixHealth {
     pub direnv: Direnv,
 }
 
-#[cfg(feature = "ssr")]
 impl<'a> IntoIterator for &'a NixHealth {
     type Item = &'a dyn traits::Checkable;
     type IntoIter = std::vec::IntoIter<Self::Item>;
@@ -51,7 +50,6 @@ impl<'a> IntoIterator for &'a NixHealth {
     }
 }
 
-#[cfg(feature = "ssr")]
 impl NixHealth {
     /// Create [NixHealth] using configuration from the given flake
     ///

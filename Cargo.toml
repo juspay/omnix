@@ -10,22 +10,16 @@ repository = "https://github.com/juspay/nix-browser"
 cfg-if = "1"
 clap = { version = "4.3", features = ["derive", "env"] }
 human-panic = "1.1.5"
-leptos = { version = "0.4", features = ["serde", "nightly"] }
-leptos_meta = { version = "0.4", features = ["nightly"] }
-leptos_router = { version = "0.4", features = ["nightly"] }
-leptos_query = "0.2"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-tracing-subscriber-wasm = "0.1"
-wasm-bindgen = "=0.2.87"                                            # The version here must match the pinned stuff in Nix flakes.
 nix_rs = { version = "0.2", path = "./crates/nix_rs" }
 nix_health = { path = "./crates/nix_health" }
-leptos_extra = { path = "./crates/leptos_extra" }
 thiserror = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_with = { version = "3.2", features = ["json"] }
 bytesize = { version = "1.3.0", features = ["serde"] }
+anyhow = "1.0.75"
 
 [package]
 edition = "2021"
@@ -37,89 +31,29 @@ homepage = "https://github.com/juspay/nix-browser"
 [package.metadata.docs.rs]
 all-features = true
 
-[lib]
-crate-type = ["cdylib", "rlib"]
-
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-axum = { version = "0.6", features = ["json", "tokio"], optional = true }
-axum-macros = { version = "0.3", optional = true }
+anyhow.workspace = true
 cfg-if.workspace = true
 clap.workspace = true
 console_error_panic_hook = "0.1"
-console_log = { version = "1" }
-http = { version = "0.2", optional = true }
+console_log = "1"
+http = "0.2"
 human-panic.workspace = true
-hyper = { version = "0.14", features = ["server"], optional = true }
-leptos.workspace = true
-leptos_axum = { version = "0.4", optional = true }
-leptos_meta.workspace = true
-leptos_router.workspace = true
-leptos_query.workspace = true
 regex = "1.9.3"
-open = { version = "5.0", optional = true }
 serde.workspace = true
 serde_json.workspace = true
 serde_with.workspace = true
 thiserror.workspace = true
-tokio = { version = "1.29", features = ["full"], optional = true }
-tower = { version = "0.4", optional = true }
-tower-http = { version = "0.4", features = ["full"], optional = true }
+tokio = { version = "1", features = ["full"] }
 tracing.workspace = true
 tracing-subscriber.workspace = true
-tracing-subscriber-wasm.workspace = true
 uuid = { version = "1.3.0", features = ["serde", "v4", "js"] }
-wasm-bindgen.workspace = true
 nix_rs.workspace = true
 nix_health.workspace = true
-leptos_extra.workspace = true
-
-[features]
-default = [
-    "ssr",
-] # Unfortunately, leptos_query won't compile (in `nix build`) without this
-hydrate = [
-    "leptos/hydrate",
-    "leptos_meta/hydrate",
-    "leptos_query/hydrate",
-    "leptos_router/hydrate",
-    "leptos_extra/hydrate",
-]
-ssr = [
-    "dep:axum-macros",
-    "dep:axum",
-    "dep:http",
-    "dep:hyper",
-    "dep:leptos_axum",
-    "dep:open",
-    "dep:tokio",
-    "dep:tower-http",
-    "dep:tower",
-    "leptos/ssr",
-    "leptos_meta/ssr",
-    "leptos_query/ssr",
-    "leptos_router/ssr",
-    "leptos_extra/ssr",
-    "nix_rs/ssr",
-    "nix_health/ssr",
-]
-
-# Defines a size-optimized profile for the WASM bundle in release mode
-[profile.wasm-release]
-inherits = "release"
-opt-level = 'z'
-lto = true
-codegen-units = 1
-panic = "abort"
-
-[package.metadata.leptos]
-site-addr = "127.0.0.1:3000"
-tailwind-input-file = "css/input.css"
-assets-dir = "assets"
-bin-features = ["ssr"]
-lib-features = ["hydrate"]
-# The profile to use for the lib target when compiling for release
-#
-# Optional. Defaults to "release".
-lib-profile-release = "wasm-release"
+dioxus = { git = "https://github.com/DioxusLabs/dioxus.git", rev = "459f24d5e9ef0e03a3bbd037342c60bbde409dbf" }
+dioxus-desktop = { git = "https://github.com/DioxusLabs/dioxus.git", rev = "459f24d5e9ef0e03a3bbd037342c60bbde409dbf" }
+dioxus-router = { git = "https://github.com/DioxusLabs/dioxus.git", rev = "459f24d5e9ef0e03a3bbd037342c60bbde409dbf" }
+dioxus-signals = { git = "https://github.com/DioxusLabs/dioxus.git", rev = "459f24d5e9ef0e03a3bbd037342c60bbde409dbf" }
+dioxus-std = { version = "0.4.0", features = ["clipboard", "utils"] }

@@ -2,9 +2,8 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
-#[cfg(feature = "ssr")]
 use crate::traits::{Check, CheckResult, Checkable};
-#[cfg(feature = "ssr")]
+
 use nix_rs::{env, info};
 
 /// Check if direnv is installed
@@ -25,7 +24,6 @@ impl Default for Direnv {
     }
 }
 
-#[cfg(feature = "ssr")]
 impl Checkable for Direnv {
     fn check(&self, _nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Vec<Check> {
         let mut checks = vec![];
@@ -47,7 +45,7 @@ impl Checkable for Direnv {
 }
 
 /// [Check] that direnv was installed.
-#[cfg(feature = "ssr")]
+
 fn install_check(required: bool) -> Check {
     let suggestion = "Install direnv <https://zero-to-flakes.com/direnv/#setup>".to_string();
     let direnv_install = DirenvInstall::detect();
@@ -67,7 +65,7 @@ fn install_check(required: bool) -> Check {
 }
 
 /// [Check] that direnv was activated on the local flake
-#[cfg(feature = "ssr")]
+
 fn activation_check(local_flake: &std::path::Path, required: bool) -> Check {
     let suggestion = format!("Run `direnv allow` under `{}`", local_flake.display());
     Check {
@@ -103,7 +101,7 @@ pub struct DirenvInstall {
 
 impl DirenvInstall {
     /// Detect user's direnv installation
-    #[cfg(feature = "ssr")]
+
     pub fn detect() -> anyhow::Result<Self> {
         let bin_path = which::which("direnv")?;
         let output = std::process::Command::new(&bin_path)
@@ -136,7 +134,7 @@ impl DirenvInstall {
 }
 
 /// Check if direnv was already activated in [project_dir]
-#[cfg(feature = "ssr")]
+
 pub fn is_direnv_active_on(project_dir: &std::path::Path) -> anyhow::Result<bool> {
     let output = std::process::Command::new("direnv")
         .arg("status")

@@ -6,33 +6,37 @@ default:
 # Auto-format the source tree
 fmt:
     treefmt
+    # Due a bug in dx fmt, we cannot run it on files using macros
+    find src/app/ -name \*.rs | grep -v state.rs | grep -v state/ | xargs -n1 sh -c 'echo "📔 $1"; dx fmt -f $1' sh
 
 alias f := fmt
 
+# CI=true for https://github.com/tauri-apps/tauri/issues/3055#issuecomment-1624389208)
+bundle $CI="true":
+    # HACK (change PWD): Until https://github.com/DioxusLabs/dioxus/issues/1283
+    cd assets && dx bundle 
+    nix run nixpkgs#eza -- -T ./dist/bundle/macos/nix-browser.app
+
 # Run the project locally
 watch $RUST_BACKTRACE="1":
-    cargo leptos watch
+    # XXX: hot reload doesn't work with tailwind
+    # dx serve --hot-reload
+    dx serve
 
 alias w := watch
 
+tw:
+    tailwind -i ./css/input.css -o ./assets/tailwind.css --watch
+
 # Run 'cargo run' for nix-health CLI in watch mode. Example: just watch-nix-health github:nammayatri/nammayatri
 watch-nix-health *ARGS:
-    cargo watch -- cargo run --bin nix-health --features=ssr -- {{ARGS}}
+    cargo watch -- cargo run --bin nix-health -- {{ARGS}}
 
 alias wh := watch-nix-health
 
-# Run tests (backend & frontend)
+# Run tests
 test:
     cargo test
-    cargo leptos test
-
-# Run end-to-end tests against release server
-e2e-release:
-    nix run .#e2e-playwright-test
-
-# Run end-to-end tests against `just watch` server
-e2e:
-    cd e2e && TEST_PORT=3000 playwright test --project chromium
 
 # Run docs server (live reloading)
 doc:
