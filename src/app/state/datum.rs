@@ -1,4 +1,4 @@
-use std::future::Future;
+use std::{fmt::Display, future::Future};
 
 use dioxus::prelude::*;
 use dioxus_signals::Signal;
@@ -79,19 +79,21 @@ impl<T> Datum<T> {
             x.set_value(val);
         });
     }
+}
 
-    /// Render the datum with the given component
+impl<T, E: Display> Datum<Result<T, E>> {
+    /// Render the result datum with the given component
+    ///
+    /// The error message will be rendered appropriately
     pub fn render_with<'a>(
         &self,
         cx: &'a Scoped<'a, Self>,
         component: Component<Self>,
     ) -> Element<'a> {
-        match self {
-            Datum::Loading => render! { Loader {} },
-            Datum::Available {
-                value,
-                refreshing: _,
-            } => component(cx),
+        match self.current_value() {
+            None => render! { "" },
+            Some(Ok(value)) => component(cx),
+            Some(Err(err)) => render! { "Error: {err}" },
         }
     }
 }

@@ -40,14 +40,7 @@ pub fn Flake(cx: Scope) -> Element {
                 }
             }
             RefreshButton { busy: busy, handler: move |_| { fut.restart() } }
-            match (*flake).current_value() {
-                None => None,
-                Some(Ok(_)) => render! {
-                    // FlakeView { flake: flake.clone() }
-                    (*flake).render_with(cx, FlakeView)
-                },
-                Some(Err(e)) => render! { "Error: {e}" }
-            }
+            (*flake).render_with(cx, FlakeView)
         }
     }
 }
