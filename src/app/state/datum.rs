@@ -85,14 +85,13 @@ impl<T, E: Display> Datum<Result<T, E>> {
     /// Render the result datum with the given component
     ///
     /// The error message will be rendered appropriately
-    pub fn render_with<'a>(
-        &self,
-        cx: &'a Scoped<'a, Self>,
-        component: Component<Self>,
-    ) -> Element<'a> {
+    pub fn render_with<'a, F>(&self, cx: &'a Scoped<'a, ()>, component: F) -> Element<'a>
+    where
+        F: FnOnce(&T) -> Element<'a>,
+    {
         match self.current_value() {
             None => render! { "" },
-            Some(Ok(value)) => component(cx),
+            Some(Ok(value)) => component(value),
             Some(Err(err)) => render! { "Error: {err}" },
         }
     }
