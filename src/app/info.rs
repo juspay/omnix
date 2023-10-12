@@ -5,10 +5,7 @@ use std::fmt::Display;
 use dioxus::prelude::*;
 use nix_rs::{config::NixConfig, info::NixInfo, version::NixVersion};
 
-use crate::{
-    app::state::AppState,
-    app::widget::{Loader, RefreshButton},
-};
+use crate::{app::state::AppState, app::widget::RefreshButton};
 
 /// Nix information
 #[component]
@@ -26,16 +23,7 @@ pub fn Info(cx: Scope) -> Element {
                 });
             }
         }
-        div { class: "my-1",
-            match (*nix_info).current_value() {
-                None => render! { Loader {}},
-                Some(v) =>
-                    match v {
-                        Ok(info) => render! { NixInfoView { info: info.clone() } },
-                        Err(err) => render! { "{err}" }
-                    }
-            }
-        }
+        (*nix_info).render_with(cx, |v| render! { NixInfoView { info: v.clone() } })
     }
 }
 

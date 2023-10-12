@@ -1,5 +1,6 @@
-use std::future::Future;
+use std::{fmt::Display, future::Future};
 
+use dioxus::prelude::*;
 use dioxus_signals::Signal;
 
 /// Represent loading/refreshing state of UI data
@@ -75,5 +76,27 @@ impl<T> Datum<T> {
         signal.with_mut(move |x| {
             x.set_value(val);
         });
+    }
+}
+
+impl<T, E: Display> Datum<Result<T, E>> {
+    /// Render the result datum with the given component
+    ///
+    /// The error message will be rendered appropriately. If the datum is
+    /// unavailable, nothing will be rendered (loading state is rendered
+    /// differently)
+    pub fn render_with<'a, F>(&self, cx: &'a Scoped<'a, ()>, component: F) -> Element<'a>
+    where
+        F: FnOnce(&T) -> Element<'a>,
+    {
+        match self.current_value()? {
+            Ok(value) => component(value),
+            Err(err) => render! {
+                div {
+                    class: "p-4 my-1 text-left text-sm font-mono text-white bg-red-500 rounded",
+                    "Error: {err}"
+                }
+            },
+        }
     }
 }

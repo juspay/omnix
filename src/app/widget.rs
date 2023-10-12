@@ -16,7 +16,7 @@ where
         "bg-blue-700 text-white hover:bg-blue-800"
     };
     render! {
-        div { class: "flex-col items-center justify-center space-y-2",
+        div { class: "flex-col items-center justify-center space-y-2 mb-4",
             button {
                 class: "py-1 px-2 shadow-lg border-1 {button_cls} rounded-md",
                 disabled: *busy,
