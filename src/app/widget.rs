@@ -16,7 +16,7 @@ where
         "bg-blue-700 text-white hover:bg-blue-800"
     };
     render! {
-        div { class: "flex items-center justify-center",
+        div { class: "flex-col items-center justify-center space-y-2",
             button {
                 class: "py-1 px-2 shadow-lg border-1 {button_cls} rounded-md",
                 disabled: *busy,
@@ -28,6 +28,9 @@ where
                     render! { "🔄" }
                 }
             }
+            if *busy {
+                render! { Loader {} }
+            }
         }
     }
 }
@@ -36,7 +39,7 @@ where
 pub fn Loader(cx: Scope) -> Element {
     render! {
         div { class: "flex justify-center items-center",
-            div { class: "animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-purple-500" }
+            div { class: "animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-500" }
         }
     }
 }

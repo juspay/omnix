@@ -22,18 +22,16 @@ pub fn Flake(cx: Scope) -> Element {
     let fut = use_future(cx, (), |_| async move { state.update_flake().await });
     let _ = fut.state();
     let flake = state.flake.read();
+    let busy = (*flake).is_loading_or_refreshing();
     render! {
         h1 { class: "text-5xl font-bold", "Flake dashboard" }
-        RefreshButton {
-            busy: (*flake).is_loading_or_refreshing(),
-            handler: move |_| { fut.restart() }
-        }
         div { class: "p-2 my-1",
             input {
-                class: "w-full p-1 font-mono",
+                class: "w-full p-1 mb-4 font-mono",
                 id: "nix-flake-input",
                 "type": "text",
                 value: "{state.flake_url}",
+                disabled: busy,
                 onchange: move |ev| {
                     let url: FlakeUrl = ev.value.clone().into();
                     tracing::info!("setting flake url set to {}", & url);
@@ -41,8 +39,9 @@ pub fn Flake(cx: Scope) -> Element {
                     fut.restart();
                 }
             }
+            RefreshButton { busy: busy, handler: move |_| { fut.restart() } }
             match (*flake).current_value() {
-                None => render! { Loader {} },
+                None => None,
                 Some(Ok(flake)) => render! { FlakeView { flake: flake.clone() } },
                 Some(Err(e)) => render! { "Error: {e}" }
             }
