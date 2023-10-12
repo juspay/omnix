@@ -1,6 +1,6 @@
 # nix-browser
 
-🚧 This project is a work in progress. The ultimate goal is to create something that inspires people towards [Nix](https://zero-to-flakes.com/).
+🚧 This project is a work in progress. The ultimate goal is to create a GUI app that inspires people towards using [Nix](https://zero-to-flakes.com/).
 
 ## Getting Started
 
@@ -15,7 +15,7 @@ This will automatically activate the nix develop shell. Open VSCode and install 
 
 ## Running locally
 
-In nix shell,
+We should run two watchers: one for generating Tailwind CSS (`just tw`) and another running the cargo package (`just watch`).  In nix shell,
 
 ```
 # In one terminal,
@@ -23,6 +23,8 @@ just watch
 # In another,
 just tw
 ```
+
+`just watch` runs `dx serve` (with hot reload disabled) that will restart the desktop app after compilation.
 
 ## Nix workflows
 
@@ -45,9 +47,9 @@ nix run
 
 ## Tech
 
-### Rust wasm
+### Rust desktop app
 
-We use [Dioxus](https://dioxuslabs.com/) to build the desktop app using web technologies.
+We use [Dioxus](https://dioxuslabs.com/) to build the desktop app using web technologies. The yet to be released [dioxus-signals](https://github.com/DioxusLabs/dioxus/tree/master/packages/signals) package is also used for data reactivity.
 
 ### Styling
 
