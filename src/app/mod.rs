@@ -18,7 +18,7 @@ use crate::app::{
     health::Health,
     info::Info,
     state::AppState,
-    widget::Loader,
+    widget::{Loader, Scrollable},
 };
 
 #[derive(Routable, PartialEq, Debug, Clone)]
@@ -39,14 +39,6 @@ enum Route {
         Info {},
 }
 
-fn Wrapper(cx: Scope) -> Element {
-    render! {
-        Nav {}
-        Outlet::<Route> {}
-        footer { class: "flex flex-row justify-center w-full p-4", img { src: "images/128x128.png", width: "32", height: "32" } }
-    }
-}
-
 /// Main frontend application container
 pub fn App(cx: Scope) -> Element {
     AppState::provide_state(cx);
@@ -58,13 +50,28 @@ pub fn App(cx: Scope) -> Element {
     });
     render! {
         body {
-            // Can't do this, because Tauri window has its own scrollbar. :-/
-            // class: "overflow-y-scroll",
-            div { class: "flex justify-center w-full min-h-screen bg-center bg-cover bg-base-200",
-                div { class: "flex flex-col items-stretch mx-auto sm:container sm:max-w-screen-md",
-                    main { class: "flex flex-col px-2 mb-8 space-y-3 text-center", Router::<Route> {} }
-                }
+            div { class: "flex flex-col text-center justify-between w-full overflow-hidden h-screen  bg-base-200",
+                Router::<Route> {}
             }
+        }
+    }
+}
+
+fn Wrapper(cx: Scope) -> Element {
+    render! {
+        Nav {}
+        Scrollable {
+            div { class: "m-2 py-2", Outlet::<Route> {} }
+        }
+        Footer {}
+    }
+}
+
+#[component]
+fn Footer(cx: Scope) -> Element {
+    render! {
+        footer { class: "flex flex-row justify-center w-full p-2 bg-primary-100",
+            a { href: "https://github.com/juspay/nix-browser", img { src: "images/128x128.png", class: "h-6" } }
         }
     }
 }
@@ -86,10 +93,11 @@ fn Dashboard(cx: Scope) -> Element {
         }
     }
     render! {
-        h1 { class: "text-5xl font-bold", "Dashboard" }
-        div { id: "cards", class: "flex flex-row flex-wrap",
+        div {
+            id: "cards",
+            class: "flex flex-row justify-center items-center flex-wrap",
             Card { href: Route::Health {},
-                "Nix Health Check "
+                "Health "
                 match (*health_checks).current_value() {
                     Some(Ok(checks)) => render! {
                         if checks.iter().all(|check| check.result.green()) {
@@ -102,8 +110,8 @@ fn Dashboard(cx: Scope) -> Element {
                     None => render! { Loader {} },
                 }
             }
-            Card { href: Route::Info {}, "Nix Info ℹ️" }
-            Card { href: Route::Flake {}, "Flake Dashboard ❄️️" }
+            Card { href: Route::Info {}, "Info ℹ️" }
+            Card { href: Route::Flake {}, "Flake ❄️️" }
         }
     }
 }
@@ -112,16 +120,49 @@ fn Dashboard(cx: Scope) -> Element {
 ///
 /// TODO Switch to breadcrumbs, as it simplifes the design overall.
 fn Nav(cx: Scope) -> Element {
-    let class = "px-3 py-2";
-    let active_class = "bg-white text-primary-800 font-bold";
+    // Common class for all tabs
+    let class = "flex-grow block py-1.5 mx-1 text-center rounded-t-md";
+
+    // Active tab styling: Highlighted background and pronounced text color
+    let active_class = "bg-primary-200 font-bold text-black";
+
+    // Inactive tab styling: Muted background and text color
+    let inactive_class = "bg-gray-200 text-gray-600";
+
     render! {
-        nav { class: "flex flex-row w-full mb-8 text-white md:rounded-b bg-primary-800",
-            Link { to: Route::Dashboard {}, class: class, active_class: active_class, "Dashboard" }
-            Link { to: Route::Flake {}, class: class, active_class: active_class, "Flake" }
-            Link { to: Route::Health {}, class: class, active_class: active_class, "Nix Health" }
-            Link { to: Route::Info {}, class: class, active_class: active_class, "Nix Info" }
-            Link { to: Route::About {}, class: class, active_class: active_class, "About" }
-            div { class: "flex-grow font-bold text-end {class}", "🌍 nix-browser" }
+        nav { class: "flex flex-row w-full bg-gray-100 border-b border-gray-300 pt-2",
+
+            Link {
+                to: Route::Dashboard {},
+                class: "{class} {inactive_class}",
+                active_class: active_class,
+                "Dashboard"
+            }
+            Link {
+                to: Route::Flake {},
+                class: "{class} {inactive_class}",
+                active_class: active_class,
+                "Flake"
+            }
+            Link {
+                to: Route::Health {},
+                class: "{class} {inactive_class}",
+                active_class: active_class,
+                "Nix Health"
+            }
+            Link {
+                to: Route::Info {},
+                class: "{class} {inactive_class}",
+                active_class: active_class,
+                "Nix Info"
+            }
+            Link {
+                to: Route::About {},
+                class: "{class} {inactive_class}",
+                active_class: active_class,
+                "About"
+            }
+            div { class: "flex-grow font-bold text-end px-3 py-1", "nix-browser" }
         }
     }
 }

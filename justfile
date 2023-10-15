@@ -5,9 +5,10 @@ default:
 
 # Auto-format the source tree
 fmt:
-    treefmt
     # Due a bug in dx fmt, we cannot run it on files using macros
     find src/app/ -name \*.rs | grep -v state.rs | grep -v state/ | xargs -n1 sh -c 'echo "📔 $1"; dx fmt -f $1' sh
+    # Run treefmt *after* 'dx fmt' because the latter rewrites the former!
+    treefmt
 
 alias f := fmt
 

@@ -43,3 +43,14 @@ pub fn Loader(cx: Scope) -> Element {
         }
     }
 }
+
+/// A div that can get scrollbar for long content
+///
+/// Since our body container is `overflow-hidden`, we need to wrap content that
+/// can get long in this component.
+#[component]
+pub fn Scrollable<'a>(cx: Scope, children: Element<'a>) -> Element {
+    render! {
+        div { class: "overflow-auto", children }
+    }
+}
