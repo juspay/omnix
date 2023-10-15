@@ -60,7 +60,7 @@ pub fn App(cx: Scope) -> Element {
 fn Wrapper(cx: Scope) -> Element {
     render! {
         Nav {}
-        Scrollable { 
+        Scrollable {
             div { class: "m-2 py-2", Outlet::<Route> {} }
         }
         Footer {}
