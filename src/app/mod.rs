@@ -60,7 +60,7 @@ pub fn App(cx: Scope) -> Element {
 fn Wrapper(cx: Scope) -> Element {
     render! {
         Nav {}
-        Scrollable {
+        Scrollable { 
             div { class: "m-2", Outlet::<Route> {} }
         }
         Footer {}
@@ -71,8 +71,7 @@ fn Wrapper(cx: Scope) -> Element {
 fn Footer(cx: Scope) -> Element {
     render! {
         footer { class: "flex flex-row justify-center w-full p-2 bg-primary-100",
-        a { href: "https://github.com/juspay/nix-browser" ,
-        img { src: "images/128x128.png", class: "h-6" } }
+            a { href: "https://github.com/juspay/nix-browser", img { src: "images/128x128.png", class: "h-6" } }
         }
     }
 }
