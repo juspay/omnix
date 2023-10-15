@@ -61,7 +61,7 @@ fn Wrapper(cx: Scope) -> Element {
     render! {
         Nav {}
         Scrollable { 
-            div { class: "m-2", Outlet::<Route> {} }
+            div { class: "m-2 py-2", Outlet::<Route> {} }
         }
         Footer {}
     }
@@ -120,12 +120,18 @@ fn Dashboard(cx: Scope) -> Element {
 ///
 /// TODO Switch to breadcrumbs, as it simplifes the design overall.
 fn Nav(cx: Scope) -> Element {
-    let class = "block px-4 py-1 mx-1 border-t-2 border-l-2 border-r-2 border-black rounded-t-md";
-    let active_class = "!bg-base-200 bg-primary-800 border-b-2 -mb-1 !border-b-gray-200";
-    let inactive_class = "bg-base-300 text-gray-600";
+    // Common class for all tabs
+    let class = "flex-grow block py-1.5 mx-1 text-center rounded-t-md";
+
+    // Active tab styling: Highlighted background and pronounced text color
+    let active_class = "bg-primary-200 font-bold text-black";
+
+    // Inactive tab styling: Muted background and text color
+    let inactive_class = "bg-gray-200 text-gray-600";
 
     render! {
-        nav { class: "flex flex-row w-full pt-2 bg-primary-100 border-b-2 border-black",
+        nav { class: "flex flex-row w-full bg-gray-100 border-b border-gray-300 pt-2",
+
             Link {
                 to: Route::Dashboard {},
                 class: "{class} {inactive_class}",
