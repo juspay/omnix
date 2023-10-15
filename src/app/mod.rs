@@ -120,16 +120,43 @@ fn Dashboard(cx: Scope) -> Element {
 ///
 /// TODO Switch to breadcrumbs, as it simplifes the design overall.
 fn Nav(cx: Scope) -> Element {
-    let class = "px-3 py-2";
-    let active_class = "bg-white text-primary-800 font-bold";
+    let class = "block px-4 py-1 mx-1 border-t-2 border-l-2 border-r-2 border-black rounded-t-md";
+    let active_class = "!bg-base-200 bg-primary-800 border-b-2 -mb-1 !border-b-gray-200";
+    let inactive_class = "bg-base-300 text-gray-600";
+
     render! {
-        nav { class: "flex flex-row w-full mb-8 text-white bg-primary-800",
-            Link { to: Route::Dashboard {}, class: class, active_class: active_class, "Dashboard" }
-            Link { to: Route::Flake {}, class: class, active_class: active_class, "Flake" }
-            Link { to: Route::Health {}, class: class, active_class: active_class, "Nix Health" }
-            Link { to: Route::Info {}, class: class, active_class: active_class, "Nix Info" }
-            Link { to: Route::About {}, class: class, active_class: active_class, "About" }
-            div { class: "flex-grow font-bold text-end {class}", "🌍 nix-browser" }
+        nav { class: "flex flex-row w-full pt-2 bg-primary-100 border-b-2 border-black",
+            Link {
+                to: Route::Dashboard {},
+                class: "{class} {inactive_class}",
+                active_class: active_class,
+                "Dashboard"
+            }
+            Link {
+                to: Route::Flake {},
+                class: "{class} {inactive_class}",
+                active_class: active_class,
+                "Flake"
+            }
+            Link {
+                to: Route::Health {},
+                class: "{class} {inactive_class}",
+                active_class: active_class,
+                "Nix Health"
+            }
+            Link {
+                to: Route::Info {},
+                class: "{class} {inactive_class}",
+                active_class: active_class,
+                "Nix Info"
+            }
+            Link {
+                to: Route::About {},
+                class: "{class} {inactive_class}",
+                active_class: active_class,
+                "About"
+            }
+            div { class: "flex-grow font-bold text-end px-3 py-1", "nix-browser" }
         }
     }
 }
