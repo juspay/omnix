@@ -97,7 +97,7 @@ fn Dashboard(cx: Scope) -> Element {
             id: "cards",
             class: "flex flex-row justify-center items-center flex-wrap",
             Card { href: Route::Health {},
-                "Nix Health Check "
+                "Health "
                 match (*health_checks).current_value() {
                     Some(Ok(checks)) => render! {
                         if checks.iter().all(|check| check.result.green()) {
@@ -110,8 +110,8 @@ fn Dashboard(cx: Scope) -> Element {
                     None => render! { Loader {} },
                 }
             }
-            Card { href: Route::Info {}, "Nix Info ℹ️" }
-            Card { href: Route::Flake {}, "Flake Dashboard ❄️️" }
+            Card { href: Route::Info {}, "Info ℹ️" }
+            Card { href: Route::Flake {}, "Flake ❄️️" }
         }
     }
 }
