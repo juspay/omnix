@@ -67,7 +67,7 @@ pub fn FlakeView(cx: Scope, flake: Flake) -> Element {
             div { class: "text-sm italic text-gray-600",
                 Link { to: Route::FlakeRaw {}, "View raw output" }
             }
-            div { FlakeSchemaView { schema: &flake.schema } }
+            FlakeSchemaView { schema: &flake.schema }
         }
     }
 }

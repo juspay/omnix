@@ -43,3 +43,10 @@ pub fn Loader(cx: Scope) -> Element {
         }
     }
 }
+
+#[component]
+pub fn Scrollable<'a>(cx: Scope, children: Element<'a>) -> Element {
+    render! {
+        div { class: "overflow-auto", children }
+    }
+}
