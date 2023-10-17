@@ -1,7 +1,7 @@
 [package]
 edition.workspace = true
 name = "nix_health"
-version = "0.2.1"
+version = "0.2.2"
 license.workspace = true
 repository.workspace = true
 description = "Check the health of your Nix setup"
