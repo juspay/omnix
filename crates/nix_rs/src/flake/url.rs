@@ -75,8 +75,7 @@ impl FlakeUrl {
 
 impl Default for FlakeUrl {
     fn default() -> Self {
-        // https://github.com/nammayatri/nammayatri/pull/2727
-        "github:nammayatri/nammayatri/nix-meta".into()
+        "github:nammayatri/nammayatri".into()
     }
 }
 
