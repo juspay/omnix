@@ -42,7 +42,7 @@ where
 {
     render! {
         button {
-            class: "py-1 px-2 shadow-lg border-1 bg-gray-400 text-white rounded-md hover:bg-gray-500",
+            class: "py-1 px-2 shadow-lg border-1 bg-blue-700 text-white hover:bg-blue-800 rounded-md",
             onclick: handler,
             "📁"
         }
