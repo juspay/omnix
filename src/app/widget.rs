@@ -36,6 +36,20 @@ where
 }
 
 #[component]
+pub fn FileExplorerButton<F>(cx: Scope, handler: F) -> Element
+where
+    F: Fn(Event<MouseData>),
+{
+    render! {
+        button {
+            class: "py-1 px-2 shadow-lg border-1 bg-gray-400 text-white rounded-md hover:bg-gray-500",
+            onclick: handler,
+            "📁"
+        }
+    }
+}
+
+#[component]
 pub fn Loader(cx: Scope) -> Element {
     render! {
         div { class: "flex justify-center items-center",
