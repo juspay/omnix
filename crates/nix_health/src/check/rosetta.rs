@@ -28,22 +28,25 @@ impl Default for Rosetta {
 impl Checkable for Rosetta {
     fn check(&self, _nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Vec<Check> {
         let mut checks = vec![];
-        if self.enable && let Some(emulation) = get_apple_emulation(&nix_env.os) {
-        let check = Check {
-            title: "Rosetta Not Active".to_string(),
-            info: format!("apple emulation = {:?}", emulation),
-            result: if emulation == AppleEmulation::Rosetta {
-                CheckResult::Red {
+        match (self.enable, get_apple_emulation(&nix_env.os)) {
+            (true, Some(emulation)) => {
+                let check = Check {
+                    title: "Rosetta Not Active".to_string(),
+                    info: format!("apple emulation = {:?}", emulation),
+                    result: if emulation == AppleEmulation::Rosetta {
+                        CheckResult::Red {
                     msg: "Rosetta emulation will slow down Nix builds".to_string(),
                     suggestion: "Remove rosetta, see the comment by @hruan here: https://developer.apple.com/forums/thread/669486".to_string(),
                 }
-            } else {
-                CheckResult::Green
-            },
-            required: self.required,
+                    } else {
+                        CheckResult::Green
+                    },
+                    required: self.required,
+                };
+                checks.push(check);
+            }
+            _ => {}
         };
-        checks.push(check);
-    }
         checks
     }
 }

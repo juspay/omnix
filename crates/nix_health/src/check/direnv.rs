@@ -35,9 +35,16 @@ impl Checkable for Direnv {
         let direnv_installed = direnv_install_check.result.green();
         checks.push(direnv_install_check);
 
-        // This check is currently only relevant if the flake is local and an `.envrc` exists.
-        if direnv_installed && let Some(local_path) = nix_env.current_local_flake() && local_path.join(".envrc").exists() {
-            checks.push(activation_check(local_path, self.required));
+        if direnv_installed {
+            // This check is currently only relevant if the flake is local and an `.envrc` exists.
+            match nix_env.current_local_flake() {
+                None => {}
+                Some(local_path) => {
+                    if local_path.join(".envrc").exists() {
+                        checks.push(activation_check(local_path, self.required));
+                    }
+                }
+            }
         }
 
         checks
