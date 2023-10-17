@@ -12,7 +12,7 @@ use nix_rs::flake::{
 };
 
 use crate::{
-    app::widget::RefreshButton,
+    app::widget::{FileExplorerButton, RefreshButton},
     app::{state::AppState, Route},
 };
 
@@ -24,9 +24,9 @@ pub fn Flake(cx: Scope) -> Element {
     let busy = (*flake).is_loading_or_refreshing();
     render! {
         h1 { class: "text-5xl font-bold", "Flake dashboard" }
-        div { class: "p-2 my-1",
+        div { class: "p-2 my-1 flex w-full",
             input {
-                class: "w-full p-1 mb-4 font-mono",
+                class: "flex-1 w-full p-1 mb-4 font-mono",
                 id: "nix-flake-input",
                 "type": "text",
                 value: "{state.flake_url}",
@@ -38,9 +38,11 @@ pub fn Flake(cx: Scope) -> Element {
                     fut.restart();
                 }
             }
-            RefreshButton { busy: busy, handler: move |_| { fut.restart() } }
-            flake.render_with(cx, |v| render! { FlakeView { flake: v.clone() } })
+            // TODO: Use the FileOpenDialog handler
+            div { class: "ml-2", FileExplorerButton { handler: move |_| { fut.restart() } } }
         }
+        RefreshButton { busy: busy, handler: move |_| { fut.restart() } }
+        flake.render_with(cx, |v| render! { FlakeView { flake: v.clone() } })
     }
 }
 
