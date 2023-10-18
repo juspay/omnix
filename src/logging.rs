@@ -36,18 +36,21 @@ impl Verbosity {
                 LevelFilter::WARN.into(),
                 "nix_browser=info".parse().unwrap(),
                 "nix_rs=info".parse().unwrap(),
+                "nix_health=info".parse().unwrap(),
             ],
             // -v: log app DEBUG level, as well as http requests
             1 => vec![
                 LevelFilter::WARN.into(),
                 "nix_browser=debug".parse().unwrap(),
                 "nix_rs=debug".parse().unwrap(),
+                "nix_health=debug".parse().unwrap(),
             ],
             // -vv: log app TRACE level, as well as http requests
             2 => vec![
                 LevelFilter::WARN.into(),
                 "nix_browser=trace".parse().unwrap(),
                 "nix_rs=trace".parse().unwrap(),
+                "nix_health=trace".parse().unwrap(),
             ],
             // -vvv: log DEBUG level of app and libraries
             3 => vec![LevelFilter::DEBUG.into()],

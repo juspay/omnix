@@ -6,6 +6,7 @@ pub mod traits;
 
 use check::direnv::Direnv;
 use serde::{Deserialize, Serialize};
+use tracing::instrument;
 
 use self::check::{
     caches::Caches, flake_enabled::FlakeEnabled, max_jobs::MaxJobs, min_nix_version::MinNixVersion,
@@ -61,11 +62,13 @@ impl NixHealth {
     }
 
     /// Run all checks and collect the results
+    #[instrument(skip_all)]
     pub fn run_checks(
         &self,
         nix_info: &nix_rs::info::NixInfo,
         nix_env: &nix_rs::env::NixEnv,
     ) -> Vec<traits::Check> {
+        tracing::info!("🩺 Running health checks");
         self.into_iter()
             .flat_map(|c| c.check(nix_info, nix_env))
             .collect()
