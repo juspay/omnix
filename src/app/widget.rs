@@ -43,6 +43,9 @@ pub fn FolderDialogButton<F>(cx: Scope, handler: F) -> Element
 where
     F: Fn(Event<FormData>),
 {
+    // FIXME: The id should be unique if this widget is used multiple times on
+    // the same page.
+    let id = "folder-dialog-input";
     render! {
         input {
             r#type: "file",
@@ -50,12 +53,12 @@ where
             directory: true,
             accept: "",
             onchange: handler,
-            id: "folder-dialog-input",
+            id: id,
             class: "hidden"
         }
         label {
             class: "py-1 px-2 shadow-lg border-1 bg-blue-700 text-white rounded-md hover:bg-blue-800 cursor-pointer",
-            r#for: "folder-dialog-input",
+            r#for: id,
             title: "Click to select flake path",
             "📁"
         }
