@@ -38,7 +38,6 @@ where
 #[component]
 pub fn FileExplorerButton<F>(cx: Scope, handler: F) -> Element
 where
-    F: Fn(Event<MouseData>),
     F: Fn(Event<FormData>),
 {
     render! {
