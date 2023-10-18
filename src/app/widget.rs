@@ -51,7 +51,7 @@ where
             accept: "",
             onchange: handler,
             id: "folder-dialog-input",
-            style: "display: none;"
+            class: "hidden"
         }
         label {
             class: "py-1 px-2 shadow-lg border-1 bg-blue-700 text-white rounded-md hover:bg-blue-800 cursor-pointer",
