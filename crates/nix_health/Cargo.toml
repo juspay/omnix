@@ -24,6 +24,7 @@ serde.workspace = true
 serde_json.workspace = true
 serde_with.workspace = true
 tokio = { version = "1.29", features = ["full"] }
+tracing.workspace = true
 url = { version = "2.4", features = ["serde"] }
 nix_rs.workspace = true
 human-panic.workspace = true
