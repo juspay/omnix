@@ -92,6 +92,12 @@ impl From<String> for FlakeUrl {
     }
 }
 
+impl From<&Path> for FlakeUrl {
+    fn from(path: &Path) -> Self {
+        FlakeUrl(format!("path:{}", path.display()))
+    }
+}
+
 impl FromStr for FlakeUrl {
     type Err = String;
 

@@ -1,5 +1,7 @@
 //! Various widgets
 
+use std::path::Path;
+
 use dioxus::prelude::*;
 
 /// A refresh button with a busy indicator
@@ -41,7 +43,7 @@ where
 #[component]
 pub fn FolderDialogButton<F>(cx: Scope, handler: F) -> Element
 where
-    F: Fn(String),
+    F: Fn(&Path),
 {
     // FIXME: The id should be unique if this widget is used multiple times on
     // the same page.
@@ -56,7 +58,7 @@ where
                 match &evt.files {
                     Some(file_engine) => {
                         if let Some(selected_path) = file_engine.files().first().cloned() {
-                            handler(selected_path);
+                            handler(Path::new(&selected_path));
                         } else {
                             tracing::warn!("no local flake path selected");
                         }
