@@ -43,10 +43,9 @@ pub fn Flake(cx: Scope) -> Element {
                     handler: move |evt: Event<FormData>| {
                         match &evt.files {
                             Some(file_engine) => {
-                                if let Some(flake_path) = file_engine.files().first() {
-                                    tracing::info!("flake local path: {}", flake_path);
-                                    let url = FlakeUrl::from(flake_path.to_string());
-                                    tracing::info!("setting flake url to {}", & url);
+                                if let Some(flake_path) = file_engine.files().first().cloned() {
+                                    let url : FlakeUrl = flake_path.into();
+                                    tracing::info!("setting flake url to {}", &url);
                                     state.flake_url.set(url);
                                     fut.restart();
                                 } else {
