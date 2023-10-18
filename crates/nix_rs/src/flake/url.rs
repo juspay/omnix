@@ -3,7 +3,7 @@
 //! See <https://nixos.org/manual/nix/stable/command-ref/new-cli/nix3-flake.html#url-like-syntax>
 use std::{
     fmt::{Display, Formatter},
-    path::Path,
+    path::{Path, PathBuf},
     str::FromStr,
 };
 
@@ -92,8 +92,8 @@ impl From<String> for FlakeUrl {
     }
 }
 
-impl From<&Path> for FlakeUrl {
-    fn from(path: &Path) -> Self {
+impl From<PathBuf> for FlakeUrl {
+    fn from(path: PathBuf) -> Self {
         FlakeUrl(format!("path:{}", path.display()))
     }
 }

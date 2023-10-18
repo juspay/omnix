@@ -1,6 +1,6 @@
 //! Various widgets
 
-use std::path::Path;
+use std::path::PathBuf;
 
 use dioxus::prelude::*;
 
@@ -40,10 +40,13 @@ where
 /// A button that opens a file explorer dialog.
 ///
 /// Note: You can only select a single folder.
+///
+/// NOTE(for future): When migrating to Dioxus using Tauri 2.0, switch to using
+/// https://github.com/tauri-apps/tauri-plugin-dialog
 #[component]
 pub fn FolderDialogButton<F>(cx: Scope, handler: F) -> Element
 where
-    F: Fn(&Path),
+    F: Fn(PathBuf),
 {
     // FIXME: The id should be unique if this widget is used multiple times on
     // the same page.
@@ -55,16 +58,10 @@ where
             directory: true,
             accept: "",
             onchange: move |evt: Event<FormData>| {
-                match &evt.files {
-                    Some(file_engine) => {
-                        if let Some(selected_path) = file_engine.files().first().cloned() {
-                            handler(Path::new(&selected_path));
-                        } else {
-                            tracing::warn!("no local flake path selected");
-                        }
-                    }
+                match get_selected_path(evt) {
+                    Some(selected_path) => handler(selected_path),
                     None => {
-                        tracing::warn!("no file engine found");
+                        tracing::error!("unable to get selected path");
                     }
                 }
             },
@@ -74,10 +71,16 @@ where
         label {
             class: "py-1 px-1 cursor-pointer hover:scale-125 active:scale-100",
             r#for: id,
-            title: "Choose a local flake",
+            title: "Choose a local folder",
             "📁"
         }
     }
+}
+
+/// Get the user selected path from a file dialog event
+fn get_selected_path(evt: Event<FormData>) -> Option<PathBuf> {
+    let path = evt.files.as_ref()?.files().first().cloned()?;
+    Some(PathBuf::from(path))
 }
 
 #[component]

@@ -1,6 +1,6 @@
 //! UI for /flake segment of the app
 
-use std::{collections::BTreeMap, path::Path};
+use std::{collections::BTreeMap, path::PathBuf};
 
 use dioxus::prelude::*;
 use dioxus_router::prelude::Link;
@@ -40,7 +40,7 @@ pub fn Flake(cx: Scope) -> Element {
             }
             div { class: "ml-2 flex flex-col",
                 FolderDialogButton {
-                    handler: move |flake_path: &Path| {
+                    handler: move |flake_path: PathBuf| {
                         let url: FlakeUrl = flake_path.into();
                         tracing::info!("setting flake url to {}", & url);
                         state.flake_url.set(url);
