@@ -36,7 +36,7 @@ where
 }
 
 #[component]
-pub fn FileExplorerButton<F>(cx: Scope, handler: F) -> Element
+pub fn FolderDialogButton<F>(cx: Scope, handler: F) -> Element
 where
     F: Fn(Event<FormData>),
 {
@@ -47,13 +47,13 @@ where
             directory: true,
             accept: "",
             onchange: handler,
-            id: "file-explorer-input",
+            id: "folder-dialog-input",
             style: "display: none;"
         }
         label {
             class: "py-1 px-2 shadow-lg border-1 bg-blue-700 text-white rounded-md hover:bg-blue-800 cursor-pointer",
-            r#for: "file-explorer-input",
-            title: "Click to select files",
+            r#for: "folder-dialog-input",
+            title: "Click to select flake path",
             "📁"
         }
     }

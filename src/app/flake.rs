@@ -12,7 +12,7 @@ use nix_rs::flake::{
 };
 
 use crate::{
-    app::widget::{FileExplorerButton, RefreshButton},
+    app::widget::{FolderDialogButton, RefreshButton},
     app::{state::AppState, Route},
 };
 
@@ -39,7 +39,7 @@ pub fn Flake(cx: Scope) -> Element {
                 }
             }
             div { class: "ml-2 flex flex-col",
-                FileExplorerButton {
+                FolderDialogButton {
                     handler: move |evt: Event<FormData>| {
                         match &evt.files {
                             Some(file_engine) => {
