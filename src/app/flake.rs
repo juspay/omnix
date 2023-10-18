@@ -33,7 +33,7 @@ pub fn Flake(cx: Scope) -> Element {
                 disabled: busy,
                 onchange: move |ev| {
                     let url: FlakeUrl = ev.value.clone().into();
-                    tracing::info!("setting flake url set to {}", & url);
+                    tracing::info!("setting flake url to {}", & url);
                     state.flake_url.set(url);
                     fut.restart();
                 }
@@ -46,7 +46,7 @@ pub fn Flake(cx: Scope) -> Element {
                                 if let Some(flake_path) = file_engine.files().first() {
                                     tracing::info!("flake local path: {}", flake_path);
                                     let url = FlakeUrl::from(flake_path.to_string());
-                                    tracing::info!("setting flake url set to {}", & url);
+                                    tracing::info!("setting flake url to {}", & url);
                                     state.flake_url.set(url);
                                     fut.restart();
                                 } else {
