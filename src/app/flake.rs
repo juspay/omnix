@@ -38,8 +38,28 @@ pub fn Flake(cx: Scope) -> Element {
                     fut.restart();
                 }
             }
-            // TODO: Use the FileOpenDialog handler
-            div { class: "ml-2", FileExplorerButton { handler: move |_| { fut.restart() } } }
+            div { class: "ml-2 flex flex-col",
+                FileExplorerButton {
+                    handler: move |evt: Event<FormData>| {
+                        match &evt.files {
+                            Some(file_engine) => {
+                                if let Some(flake_path) = file_engine.files().first() {
+                                    tracing::info!("flake local path: {}", flake_path);
+                                    let url = FlakeUrl::from(flake_path.to_string());
+                                    tracing::info!("setting flake url set to {}", & url);
+                                    state.flake_url.set(url);
+                                    fut.restart();
+                                } else {
+                                    tracing::warn!("no local flake path selected");
+                                }
+                            }
+                            None => {
+                                tracing::warn!("no file engine found");
+                            }
+                        }
+                    }
+                }
+            }
         }
         RefreshButton { busy: busy, handler: move |_| { fut.restart() } }
         flake.render_with(cx, |v| render! { FlakeView { flake: v.clone() } })
