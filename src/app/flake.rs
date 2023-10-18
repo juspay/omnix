@@ -13,13 +13,15 @@ use nix_rs::flake::{
 
 use crate::{
     app::widget::{FolderDialogButton, RefreshButton},
-    app::{state::AppState, Route},
+    app::{
+        state::{self, AppState},
+        Route,
+    },
 };
 
 #[component]
 pub fn Flake(cx: Scope) -> Element {
     let state = AppState::use_state(cx);
-    let fut = use_future(cx, (), |_| async move { state.update_flake().await });
     let flake = state.flake.read();
     let busy = (*flake).is_loading_or_refreshing();
     render! {
@@ -35,7 +37,6 @@ pub fn Flake(cx: Scope) -> Element {
                     let url: FlakeUrl = ev.value.clone().into();
                     tracing::info!("setting flake url to {}", & url);
                     state.flake_url.set(url);
-                    fut.restart();
                 }
             }
             div { class: "ml-2 flex flex-col",
@@ -44,12 +45,16 @@ pub fn Flake(cx: Scope) -> Element {
                         let url: FlakeUrl = flake_path.into();
                         tracing::info!("setting flake url to {}", & url);
                         state.flake_url.set(url);
-                        fut.restart();
                     }
                 }
             }
         }
-        RefreshButton { busy: busy, handler: move |_| { fut.restart() } }
+        RefreshButton {
+            busy: busy,
+            handler: move |_| {
+                state.act(state::Action::RefreshFlake);
+            }
+        }
         flake.render_with(cx, |v| render! { FlakeView { flake: v.clone() } })
     }
 }
@@ -57,7 +62,7 @@ pub fn Flake(cx: Scope) -> Element {
 #[component]
 pub fn FlakeRaw(cx: Scope) -> Element {
     let state = AppState::use_state(cx);
-    use_future(cx, (), |_| async move { state.update_flake().await });
+    // use_future(cx, (), |_| async move { state.update_flake().await });
     let flake = state.flake.read();
     render! {
         div {

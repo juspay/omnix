@@ -1,3 +1,4 @@
+#![feature(let_chains)]
 use dioxus_desktop::{LogicalSize, WindowBuilder};
 
 mod app;

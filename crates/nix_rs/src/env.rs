@@ -4,6 +4,7 @@ use std::{fmt::Display, path::Path};
 use bytesize::ByteSize;
 use os_info;
 use serde::{Deserialize, Serialize};
+use tracing::instrument;
 
 use crate::flake::url::FlakeUrl;
 
@@ -27,8 +28,10 @@ pub struct NixEnv {
 impl NixEnv {
     /// Determine [NixEnv] on the user's system
 
+    #[instrument]
     pub async fn detect(current_flake: Option<FlakeUrl>) -> Result<NixEnv, NixEnvError> {
         use sysinfo::{DiskExt, SystemExt};
+        tracing::info!("Detecting Nix environment");
         let os = OS::detect().await;
         tokio::task::spawn_blocking(|| {
             let current_user = std::env::var("USER")?;

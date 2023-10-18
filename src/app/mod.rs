@@ -11,7 +11,6 @@ mod widget;
 
 use dioxus::prelude::*;
 use dioxus_router::prelude::*;
-use nix_rs::flake::url::FlakeUrl;
 
 use crate::app::{
     flake::{Flake, FlakeRaw},
@@ -42,12 +41,6 @@ enum Route {
 /// Main frontend application container
 pub fn App(cx: Scope) -> Element {
     AppState::provide_state(cx);
-    use_shared_state_provider(cx, || {
-        FlakeUrl::suggestions()
-            .first()
-            .map(Clone::clone)
-            .unwrap_or_default()
-    });
     render! {
         body {
             div { class: "flex flex-col text-center justify-between w-full overflow-hidden h-screen  bg-base-200",
