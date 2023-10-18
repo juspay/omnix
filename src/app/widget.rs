@@ -1,5 +1,7 @@
 //! Various widgets
 
+use std::path::PathBuf;
+
 use dioxus::prelude::*;
 
 /// A refresh button with a busy indicator
@@ -33,6 +35,52 @@ where
             }
         }
     }
+}
+
+/// A button that opens a file explorer dialog.
+///
+/// Note: You can only select a single folder.
+///
+/// NOTE(for future): When migrating to Dioxus using Tauri 2.0, switch to using
+/// https://github.com/tauri-apps/tauri-plugin-dialog
+#[component]
+pub fn FolderDialogButton<F>(cx: Scope, handler: F) -> Element
+where
+    F: Fn(PathBuf),
+{
+    // FIXME: The id should be unique if this widget is used multiple times on
+    // the same page.
+    let id = "folder-dialog-input";
+    render! {
+        input {
+            r#type: "file",
+            multiple: false,
+            directory: true,
+            accept: "",
+            onchange: move |evt: Event<FormData>| {
+                match get_selected_path(evt) {
+                    Some(selected_path) => handler(selected_path),
+                    None => {
+                        tracing::error!("unable to get selected path");
+                    }
+                }
+            },
+            id: id,
+            class: "hidden"
+        }
+        label {
+            class: "py-1 px-1 cursor-pointer hover:scale-125 active:scale-100",
+            r#for: id,
+            title: "Choose a local folder",
+            "📁"
+        }
+    }
+}
+
+/// Get the user selected path from a file dialog event
+fn get_selected_path(evt: Event<FormData>) -> Option<PathBuf> {
+    let path = evt.files.as_ref()?.files().first().cloned()?;
+    Some(PathBuf::from(path))
 }
 
 #[component]

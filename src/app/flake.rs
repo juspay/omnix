@@ -1,6 +1,6 @@
 //! UI for /flake segment of the app
 
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, path::PathBuf};
 
 use dioxus::prelude::*;
 use dioxus_router::prelude::Link;
@@ -12,7 +12,7 @@ use nix_rs::flake::{
 };
 
 use crate::{
-    app::widget::RefreshButton,
+    app::widget::{FolderDialogButton, RefreshButton},
     app::{state::AppState, Route},
 };
 
@@ -24,23 +24,33 @@ pub fn Flake(cx: Scope) -> Element {
     let busy = (*flake).is_loading_or_refreshing();
     render! {
         h1 { class: "text-5xl font-bold", "Flake dashboard" }
-        div { class: "p-2 my-1",
+        div { class: "p-2 my-1 flex w-full",
             input {
-                class: "w-full p-1 mb-4 font-mono",
+                class: "flex-1 w-full p-1 mb-4 font-mono",
                 id: "nix-flake-input",
                 "type": "text",
                 value: "{state.flake_url}",
                 disabled: busy,
                 onchange: move |ev| {
                     let url: FlakeUrl = ev.value.clone().into();
-                    tracing::info!("setting flake url set to {}", & url);
+                    tracing::info!("setting flake url to {}", & url);
                     state.flake_url.set(url);
                     fut.restart();
                 }
             }
-            RefreshButton { busy: busy, handler: move |_| { fut.restart() } }
-            flake.render_with(cx, |v| render! { FlakeView { flake: v.clone() } })
+            div { class: "ml-2 flex flex-col",
+                FolderDialogButton {
+                    handler: move |flake_path: PathBuf| {
+                        let url: FlakeUrl = flake_path.into();
+                        tracing::info!("setting flake url to {}", & url);
+                        state.flake_url.set(url);
+                        fut.restart();
+                    }
+                }
+            }
         }
+        RefreshButton { busy: busy, handler: move |_| { fut.restart() } }
+        flake.render_with(cx, |v| render! { FlakeView { flake: v.clone() } })
     }
 }
 
