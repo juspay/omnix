@@ -41,9 +41,19 @@ where
     F: Fn(Event<FormData>),
 {
     render! {
-        button {
-            class: "py-1 px-2 shadow-lg border-1 bg-blue-700 text-white hover:bg-blue-800 rounded-md",
-            onclick: handler,
+        input {
+            r#type: "file",
+            multiple: false,
+            directory: true,
+            accept: "",
+            onchange: handler,
+            id: "file-explorer-input",
+            style: "display: none;"
+        }
+        label {
+            class: "py-1 px-2 shadow-lg border-1 bg-blue-700 text-white rounded-md hover:bg-blue-800 cursor-pointer",
+            r#for: "file-explorer-input",
+            title: "Click to select files",
             "📁"
         }
     }
