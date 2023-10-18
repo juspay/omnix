@@ -57,9 +57,9 @@ where
             class: "hidden"
         }
         label {
-            class: "py-1 px-2 shadow-lg border-1 bg-blue-700 text-white rounded-md hover:bg-blue-800 cursor-pointer",
+            class: "py-1 px-1 cursor-pointer hover:scale-125 active:scale-100",
             r#for: id,
-            title: "Click to select flake path",
+            title: "Choose a local flake",
             "📁"
         }
     }
