@@ -5,7 +5,10 @@ use std::fmt::Display;
 use dioxus::prelude::*;
 use nix_rs::{config::NixConfig, info::NixInfo, version::NixVersion};
 
-use crate::{app::state::AppState, app::widget::RefreshButton};
+use crate::{
+    app::state::AppState,
+    app::{state::Action, widget::RefreshButton},
+};
 
 /// Nix information
 #[component]
@@ -18,9 +21,7 @@ pub fn Info(cx: Scope) -> Element {
         RefreshButton {
             busy: (*nix_info).is_loading_or_refreshing(),
             handler: move |_event| {
-                cx.spawn(async move {
-                    state.update_nix_info().await;
-                });
+                state.act(Action::GetNixInfo);
             }
         }
         nix_info.render_with(cx, |v| render! { NixInfoView { info: v.clone() } })

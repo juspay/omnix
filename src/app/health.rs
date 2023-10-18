@@ -3,7 +3,10 @@
 use dioxus::prelude::*;
 use nix_health::traits::{Check, CheckResult};
 
-use crate::{app::state::AppState, app::widget::RefreshButton};
+use crate::{
+    app::state::AppState,
+    app::{state::Action, widget::RefreshButton},
+};
 
 /// Nix health checks
 pub fn Health(cx: Scope) -> Element {
@@ -15,9 +18,7 @@ pub fn Health(cx: Scope) -> Element {
         RefreshButton {
             busy: (*health_checks).is_loading_or_refreshing(),
             handler: move |_event| {
-                cx.spawn(async move {
-                    state.update_health_checks().await;
-                });
+                state.act(Action::GetNixInfo);
             }
         }
         health_checks.render_with(cx, |checks| render! {
