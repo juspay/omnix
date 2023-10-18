@@ -13,6 +13,10 @@ pub struct Args {
     /// Include health checks defined in the given flake
     pub flake_url: Option<FlakeUrl>,
 
+    /// Be quiet by outputting only failed checks
+    #[arg(long = "quiet", short = 'q')]
+    pub quiet: bool,
+
     /// Dump the config schema of the health checks (useful when adding them to
     /// a flake.nix)
     #[arg(long = "dump-schema")]
@@ -36,8 +40,10 @@ async fn main() -> anyhow::Result<()> {
     for check in &checks {
         match &check.result {
             CheckResult::Green => {
-                println!("{}", format!("✅ {}", check.title).green().bold());
-                println!("   {}", check.info.blue());
+                if !args.quiet {
+                    println!("{}", format!("✅ {}", check.title).green().bold());
+                    println!("   {}", check.info.blue());
+                }
             }
             CheckResult::Red { msg, suggestion } => {
                 res.register_failure(check.required);
@@ -51,7 +57,6 @@ async fn main() -> anyhow::Result<()> {
                 println!("   {}", suggestion);
             }
         }
-        println!();
     }
     std::process::exit(res.report())
 }
@@ -71,11 +76,11 @@ async fn run_checks(flake_url: Option<FlakeUrl>) -> anyhow::Result<Vec<Check>> {
     );
     let health: NixHealth = match flake_url {
         Some(flake_url) => {
-            println!("{}, using config from flake '{}':\n", action_msg, flake_url);
+            println!("{}, using config from flake '{}':", action_msg, flake_url);
             NixHealth::from_flake(flake_url).await
         }
         None => {
-            println!("{}:\n", action_msg);
+            println!("{}:", action_msg);
             Ok(NixHealth::default())
         }
     }?;

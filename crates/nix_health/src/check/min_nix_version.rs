@@ -17,7 +17,7 @@ impl Default for MinNixVersion {
         MinNixVersion {
             min_required: NixVersion {
                 major: 2,
-                minor: 13,
+                minor: 16,
                 patch: 0,
             },
         }

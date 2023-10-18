@@ -1,5 +1,3 @@
-#![feature(associated_type_defaults)]
-#![feature(let_chains)]
 //! Health checks for the user's Nix install
 
 pub mod check;
