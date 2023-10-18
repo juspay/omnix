@@ -35,6 +35,9 @@ where
     }
 }
 
+/// A button that opens a file explorer dialog.
+///
+/// Note: You can only select a single folder.
 #[component]
 pub fn FolderDialogButton<F>(cx: Scope, handler: F) -> Element
 where
