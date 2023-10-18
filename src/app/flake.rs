@@ -40,22 +40,11 @@ pub fn Flake(cx: Scope) -> Element {
             }
             div { class: "ml-2 flex flex-col",
                 FolderDialogButton {
-                    handler: move |evt: Event<FormData>| {
-                        match &evt.files {
-                            Some(file_engine) => {
-                                if let Some(flake_path) = file_engine.files().first().cloned() {
-                                    let url : FlakeUrl = flake_path.into();
-                                    tracing::info!("setting flake url to {}", &url);
-                                    state.flake_url.set(url);
-                                    fut.restart();
-                                } else {
-                                    tracing::warn!("no local flake path selected");
-                                }
-                            }
-                            None => {
-                                tracing::warn!("no file engine found");
-                            }
-                        }
+                    handler: move |flake_path: String| {
+                        let url: FlakeUrl = flake_path.into();
+                        tracing::info!("setting flake url to {}", & url);
+                        state.flake_url.set(url);
+                        fut.restart();
                     }
                 }
             }

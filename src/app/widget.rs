@@ -41,7 +41,7 @@ where
 #[component]
 pub fn FolderDialogButton<F>(cx: Scope, handler: F) -> Element
 where
-    F: Fn(Event<FormData>),
+    F: Fn(String),
 {
     // FIXME: The id should be unique if this widget is used multiple times on
     // the same page.
@@ -52,7 +52,20 @@ where
             multiple: false,
             directory: true,
             accept: "",
-            onchange: handler,
+            onchange: move |evt: Event<FormData>| {
+                match &evt.files {
+                    Some(file_engine) => {
+                        if let Some(selected_path) = file_engine.files().first().cloned() {
+                            handler(selected_path);
+                        } else {
+                            tracing::warn!("no local flake path selected");
+                        }
+                    }
+                    None => {
+                        tracing::warn!("no file engine found");
+                    }
+                }
+            },
             id: id,
             class: "hidden"
         }
