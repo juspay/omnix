@@ -121,9 +121,9 @@ impl AppState {
     }
 
     pub fn provide_state(cx: Scope) {
-        tracing::info!("🏗️ Providing AppState");
+        tracing::debug!("🏗️ Providing AppState");
         use_context_provider(cx, || {
-            tracing::info!("🔨 Creating AppState default value");
+            tracing::debug!("🔨 Creating AppState default value");
             AppState::default()
         });
         // FIXME: Can we avoid calling build_network multiple times?
@@ -136,7 +136,7 @@ impl AppState {
     /// If a signal's value is dependent on another signal's value, you must
     /// define that relationship here.
     fn build_network(self, cx: Scope) {
-        tracing::info!("🕸️ Building AppState network");
+        tracing::debug!("🕸️ Building AppState network");
         // Build `state.flake` signal when `state.flake_url` changes or the
         // RefreshFlake action is triggered
         {
