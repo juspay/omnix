@@ -57,12 +57,9 @@ where
             multiple: false,
             directory: true,
             accept: "",
-            onchange: move |evt: Event<FormData>| {
-                match get_selected_path(evt) {
-                    Some(selected_path) => handler(selected_path),
-                    None => {
-                        tracing::error!("unable to get selected path");
-                    }
+            oninput: move |evt: Event<FormData>| {
+                if let Some(path) = get_selected_path(evt) {
+                    handler(path)
                 }
             },
             id: id,
@@ -78,9 +75,20 @@ where
 }
 
 /// Get the user selected path from a file dialog event
+///
+/// If the user has not selected any (eg: cancels the dialog), this returns
+/// None. Otherwise, it returns the first entry in the selected list.
 fn get_selected_path(evt: Event<FormData>) -> Option<PathBuf> {
-    let path = evt.files.as_ref()?.files().first().cloned()?;
-    Some(PathBuf::from(path))
+    match evt.files.as_ref() {
+        None => {
+            tracing::error!("unable to get files from event");
+            None
+        }
+        Some(file_engine) => {
+            let path = file_engine.files().first().cloned()?;
+            Some(PathBuf::from(path))
+        }
+    }
 }
 
 #[component]
