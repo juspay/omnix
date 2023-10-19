@@ -5,6 +5,7 @@ pub mod report;
 pub mod traits;
 
 use check::direnv::Direnv;
+use nix_rs::flake::url::FlakeUrl;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
 
@@ -67,10 +68,11 @@ impl NixHealth {
         &self,
         nix_info: &nix_rs::info::NixInfo,
         nix_env: &nix_rs::env::NixEnv,
+        flake_url: Option<FlakeUrl>,
     ) -> Vec<traits::Check> {
         tracing::info!("🩺 Running health checks");
         self.into_iter()
-            .flat_map(|c| c.check(nix_info, nix_env))
+            .flat_map(|c| c.check(nix_info, nix_env, flake_url.clone()))
             .collect()
     }
 

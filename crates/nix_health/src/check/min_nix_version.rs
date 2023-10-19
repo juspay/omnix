@@ -25,7 +25,12 @@ impl Default for MinNixVersion {
 }
 
 impl Checkable for MinNixVersion {
-    fn check(&self, nix_info: &info::NixInfo, _nix_env: &env::NixEnv) -> Vec<Check> {
+    fn check(
+        &self,
+        nix_info: &info::NixInfo,
+        _nix_env: &env::NixEnv,
+        _: Option<nix_rs::flake::url::FlakeUrl>,
+    ) -> Vec<Check> {
         let val = &nix_info.nix_version;
         let check = Check {
             title: "Minimum Nix Version".to_string(),

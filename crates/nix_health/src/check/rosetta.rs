@@ -26,7 +26,12 @@ impl Default for Rosetta {
 }
 
 impl Checkable for Rosetta {
-    fn check(&self, _nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Vec<Check> {
+    fn check(
+        &self,
+        _nix_info: &info::NixInfo,
+        nix_env: &env::NixEnv,
+        _: Option<nix_rs::flake::url::FlakeUrl>,
+    ) -> Vec<Check> {
         let mut checks = vec![];
         if let (true, Some(emulation)) = (self.enable, get_apple_emulation(&nix_env.os)) {
             let check = Check {

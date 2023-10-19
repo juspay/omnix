@@ -8,7 +8,12 @@ use crate::traits::*;
 pub struct TrustedUsers {}
 
 impl Checkable for TrustedUsers {
-    fn check(&self, nix_info: &nix_rs::info::NixInfo, nix_env: &nix_rs::env::NixEnv) -> Vec<Check> {
+    fn check(
+        &self,
+        nix_info: &nix_rs::info::NixInfo,
+        nix_env: &nix_rs::env::NixEnv,
+        _: Option<nix_rs::flake::url::FlakeUrl>,
+    ) -> Vec<Check> {
         let val = &nix_info.nix_config.trusted_users.value;
         let current_user = &nix_env.current_user;
         let result = if val.contains(current_user) {
