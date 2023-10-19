@@ -31,11 +31,11 @@ impl Default for System {
 impl Checkable for System {
     fn check(
         &self,
-        _nix_info: &nix_rs::info::NixInfo,
-        nix_env: &nix_rs::env::NixEnv,
+        nix_info: &nix_rs::info::NixInfo,
         _: Option<nix_rs::flake::url::FlakeUrl>,
     ) -> Vec<Check> {
         let mut checks = vec![];
+        let nix_env = &nix_info.nix_env;
         if self.enable {
             if let Some(min_ram) = self.min_ram {
                 checks.push(Check {

@@ -1,5 +1,5 @@
 use nix_rs::{
-    env::{self, AppleEmulation, MacOSArch, OS},
+    env::{AppleEmulation, MacOSArch, OS},
     info,
 };
 use serde::{Deserialize, Serialize};
@@ -28,12 +28,11 @@ impl Default for Rosetta {
 impl Checkable for Rosetta {
     fn check(
         &self,
-        _nix_info: &info::NixInfo,
-        nix_env: &env::NixEnv,
+        nix_info: &info::NixInfo,
         _: Option<nix_rs::flake::url::FlakeUrl>,
     ) -> Vec<Check> {
         let mut checks = vec![];
-        if let (true, Some(emulation)) = (self.enable, get_apple_emulation(&nix_env.os)) {
+        if let (true, Some(emulation)) = (self.enable, get_apple_emulation(&nix_info.nix_env.os)) {
             let check = Check {
                 title: "Rosetta Not Active".to_string(),
                 info: format!("apple emulation = {:?}", emulation),

@@ -1,4 +1,4 @@
-use nix_rs::{env, info};
+use nix_rs::info;
 use serde::{Deserialize, Serialize};
 
 use crate::traits::*;
@@ -12,7 +12,6 @@ impl Checkable for FlakeEnabled {
     fn check(
         &self,
         nix_info: &info::NixInfo,
-        _nix_env: &env::NixEnv,
         _: Option<nix_rs::flake::url::FlakeUrl>,
     ) -> Vec<Check> {
         let val = &nix_info.nix_config.experimental_features.value;

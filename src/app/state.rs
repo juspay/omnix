@@ -5,13 +5,12 @@ mod datum;
 use std::fmt::Display;
 
 use dioxus::prelude::{use_context, use_context_provider, use_future, Scope};
-use dioxus_signals::{use_signal, ReadOnlySignal, Signal};
+use dioxus_signals::{use_signal, Signal};
 use nix_health::NixHealth;
 use nix_rs::{
     command::NixCmdError,
     flake::{url::FlakeUrl, Flake},
 };
-use tracing::instrument;
 
 use self::datum::Datum;
 
@@ -24,8 +23,6 @@ use self::datum::Datum;
 #[derive(Default, Clone, Copy, Debug)]
 pub struct AppState {
     pub nix_info: Signal<Datum<Result<nix_rs::info::NixInfo, SystemError>>>,
-    // TODO: Merge nix_env with nix_info.
-    pub nix_env: Signal<Datum<Result<nix_rs::env::NixEnv, SystemError>>>,
     pub health_checks: Signal<Datum<Result<Vec<nix_health::traits::Check>, SystemError>>>,
 
     pub flake_url: Signal<FlakeUrl>,
@@ -38,7 +35,6 @@ pub struct AppState {
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Action {
     RefreshFlake,
-    // NOTE: This also updates nix_env. See TODO above.
     #[default]
     GetNixInfo,
 }
@@ -75,44 +71,6 @@ impl AppState {
             *i += 1;
             *v = action;
         });
-    }
-
-    #[instrument(name = "update-nix-info", skip(self))]
-    async fn update_nix_info(&self) {
-        tracing::debug!("Updating nix info ...");
-        Datum::refresh_with(self.nix_info, async {
-            // NOTE: Without tokio::spawn, this will run in main desktop thread,
-            // and will hang at some point.
-            let nix_info = tokio::spawn(async move {
-                nix_rs::info::NixInfo::from_nix(&nix_rs::command::NixCmd::default())
-                    .await
-                    .map_err(|e| SystemError {
-                        message: format!("Error getting nix info: {:?}", e),
-                    })
-            })
-            .await
-            .unwrap();
-            tracing::debug!("Got nix info, about to mut");
-            nix_info
-        })
-        .await;
-    }
-
-    #[instrument(name = "update-nix-env", skip(self))]
-    async fn update_nix_env(&self) {
-        tracing::debug!("Updating nix env ...");
-        Datum::refresh_with(self.nix_env, async {
-            let nix_env = tokio::spawn(async move {
-                nix_rs::env::NixEnv::detect()
-                    .await
-                    .map_err(|e| e.to_string().into())
-            })
-            .await
-            .unwrap();
-            tracing::debug!("Got nix env, about to mut");
-            nix_env
-        })
-        .await;
     }
 
     /// Get the [AppState] from context
@@ -160,27 +118,16 @@ impl AppState {
 
         // Build `state.health_checks` when nix_info or nix_env changes
         {
-            // The and_then dance is necessary to merge two Datum's
-            let nix_info_tup =
-                signal_merge_with(cx, self.nix_info, self.nix_env, |nix_info, nix_env| {
-                    nix_info.and_then(|nix_info| {
-                        nix_env.and_then(|nix_env| Datum::pure((nix_info.clone(), nix_env.clone())))
-                    })
-                });
-            let nix_info_tup = nix_info_tup.read().clone();
-            use_future(cx, (&nix_info_tup,), |(nix_info_tup,)| async move {
-                if let Some((nix_info, nix_env)) = nix_info_tup.current_value() {
+            let nix_info = self.nix_info.read().clone();
+            use_future(cx, (&nix_info,), |(nix_info,)| async move {
+                if let Some(nix_info) = nix_info.current_value() {
                     Datum::refresh_with(self.health_checks, async {
                         let get_nix_health =
                             move || -> Result<Vec<nix_health::traits::Check>, SystemError> {
                                 let nix_info = nix_info
                                     .as_ref()
                                     .map_err(|e| Into::<SystemError>::into(e.to_string()))?;
-                                let nix_env = nix_env
-                                    .as_ref()
-                                    .map_err(|e| Into::<SystemError>::into(e.to_string()))?;
-                                let health_checks =
-                                    NixHealth::default().run_checks(nix_info, nix_env, None);
+                                let health_checks = NixHealth::default().run_checks(nix_info, None);
                                 Ok(health_checks)
                             };
                         get_nix_health()
@@ -196,9 +143,23 @@ impl AppState {
                 Action::signal_for(cx, self.action, |act| act == Action::GetNixInfo);
             let idx = *get_nix_info_action.read();
             use_future(cx, (&idx,), |(idx,)| async move {
-                tracing::info!("Updating nix info/env [{}] ...", idx);
-                self.update_nix_info().await;
-                self.update_nix_env().await;
+                tracing::info!("Updating nix info [{}] ...", idx);
+                Datum::refresh_with(self.nix_info, async {
+                    // NOTE: Without tokio::spawn, this will run in main desktop thread,
+                    // and will hang at some point.
+                    let nix_info = tokio::spawn(async move {
+                        nix_rs::info::NixInfo::from_nix(&nix_rs::command::NixCmd::default())
+                            .await
+                            .map_err(|e| SystemError {
+                                message: format!("Error getting nix info: {:?}", e),
+                            })
+                    })
+                    .await
+                    .unwrap();
+                    tracing::debug!("Got nix info, about to mut");
+                    nix_info
+                })
+                .await;
             });
         }
     }
@@ -240,23 +201,4 @@ where
         }
     });
     res
-}
-
-fn signal_merge_with<T, U, V, F>(
-    cx: Scope,
-    sig1: Signal<T>,
-    sig2: Signal<U>,
-    f: F,
-) -> ReadOnlySignal<V>
-where
-    F: Fn(T, U) -> V + 'static,
-    T: Clone,
-    U: Clone,
-    V: Clone + PartialEq,
-{
-    dioxus_signals::use_selector(cx, move || {
-        let value1 = sig1.read().clone();
-        let value2 = sig2.read().clone();
-        f(value1, value2)
-    })
 }
