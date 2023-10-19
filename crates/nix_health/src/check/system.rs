@@ -33,6 +33,7 @@ impl Checkable for System {
         &self,
         _nix_info: &nix_rs::info::NixInfo,
         nix_env: &nix_rs::env::NixEnv,
+        _: Option<nix_rs::flake::url::FlakeUrl>,
     ) -> Vec<Check> {
         let mut checks = vec![];
         if self.enable {

@@ -103,7 +103,7 @@ impl AppState {
         tracing::debug!("Updating nix env ...");
         Datum::refresh_with(self.nix_env, async {
             let nix_env = tokio::spawn(async move {
-                nix_rs::env::NixEnv::detect(None)
+                nix_rs::env::NixEnv::detect()
                     .await
                     .map_err(|e| e.to_string().into())
             })
@@ -180,7 +180,7 @@ impl AppState {
                                     .as_ref()
                                     .map_err(|e| Into::<SystemError>::into(e.to_string()))?;
                                 let health_checks =
-                                    NixHealth::default().run_checks(nix_info, nix_env);
+                                    NixHealth::default().run_checks(nix_info, nix_env, None);
                                 Ok(health_checks)
                             };
                         get_nix_health()

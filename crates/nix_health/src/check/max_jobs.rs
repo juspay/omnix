@@ -9,7 +9,12 @@ use crate::traits::*;
 pub struct MaxJobs {}
 
 impl Checkable for MaxJobs {
-    fn check(&self, nix_info: &info::NixInfo, nix_env: &env::NixEnv) -> Vec<Check> {
+    fn check(
+        &self,
+        nix_info: &info::NixInfo,
+        nix_env: &env::NixEnv,
+        _: Option<nix_rs::flake::url::FlakeUrl>,
+    ) -> Vec<Check> {
         let max_jobs = nix_info.nix_config.max_jobs.value;
         let check = Check {
             title: "Max Jobs".to_string(),

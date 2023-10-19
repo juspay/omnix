@@ -6,15 +6,11 @@ use os_info;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
 
-use crate::flake::url::FlakeUrl;
-
 /// The environment in which Nix operates
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct NixEnv {
     /// Current user ($USER)
     pub current_user: String,
-    /// Current flake context
-    pub current_flake: Option<FlakeUrl>,
     /// Underlying OS in which Nix runs
     pub os: OS,
     /// Total disk space of the volume where /nix exists.
@@ -29,7 +25,7 @@ impl NixEnv {
     /// Determine [NixEnv] on the user's system
 
     #[instrument]
-    pub async fn detect(current_flake: Option<FlakeUrl>) -> Result<NixEnv, NixEnvError> {
+    pub async fn detect() -> Result<NixEnv, NixEnvError> {
         use sysinfo::{DiskExt, SystemExt};
         tracing::info!("Detecting Nix environment");
         let os = OS::detect().await;
@@ -42,7 +38,6 @@ impl NixEnv {
             let total_memory = to_bytesize(sys.total_memory());
             Ok(NixEnv {
                 current_user,
-                current_flake,
                 os,
                 total_disk_space,
                 total_memory,
@@ -50,13 +45,6 @@ impl NixEnv {
         })
         .await
         .unwrap()
-    }
-
-    /// Return [NixEnv::current_flake] as a local path if it is one
-    pub fn current_local_flake(&self) -> Option<&Path> {
-        self.current_flake
-            .as_ref()
-            .and_then(|url| url.as_local_path())
     }
 }
 
