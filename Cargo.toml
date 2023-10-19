@@ -56,4 +56,5 @@ dioxus = { git = "https://github.com/DioxusLabs/dioxus.git", rev = "c7963a03440d
 dioxus-desktop = { git = "https://github.com/DioxusLabs/dioxus.git", rev = "c7963a03440d5a050bf229f91665d60a0d108a8a" }
 dioxus-router = { git = "https://github.com/DioxusLabs/dioxus.git", rev = "c7963a03440d5a050bf229f91665d60a0d108a8a" }
 dioxus-signals = { git = "https://github.com/DioxusLabs/dioxus.git", rev = "c7963a03440d5a050bf229f91665d60a0d108a8a" }
+fermi = { git = "https://github.com/DioxusLabs/dioxus.git", rev = "c7963a03440d5a050bf229f91665d60a0d108a8a" }
 dioxus-std = { version = "0.4.0", features = ["clipboard", "utils"] }
