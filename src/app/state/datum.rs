@@ -37,30 +37,6 @@ impl<T> Datum<T> {
         }
     }
 
-    pub fn pure(value: T) -> Datum<T> {
-        Datum::Available {
-            value,
-            refreshing: false,
-        }
-    }
-
-    /// Chain [Datum]'s together monadically
-    ///
-    /// The resulting Datum is considered "available" only if both the datums
-    /// are available and the left datum is not refreshing.
-    pub fn and_then<U, F>(&self, f: F) -> Datum<U>
-    where
-        F: FnOnce(&T) -> Datum<U>,
-    {
-        match self {
-            Datum::Available {
-                value: x,
-                refreshing: false,
-            } => f(x),
-            _ => Datum::Loading,
-        }
-    }
-
     /// Set the datum value
     ///
     /// Use [refresh_with] if the value is produced by a long-running task.

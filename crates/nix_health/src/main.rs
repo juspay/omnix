@@ -84,7 +84,7 @@ async fn run_checks(flake_url: Option<FlakeUrl>) -> anyhow::Result<Vec<Check>> {
             Ok(NixHealth::default())
         }
     }?;
-    let checks = health.run_checks(&nix_info, &nix_env, flake_url.clone());
+    let checks = health.run_checks(&nix_info, flake_url.clone());
     Ok(checks)
 }
 

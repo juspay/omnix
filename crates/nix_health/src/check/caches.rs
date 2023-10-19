@@ -1,4 +1,4 @@
-use nix_rs::{env, info};
+use nix_rs::info;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
@@ -24,7 +24,6 @@ impl Checkable for Caches {
     fn check(
         &self,
         nix_info: &info::NixInfo,
-        nix_env: &env::NixEnv,
         _: Option<nix_rs::flake::url::FlakeUrl>,
     ) -> Vec<Check> {
         let val = &nix_info.nix_config.substituters.value;
@@ -47,7 +46,7 @@ impl Checkable for Caches {
                 ),
                 suggestion: format!(
                     "Caches can be added in your {} (see https://nixos.wiki/wiki/Binary_Cache#Using_a_binary_cache). Cachix caches can also be added using `nix run nixpkgs#cachix use <name>`.",
-                    nix_env.os.nix_config_label()
+                    nix_info.nix_env.os.nix_config_label()
                 )
             }
         };

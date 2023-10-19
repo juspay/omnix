@@ -10,7 +10,6 @@ pub trait Checkable {
     fn check(
         &self,
         nix_info: &nix_rs::info::NixInfo,
-        nix_env: &nix_rs::env::NixEnv,
         flake: Option<nix_rs::flake::url::FlakeUrl>,
     ) -> Vec<Check>;
 }

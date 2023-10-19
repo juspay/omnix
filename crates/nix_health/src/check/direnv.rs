@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::traits::{Check, CheckResult, Checkable};
 
-use nix_rs::{env, flake::url::FlakeUrl, info};
+use nix_rs::{flake::url::FlakeUrl, info};
 
 /// Check if direnv is installed
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -25,12 +25,7 @@ impl Default for Direnv {
 }
 
 impl Checkable for Direnv {
-    fn check(
-        &self,
-        _nix_info: &info::NixInfo,
-        _nix_env: &env::NixEnv,
-        flake_url: Option<FlakeUrl>,
-    ) -> Vec<Check> {
+    fn check(&self, _nix_info: &info::NixInfo, flake_url: Option<FlakeUrl>) -> Vec<Check> {
         let mut checks = vec![];
         if !self.enable {
             return checks;
