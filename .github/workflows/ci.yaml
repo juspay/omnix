@@ -1,0 +1,22 @@
+name: "CI"
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+jobs:
+  checks:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        # Run only on Intel mac, because garnix doesn't support it yet
+        # https://github.com/garnix-io/issues/issues/16
+        os: [macos-latest]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - uses: yaxitech/nix-install-pkgs-action@v3
+        with:
+          packages: "nixpkgs#nixci"
+      - run: nixci
