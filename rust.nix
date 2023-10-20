@@ -10,6 +10,21 @@
         ];
         meta.description = "WIP: nix-browser";
       };
+      rustBuildInputs = lib.optionals pkgs.stdenv.isLinux
+        (with pkgs; [
+          webkitgtk_4_1
+        ]) ++ lib.optionals pkgs.stdenv.isDarwin (
+        with pkgs.darwin.apple_sdk.frameworks; [
+          IOKit
+          Carbon
+          WebKit
+          Security
+          Cocoa
+          # Use newer SDK because some crates require it
+          # cf. https://github.com/NixOS/nixpkgs/pull/261683#issuecomment-1772935802
+          pkgs.darwin.apple_sdk_11_0.frameworks.CoreFoundation
+        ]
+      );
     };
 
     packages = {
