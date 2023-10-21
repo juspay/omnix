@@ -3,3 +3,5 @@
 /result-lib
 /dist
 .direnv
+
+/assets/tailwind.css
