@@ -26,9 +26,6 @@ watch $RUST_BACKTRACE="1":
 
 alias w := watch
 
-tw:
-    tailwind -i ./css/input.css -o ./assets/tailwind.css --watch
-
 # Run 'cargo run' for nix-health CLI in watch mode. Example: just watch-nix-health github:nammayatri/nammayatri
 watch-nix-health *ARGS:
     cargo watch -- cargo run --bin nix-health -- {{ARGS}}

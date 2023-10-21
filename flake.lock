@@ -41,11 +41,11 @@
     "dioxus-desktop-template": {
       "flake": false,
       "locked": {
-        "lastModified": 1696953583,
-        "narHash": "sha256-g+8wFUOSVLVN63DAlcj1OhYjOD3pkSFH5BCt6Gs0y6I=",
+        "lastModified": 1697897501,
+        "narHash": "sha256-sZThDv+2KD5/iu5LL51RTg16OZqFYkgTdoq/sY1GFpo=",
         "owner": "srid",
         "repo": "dioxus-desktop-template",
-        "rev": "a3c76b656c9fbddbde423c800bcab46876b5026e",
+        "rev": "bdac79bc7eb6a918eb6280256e29060079a328a4",
         "type": "github"
       },
       "original": {
