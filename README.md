@@ -15,13 +15,10 @@ This will automatically activate the nix develop shell. Open VSCode and install 
 
 ## Running locally
 
-We should run two watchers: one for generating Tailwind CSS (`just tw`) and another running the cargo package (`just watch`).  In nix shell,
+In nix shell,
 
 ```
-# In one terminal,
 just watch
-# In another,
-just tw
 ```
 
 `just watch` runs `dx serve` (with hot reload disabled) that will restart the desktop app after compilation.
