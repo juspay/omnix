@@ -26,8 +26,6 @@ enum Route {
     #[layout(Wrapper)]
         #[route("/")]
         Dashboard {},
-        #[route("/about")]
-        About {},
         #[route("/flake")]
         Flake {},
         #[route("/flake/raw")]
@@ -149,29 +147,14 @@ fn Nav(cx: Scope) -> Element {
                 active_class: active_class,
                 "Nix Info"
             }
-            Link {
-                to: Route::About {},
-                class: "{class} {inactive_class}",
-                active_class: active_class,
-                "About"
-            }
-            div { class: "flex-grow font-bold text-end px-3 py-1", "nix-browser" }
-        }
-    }
-}
-
-/// About page
-fn About(cx: Scope) -> Element {
-    render! {
-        h1 { class: "text-5xl font-bold", "About" }
-        p {
-            "nix-browser is still work in progress. Track its development "
-            a {
-                href: "https://github.com/juspay/nix-browser",
-                class: "underline text-primary-500 hover:no-underline",
-                rel: "external",
-                target: "_blank",
-                "on Github"
+            div { class: "flex-grow font-bold text-end px-3 py-1",
+                a {
+                    href: "https://github.com/juspay/nix-browser",
+                    class: "text-primary-700",
+                    rel: "external",
+                    target: "_blank",
+                    "nix-browser"
+                }
             }
         }
     }
