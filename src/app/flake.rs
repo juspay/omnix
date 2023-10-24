@@ -25,7 +25,7 @@ pub fn Flake(cx: Scope) -> Element {
     let flake = state.flake.read();
     let busy = (*flake).is_loading_or_refreshing();
     render! {
-        h1 { class: "text-5xl font-bold", "Flake dashboard" }
+        h1 { class: "text-5xl font-bold", "Flake browser" }
         div { class: "p-2 my-1 flex w-full",
             input {
                 class: "flex-1 w-full p-1 mb-4 font-mono",
