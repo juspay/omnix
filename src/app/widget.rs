@@ -12,26 +12,12 @@ pub fn RefreshButton<F>(cx: Scope, busy: bool, handler: F) -> Element
 where
     F: Fn(Event<MouseData>),
 {
-    let button_cls = if *busy {
-        "bg-gray-400 text-white"
-    } else {
-        "bg-blue-700 text-white hover:bg-blue-800"
-    };
     render! {
-        div { class: "flex-col items-center justify-center space-y-2 mb-4",
-            button {
-                class: "py-1 px-2 shadow-lg border-1 {button_cls} rounded-md",
-                disabled: *busy,
-                onclick: handler,
-                "Refresh "
-                if *busy {
-                    render! { "⏳" }
-                } else {
-                    render! { "🔄" }
-                }
-            }
+        button { disabled: *busy, onclick: handler, title: "Refresh current data being viewed",
             if *busy {
-                render! { Loader {} }
+                render! { "⏳" }
+            } else {
+                render! { "🔄" }
             }
         }
     }

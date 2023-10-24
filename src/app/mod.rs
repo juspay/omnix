@@ -17,7 +17,7 @@ use crate::app::{
     health::Health,
     info::Info,
     state::AppState,
-    widget::{Loader, Scrollable},
+    widget::{Loader, RefreshButton},
 };
 
 #[derive(Routable, PartialEq, Debug, Clone)]
@@ -80,6 +80,7 @@ fn TopBar(cx: Scope) -> Element {
                         }
                     }
                 }
+                ViewRefreshButton {}
             }
             Link { to: Route::Info {},
                 span {
@@ -92,6 +93,35 @@ fn TopBar(cx: Scope) -> Element {
                         None => render! { Loader {} },
                     }
                 }
+            }
+        }
+    }
+}
+
+/// Intended to refresh the data behind the current route.
+#[component]
+fn ViewRefreshButton(cx: Scope) -> Element {
+    let state = AppState::use_state(cx);
+    let (busy, action) = match use_route(cx).unwrap() {
+        Route::Flake {} => Some((
+            state.flake.read().is_loading_or_refreshing(),
+            state::Action::RefreshFlake,
+        )),
+        Route::Health {} => Some((
+            state.health_checks.read().is_loading_or_refreshing(),
+            state::Action::GetNixInfo,
+        )),
+        Route::Info {} => Some((
+            state.nix_info.read().is_loading_or_refreshing(),
+            state::Action::GetNixInfo,
+        )),
+        _ => None,
+    }?;
+    render! {
+        RefreshButton {
+            busy: busy,
+            handler: move |_| {
+                state.act(action);
             }
         }
     }

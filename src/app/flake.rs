@@ -12,11 +12,8 @@ use nix_rs::flake::{
 };
 
 use crate::{
-    app::widget::{FolderDialogButton, RefreshButton},
-    app::{
-        state::{self, AppState},
-        Route,
-    },
+    app::widget::FolderDialogButton,
+    app::{state::AppState, widget::Loader, Route},
 };
 
 #[component]
@@ -49,11 +46,8 @@ pub fn Flake(cx: Scope) -> Element {
                 }
             }
         }
-        RefreshButton {
-            busy: busy,
-            handler: move |_| {
-                state.act(state::Action::RefreshFlake);
-            }
+        if flake.is_loading_or_refreshing() {
+            render! { Loader {} }
         }
         flake.render_with(cx, |v| render! { FlakeView { flake: v.clone() } })
     }
