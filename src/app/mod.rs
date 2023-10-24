@@ -40,18 +40,16 @@ enum Route {
 pub fn App(cx: Scope) -> Element {
     AppState::provide_state(cx);
     render! {
-        body { Router::<Route> {} }
+        body { class: "bg-base-100", Router::<Route> {} }
     }
 }
 
 fn Wrapper(cx: Scope) -> Element {
     render! {
-        div { class: "flex flex-col text-center justify-between w-full h-screen bg-base-100",
+        div { class: "flex flex-col text-center justify-between w-full min-h-screen",
             div {
                 TopBar {}
-                Scrollable {
-                    div { class: "m-2 py-2", Outlet::<Route> {} }
-                }
+                div { class: "m-2 py-2", Outlet::<Route> {} }
             }
             Footer {}
         }
@@ -65,7 +63,7 @@ fn TopBar(cx: Scope) -> Element {
     let nix_info = state.nix_info.read();
     render! {
         div { class: "flex justify-between items-center w-full p-2 bg-base-200 sticky top-0",
-            div {
+            div { class: "flex space-x-2",
                 Link { to: Route::Dashboard {}, "🏠" }
                 Link { to: Route::Health {},
                     span { title: "Nix Health Status",
