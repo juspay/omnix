@@ -62,7 +62,7 @@ fn TopBar(cx: Scope) -> Element {
     let health_checks = state.health_checks.read();
     let nix_info = state.nix_info.read();
     render! {
-        div { class: "flex justify-between items-center w-full p-2 bg-base-200 sticky top-0",
+        div { class: "flex justify-between items-center w-full p-2 bg-primary-100 sticky top-0 shadow",
             div { class: "flex space-x-2",
                 Link { to: Route::Dashboard {}, "🏠" }
                 Link { to: Route::Health {},
