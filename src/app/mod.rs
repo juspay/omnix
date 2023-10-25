@@ -65,6 +65,9 @@ fn TopBar(cx: Scope) -> Element {
         div { class: "flex justify-between items-center w-full p-2 bg-primary-100 sticky top-0 shadow",
             div { class: "flex space-x-2",
                 Link { to: Route::Dashboard {}, "🏠" }
+            }
+            div { class: "flex space-x-2",
+                ViewRefreshButton {}
                 Link { to: Route::Health {},
                     span { title: "Nix Health Status",
                         match (*health_checks).current_value() {
@@ -80,17 +83,16 @@ fn TopBar(cx: Scope) -> Element {
                         }
                     }
                 }
-                ViewRefreshButton {}
-            }
-            Link { to: Route::Info {},
-                span {
-                    "ℹ️ Nix "
-                    match (*nix_info).current_value() {
-                        Some(Ok(info)) => render! {
-                            "{info.nix_version} on {info.nix_env.os}"
-                        },
-                        Some(Err(err)) => render! { "{err}" },
-                        None => render! { Loader {} },
+                Link { to: Route::Info {},
+                    span {
+                        "ℹ️ Nix "
+                        match (*nix_info).current_value() {
+                            Some(Ok(info)) => render! {
+                                "{info.nix_version} on {info.nix_env.os}"
+                            },
+                            Some(Err(err)) => render! { "{err}" },
+                            None => render! { Loader {} },
+                        }
                     }
                 }
             }
