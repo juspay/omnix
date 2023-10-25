@@ -91,11 +91,15 @@ pub fn Loader(cx: Scope) -> Element {
 
 #[component]
 pub fn LoaderIcon(cx: Scope, loading: bool) -> Element {
-    let cls = if *loading { "animate-spin" } else { "" };
+    let cls = if *loading {
+        "animate-spin text-base-800"
+    } else {
+        "text-primary-700 hover:text-primary-500"
+    };
     render! {
         div { class: cls,
             svg {
-                class: "h-6 w-6 scale-x-[-1] text-primary-600 hover:text-primary-500",
+                class: "h-6 w-6 scale-x-[-1]",
                 xmlns: "http://www.w3.org/2000/svg",
                 view_box: "0 0 24 24",
                 fill: "none",
