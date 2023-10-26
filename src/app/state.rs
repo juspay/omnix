@@ -107,6 +107,9 @@ impl AppState {
             use_future(cx, (&flake_url, &idx), |(flake_url, idx)| async move {
                 tracing::info!("Updating flake [{}] {} ...", flake_url, idx);
                 // Abort previously running task, otherwise Datum refresh will panic
+                // TODO: Refactor this by changing the [Datum] type to be a
+                // struct (not enum) containing the
+                // `CopyValue<Option<JoinHandle<T>>>`
                 self.flake_task_abort.with_mut(|abort_handle| {
                     if let Some(abort_handle) = abort_handle.take() {
                         abort_handle.abort();
