@@ -1,40 +1,36 @@
 use std::{fmt::Display, future::Future};
 
 use dioxus::prelude::*;
-use dioxus_signals::Signal;
+use dioxus_signals::{CopyValue, Signal};
+use tokio::task::{AbortHandle, JoinHandle};
 
 /// Represent loading/refreshing state of UI data
-#[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub enum Datum<T> {
-    #[default]
-    Loading,
-    Available {
-        value: T,
-        refreshing: bool,
-    },
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Datum<T> {
+    /// The current value of the datum
+    value: Option<T>,
+    /// If the datum is currently being loaded or refresh, this contains the
+    /// [AbortHandle] to abort that loading/refreshing process.
+    task: CopyValue<Option<AbortHandle>>,
+}
+
+impl<T> Default for Datum<T> {
+    fn default() -> Self {
+        Self {
+            value: None,
+            task: CopyValue::default(),
+        }
+    }
 }
 
 impl<T> Datum<T> {
     pub fn is_loading_or_refreshing(&self) -> bool {
-        matches!(
-            self,
-            Datum::Loading
-                | Datum::Available {
-                    value: _,
-                    refreshing: true
-                }
-        )
+        self.task.read().is_some()
     }
 
     /// Get the inner value if available
-    pub fn current_value(&self) -> Option<&T> {
-        match self {
-            Datum::Loading => None,
-            Datum::Available {
-                value: x,
-                refreshing: _,
-            } => Some(x),
-        }
+    pub fn current_value<'a>(&'a self) -> Option<&'a T> {
+        self.value.as_ref()
     }
 
     /// Set the datum value
@@ -42,35 +38,8 @@ impl<T> Datum<T> {
     /// Use [refresh_with] if the value is produced by a long-running task.
     fn set_value(&mut self, value: T) {
         tracing::debug!("🍒 Setting {} datum value", std::any::type_name::<T>());
-        *self = Datum::Available {
-            value,
-            refreshing: false,
-        }
-    }
-
-    /// Mark the datum is being-refreshed
-    ///
-    /// Do this just prior to doing a long-running task that will provide a
-    /// value to be set using [set_value]
-    fn mark_refreshing(&mut self) {
-        if let Datum::Available {
-            value: _,
-            refreshing,
-        } = self
-        {
-            if *refreshing {
-                tracing::error!(
-                    "Cannot refresh already refreshing data: {}",
-                    std::any::type_name::<T>()
-                );
-                panic!("Cannot refresh already refreshing data");
-            }
-            tracing::debug!(
-                "🍒 Marking {} datum as refreshing",
-                std::any::type_name::<T>()
-            );
-            *refreshing = true;
-        }
+        self.value = Some(value);
+        // TODO: task state?
     }
 
     /// Refresh the datum [Signal] using the given function
@@ -78,14 +47,23 @@ impl<T> Datum<T> {
     /// Refresh state is automatically set.
     pub async fn refresh_with<F>(signal: Signal<Self>, f: F)
     where
-        F: Future<Output = T>,
+        F: Future<Output = JoinHandle<T>>,
     {
         signal.with_mut(move |x| {
-            x.mark_refreshing();
+            if let Some(abort_handle) = x.task.take() {
+                abort_handle.abort();
+            }
         });
-        let val = f.await;
+        let join_handle = f.await;
+        let abort_handle = join_handle.abort_handle();
+        signal.with_mut(move |x| {
+            *x.task.write() = Some(abort_handle);
+        });
+        // TODO: handle abort events
+        let val = join_handle.await.unwrap();
         signal.with_mut(move |x| {
             x.set_value(val);
+            *x.task.write() = None;
         });
     }
 }
