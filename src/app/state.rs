@@ -106,44 +106,25 @@ impl AppState {
             let idx = *refresh_action.read();
             use_future(cx, (&flake_url, &idx), |(flake_url, idx)| async move {
                 tracing::info!("Updating flake [{}] {} ...", flake_url, idx);
-                // Abort previously running task, otherwise Datum refresh will panic
-                // TODO: Refactor this by changing the [Datum] type to be a
-                // struct (not enum) containing the
-                // `CopyValue<Option<JoinHandle<T>>>`
-                self.flake_task_abort.with_mut(|abort_handle| {
-                    if let Some(abort_handle) = abort_handle.take() {
-                        abort_handle.abort();
-                    }
-                });
                 Datum::refresh_with(self.flake, async move {
-                    let join_handle = tokio::spawn(async move {
-                        Flake::from_nix(&nix_rs::command::NixCmd::default(), flake_url.clone())
-                            .await
-                    });
-                    *self.flake_task_abort.write() = Some(join_handle.abort_handle());
-                    let v = join_handle.await.unwrap();
-                    *self.flake_task_abort.write() = None;
-                    v
+                    Flake::from_nix(&nix_rs::command::NixCmd::default(), flake_url.clone()).await
                 })
-                .await;
+                .await
             });
         }
 
-        // Build `state.health_checks` when nix_info or nix_env changes
+        // Build `state.health_checks` when nix_info changes
         {
             let nix_info = self.nix_info.read().clone();
-            use_future(cx, (&nix_info,), |(nix_info,)| async move {
-                if let Some(nix_info) = nix_info.current_value() {
-                    Datum::refresh_with(self.health_checks, async {
-                        let get_nix_health =
-                            move || -> Result<Vec<nix_health::traits::Check>, SystemError> {
-                                let nix_info = nix_info
-                                    .as_ref()
-                                    .map_err(|e| Into::<SystemError>::into(e.to_string()))?;
-                                let health_checks = NixHealth::default().run_checks(nix_info, None);
-                                Ok(health_checks)
-                            };
-                        get_nix_health()
+            use_future(cx, (&nix_info,), |(nix_info1,)| async move {
+                if let Some(nix_info) = nix_info1.current_value().map(|x| {
+                    x.as_ref()
+                        .map_err(|e| Into::<SystemError>::into(e.to_string()))
+                        .map(|v| v.clone())
+                }) {
+                    Datum::refresh_with(self.health_checks, async move {
+                        let health_checks = NixHealth::default().run_checks(&nix_info?, None);
+                        Ok(health_checks)
                     })
                     .await;
                 }
@@ -158,19 +139,11 @@ impl AppState {
             use_future(cx, (&idx,), |(idx,)| async move {
                 tracing::info!("Updating nix info [{}] ...", idx);
                 Datum::refresh_with(self.nix_info, async {
-                    // NOTE: Without tokio::spawn, this will run in main desktop thread,
-                    // and will hang at some point.
-                    let nix_info = tokio::spawn(async move {
-                        nix_rs::info::NixInfo::from_nix(&nix_rs::command::NixCmd::default())
-                            .await
-                            .map_err(|e| SystemError {
-                                message: format!("Error getting nix info: {:?}", e),
-                            })
-                    })
-                    .await
-                    .unwrap();
-                    tracing::debug!("Got nix info, about to mut");
-                    nix_info
+                    nix_rs::info::NixInfo::from_nix(&nix_rs::command::NixCmd::default())
+                        .await
+                        .map_err(|e| SystemError {
+                            message: format!("Error getting nix info: {:?}", e),
+                        })
                 })
                 .await;
             });
