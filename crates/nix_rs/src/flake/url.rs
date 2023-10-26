@@ -24,8 +24,12 @@ impl FlakeUrl {
         vec![
             FlakeUrl::default(),
             "github:srid/emanote".into(),
+            "github:srid/nixos-config".into(),
             "github:juspay/nix-browser".into(),
-            "github:nixos/nixpkgs".into(),
+            "github:juspay/nix-dev-home".into(),
+            // Commented out until we figure out rendering performance and/or
+            // search filtering/limit.
+            // "github:nixos/nixpkgs".into(),
         ]
     }
 

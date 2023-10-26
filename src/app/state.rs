@@ -5,12 +5,13 @@ mod datum;
 use std::fmt::Display;
 
 use dioxus::prelude::{use_context, use_context_provider, use_future, Scope};
-use dioxus_signals::{use_signal, Signal};
+use dioxus_signals::{use_signal, CopyValue, Signal};
 use nix_health::NixHealth;
 use nix_rs::{
     command::NixCmdError,
     flake::{url::FlakeUrl, Flake},
 };
+use tokio::task::AbortHandle;
 
 use self::datum::Datum;
 
@@ -20,13 +21,14 @@ use self::datum::Datum;
 /// loading and subsequent refreshing.
 ///
 /// Use [Action] to mutate this state, in addition to [Signal::set].
-#[derive(Default, Clone, Copy, Debug)]
+#[derive(Default, Clone, Copy, Debug, PartialEq)]
 pub struct AppState {
     pub nix_info: Signal<Datum<Result<nix_rs::info::NixInfo, SystemError>>>,
     pub health_checks: Signal<Datum<Result<Vec<nix_health::traits::Check>, SystemError>>>,
 
     pub flake_url: Signal<FlakeUrl>,
     pub flake: Signal<Datum<Result<Flake, NixCmdError>>>,
+    pub flake_task_abort: CopyValue<Option<AbortHandle>>,
 
     pub action: Signal<(usize, Action)>,
 }
@@ -104,13 +106,24 @@ impl AppState {
             let idx = *refresh_action.read();
             use_future(cx, (&flake_url, &idx), |(flake_url, idx)| async move {
                 tracing::info!("Updating flake [{}] {} ...", flake_url, idx);
+                // Abort previously running task, otherwise Datum refresh will panic
+                // TODO: Refactor this by changing the [Datum] type to be a
+                // struct (not enum) containing the
+                // `CopyValue<Option<JoinHandle<T>>>`
+                self.flake_task_abort.with_mut(|abort_handle| {
+                    if let Some(abort_handle) = abort_handle.take() {
+                        abort_handle.abort();
+                    }
+                });
                 Datum::refresh_with(self.flake, async move {
-                    tokio::spawn(async move {
+                    let join_handle = tokio::spawn(async move {
                         Flake::from_nix(&nix_rs::command::NixCmd::default(), flake_url.clone())
                             .await
-                    })
-                    .await
-                    .unwrap()
+                    });
+                    *self.flake_task_abort.write() = Some(join_handle.abort_handle());
+                    let v = join_handle.await.unwrap();
+                    *self.flake_task_abort.write() = None;
+                    v
                 })
                 .await;
             });

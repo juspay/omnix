@@ -12,11 +12,8 @@ use nix_rs::flake::{
 };
 
 use crate::{
-    app::widget::{FolderDialogButton, RefreshButton},
-    app::{
-        state::{self, AppState},
-        Route,
-    },
+    app::widget::FolderDialogButton,
+    app::{state::AppState, widget::Loader, Route},
 };
 
 #[component]
@@ -25,7 +22,7 @@ pub fn Flake(cx: Scope) -> Element {
     let flake = state.flake.read();
     let busy = (*flake).is_loading_or_refreshing();
     render! {
-        h1 { class: "text-5xl font-bold", "Flake dashboard" }
+        h1 { class: "text-5xl font-bold", "Flake browser" }
         div { class: "p-2 my-1 flex w-full",
             input {
                 class: "flex-1 w-full p-1 mb-4 font-mono",
@@ -49,11 +46,8 @@ pub fn Flake(cx: Scope) -> Element {
                 }
             }
         }
-        RefreshButton {
-            busy: busy,
-            handler: move |_| {
-                state.act(state::Action::RefreshFlake);
-            }
+        if flake.is_loading_or_refreshing() {
+            render! { Loader {} }
         }
         flake.render_with(cx, |v| render! { FlakeView { flake: v.clone() } })
     }

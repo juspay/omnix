@@ -17,8 +17,8 @@ async fn main() {
             .with_custom_head(r#" <link rel="stylesheet" href="tailwind.css"> "#.to_string())
             .with_window(
                 WindowBuilder::new()
-                    .with_title("nix-browser")
-                    .with_inner_size(LogicalSize::new(900, 600)),
+                    .with_title("Nix Browser")
+                    .with_inner_size(LogicalSize::new(800, 700)),
             ),
     )
 }

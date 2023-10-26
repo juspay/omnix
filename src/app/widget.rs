@@ -12,27 +12,16 @@ pub fn RefreshButton<F>(cx: Scope, busy: bool, handler: F) -> Element
 where
     F: Fn(Event<MouseData>),
 {
-    let button_cls = if *busy {
-        "bg-gray-400 text-white"
-    } else {
-        "bg-blue-700 text-white hover:bg-blue-800"
-    };
     render! {
-        div { class: "flex-col items-center justify-center space-y-2 mb-4",
-            button {
-                class: "py-1 px-2 shadow-lg border-1 {button_cls} rounded-md",
-                disabled: *busy,
-                onclick: handler,
-                "Refresh "
-                if *busy {
-                    render! { "⏳" }
-                } else {
-                    render! { "🔄" }
+        button {
+            disabled: *busy,
+            onclick: move |evt| {
+                if !*busy {
+                    handler(evt)
                 }
-            }
-            if *busy {
-                render! { Loader {} }
-            }
+            },
+            title: "Refresh current data being viewed",
+            render! { LoaderIcon {loading: *busy} }
         }
     }
 }
@@ -96,6 +85,32 @@ pub fn Loader(cx: Scope) -> Element {
     render! {
         div { class: "flex justify-center items-center",
             div { class: "animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-500" }
+        }
+    }
+}
+
+#[component]
+pub fn LoaderIcon(cx: Scope, loading: bool) -> Element {
+    let cls = if *loading {
+        "animate-spin text-base-800"
+    } else {
+        "text-primary-700 hover:text-primary-500"
+    };
+    render! {
+        div { class: cls,
+            svg {
+                class: "h-6 w-6 scale-x-[-1]",
+                xmlns: "http://www.w3.org/2000/svg",
+                view_box: "0 0 24 24",
+                fill: "none",
+                stroke: "currentColor",
+                path {
+                    d: "M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15",
+                    stroke_linecap: "round",
+                    stroke_linejoin: "round",
+                    stroke_width: "2"
+                }
+            }
         }
     }
 }

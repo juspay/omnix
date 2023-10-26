@@ -4,7 +4,7 @@ use dioxus::prelude::*;
 use dioxus_signals::Signal;
 
 /// Represent loading/refreshing state of UI data
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub enum Datum<T> {
     #[default]
     Loading,
