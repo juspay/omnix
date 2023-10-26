@@ -104,13 +104,14 @@ impl AppState {
             let idx = *refresh_action.read();
             use_future(cx, (&flake_url, &idx), |(flake_url, idx)| async move {
                 tracing::info!("Updating flake [{}] {} ...", flake_url, idx);
+                // FIXME: Will panic if we are already in midst of refreshing this
+                // Find a way to cancel the previous refresh
                 Datum::refresh_with(self.flake, async move {
-                    tokio::spawn(async move {
+                    let join_handle = tokio::spawn(async move {
                         Flake::from_nix(&nix_rs::command::NixCmd::default(), flake_url.clone())
                             .await
-                    })
-                    .await
-                    .unwrap()
+                    });
+                    join_handle.await.unwrap()
                 })
                 .await;
             });

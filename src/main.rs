@@ -18,7 +18,7 @@ async fn main() {
             .with_window(
                 WindowBuilder::new()
                     .with_title("Nix Browser")
-                    .with_inner_size(LogicalSize::new(900, 600)),
+                    .with_inner_size(LogicalSize::new(800, 700)),
             ),
     )
 }

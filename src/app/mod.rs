@@ -11,6 +11,7 @@ mod widget;
 
 use dioxus::prelude::*;
 use dioxus_router::prelude::*;
+use nix_rs::flake::url::FlakeUrl;
 
 use crate::app::{
     flake::{Flake, FlakeRaw},
@@ -130,8 +131,8 @@ fn ViewRefreshButton(cx: Scope) -> Element {
 #[component]
 fn Footer(cx: Scope) -> Element {
     render! {
-        footer { class: "flex flex-row justify-center w-full p-2",
-            a { href: "https://github.com/juspay/nix-browser", img { src: "images/128x128.png", class: "h-6" } }
+        footer { class: "flex flex-row justify-center w-full bg-primary-100 p-2",
+            a { href: "https://github.com/juspay/nix-browser", img { src: "images/128x128.png", class: "h-4" } }
         }
     }
 }
@@ -139,14 +140,25 @@ fn Footer(cx: Scope) -> Element {
 // Home page
 fn Dashboard(cx: Scope) -> Element {
     tracing::debug!("Rendering Dashboard page");
+    // TODO: Store and show user's recent flake visits
+    let suggestions = FlakeUrl::suggestions();
     render! {
-        div {
-            id: "cards",
-            class: "flex flex-row justify-center items-center text-3xl flex-wrap",
-            // TODO: This will contain the flake search bar directly (like
-            // Google), along with a list of recently visited flakes (like
-            // VSCode home tab)
-            Link { to: Route::Flake {}, class: "underline hover:no-underline", "Browse flakes" }
+        div { class: "pl-4",
+            h2 { class: "text-2xl", "We have hand-picked some flakes for you to try out:" }
+            div { class: "flex flex-col",
+                for flake in suggestions {
+                    a {
+                        onclick: move |_| {
+                            let state = AppState::use_state(cx);
+                            let nav = use_navigator(cx);
+                            state.flake_url.set(flake.clone());
+                            nav.replace(Route::Flake {});
+                        },
+                        class: "cursor-pointer text-primary-600 underline hover:no-underline",
+                        "{flake.clone()}"
+                    }
+                }
+            }
         }
     }
 }
