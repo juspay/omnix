@@ -2,7 +2,7 @@ use std::{fmt::Display, future::Future};
 
 use dioxus::prelude::*;
 use dioxus_signals::{CopyValue, Signal};
-use tokio::task::{AbortHandle, JoinHandle};
+use tokio::task::AbortHandle;
 
 /// Represent loading/refreshing state of UI data
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -29,42 +29,55 @@ impl<T> Datum<T> {
     }
 
     /// Get the inner value if available
-    pub fn current_value<'a>(&'a self) -> Option<&'a T> {
+    pub fn current_value(&self) -> Option<&T> {
         self.value.as_ref()
-    }
-
-    /// Set the datum value
-    ///
-    /// Use [refresh_with] if the value is produced by a long-running task.
-    fn set_value(&mut self, value: T) {
-        tracing::debug!("🍒 Setting {} datum value", std::any::type_name::<T>());
-        self.value = Some(value);
-        // TODO: task state?
     }
 
     /// Refresh the datum [Signal] using the given function
     ///
-    /// Refresh state is automatically set.
+    /// If a previous refresh is still running, it will be cancelled.
     pub async fn refresh_with<F>(signal: Signal<Self>, f: F)
     where
-        F: Future<Output = JoinHandle<T>>,
+        F: Future<Output = T> + Send + 'static,
+        T: Send + 'static,
     {
+        // Cancel existing fetcher if any.
         signal.with_mut(move |x| {
             if let Some(abort_handle) = x.task.take() {
                 abort_handle.abort();
             }
         });
-        let join_handle = f.await;
+
+        // NOTE: We must spawn a tasks (using tokio::spawn), otherwise this
+        // will run in main desktop thread, and will hang at some point.
+        let join_handle = tokio::spawn(f);
+
+        // Store the [AbortHandle] for cancelling latter.
         let abort_handle = join_handle.abort_handle();
         signal.with_mut(move |x| {
             *x.task.write() = Some(abort_handle);
         });
-        // TODO: handle abort events
-        let val = join_handle.await.unwrap();
-        signal.with_mut(move |x| {
-            x.set_value(val);
-            *x.task.write() = None;
-        });
+
+        // Wait for result and update the signal state.
+        match join_handle.await {
+            Ok(val) => {
+                signal.with_mut(move |x| {
+                    tracing::debug!("🍒 Setting {} datum value", std::any::type_name::<T>());
+                    x.value = Some(val);
+                    *x.task.write() = None;
+                });
+            }
+            Err(err) => {
+                if !err.is_cancelled() {
+                    tracing::error!("🍒 Datum refresh failed: {err}");
+                    signal.with_mut(move |x| {
+                        *x.task.write() = None;
+                    });
+                }
+                // x.task will be set to None by the caller who cancelled us, so
+                // we need not do anything here.
+            }
+        }
     }
 }
 

@@ -107,12 +107,9 @@ impl AppState {
             use_future(cx, (&flake_url, &idx), |(flake_url, idx)| async move {
                 tracing::info!("Updating flake [{}] {} ...", flake_url, idx);
                 Datum::refresh_with(self.flake, async move {
-                    tokio::spawn(async move {
-                        Flake::from_nix(&nix_rs::command::NixCmd::default(), flake_url.clone())
-                            .await
-                    })
+                    Flake::from_nix(&nix_rs::command::NixCmd::default(), flake_url.clone()).await
                 })
-                .await;
+                .await
             });
         }
 
@@ -126,10 +123,8 @@ impl AppState {
                         .map(|v| v.clone())
                 }) {
                     Datum::refresh_with(self.health_checks, async move {
-                        tokio::spawn(async move {
-                            let health_checks = NixHealth::default().run_checks(&nix_info?, None);
-                            Ok(health_checks)
-                        })
+                        let health_checks = NixHealth::default().run_checks(&nix_info?, None);
+                        Ok(health_checks)
                     })
                     .await;
                 }
@@ -144,15 +139,11 @@ impl AppState {
             use_future(cx, (&idx,), |(idx,)| async move {
                 tracing::info!("Updating nix info [{}] ...", idx);
                 Datum::refresh_with(self.nix_info, async {
-                    // NOTE: Without tokio::spawn, this will run in main desktop thread,
-                    // and will hang at some point.
-                    tokio::spawn(async move {
-                        nix_rs::info::NixInfo::from_nix(&nix_rs::command::NixCmd::default())
-                            .await
-                            .map_err(|e| SystemError {
-                                message: format!("Error getting nix info: {:?}", e),
-                            })
-                    })
+                    nix_rs::info::NixInfo::from_nix(&nix_rs::command::NixCmd::default())
+                        .await
+                        .map_err(|e| SystemError {
+                            message: format!("Error getting nix info: {:?}", e),
+                        })
                 })
                 .await;
             });
