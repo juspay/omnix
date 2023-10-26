@@ -40,17 +40,15 @@ enum Route {
 pub fn App(cx: Scope) -> Element {
     AppState::provide_state(cx);
     render! {
-        body { class: "bg-base-100", Router::<Route> {} }
+        body { class: "bg-base-100 overflow-hidden", Router::<Route> {} }
     }
 }
 
 fn Wrapper(cx: Scope) -> Element {
     render! {
-        div { class: "flex flex-col text-center justify-between w-full min-h-screen",
-            div {
-                TopBar {}
-                div { class: "m-2 py-2", Outlet::<Route> {} }
-            }
+        div { class: "flex flex-col text-center justify-between w-full h-screen",
+            TopBar {}
+            div { class: "m-2 py-2 overflow-auto", Outlet::<Route> {} }
             Footer {}
         }
     }
@@ -62,7 +60,7 @@ fn TopBar(cx: Scope) -> Element {
     let health_checks = state.health_checks.read();
     let nix_info = state.nix_info.read();
     render! {
-        div { class: "flex justify-between items-center w-full p-2 bg-primary-100 sticky top-0 shadow",
+        div { class: "flex justify-between items-center w-full p-2 bg-primary-100 shadow",
             div { class: "flex space-x-2",
                 Link { to: Route::Dashboard {}, "🏠" }
             }
@@ -85,7 +83,7 @@ fn TopBar(cx: Scope) -> Element {
                 }
                 Link { to: Route::Info {},
                     span {
-                        "ℹ️ Nix "
+                        "Nix "
                         match (*nix_info).current_value() {
                             Some(Ok(info)) => render! {
                                 "{info.nix_version} on {info.nix_env.os}"
