@@ -59,7 +59,7 @@ impl FlakeUrl {
     }
 
     /// Split the [FlakeAttr] out of the [FlakeUrl]
-    fn split_attr(&self) -> (Self, FlakeAttr) {
+    pub fn split_attr(&self) -> (Self, FlakeAttr) {
         match self.0.split_once('#') {
             Some((url, attr)) => (FlakeUrl(url.to_string()), FlakeAttr(Some(attr.to_string()))),
             None => (self.clone(), FlakeAttr(None)),
