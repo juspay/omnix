@@ -25,7 +25,7 @@ use self::datum::Datum;
 #[derive(Default, Clone, Copy, Debug, PartialEq)]
 pub struct AppState {
     /// Whether all of [AppState] is initialized. The UI will use this to check readiness state, before accessing the other fields. Panic's will result otherwise.
-    pub initialized: Signal<bool>,
+    pub initialized: Signal<Option<Result<(), sqlx::Error>>>,
 
     /// The sqlite database pool
     pub db: Signal<Option<Pool<Sqlite>>>,
@@ -99,15 +99,22 @@ impl AppState {
         // FIXME: Can we avoid calling build_network multiple times?
         state.build_network(cx);
         use_future(cx, (), |_| async move {
+            tokio::time::sleep(std::time::Duration::from_secs(2)).await;
             state.initialize().await;
-            state.initialized.set(true);
         });
     }
 
     async fn initialize(self) {
-        let pool = db::app_db_pool().await;
-        // sleep(Duration::from_secs(2)).await;
-        self.db.set(Some(pool));
+        match db::app_db_pool().await {
+            Ok(pool) => {
+                self.db.set(Some(pool));
+                self.initialized.set(Some(Ok(())));
+            }
+            Err(err) => {
+                tracing::error!("Failed to initialize database: {}", err);
+                self.initialized.set(Some(Err(err)));
+            }
+        }
     }
 
     /// Build the Signal network
