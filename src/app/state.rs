@@ -5,13 +5,12 @@ mod datum;
 use std::fmt::Display;
 
 use dioxus::prelude::{use_context, use_context_provider, use_future, Scope};
-use dioxus_signals::{use_signal, CopyValue, Signal};
+use dioxus_signals::{use_signal, Signal};
 use nix_health::NixHealth;
 use nix_rs::{
     command::NixCmdError,
     flake::{url::FlakeUrl, Flake},
 };
-use tokio::task::AbortHandle;
 
 use self::datum::Datum;
 
@@ -28,7 +27,6 @@ pub struct AppState {
 
     pub flake_url: Signal<FlakeUrl>,
     pub flake: Signal<Datum<Result<Flake, NixCmdError>>>,
-    pub flake_task_abort: CopyValue<Option<AbortHandle>>,
 
     pub action: Signal<(usize, Action)>,
 }
