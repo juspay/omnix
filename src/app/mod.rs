@@ -60,16 +60,15 @@ fn Wrapper(cx: Scope) -> Element {
 #[component]
 fn AfterInitialized<'a>(cx: Scope, children: Element<'a>) -> Element {
     let state = AppState::use_state(cx);
-    let initialized = state.initialized.read();
-    match initialized.as_ref() {
+    match state.initialization_state() {
         None => render! {
             div { class: "flex flex-col text-center justify-center w-full h-screen",
-            "Loading ...",
-            Loader {}
+                "Loading ..."
+                Loader {}
             }
         },
-        Some(Ok(())) => render! { children },
-        Some(Err(err)) => render! { "{err}" },
+        Some(Ok(())) => render! {children},
+        Some(Err(err)) => render! {"{err}"},
     }
 }
 

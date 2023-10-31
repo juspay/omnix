@@ -22,13 +22,10 @@ use self::datum::Datum;
 /// loading and subsequent refreshing.
 ///
 /// Use [Action] to mutate this state, in addition to [Signal::set].
-#[derive(Default, Clone, Copy, Debug, PartialEq)]
+#[derive(Default, Copy, Clone, Debug, PartialEq)]
 pub struct AppState {
-    /// Whether all of [AppState] is initialized. The UI will use this to check readiness state, before accessing the other fields. Panic's will result otherwise.
-    pub initialized: Signal<Option<Result<(), sqlx::Error>>>,
-
     /// The sqlite database pool
-    pub db: Signal<Option<Pool<Sqlite>>>,
+    pub db: Signal<Option<Result<Pool<Sqlite>, sqlx::Error>>>,
 
     pub nix_info: Signal<Datum<Result<nix_rs::info::NixInfo, SystemError>>>,
     pub health_checks: Signal<Datum<Result<Vec<nix_health::traits::Check>, SystemError>>>,
@@ -87,7 +84,7 @@ impl AppState {
 
     /// Get the [AppState] from context
     pub fn use_state<T>(cx: Scope<T>) -> Self {
-        *use_context(cx).unwrap()
+        use_context::<Self>(cx).unwrap().clone()
     }
 
     pub fn provide_state(cx: Scope) {
@@ -99,22 +96,25 @@ impl AppState {
         // FIXME: Can we avoid calling build_network multiple times?
         state.build_network(cx);
         use_future(cx, (), |_| async move {
+            // XXX: Simulating slowness
             tokio::time::sleep(std::time::Duration::from_secs(2)).await;
             state.initialize().await;
         });
     }
 
     async fn initialize(self) {
-        match db::app_db_pool().await {
-            Ok(pool) => {
-                self.db.set(Some(pool));
-                self.initialized.set(Some(Ok(())));
-            }
-            Err(err) => {
-                tracing::error!("Failed to initialize database: {}", err);
-                self.initialized.set(Some(Err(err)));
-            }
-        }
+        let db_pool_res = db::app_db_pool().await;
+        self.db.set(Some(db_pool_res));
+    }
+
+    /// Return the initialization state of [AppState]
+    pub fn initialization_state(self) -> Option<Result<(), SystemError>> {
+        let v = self.db.read();
+        v.as_ref().map(|x| {
+            x.as_ref()
+                .map(|_| ())
+                .map_err(|e| Into::<SystemError>::into(e.to_string()))
+        })
     }
 
     /// Build the Signal network
