@@ -14,7 +14,7 @@ use nix_rs::{
 };
 use sqlx::{Pool, Sqlite};
 
-use self::datum::Datum;
+use self::{datum::Datum, db::Db};
 
 /// Our dioxus application state is a struct of [Signal]
 ///
@@ -25,7 +25,7 @@ use self::datum::Datum;
 #[derive(Default, Copy, Clone, Debug, PartialEq)]
 pub struct AppState {
     /// The sqlite database pool
-    pub db: Signal<Option<Result<Pool<Sqlite>, sqlx::Error>>>,
+    pub db: Signal<Option<Result<Db, sqlx::Error>>>,
 
     pub nix_info: Signal<Datum<Result<nix_rs::info::NixInfo, SystemError>>>,
     pub health_checks: Signal<Datum<Result<Vec<nix_health::traits::Check>, SystemError>>>,
@@ -103,8 +103,8 @@ impl AppState {
     }
 
     async fn initialize(self) {
-        let db_pool_res = db::app_db_pool().await;
-        self.db.set(Some(db_pool_res));
+        let db = Db::new().await;
+        self.db.set(Some(db));
     }
 
     /// Return the initialization state of [AppState]
