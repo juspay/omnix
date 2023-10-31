@@ -60,3 +60,4 @@ dioxus-signals = { git = "https://github.com/DioxusLabs/dioxus.git", rev = "c796
 fermi = { git = "https://github.com/DioxusLabs/dioxus.git", rev = "c7963a03440d5a050bf229f91665d60a0d108a8a" }
 dioxus-std = { version = "0.4.0", features = ["clipboard", "utils"] }
 sqlx = { version = "0.7.2", features = ["sqlite", "time", "runtime-tokio"] }
+directories = "5.0.1"

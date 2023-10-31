@@ -1,15 +1,23 @@
 #![feature(let_chains)]
 use dioxus_desktop::{LogicalSize, WindowBuilder};
+use directories::ProjectDirs;
 
 mod app;
 mod cli;
 mod logging;
 
 #[tokio::main]
-async fn main() {
+async fn main() -> anyhow::Result<()> {
     use clap::Parser;
     let args = crate::cli::Args::parse();
     crate::logging::setup_logging(&args.verbosity);
+
+    let data_dir = ProjectDirs::from("in", "juspay", "nix-browser")
+        .ok_or(anyhow::anyhow!("Unable to deduce ProjectDirs"))?
+        .data_local_dir()
+        .to_path_buf();
+
+    tracing::info!("Data dir: {:?}", data_dir);
 
     dioxus_desktop::launch_cfg(
         app::App,
@@ -20,5 +28,7 @@ async fn main() {
                     .with_title("Nix Browser")
                     .with_inner_size(LogicalSize::new(800, 700)),
             ),
-    )
+    );
+
+    Ok(())
 }
