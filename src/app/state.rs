@@ -24,6 +24,10 @@ use self::datum::Datum;
 /// Use [Action] to mutate this state, in addition to [Signal::set].
 #[derive(Default, Clone, Copy, Debug, PartialEq)]
 pub struct AppState {
+    /// Whether all of [AppState] is initialized. The UI will use this to check readiness state, before accessing the other fields. Panic's will result otherwise.
+    pub initialized: Signal<bool>,
+
+    /// The sqlite database pool
     pub db: Signal<Option<Pool<Sqlite>>>,
 
     pub nix_info: Signal<Datum<Result<nix_rs::info::NixInfo, SystemError>>>,
@@ -32,13 +36,17 @@ pub struct AppState {
     pub flake_url: Signal<FlakeUrl>,
     pub flake: Signal<Datum<Result<Flake, NixCmdError>>>,
 
+    /// [Action] represents the next modification to perform on [AppState] signals
     pub action: Signal<(usize, Action)>,
 }
 
 /// An action to be performed on [AppState]
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Action {
+    /// Refresh the [AppState::flake] signal using [AppState::flake_url] signal's current value
     RefreshFlake,
+
+    /// Refresh [AppState::nix_info] signal
     #[default]
     GetNixInfo,
 }
@@ -78,26 +86,27 @@ impl AppState {
     }
 
     /// Get the [AppState] from context
-    pub fn use_state(cx: Scope) -> Self {
+    pub fn use_state<T>(cx: Scope<T>) -> Self {
         *use_context(cx).unwrap()
     }
 
     pub fn provide_state(cx: Scope) {
         tracing::debug!("🏗️ Providing AppState");
-        use_context_provider(cx, || {
+        let state = *use_context_provider(cx, || {
             tracing::debug!("🔨 Creating AppState default value");
             AppState::default()
         });
         // FIXME: Can we avoid calling build_network multiple times?
-        let state = AppState::use_state(cx);
+        state.build_network(cx);
         use_future(cx, (), |_| async move {
             state.initialize().await;
+            state.initialized.set(true);
         });
-        state.build_network(cx);
     }
 
     async fn initialize(self) {
         let pool = db::app_db_pool().await;
+        // sleep(Duration::from_secs(2)).await;
         self.db.set(Some(pool));
     }
 

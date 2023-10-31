@@ -47,11 +47,31 @@ pub fn App(cx: Scope) -> Element {
 
 fn Wrapper(cx: Scope) -> Element {
     render! {
-        div { class: "flex flex-col text-center justify-between w-full h-screen",
-            TopBar {}
-            div { class: "m-2 py-2 overflow-auto", Outlet::<Route> {} }
-            Footer {}
+        AfterInitialized {
+            div { class: "flex flex-col text-center justify-between w-full h-screen",
+                TopBar {}
+                div { class: "m-2 py-2 overflow-auto", Outlet::<Route> {} }
+                Footer {}
+            }
         }
+    }
+}
+
+#[component]
+fn AfterInitialized<'a>(cx: Scope, children: Element<'a>) -> Element {
+    let state = AppState::use_state(cx);
+    let initialized = *state.initialized.read();
+    render! {
+        { if !initialized {
+            render! {
+                div { class: "flex flex-col text-center justify-center w-full h-screen",
+                "Loading ...",
+                Loader {}
+                }
+            }
+        } else {
+            render! { children }
+        } }
     }
 }
 

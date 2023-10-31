@@ -1,3 +1,5 @@
+//! Application state stored in Sqlite database
+
 use sqlx::{sqlite::SqliteConnectOptions, Pool, Sqlite, SqlitePool};
 
 /// Load and initialize the the application database
