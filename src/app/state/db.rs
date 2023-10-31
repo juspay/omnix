@@ -24,7 +24,8 @@ impl Db {
             "CREATE TABLE IF NOT EXISTS flake (
             url TEXT NOT NULL,
             metadata JSON,
-            last_fetched TEXT
+            last_accessed TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            last_fetched TIMESTAMP
         );",
         )
         .execute(&pool)
