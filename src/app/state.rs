@@ -1,6 +1,7 @@
 //! Application state
 
 mod datum;
+mod db;
 
 use std::fmt::Display;
 
@@ -11,6 +12,7 @@ use nix_rs::{
     command::NixCmdError,
     flake::{url::FlakeUrl, Flake},
 };
+use sqlx::{Pool, Sqlite};
 
 use self::datum::Datum;
 
@@ -22,6 +24,8 @@ use self::datum::Datum;
 /// Use [Action] to mutate this state, in addition to [Signal::set].
 #[derive(Default, Clone, Copy, Debug, PartialEq)]
 pub struct AppState {
+    pub db: Signal<Option<Pool<Sqlite>>>,
+
     pub nix_info: Signal<Datum<Result<nix_rs::info::NixInfo, SystemError>>>,
     pub health_checks: Signal<Datum<Result<Vec<nix_health::traits::Check>, SystemError>>>,
 
@@ -86,7 +90,15 @@ impl AppState {
         });
         // FIXME: Can we avoid calling build_network multiple times?
         let state = AppState::use_state(cx);
+        use_future(cx, (), |_| async move {
+            state.initialize().await;
+        });
         state.build_network(cx);
+    }
+
+    async fn initialize(self) {
+        let pool = db::app_db_pool().await;
+        self.db.set(Some(pool));
     }
 
     /// Build the Signal network
