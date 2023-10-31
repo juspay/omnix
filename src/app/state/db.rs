@@ -1,8 +1,9 @@
 //! Application state stored in Sqlite database
 
+use nix_rs::flake::url::FlakeUrl;
 use sqlx::{sqlite::SqliteConnectOptions, Pool, Sqlite, SqlitePool};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Db {
     pool: Pool<Sqlite>,
 }
@@ -30,5 +31,13 @@ impl Db {
         .await?;
 
         Ok(Db { pool })
+    }
+
+    pub async fn register_flake(&self, url: &FlakeUrl) -> Result<(), sqlx::Error> {
+        sqlx::query("INSERT OR IGNORE INTO flake (url) VALUES (?)")
+            .bind(url.to_string())
+            .execute(&self.pool)
+            .await?;
+        Ok(())
     }
 }

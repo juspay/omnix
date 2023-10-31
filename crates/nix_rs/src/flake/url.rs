@@ -22,7 +22,7 @@ impl FlakeUrl {
     /// Provide real-world examples of flake URLs
     pub fn suggestions() -> Vec<FlakeUrl> {
         vec![
-            FlakeUrl::default(),
+            "github:nammayatri/nammayatri".into(),
             "github:srid/emanote".into(),
             "github:srid/nixos-config".into(),
             "github:juspay/nix-browser".into(),
@@ -74,12 +74,6 @@ impl FlakeUrl {
             let sep = if self.0.contains('?') { '&' } else { '?' };
             FlakeUrl(format!("{}{}dir={}", self.0, sep, dir))
         }
-    }
-}
-
-impl Default for FlakeUrl {
-    fn default() -> Self {
-        "github:nammayatri/nammayatri".into()
     }
 }
 

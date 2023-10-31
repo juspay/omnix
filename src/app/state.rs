@@ -12,7 +12,6 @@ use nix_rs::{
     command::NixCmdError,
     flake::{url::FlakeUrl, Flake},
 };
-use sqlx::{Pool, Sqlite};
 
 use self::{datum::Datum, db::Db};
 
@@ -30,7 +29,7 @@ pub struct AppState {
     pub nix_info: Signal<Datum<Result<nix_rs::info::NixInfo, SystemError>>>,
     pub health_checks: Signal<Datum<Result<Vec<nix_health::traits::Check>, SystemError>>>,
 
-    pub flake_url: Signal<FlakeUrl>,
+    pub flake_url: Signal<Option<FlakeUrl>>,
     pub flake: Signal<Datum<Result<Flake, NixCmdError>>>,
 
     /// [Action] represents the next modification to perform on [AppState] signals
@@ -84,7 +83,7 @@ impl AppState {
 
     /// Get the [AppState] from context
     pub fn use_state<T>(cx: Scope<T>) -> Self {
-        use_context::<Self>(cx).unwrap().clone()
+        *use_context::<Self>(cx).unwrap()
     }
 
     pub fn provide_state(cx: Scope) {
@@ -117,6 +116,11 @@ impl AppState {
         })
     }
 
+    /// Get [Db]. Only safe after initialization (see [AppState::initialization_state]])
+    fn get_db(self) -> Db {
+        self.db.read().as_ref().unwrap().as_ref().unwrap().clone()
+    }
+
     /// Build the Signal network
     ///
     /// If a signal's value is dependent on another signal's value, you must
@@ -131,11 +135,18 @@ impl AppState {
                 Action::signal_for(cx, self.action, |act| act == Action::RefreshFlake);
             let idx = *refresh_action.read();
             use_future(cx, (&flake_url, &idx), |(flake_url, idx)| async move {
-                tracing::info!("Updating flake [{}] {} ...", flake_url, idx);
-                Datum::refresh_with(self.flake, async move {
-                    Flake::from_nix(&nix_rs::command::NixCmd::default(), flake_url.clone()).await
-                })
-                .await
+                if let Some(flake_url) = flake_url {
+                    tracing::info!("Updating flake [{}] {} ...", flake_url, idx);
+                    // TODO: refactor?
+                    if let Err(err) = self.get_db().register_flake(&flake_url).await {
+                        tracing::error!("Failed to register flake in db: {}", err);
+                    }
+                    Datum::refresh_with(self.flake, async move {
+                        Flake::from_nix(&nix_rs::command::NixCmd::default(), flake_url.clone())
+                            .await
+                    })
+                    .await
+                }
             });
         }
 
@@ -174,6 +185,19 @@ impl AppState {
                 .await;
             });
         }
+    }
+
+    /// Return the [String] representation of the current [AppState::flake_url] value. If there is none, return empty string.
+    pub fn get_flake_url_string(&self) -> String {
+        self.flake_url
+            .read()
+            .clone()
+            .map_or("".to_string(), |url| url.to_string())
+    }
+
+    pub fn set_flake_url(&self, url: FlakeUrl) {
+        tracing::info!("setting flake url to {}", &url);
+        self.flake_url.set(Some(url));
     }
 }
 

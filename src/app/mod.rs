@@ -168,7 +168,7 @@ fn Dashboard(cx: Scope) -> Element {
                         onclick: move |_| {
                             let state = AppState::use_state(cx);
                             let nav = use_navigator(cx);
-                            state.flake_url.set(flake.clone());
+                            state.set_flake_url(flake.clone());
                             nav.replace(Route::Flake {});
                         },
                         class: "cursor-pointer text-primary-600 underline hover:no-underline",
