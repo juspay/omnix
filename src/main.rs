@@ -1,6 +1,6 @@
 #![feature(let_chains)]
 use dioxus_desktop::{LogicalSize, WindowBuilder};
-use directories::ProjectDirs;
+use dioxus_std::storage::set_dir_name;
 
 mod app;
 mod cli;
@@ -12,12 +12,8 @@ async fn main() -> anyhow::Result<()> {
     let args = crate::cli::Args::parse();
     crate::logging::setup_logging(&args.verbosity);
 
-    let data_dir = ProjectDirs::from("in", "juspay", "nix-browser")
-        .ok_or(anyhow::anyhow!("Unable to deduce ProjectDirs"))?
-        .data_local_dir()
-        .to_path_buf();
-
-    tracing::info!("Data dir: {:?}", data_dir);
+    // Set data directory for persisting [Signal]s. On macOS, this is ~/Library/Application Support/nix-browser.
+    dioxus_std::storage::set_dir!();
 
     dioxus_desktop::launch_cfg(
         app::App,

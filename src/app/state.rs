@@ -1,19 +1,19 @@
 //! Application state
 
 mod datum;
-mod db;
 
 use std::fmt::Display;
 
 use dioxus::prelude::{use_context, use_context_provider, use_future, Scope};
 use dioxus_signals::{use_signal, Signal};
+use dioxus_std::storage::{use_synced_storage, LocalStorage};
 use nix_health::NixHealth;
 use nix_rs::{
     command::NixCmdError,
     flake::{url::FlakeUrl, Flake},
 };
 
-use self::{datum::Datum, db::Db};
+use self::datum::Datum;
 
 /// Our dioxus application state is a struct of [Signal]
 ///
@@ -23,9 +23,6 @@ use self::{datum::Datum, db::Db};
 /// Use [Action] to mutate this state, in addition to [Signal::set].
 #[derive(Default, Copy, Clone, Debug, PartialEq)]
 pub struct AppState {
-    /// The sqlite database pool
-    pub db: Signal<Option<Result<Db, sqlx::Error>>>,
-
     pub nix_info: Signal<Datum<Result<nix_rs::info::NixInfo, SystemError>>>,
     pub health_checks: Signal<Datum<Result<Vec<nix_health::traits::Check>, SystemError>>>,
 
@@ -92,43 +89,30 @@ impl AppState {
 
     pub fn provide_state(cx: Scope) {
         tracing::debug!("🏗️ Providing AppState");
+        let sig = use_synced_storage::<LocalStorage, Vec<FlakeUrl>>(
+            cx,
+            "recent_flakes".to_string(),
+            || vec![],
+        );
         let state = *use_context_provider(cx, || {
             tracing::debug!("🔨 Creating AppState default value");
-            AppState::default()
+            AppState {
+                recent_flakes: sig,
+                ..AppState::default()
+            }
         });
         // FIXME: Can we avoid calling build_network multiple times?
         state.build_network(cx);
         use_future(cx, (), |_| async move {
-            // XXX: Simulating slowness
-            // tokio::time::sleep(std::time::Duration::from_secs(2)).await;
             state.initialize().await;
         });
     }
 
     async fn initialize(self) {
-        let db = Db::new().await;
+        // Nothing to do right now.
 
-        if let Ok(db) = db.as_ref() {
-            self.recent_flakes
-                .set(db.recent_flakes().await.unwrap_or_default());
-        }
-
-        self.db.set(Some(db));
-    }
-
-    /// Return the initialization state of [AppState]
-    pub fn initialization_state(self) -> Option<Result<(), SystemError>> {
-        let v = self.db.read();
-        v.as_ref().map(|x| {
-            x.as_ref()
-                .map(|_| ())
-                .map_err(|e| Into::<SystemError>::into(e.to_string()))
-        })
-    }
-
-    /// Get [Db]. Only safe after initialization (see [AppState::initialization_state]])
-    pub(crate) fn get_db(self) -> Db {
-        self.db.read().as_ref().unwrap().as_ref().unwrap().clone()
+        // XXX: Simulating slowness
+        // tokio::time::sleep(std::time::Duration::from_secs(2)).await;
     }
 
     /// Build the Signal network
@@ -147,19 +131,6 @@ impl AppState {
             use_future(cx, (&flake_url, &idx), |(flake_url, idx)| async move {
                 if let Some(flake_url) = flake_url {
                     tracing::info!("Updating flake [{}] {} ...", flake_url, idx);
-                    // TODO: refactor?
-                    if let Err(err) = self.get_db().register_flake(&flake_url).await {
-                        tracing::error!("Failed to register flake in db: {}", err);
-                    } else {
-                        match self.get_db().recent_flakes().await {
-                            Ok(recent_flakes) => {
-                                self.recent_flakes.set(recent_flakes);
-                            }
-                            Err(err) => {
-                                tracing::error!("Failed to get recent flakes: {}", err);
-                            }
-                        }
-                    }
                     Datum::refresh_with(self.flake, async move {
                         Flake::from_nix(&nix_rs::command::NixCmd::default(), flake_url.clone())
                             .await
@@ -169,16 +140,14 @@ impl AppState {
             });
         }
 
-        // Update recent flakes
+        // Update recent_flakes
         {
             let flake_url = self.flake_url.read().clone();
             use_future(cx, (&flake_url,), |(flake_url,)| async move {
                 if let Some(flake_url) = flake_url {
-                    let mut recent_flakes = self.recent_flakes.read().clone();
-                    if !recent_flakes.contains(&flake_url) {
-                        recent_flakes.push(flake_url.clone());
-                        self.recent_flakes.set(recent_flakes);
-                    }
+                    self.recent_flakes.with_mut(|items| {
+                        vec_push_as_latest(items, flake_url);
+                    });
                 }
             });
         }
@@ -270,4 +239,14 @@ where
         }
     });
     res
+}
+
+/// Push an item to the front of a vector
+///
+/// If the item already exits, move it to the front.
+fn vec_push_as_latest<T: PartialEq>(vec: &mut Vec<T>, item: T) {
+    if let Some(idx) = vec.iter().position(|x| *x == item) {
+        vec.remove(idx);
+    }
+    vec.insert(0, item);
 }
