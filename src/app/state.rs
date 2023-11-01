@@ -6,7 +6,7 @@ use std::fmt::Display;
 
 use dioxus::prelude::{use_context, use_context_provider, use_future, Scope};
 use dioxus_signals::{use_signal, Signal};
-use dioxus_std::storage::{storage, use_storage, LocalStorage};
+use dioxus_std::storage::{storage, LocalStorage};
 use nix_health::NixHealth;
 use nix_rs::{
     command::NixCmdError,
