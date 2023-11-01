@@ -81,6 +81,7 @@ impl AppState {
             ..AppState::default()
         }
     }
+
     /// Perform an [Action] on the state
     ///
     /// This eventuates an update on the appropriate signals the state holds.
@@ -92,7 +93,7 @@ impl AppState {
     }
 
     /// Get the [AppState] from context
-    pub fn use_state<T>(cx: Scope<T>) -> Self {
+    pub fn use_state(cx: Scope) -> Self {
         *use_context::<Self>(cx).unwrap()
     }
 

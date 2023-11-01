@@ -24,5 +24,5 @@ async fn main() {
                     .with_title("Nix Browser")
                     .with_inner_size(LogicalSize::new(800, 700)),
             ),
-    );
+    )
 }
