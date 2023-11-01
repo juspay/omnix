@@ -75,7 +75,7 @@ impl AppState {
     fn new(cx: Scope) -> Self {
         tracing::debug!("🔨 Creating AppState default value");
         let recent_flakes =
-            storage::<LocalStorage, _>(cx, "recent_flakes".to_string(), || FlakeUrl::suggestions());
+            storage::<LocalStorage, _>(cx, "recent_flakes".to_string(), FlakeUrl::suggestions);
         AppState {
             recent_flakes,
             ..AppState::default()
