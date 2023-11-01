@@ -6,7 +6,7 @@ use std::fmt::Display;
 
 use dioxus::prelude::{use_context, use_context_provider, use_future, Scope};
 use dioxus_signals::{use_signal, Signal};
-use dioxus_std::storage::{use_storage, LocalStorage};
+use dioxus_std::storage::{storage, use_storage, LocalStorage};
 use nix_health::NixHealth;
 use nix_rs::{
     command::NixCmdError,
@@ -72,6 +72,15 @@ impl Action {
 }
 
 impl AppState {
+    fn new(cx: Scope) -> Self {
+        tracing::debug!("🔨 Creating AppState default value");
+        let recent_flakes =
+            storage::<LocalStorage, _>(cx, "recent_flakes".to_string(), || FlakeUrl::suggestions());
+        AppState {
+            recent_flakes,
+            ..AppState::default()
+        }
+    }
     /// Perform an [Action] on the state
     ///
     /// This eventuates an update on the appropriate signals the state holds.
@@ -89,16 +98,7 @@ impl AppState {
 
     pub fn provide_state(cx: Scope) {
         tracing::debug!("🏗️ Providing AppState");
-        let recent_flakes = use_storage::<LocalStorage, _>(cx, "recent_flakes".to_string(), || {
-            FlakeUrl::suggestions()
-        });
-        let state = *use_context_provider(cx, || {
-            tracing::debug!("🔨 Creating AppState default value");
-            AppState {
-                recent_flakes,
-                ..AppState::default()
-            }
-        });
+        let state = *use_context_provider(cx, || Self::new(cx));
         // FIXME: Can we avoid calling build_network multiple times?
         state.build_network(cx);
     }
