@@ -6,7 +6,7 @@ use std::fmt::Display;
 
 use dioxus::prelude::{use_context, use_context_provider, use_future, Scope};
 use dioxus_signals::{use_signal, Signal};
-use dioxus_std::storage::{use_synced_storage, LocalStorage};
+use dioxus_std::storage::{use_storage, LocalStorage};
 use nix_health::NixHealth;
 use nix_rs::{
     command::NixCmdError,
@@ -21,7 +21,7 @@ use self::datum::Datum;
 /// loading and subsequent refreshing.
 ///
 /// Use [Action] to mutate this state, in addition to [Signal::set].
-#[derive(Default, Copy, Clone, Debug, PartialEq)]
+#[derive(Default, Clone, Copy, Debug, PartialEq)]
 pub struct AppState {
     pub nix_info: Signal<Datum<Result<nix_rs::info::NixInfo, SystemError>>>,
     pub health_checks: Signal<Datum<Result<Vec<nix_health::traits::Check>, SystemError>>>,
@@ -89,30 +89,17 @@ impl AppState {
 
     pub fn provide_state(cx: Scope) {
         tracing::debug!("🏗️ Providing AppState");
-        let sig = use_synced_storage::<LocalStorage, Vec<FlakeUrl>>(
-            cx,
-            "recent_flakes".to_string(),
-            || vec![],
-        );
+        let recent_flakes =
+            use_storage::<LocalStorage, Vec<FlakeUrl>>(cx, "recent_flakes".to_string(), || vec![]);
         let state = *use_context_provider(cx, || {
             tracing::debug!("🔨 Creating AppState default value");
             AppState {
-                recent_flakes: sig,
+                recent_flakes,
                 ..AppState::default()
             }
         });
         // FIXME: Can we avoid calling build_network multiple times?
         state.build_network(cx);
-        use_future(cx, (), |_| async move {
-            state.initialize().await;
-        });
-    }
-
-    async fn initialize(self) {
-        // Nothing to do right now.
-
-        // XXX: Simulating slowness
-        // tokio::time::sleep(std::time::Duration::from_secs(2)).await;
     }
 
     /// Build the Signal network
@@ -146,7 +133,7 @@ impl AppState {
             use_future(cx, (&flake_url,), |(flake_url,)| async move {
                 if let Some(flake_url) = flake_url {
                     self.recent_flakes.with_mut(|items| {
-                        vec_push_as_latest(items, flake_url);
+                        vec_push_as_latest(items, flake_url).truncate(8);
                     });
                 }
             });
@@ -244,9 +231,10 @@ where
 /// Push an item to the front of a vector
 ///
 /// If the item already exits, move it to the front.
-fn vec_push_as_latest<T: PartialEq>(vec: &mut Vec<T>, item: T) {
+fn vec_push_as_latest<T: PartialEq>(vec: &mut Vec<T>, item: T) -> &mut Vec<T> {
     if let Some(idx) = vec.iter().position(|x| *x == item) {
         vec.remove(idx);
     }
     vec.insert(0, item);
+    vec
 }

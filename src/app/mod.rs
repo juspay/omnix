@@ -11,8 +11,6 @@ mod widget;
 
 use dioxus::prelude::*;
 use dioxus_router::prelude::*;
-use dioxus_signals::Signal;
-use nix_rs::flake::url::FlakeUrl;
 
 use crate::app::{
     flake::{Flake, FlakeRaw},

@@ -7,7 +7,7 @@ mod cli;
 mod logging;
 
 #[tokio::main]
-async fn main() -> anyhow::Result<()> {
+async fn main() {
     use clap::Parser;
     let args = crate::cli::Args::parse();
     crate::logging::setup_logging(&args.verbosity);
@@ -25,6 +25,4 @@ async fn main() -> anyhow::Result<()> {
                     .with_inner_size(LogicalSize::new(800, 700)),
             ),
     );
-
-    Ok(())
 }
