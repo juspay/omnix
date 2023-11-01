@@ -90,7 +90,7 @@ impl AppState {
     pub fn provide_state(cx: Scope) {
         tracing::debug!("🏗️ Providing AppState");
         let recent_flakes =
-            use_storage::<LocalStorage, Vec<FlakeUrl>>(cx, "recent_flakes".to_string(), || vec![]);
+            use_storage::<LocalStorage, _>(cx, "recent_flakes".to_string(), Vec::new);
         let state = *use_context_provider(cx, || {
             tracing::debug!("🔨 Creating AppState default value");
             AppState {
