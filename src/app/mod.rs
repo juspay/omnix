@@ -11,7 +11,6 @@ mod widget;
 
 use dioxus::prelude::*;
 use dioxus_router::prelude::*;
-use nix_rs::flake::url::FlakeUrl;
 
 use crate::app::{
     flake::{Flake, FlakeRaw},
@@ -140,18 +139,20 @@ fn Footer(cx: Scope) -> Element {
 // Home page
 fn Dashboard(cx: Scope) -> Element {
     tracing::debug!("Rendering Dashboard page");
-    // TODO: Store and show user's recent flake visits
-    let suggestions = FlakeUrl::suggestions();
+    let state = AppState::use_state(cx);
     render! {
         div { class: "pl-4",
-            h2 { class: "text-2xl", "We have hand-picked some flakes for you to try out:" }
+            h2 { class: "text-2xl", "Enter a flake URL:" }
+            // TODO: search input here
+            p { "TODO: search input" }
+            h2 { class: "text-2xl", "Or, try one of these:" }
             div { class: "flex flex-col",
-                for flake in suggestions {
+                for flake in state.recent_flakes.read().clone() {
                     a {
                         onclick: move |_| {
                             let state = AppState::use_state(cx);
                             let nav = use_navigator(cx);
-                            state.flake_url.set(flake.clone());
+                            state.set_flake_url(flake.clone());
                             nav.replace(Route::Flake {});
                         },
                         class: "cursor-pointer text-primary-600 underline hover:no-underline",

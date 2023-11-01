@@ -5,13 +5,13 @@ mod datum;
 use std::fmt::Display;
 
 use dioxus::prelude::{use_context, use_context_provider, use_future, Scope};
-use dioxus_signals::{use_signal, CopyValue, Signal};
+use dioxus_signals::{use_signal, Signal};
+use dioxus_std::storage::{storage, LocalStorage};
 use nix_health::NixHealth;
 use nix_rs::{
     command::NixCmdError,
     flake::{url::FlakeUrl, Flake},
 };
-use tokio::task::AbortHandle;
 
 use self::datum::Datum;
 
@@ -26,17 +26,24 @@ pub struct AppState {
     pub nix_info: Signal<Datum<Result<nix_rs::info::NixInfo, SystemError>>>,
     pub health_checks: Signal<Datum<Result<Vec<nix_health::traits::Check>, SystemError>>>,
 
-    pub flake_url: Signal<FlakeUrl>,
+    /// User selected [FlakeUrl]
+    pub flake_url: Signal<Option<FlakeUrl>>,
+    /// [Flake] for [AppState::flake_url]
     pub flake: Signal<Datum<Result<Flake, NixCmdError>>>,
-    pub flake_task_abort: CopyValue<Option<AbortHandle>>,
+    /// List of recently selected [AppState::flake_url]s
+    pub recent_flakes: Signal<Vec<FlakeUrl>>,
 
+    /// [Action] represents the next modification to perform on [AppState] signals
     pub action: Signal<(usize, Action)>,
 }
 
 /// An action to be performed on [AppState]
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Action {
+    /// Refresh the [AppState::flake] signal using [AppState::flake_url] signal's current value
     RefreshFlake,
+
+    /// Refresh [AppState::nix_info] signal
     #[default]
     GetNixInfo,
 }
@@ -65,6 +72,16 @@ impl Action {
 }
 
 impl AppState {
+    fn new(cx: Scope) -> Self {
+        tracing::debug!("🔨 Creating AppState default value");
+        let recent_flakes =
+            storage::<LocalStorage, _>(cx, "recent_flakes".to_string(), FlakeUrl::suggestions);
+        AppState {
+            recent_flakes,
+            ..AppState::default()
+        }
+    }
+
     /// Perform an [Action] on the state
     ///
     /// This eventuates an update on the appropriate signals the state holds.
@@ -77,17 +94,13 @@ impl AppState {
 
     /// Get the [AppState] from context
     pub fn use_state(cx: Scope) -> Self {
-        *use_context(cx).unwrap()
+        *use_context::<Self>(cx).unwrap()
     }
 
     pub fn provide_state(cx: Scope) {
         tracing::debug!("🏗️ Providing AppState");
-        use_context_provider(cx, || {
-            tracing::debug!("🔨 Creating AppState default value");
-            AppState::default()
-        });
+        let state = *use_context_provider(cx, || Self::new(cx));
         // FIXME: Can we avoid calling build_network multiple times?
-        let state = AppState::use_state(cx);
         state.build_network(cx);
     }
 
@@ -105,11 +118,26 @@ impl AppState {
                 Action::signal_for(cx, self.action, |act| act == Action::RefreshFlake);
             let idx = *refresh_action.read();
             use_future(cx, (&flake_url, &idx), |(flake_url, idx)| async move {
-                tracing::info!("Updating flake [{}] {} ...", flake_url, idx);
-                Datum::refresh_with(self.flake, async move {
-                    Flake::from_nix(&nix_rs::command::NixCmd::default(), flake_url.clone()).await
-                })
-                .await
+                if let Some(flake_url) = flake_url {
+                    tracing::info!("Updating flake [{}] {} ...", flake_url, idx);
+                    Datum::refresh_with(self.flake, async move {
+                        Flake::from_nix(&nix_rs::command::NixCmd::default(), flake_url.clone())
+                            .await
+                    })
+                    .await
+                }
+            });
+        }
+
+        // Update recent_flakes
+        {
+            let flake_url = self.flake_url.read().clone();
+            use_future(cx, (&flake_url,), |(flake_url,)| async move {
+                if let Some(flake_url) = flake_url {
+                    self.recent_flakes.with_mut(|items| {
+                        vec_push_as_latest(items, flake_url).truncate(8);
+                    });
+                }
             });
         }
 
@@ -149,6 +177,19 @@ impl AppState {
             });
         }
     }
+
+    /// Return the [String] representation of the current [AppState::flake_url] value. If there is none, return empty string.
+    pub fn get_flake_url_string(&self) -> String {
+        self.flake_url
+            .read()
+            .clone()
+            .map_or("".to_string(), |url| url.to_string())
+    }
+
+    pub fn set_flake_url(&self, url: FlakeUrl) {
+        tracing::info!("setting flake url to {}", &url);
+        self.flake_url.set(Some(url));
+    }
 }
 
 /// Catch all error to use in UI components
@@ -187,4 +228,15 @@ where
         }
     });
     res
+}
+
+/// Push an item to the front of a vector
+///
+/// If the item already exits, move it to the front.
+fn vec_push_as_latest<T: PartialEq>(vec: &mut Vec<T>, item: T) -> &mut Vec<T> {
+    if let Some(idx) = vec.iter().position(|x| *x == item) {
+        vec.remove(idx);
+    }
+    vec.insert(0, item);
+    vec
 }

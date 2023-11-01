@@ -28,20 +28,18 @@ pub fn Flake(cx: Scope) -> Element {
                 class: "flex-1 w-full p-1 mb-4 font-mono",
                 id: "nix-flake-input",
                 "type": "text",
-                value: "{state.flake_url}",
+                value: "{state.get_flake_url_string()}",
                 disabled: busy,
                 onchange: move |ev| {
                     let url: FlakeUrl = ev.value.clone().into();
-                    tracing::info!("setting flake url to {}", & url);
-                    state.flake_url.set(url);
+                    state.set_flake_url(url);
                 }
             }
             div { class: "ml-2 flex flex-col",
                 FolderDialogButton {
                     handler: move |flake_path: PathBuf| {
                         let url: FlakeUrl = flake_path.into();
-                        tracing::info!("setting flake url to {}", & url);
-                        state.flake_url.set(url);
+                        state.set_flake_url(url);
                     }
                 }
             }

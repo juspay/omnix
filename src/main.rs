@@ -1,5 +1,6 @@
 #![feature(let_chains)]
 use dioxus_desktop::{LogicalSize, WindowBuilder};
+use dioxus_std::storage::set_dir_name;
 
 mod app;
 mod cli;
@@ -10,6 +11,9 @@ async fn main() {
     use clap::Parser;
     let args = crate::cli::Args::parse();
     crate::logging::setup_logging(&args.verbosity);
+
+    // Set data directory for persisting [Signal]s. On macOS, this is ~/Library/Application Support/nix-browser.
+    dioxus_std::storage::set_dir!();
 
     dioxus_desktop::launch_cfg(
         app::App,
