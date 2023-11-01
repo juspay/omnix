@@ -29,8 +29,12 @@ pub struct AppState {
     pub nix_info: Signal<Datum<Result<nix_rs::info::NixInfo, SystemError>>>,
     pub health_checks: Signal<Datum<Result<Vec<nix_health::traits::Check>, SystemError>>>,
 
+    /// User selected [FlakeUrl]
     pub flake_url: Signal<Option<FlakeUrl>>,
+    /// [Flake] for [AppState::flake_url]
     pub flake: Signal<Datum<Result<Flake, NixCmdError>>>,
+    /// List of recently selected [AppState::flake_url]s
+    pub recent_flakes: Signal<Vec<FlakeUrl>>,
 
     /// [Action] represents the next modification to perform on [AppState] signals
     pub action: Signal<(usize, Action)>,
@@ -96,13 +100,19 @@ impl AppState {
         state.build_network(cx);
         use_future(cx, (), |_| async move {
             // XXX: Simulating slowness
-            tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+            // tokio::time::sleep(std::time::Duration::from_secs(2)).await;
             state.initialize().await;
         });
     }
 
     async fn initialize(self) {
         let db = Db::new().await;
+
+        if let Ok(db) = db.as_ref() {
+            self.recent_flakes
+                .set(db.recent_flakes().await.unwrap_or_default());
+        }
+
         self.db.set(Some(db));
     }
 
@@ -117,7 +127,7 @@ impl AppState {
     }
 
     /// Get [Db]. Only safe after initialization (see [AppState::initialization_state]])
-    fn get_db(self) -> Db {
+    pub(crate) fn get_db(self) -> Db {
         self.db.read().as_ref().unwrap().as_ref().unwrap().clone()
     }
 
@@ -140,12 +150,35 @@ impl AppState {
                     // TODO: refactor?
                     if let Err(err) = self.get_db().register_flake(&flake_url).await {
                         tracing::error!("Failed to register flake in db: {}", err);
+                    } else {
+                        match self.get_db().recent_flakes().await {
+                            Ok(recent_flakes) => {
+                                self.recent_flakes.set(recent_flakes);
+                            }
+                            Err(err) => {
+                                tracing::error!("Failed to get recent flakes: {}", err);
+                            }
+                        }
                     }
                     Datum::refresh_with(self.flake, async move {
                         Flake::from_nix(&nix_rs::command::NixCmd::default(), flake_url.clone())
                             .await
                     })
                     .await
+                }
+            });
+        }
+
+        // Update recent flakes
+        {
+            let flake_url = self.flake_url.read().clone();
+            use_future(cx, (&flake_url,), |(flake_url,)| async move {
+                if let Some(flake_url) = flake_url {
+                    let mut recent_flakes = self.recent_flakes.read().clone();
+                    if !recent_flakes.contains(&flake_url) {
+                        recent_flakes.push(flake_url.clone());
+                        self.recent_flakes.set(recent_flakes);
+                    }
                 }
             });
         }
