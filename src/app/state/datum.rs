@@ -36,7 +36,7 @@ impl<T> Datum<T> {
     /// Refresh the datum [Signal] using the given function
     ///
     /// If a previous refresh is still running, it will be cancelled.
-    pub async fn refresh_with<F>(signal: Signal<Self>, f: F)
+    pub async fn refresh_with<F>(signal: Signal<Self>, f: F) -> bool
     where
         F: Future<Output = T> + Send + 'static,
         T: Send + 'static,
@@ -66,6 +66,7 @@ impl<T> Datum<T> {
                     x.value = Some(val);
                     *x.task.write() = None;
                 });
+                true
             }
             Err(err) => {
                 if !err.is_cancelled() {
@@ -76,6 +77,7 @@ impl<T> Datum<T> {
                 }
                 // x.task will be set to None by the caller who cancelled us, so
                 // we need not do anything here.
+                false
             }
         }
     }

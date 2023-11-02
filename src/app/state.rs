@@ -2,6 +2,7 @@
 
 mod datum;
 
+use assoc::AssocExt;
 use std::fmt::Display;
 
 use dioxus::prelude::{use_context, use_context_provider, use_future, Scope};
@@ -31,7 +32,7 @@ pub struct AppState {
     /// [Flake] for [AppState::flake_url]
     pub flake: Signal<Datum<Result<Flake, NixCmdError>>>,
     /// List of recently selected [AppState::flake_url]s
-    pub recent_flakes: Signal<Vec<FlakeUrl>>,
+    pub recent_flakes: Signal<Vec<(FlakeUrl, Option<Flake>)>>,
 
     /// [Action] represents the next modification to perform on [AppState] signals
     pub action: Signal<(usize, Action)>,
@@ -74,8 +75,12 @@ impl Action {
 impl AppState {
     fn new(cx: Scope) -> Self {
         tracing::debug!("🔨 Creating AppState default value");
-        let recent_flakes =
-            storage::<LocalStorage, _>(cx, "recent_flakes".to_string(), FlakeUrl::suggestions);
+        let recent_flakes = storage::<LocalStorage, _>(cx, "recent_flakes".to_string(), || {
+            FlakeUrl::suggestions()
+                .iter()
+                .map(|url| (url.clone(), None))
+                .collect()
+        });
         AppState {
             recent_flakes,
             ..AppState::default()
@@ -119,24 +124,21 @@ impl AppState {
             let idx = *refresh_action.read();
             use_future(cx, (&flake_url, &idx), |(flake_url, idx)| async move {
                 if let Some(flake_url) = flake_url {
-                    tracing::info!("Updating flake [{}] {} ...", flake_url, idx);
-                    Datum::refresh_with(self.flake, async move {
-                        Flake::from_nix(&nix_rs::command::NixCmd::default(), flake_url.clone())
-                            .await
+                    let k = flake_url.clone();
+                    tracing::info!("Updating flake [{}] {} ...", &flake_url, idx);
+                    let wrote = Datum::refresh_with(self.flake, async move {
+                        Flake::from_nix(&nix_rs::command::NixCmd::default(), flake_url).await
                     })
-                    .await
-                }
-            });
-        }
-
-        // Update recent_flakes
-        {
-            let flake_url = self.flake_url.read().clone();
-            use_future(cx, (&flake_url,), |(flake_url,)| async move {
-                if let Some(flake_url) = flake_url {
-                    self.recent_flakes.with_mut(|items| {
-                        vec_push_as_latest(items, flake_url).truncate(8);
-                    });
+                    .await;
+                    if wrote {
+                        if let Some(Ok(flake)) = self.flake.read().current_value() {
+                            self.recent_flakes.with_mut(move |fs| {
+                                AssocExt::remove(fs, &k);
+                                AssocExt::insert(fs, k, Some(flake.clone()));
+                                fs.truncate(15);
+                            });
+                        }
+                    }
                 }
             });
         }
