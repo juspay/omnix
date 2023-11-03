@@ -61,3 +61,4 @@ dioxus-signals = { git = "https://github.com/DioxusLabs/dioxus.git", rev = "6478
 # https://github.com/DioxusLabs/dioxus-std/pull/17
 dioxus-std = { git = "https://github.com/ealmloff/dioxus-std.git", branch="storage", features = ["storage"] }
 fermi = { git = "https://github.com/DioxusLabs/dioxus.git", rev = "c7963a03440d5a050bf229f91665d60a0d108a8a" }
+dioxus_markdown = { git = "https://github.com/1vipulgupta/markdown.git", rev = "2942507f77216286904bc3a23a68bf10345367f0" }
