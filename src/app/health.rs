@@ -7,13 +7,9 @@ use crate::{app::state::AppState, app::widget::Loader};
 
 pub fn renderMarkDown<'a>(cx: Scope<'a>, string: &'a str) -> Element<'a> {
     cx.render(rsx! {
-        link {
-            rel: "stylesheet",
-            href: "https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css",
-        }
         div {
             Markdown {
-                class: "content",
+                class: "prose",
                 content: string,
             }
         }

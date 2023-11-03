@@ -992,6 +992,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "dioxus_markdown"
+version = "0.2.0"
+source = "git+https://github.com/1vipulgupta/markdown.git?rev=8d99f3f0ccf6af8d43e4222907efdfbfa051a293#8d99f3f0ccf6af8d43e4222907efdfbfa051a293"
+dependencies = [
+ "dioxus",
+ "pulldown-cmark",
+]
+
+[[package]]
 name = "directories"
 version = "4.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2179,15 +2188,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "markdown"
-version = "0.2.0"
-dependencies = [
- "dioxus",
- "dioxus-desktop",
- "pulldown-cmark",
-]
-
-[[package]]
 name = "markup5ever"
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2300,10 +2300,10 @@ dependencies = [
  "dioxus-router",
  "dioxus-signals",
  "dioxus-std",
+ "dioxus_markdown",
  "fermi",
  "http",
  "human-panic",
- "markdown",
  "nix_health",
  "nix_rs",
  "regex",
