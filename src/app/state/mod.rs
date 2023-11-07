@@ -4,6 +4,7 @@ pub mod action;
 mod datum;
 mod error;
 
+use assoc::AssocExt;
 use dioxus::prelude::{use_context, use_context_provider, use_future, Scope};
 use dioxus_signals::Signal;
 use dioxus_std::storage::{new_storage, LocalStorage};
@@ -30,6 +31,8 @@ pub struct AppState {
     pub flake_url: Signal<Option<FlakeUrl>>,
     /// [Flake] for [AppState::flake_url]
     pub flake: Signal<Datum<Result<Flake, SystemError>>>,
+    /// Cached [Flake] values indexed by [FlakeUrl]
+    pub flake_cache: Signal<Vec<(FlakeUrl, Flake)>>,
     /// List of recently selected [AppState::flake_url]s
     pub recent_flakes: Signal<Vec<FlakeUrl>>,
 
@@ -42,8 +45,10 @@ impl AppState {
         tracing::debug!("🔨 Creating new AppState");
         let recent_flakes =
             new_storage::<LocalStorage, _>(cx, "recent_flakes".to_string(), FlakeUrl::suggestions);
+        let flake_cache = new_storage::<LocalStorage, _>(cx, "flake_cache".to_string(), Vec::new);
         AppState {
             recent_flakes,
+            flake_cache,
             ..AppState::default()
         }
     }
@@ -97,13 +102,21 @@ impl AppState {
             let update_flake = |refresh: bool| async move {
                 let flake_url = self.flake_url.read().clone();
                 if let Some(flake_url) = flake_url {
+                    let flake_url_2 = flake_url.clone();
                     tracing::info!("Updating flake [{}] refresh={} ...", flake_url, refresh);
                     Datum::refresh_with(self.flake, async move {
-                        Flake::from_nix(&nix_rs::command::NixCmd::default(), flake_url.clone())
+                        Flake::from_nix(&nix_rs::command::NixCmd::default(), flake_url_2)
                             .await
                             .map_err(|e| Into::<SystemError>::into(e.to_string()))
                     })
-                    .await
+                    .await;
+                    if let Some(Ok(flake)) = self.flake.read().current_value() {
+                        tracing::info!("Caching flake [{}]", flake_url);
+                        self.flake_cache.with_mut(|cache| {
+                            vec_push_as_latest(cache, (flake_url.clone(), flake.clone()))
+                                .truncate(8);
+                        });
+                    }
                 }
             };
             let flake_url = self.flake_url.read().clone();
@@ -111,7 +124,16 @@ impl AppState {
                 Action::signal_for(cx, self.action, |act| act == Action::RefreshFlake);
             let idx = *refresh_action.read();
             // ... when URL changes.
-            use_future(cx, (&flake_url,), |_| update_flake(false));
+            use_future(cx, (&flake_url,), |(flake_url,)| async move {
+                if let Some(flake_url) = flake_url {
+                    if let Some(cached_flake) = self.flake_cache.read().get(&flake_url).cloned() {
+                        tracing::info!("Cache hit for {}", flake_url);
+                        Datum::refresh_with(self.flake, async { Ok(cached_flake) }).await;
+                    } else {
+                        self.act(Action::RefreshFlake);
+                    }
+                }
+            });
             // ... when refresh button is clicked.
             use_future(cx, (&idx,), |(idx,)| update_flake(idx.is_some()));
         }
