@@ -6,7 +6,7 @@ mod error;
 
 use dioxus::prelude::{use_context, use_context_provider, use_future, Scope};
 use dioxus_signals::Signal;
-use dioxus_std::storage::{storage, LocalStorage};
+use dioxus_std::storage::{new_storage, LocalStorage};
 use nix_health::NixHealth;
 use nix_rs::{
     flake::{url::FlakeUrl, Flake},
@@ -41,7 +41,7 @@ impl AppState {
     fn new(cx: Scope) -> Self {
         tracing::debug!("🔨 Creating AppState default value");
         let recent_flakes =
-            storage::<LocalStorage, _>(cx, "recent_flakes".to_string(), FlakeUrl::suggestions);
+            new_storage::<LocalStorage, _>(cx, "recent_flakes".to_string(), FlakeUrl::suggestions);
         AppState {
             recent_flakes,
             ..AppState::default()
