@@ -15,23 +15,18 @@ pub enum Action {
 impl Action {
     /// Return a [Signal] containing only the given [Action]
     ///
-    /// The signal value will be the [Action]'s index in the original signal.
-    pub fn signal_for<F>(cx: Scope, sig: Signal<(usize, Action)>, f: F) -> Signal<usize>
+    /// The signal value will be the [Action]'s index in the original signal, which index is [None] if the action was never emitted..
+    pub fn signal_for<F>(cx: Scope, sig: Signal<(usize, Action)>, f: F) -> Signal<Option<usize>>
     where
         F: Fn(Action) -> bool + 'static,
     {
-        signal_filter_map(
-            cx,
-            sig,
-            0,
-            move |(idx, action)| {
-                if f(action) {
-                    Some(idx)
-                } else {
-                    None
-                }
-            },
-        )
+        signal_filter_map(cx, sig, None, move |(idx, action)| {
+            if f(action) {
+                Some(Some(idx))
+            } else {
+                None
+            }
+        })
     }
 }
 

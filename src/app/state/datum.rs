@@ -36,7 +36,7 @@ impl<T> Datum<T> {
     /// Refresh the datum [Signal] using the given function
     ///
     /// If a previous refresh is still running, it will be cancelled.
-    pub async fn refresh_with<F>(signal: Signal<Self>, f: F)
+    pub async fn refresh_with<F>(signal: Signal<Datum<T>>, f: F)
     where
         F: Future<Output = T> + Send + 'static,
         T: Send + 'static,

@@ -39,7 +39,7 @@ pub struct AppState {
 
 impl AppState {
     fn new(cx: Scope) -> Self {
-        tracing::debug!("🔨 Creating AppState default value");
+        tracing::debug!("🔨 Creating new AppState");
         let recent_flakes =
             new_storage::<LocalStorage, _>(cx, "recent_flakes".to_string(), FlakeUrl::suggestions);
         AppState {
@@ -94,13 +94,9 @@ impl AppState {
         // Build `state.flake` signal when `state.flake_url` changes or the
         // RefreshFlake action is triggered
         {
-            let flake_url = self.flake_url.read().clone();
-            let refresh_action =
-                Action::signal_for(cx, self.action, |act| act == Action::RefreshFlake);
-            let idx = *refresh_action.read();
-            use_future(cx, (&flake_url, &idx), |(flake_url, idx)| async move {
+            let refresh_flake = |(flake_url, idx): (Option<FlakeUrl>, Option<usize>)| async move {
                 if let Some(flake_url) = flake_url {
-                    tracing::info!("Updating flake [{}] {} ...", flake_url, idx);
+                    tracing::info!("Updating flake [{}] {:?} ...", flake_url, idx);
                     Datum::refresh_with(self.flake, async move {
                         Flake::from_nix(&nix_rs::command::NixCmd::default(), flake_url.clone())
                             .await
@@ -108,7 +104,12 @@ impl AppState {
                     })
                     .await
                 }
-            });
+            };
+            let flake_url = self.flake_url.read().clone();
+            let refresh_action =
+                Action::signal_for(cx, self.action, |act| act == Action::RefreshFlake);
+            let idx = *refresh_action.read();
+            use_future(cx, (&flake_url, &idx), refresh_flake);
         }
 
         // Update recent_flakes
@@ -147,7 +148,7 @@ impl AppState {
                 Action::signal_for(cx, self.action, |act| act == Action::GetNixInfo);
             let idx = *get_nix_info_action.read();
             use_future(cx, (&idx,), |(idx,)| async move {
-                tracing::info!("Updating nix info [{}] ...", idx);
+                tracing::info!("Updating nix info [{:?}] ...", idx);
                 Datum::refresh_with(self.nix_info, async {
                     NixInfo::from_nix(&nix_rs::command::NixCmd::default())
                         .await
