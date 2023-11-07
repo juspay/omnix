@@ -105,15 +105,15 @@ fn ViewRefreshButton(cx: Scope) -> Element {
     let (busy, action) = match use_route(cx).unwrap() {
         Route::Flake {} => Some((
             state.flake.read().is_loading_or_refreshing(),
-            state::Action::RefreshFlake,
+            state::action::Action::RefreshFlake,
         )),
         Route::Health {} => Some((
             state.health_checks.read().is_loading_or_refreshing(),
-            state::Action::GetNixInfo,
+            state::action::Action::GetNixInfo,
         )),
         Route::Info {} => Some((
             state.nix_info.read().is_loading_or_refreshing(),
-            state::Action::GetNixInfo,
+            state::action::Action::GetNixInfo,
         )),
         _ => None,
     }?;
