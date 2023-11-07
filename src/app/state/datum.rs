@@ -44,6 +44,10 @@ impl<T> Datum<T> {
         // Cancel existing fetcher if any.
         signal.with_mut(move |x| {
             if let Some(abort_handle) = x.task.take() {
+                tracing::warn!(
+                    "🍒 Cancelling previous refresh task for {}",
+                    std::any::type_name::<T>()
+                );
                 abort_handle.abort();
             }
         });

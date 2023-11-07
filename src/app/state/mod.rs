@@ -94,9 +94,9 @@ impl AppState {
         // Build `state.flake` signal when `state.flake_url` changes or the
         // RefreshFlake action is triggered
         {
-            let refresh_flake = |(flake_url, idx): (Option<FlakeUrl>, Option<usize>)| async move {
+            let refresh_flake = |(flake_url, last_event_idx): (Option<FlakeUrl>, Option<usize>)| async move {
                 if let Some(flake_url) = flake_url {
-                    tracing::info!("Updating flake [{}] {:?} ...", flake_url, idx);
+                    tracing::info!("Updating flake [{}] {:?} ...", flake_url, last_event_idx);
                     Datum::refresh_with(self.flake, async move {
                         Flake::from_nix(&nix_rs::command::NixCmd::default(), flake_url.clone())
                             .await
@@ -147,8 +147,8 @@ impl AppState {
             let get_nix_info_action =
                 Action::signal_for(cx, self.action, |act| act == Action::GetNixInfo);
             let idx = *get_nix_info_action.read();
-            use_future(cx, (&idx,), |(idx,)| async move {
-                tracing::info!("Updating nix info [{:?}] ...", idx);
+            use_future(cx, (&idx,), |(last_event_idx,)| async move {
+                tracing::info!("Updating nix info [{:?}] ...", last_event_idx);
                 Datum::refresh_with(self.nix_info, async {
                     NixInfo::from_nix(&nix_rs::command::NixCmd::default())
                         .await
