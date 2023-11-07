@@ -8,10 +8,7 @@ use dioxus::prelude::{use_context, use_context_provider, use_future, Scope};
 use dioxus_signals::{use_signal, Signal};
 use dioxus_std::storage::{storage, LocalStorage};
 use nix_health::NixHealth;
-use nix_rs::{
-    command::NixCmdError,
-    flake::{url::FlakeUrl, Flake},
-};
+use nix_rs::flake::{url::FlakeUrl, Flake};
 
 use self::datum::Datum;
 
@@ -29,7 +26,7 @@ pub struct AppState {
     /// User selected [FlakeUrl]
     pub flake_url: Signal<Option<FlakeUrl>>,
     /// [Flake] for [AppState::flake_url]
-    pub flake: Signal<Datum<Result<Flake, NixCmdError>>>,
+    pub flake: Signal<Datum<Result<Flake, SystemError>>>,
     /// List of recently selected [AppState::flake_url]s
     pub recent_flakes: Signal<Vec<FlakeUrl>>,
 
@@ -123,6 +120,7 @@ impl AppState {
                     Datum::refresh_with(self.flake, async move {
                         Flake::from_nix(&nix_rs::command::NixCmd::default(), flake_url.clone())
                             .await
+                            .map_err(|e| Into::<SystemError>::into(e.to_string()))
                     })
                     .await
                 }
