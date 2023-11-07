@@ -94,9 +94,10 @@ impl AppState {
         // Build `state.flake` signal when `state.flake_url` changes or the
         // RefreshFlake action is triggered
         {
-            let refresh_flake = |(flake_url, last_event_idx): (Option<FlakeUrl>, Option<usize>)| async move {
+            let update_flake = |refresh: bool| async move {
+                let flake_url = self.flake_url.read().clone();
                 if let Some(flake_url) = flake_url {
-                    tracing::info!("Updating flake [{}] {:?} ...", flake_url, last_event_idx);
+                    tracing::info!("Updating flake [{}] refresh={} ...", flake_url, refresh);
                     Datum::refresh_with(self.flake, async move {
                         Flake::from_nix(&nix_rs::command::NixCmd::default(), flake_url.clone())
                             .await
@@ -109,7 +110,10 @@ impl AppState {
             let refresh_action =
                 Action::signal_for(cx, self.action, |act| act == Action::RefreshFlake);
             let idx = *refresh_action.read();
-            use_future(cx, (&flake_url, &idx), refresh_flake);
+            // ... when URL changes.
+            use_future(cx, (&flake_url,), |_| update_flake(false));
+            // ... when refresh button is clicked.
+            use_future(cx, (&idx,), |(idx,)| update_flake(idx.is_some()));
         }
 
         // Update recent_flakes
