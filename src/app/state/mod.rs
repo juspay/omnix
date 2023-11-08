@@ -43,6 +43,7 @@ pub struct AppState {
 impl AppState {
     fn new(cx: Scope) -> Self {
         tracing::info!("🔨 Creating new AppState");
+        // TODO: Should we use new_synced_storage, instead? To allow multiple app windows?
         let flake_cache = new_storage::<LocalStorage, _>(cx, "flake_cache".to_string(), || {
             tracing::warn!("📦 No flake cache found");
             Vec::new()
