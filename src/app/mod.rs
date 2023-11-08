@@ -102,18 +102,18 @@ fn TopBar(cx: Scope) -> Element {
 #[component]
 fn ViewRefreshButton(cx: Scope) -> Element {
     let state = AppState::use_state(cx);
-    let (busy, action) = match use_route(cx).unwrap() {
+    let (busy, refresh_signal) = match use_route(cx).unwrap() {
         Route::Flake {} => Some((
             state.flake.read().is_loading_or_refreshing(),
-            state::action::Action::RefreshFlake,
+            state.flake_refresh,
         )),
         Route::Health {} => Some((
             state.health_checks.read().is_loading_or_refreshing(),
-            state::action::Action::GetNixInfo,
+            state.health_checks_refresh,
         )),
         Route::Info {} => Some((
             state.nix_info.read().is_loading_or_refreshing(),
-            state::action::Action::GetNixInfo,
+            state.nix_info_refresh,
         )),
         _ => None,
     }?;
@@ -121,7 +121,7 @@ fn ViewRefreshButton(cx: Scope) -> Element {
         RefreshButton {
             busy: busy,
             handler: move |_| {
-                state.act(action);
+                refresh_signal.write().request_refresh();
             }
         }
     }

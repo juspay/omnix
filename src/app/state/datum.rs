@@ -33,6 +33,13 @@ impl<T> Datum<T> {
         self.value.as_ref()
     }
 
+    pub async fn set_value(signal: Signal<Datum<T>>, value: T)
+    where
+        T: Send + Clone + 'static,
+    {
+        Datum::refresh_with(signal, async { value }).await;
+    }
+
     /// Refresh the datum [Signal] using the given function
     ///
     /// If a previous refresh is still running, it will be cancelled.

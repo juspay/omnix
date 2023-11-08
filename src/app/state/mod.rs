@@ -1,9 +1,9 @@
 //! Application state
 
-pub mod action;
 mod datum;
 mod db;
 mod error;
+mod refresh;
 
 use dioxus::prelude::{use_context, use_context_provider, use_future, Scope};
 use dioxus_signals::Signal;
@@ -13,7 +13,7 @@ use nix_rs::{
     info::NixInfo,
 };
 
-use self::{action::Action, datum::Datum, error::SystemError};
+use self::{datum::Datum, error::SystemError, refresh::Refresh};
 
 /// Our dioxus application state is a struct of [Signal]s that store app state.
 ///
@@ -23,20 +23,25 @@ use self::{action::Action, datum::Datum, error::SystemError};
 /// Use [Action] to mutate this state, in addition to [Signal::set].
 #[derive(Default, Clone, Copy, Debug, PartialEq)]
 pub struct AppState {
+    /// [NixInfo] as detected on the user's system
     pub nix_info: Signal<Datum<Result<NixInfo, SystemError>>>,
+    pub nix_info_refresh: Signal<Refresh>,
+
+    /// User's Nix health [nix_health::traits::Check]s
     pub health_checks: Signal<Datum<Result<Vec<nix_health::traits::Check>, SystemError>>>,
+    pub health_checks_refresh: Signal<Refresh>,
 
     /// User selected [FlakeUrl]
     pub flake_url: Signal<Option<FlakeUrl>>,
+    /// Trigger to refresh [AppState::flake]
+    pub flake_refresh: Signal<Refresh>,
     /// [Flake] for [AppState::flake_url]
     pub flake: Signal<Datum<Result<Flake, SystemError>>>,
+
     /// Cached [Flake] values indexed by [FlakeUrl]
     ///
     /// Most recently updated flakes appear first.
     pub flake_cache: Signal<db::FlakeCache>,
-
-    /// [Action] represents the next modification to perform on [AppState] signals
-    pub action: Signal<(usize, Action)>,
 }
 
 impl AppState {
@@ -62,16 +67,6 @@ impl AppState {
         state.build_network(cx);
     }
 
-    /// Perform an [Action] on the state
-    ///
-    /// This eventuates an update on the appropriate signals the state holds.
-    pub fn act(&self, action: Action) {
-        self.action.with_mut(|(i, v)| {
-            *i += 1;
-            *v = action;
-        });
-    }
-
     /// Return the [String] representation of the current [AppState::flake_url] value. If there is none, return empty string.
     pub fn get_flake_url_string(&self) -> String {
         self.flake_url
@@ -93,10 +88,22 @@ impl AppState {
     /// define that relationship here.
     fn build_network(self, cx: Scope) {
         tracing::debug!("🕸️ Building AppState network");
-        // Build `state.flake` signal when `state.flake_url` changes or the
-        // RefreshFlake action is triggered
+        // Build `state.flake` signal dependent signals change
         {
-            let update_flake = |refresh: bool| async move {
+            // ... when [AppState::flake_url] changes.
+            let flake_url = self.flake_url.read().clone();
+            use_future(cx, (&flake_url,), |(flake_url,)| async move {
+                if let Some(flake_url) = flake_url {
+                    if let Some(cached_flake) = self.flake_cache.read().get(&flake_url) {
+                        Datum::set_value(self.flake, Ok(cached_flake)).await;
+                    } else {
+                        self.flake_refresh.write().request_refresh();
+                    }
+                }
+            });
+            // ... when refresh button is clicked.
+            let refresh = *self.flake_refresh.read();
+            use_future(cx, (&refresh,), |(refresh,)| async move {
                 let flake_url = self.flake_url.read().clone();
                 if let Some(flake_url) = flake_url {
                     let flake_url_2 = flake_url.clone();
@@ -113,50 +120,38 @@ impl AppState {
                         });
                     }
                 }
-            };
-            let flake_url = self.flake_url.read().clone();
-            let refresh_action =
-                Action::signal_for(cx, self.action, |act| act == Action::RefreshFlake);
-            let idx = *refresh_action.read();
-            // ... when URL changes.
-            use_future(cx, (&flake_url,), |(flake_url,)| async move {
-                if let Some(flake_url) = flake_url {
-                    if let Some(cached_flake) = self.flake_cache.read().get(&flake_url) {
-                        Datum::refresh_with(self.flake, async { Ok(cached_flake) }).await;
-                    } else {
-                        self.act(Action::RefreshFlake);
-                    }
-                }
             });
-            // ... when refresh button is clicked.
-            use_future(cx, (&idx,), |(idx,)| update_flake(idx.is_some()));
         }
 
-        // Build `state.health_checks` when nix_info changes
+        // Build `state.health_checks`
         {
             let nix_info = self.nix_info.read().clone();
-            use_future(cx, (&nix_info,), |(nix_info1,)| async move {
-                if let Some(nix_info) = nix_info1.current_value().map(|x| {
-                    x.as_ref()
-                        .map_err(|e| Into::<SystemError>::into(e.to_string()))
-                        .map(|v| v.clone())
-                }) {
-                    Datum::refresh_with(self.health_checks, async move {
-                        let health_checks = NixHealth::default().run_checks(&nix_info?, None);
-                        Ok(health_checks)
-                    })
-                    .await;
-                }
-            });
+            let refresh = *self.health_checks_refresh.read();
+            use_future(
+                cx,
+                (&nix_info, &refresh),
+                |(nix_info, refresh)| async move {
+                    if let Some(nix_info) = nix_info.current_value().map(|x| {
+                        x.as_ref()
+                            .map_err(|e| Into::<SystemError>::into(e.to_string()))
+                            .map(|v| v.clone())
+                    }) {
+                        tracing::info!("Updating nix health [{}] ...", refresh);
+                        Datum::refresh_with(self.health_checks, async move {
+                            let health_checks = NixHealth::default().run_checks(&nix_info?, None);
+                            Ok(health_checks)
+                        })
+                        .await;
+                    }
+                },
+            );
         }
 
-        // Build `state.nix_info` when GetNixInfo action is triggered
+        // Build `state.nix_info`
         {
-            let get_nix_info_action =
-                Action::signal_for(cx, self.action, |act| act == Action::GetNixInfo);
-            let idx = *get_nix_info_action.read();
-            use_future(cx, (&idx,), |(last_event_idx,)| async move {
-                tracing::info!("Updating nix info [{:?}] ...", last_event_idx);
+            let refresh = *self.nix_info_refresh.read();
+            use_future(cx, (&refresh,), |(refresh,)| async move {
+                tracing::info!("Updating nix info [{}] ...", refresh);
                 Datum::refresh_with(self.nix_info, async {
                     NixInfo::from_nix(&nix_rs::command::NixCmd::default())
                         .await
