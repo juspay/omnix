@@ -147,7 +147,7 @@ fn Dashboard(cx: Scope) -> Element {
             p { "TODO: search input" }
             h2 { class: "text-2xl", "Or, try one of these:" }
             div { class: "flex flex-col",
-                for flake_url in state.recent_flakes() {
+                for flake_url in state.flake_cache.read().recent_flakes() {
                     a {
                         onclick: move |_| {
                             let state = AppState::use_state(cx);
