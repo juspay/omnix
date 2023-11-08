@@ -8,9 +8,8 @@ use std::{
 
 /// Represents the "outputs" of a flake
 ///
-/// This structure is currently produced by `nix flake show`
+/// This structure is currently produced by `nix flake show`, thus to parse it we must toggle serde untagged.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(untagged)]
 pub enum FlakeOutputs {
     Val(Val),
     Attrset(BTreeMap<String, FlakeOutputs>),
@@ -18,23 +17,12 @@ pub enum FlakeOutputs {
 
 impl FlakeOutputs {
     /// Run `nix flake show` on the given flake url
-
-    #[tracing::instrument(name = "flake-show")]
     pub async fn from_nix(
         nix_cmd: &crate::command::NixCmd,
         flake_url: &super::url::FlakeUrl,
     ) -> Result<Self, crate::command::NixCmdError> {
-        let v = nix_cmd
-            .run_with_args_expecting_json(&[
-                "flake",
-                "show",
-                "--legacy", // for showing nixpkgs legacyPackages
-                "--allow-import-from-derivation",
-                "--json",
-                &flake_url.to_string(),
-            ])
-            .await?;
-        Ok(v)
+        let v = FlakeOutputsUntagged::from_nix(nix_cmd, flake_url).await?;
+        Ok(v.into_flake_outputs())
     }
 
     /// Get the non-attrset value
@@ -120,5 +108,48 @@ impl Type {
 impl Display for Type {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(&format!("{:?}", self))
+    }
+}
+
+/// This type is identical to [FlakeOutputs] except for the serde untagged attribute, which enables parsing the JSON output of `nix flake show`.
+///
+/// This separation exists to workaround https://github.com/DioxusLabs/dioxus-std/issues/20
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(untagged)]
+enum FlakeOutputsUntagged {
+    UVal(Val),
+    UAttrset(BTreeMap<String, FlakeOutputsUntagged>),
+}
+
+impl FlakeOutputsUntagged {
+    /// Run `nix flake show` on the given flake url
+    #[tracing::instrument(name = "flake-show")]
+    async fn from_nix(
+        nix_cmd: &crate::command::NixCmd,
+        flake_url: &super::url::FlakeUrl,
+    ) -> Result<Self, crate::command::NixCmdError> {
+        let v = nix_cmd
+            .run_with_args_expecting_json(&[
+                "flake",
+                "show",
+                "--legacy", // for showing nixpkgs legacyPackages
+                "--allow-import-from-derivation",
+                "--json",
+                &flake_url.to_string(),
+            ])
+            .await?;
+        Ok(v)
+    }
+
+    /// Convert to [FlakeOutputs]
+    fn into_flake_outputs(self) -> FlakeOutputs {
+        match self {
+            Self::UVal(v) => FlakeOutputs::Val(v),
+            Self::UAttrset(v) => FlakeOutputs::Attrset(
+                v.into_iter()
+                    .map(|(k, v)| (k, v.into_flake_outputs()))
+                    .collect(),
+            ),
+        }
     }
 }
