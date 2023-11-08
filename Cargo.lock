@@ -969,7 +969,7 @@ dependencies = [
 [[package]]
 name = "dioxus-std"
 version = "0.4.0"
-source = "git+https://github.com/ealmloff/dioxus-std.git?branch=storage#7a99a3e0f21696c0fbdcd76cbfc34898d616768d"
+source = "git+https://github.com/ealmloff/dioxus-std.git?branch=storage#9d79bb9a89a46668cd143732ea623fb024e4be5e"
 dependencies = [
  "cfg-if",
  "console_error_panic_hook",

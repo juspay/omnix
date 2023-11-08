@@ -2,11 +2,11 @@
 
 pub mod action;
 mod datum;
+mod db;
 mod error;
 
 use dioxus::prelude::{use_context, use_context_provider, use_future, Scope};
 use dioxus_signals::Signal;
-use dioxus_std::storage::{new_storage, LocalStorage};
 use nix_health::NixHealth;
 use nix_rs::{
     flake::{url::FlakeUrl, Flake},
@@ -30,8 +30,10 @@ pub struct AppState {
     pub flake_url: Signal<Option<FlakeUrl>>,
     /// [Flake] for [AppState::flake_url]
     pub flake: Signal<Datum<Result<Flake, SystemError>>>,
-    /// List of recently selected [AppState::flake_url]s
-    pub recent_flakes: Signal<Vec<FlakeUrl>>,
+    /// Cached [Flake] values indexed by [FlakeUrl]
+    ///
+    /// Most recently updated flakes appear first.
+    pub flake_cache: Signal<db::FlakeCache>,
 
     /// [Action] represents the next modification to perform on [AppState] signals
     pub action: Signal<(usize, Action)>,
@@ -39,11 +41,11 @@ pub struct AppState {
 
 impl AppState {
     fn new(cx: Scope) -> Self {
-        tracing::debug!("🔨 Creating new AppState");
-        let recent_flakes =
-            new_storage::<LocalStorage, _>(cx, "recent_flakes".to_string(), FlakeUrl::suggestions);
+        tracing::info!("🔨 Creating new AppState");
+        // TODO: Should we use new_synced_storage, instead? To allow multiple app windows?
+        let flake_cache = db::FlakeCache::new_signal(cx);
         AppState {
-            recent_flakes,
+            flake_cache,
             ..AppState::default()
         }
     }
@@ -97,13 +99,19 @@ impl AppState {
             let update_flake = |refresh: bool| async move {
                 let flake_url = self.flake_url.read().clone();
                 if let Some(flake_url) = flake_url {
-                    tracing::info!("Updating flake [{}] refresh={} ...", flake_url, refresh);
-                    Datum::refresh_with(self.flake, async move {
-                        Flake::from_nix(&nix_rs::command::NixCmd::default(), flake_url.clone())
+                    let flake_url_2 = flake_url.clone();
+                    tracing::info!("Updating flake [{}] refresh={} ...", &flake_url, refresh);
+                    let res = Datum::refresh_with(self.flake, async move {
+                        Flake::from_nix(&nix_rs::command::NixCmd::default(), flake_url_2)
                             .await
                             .map_err(|e| Into::<SystemError>::into(e.to_string()))
                     })
-                    .await
+                    .await;
+                    if let Some(Ok(flake)) = res {
+                        self.flake_cache.with_mut(|cache| {
+                            cache.update(flake_url, flake);
+                        });
+                    }
                 }
             };
             let flake_url = self.flake_url.read().clone();
@@ -111,21 +119,17 @@ impl AppState {
                 Action::signal_for(cx, self.action, |act| act == Action::RefreshFlake);
             let idx = *refresh_action.read();
             // ... when URL changes.
-            use_future(cx, (&flake_url,), |_| update_flake(false));
-            // ... when refresh button is clicked.
-            use_future(cx, (&idx,), |(idx,)| update_flake(idx.is_some()));
-        }
-
-        // Update recent_flakes
-        {
-            let flake_url = self.flake_url.read().clone();
             use_future(cx, (&flake_url,), |(flake_url,)| async move {
                 if let Some(flake_url) = flake_url {
-                    self.recent_flakes.with_mut(|items| {
-                        vec_push_as_latest(items, flake_url).truncate(8);
-                    });
+                    if let Some(cached_flake) = self.flake_cache.read().get(&flake_url) {
+                        Datum::refresh_with(self.flake, async { Ok(cached_flake) }).await;
+                    } else {
+                        self.act(Action::RefreshFlake);
+                    }
                 }
             });
+            // ... when refresh button is clicked.
+            use_future(cx, (&idx,), |(idx,)| update_flake(idx.is_some()));
         }
 
         // Build `state.health_checks` when nix_info changes
@@ -164,15 +168,4 @@ impl AppState {
             });
         }
     }
-}
-
-/// Push an item to the front of a vector
-///
-/// If the item already exits, move it to the front.
-fn vec_push_as_latest<T: PartialEq>(vec: &mut Vec<T>, item: T) -> &mut Vec<T> {
-    if let Some(idx) = vec.iter().position(|x| *x == item) {
-        vec.remove(idx);
-    }
-    vec.insert(0, item);
-    vec
 }

@@ -147,16 +147,16 @@ fn Dashboard(cx: Scope) -> Element {
             p { "TODO: search input" }
             h2 { class: "text-2xl", "Or, try one of these:" }
             div { class: "flex flex-col",
-                for flake in state.recent_flakes.read().clone() {
+                for flake_url in state.flake_cache.read().recent_flakes() {
                     a {
                         onclick: move |_| {
                             let state = AppState::use_state(cx);
                             let nav = use_navigator(cx);
-                            state.set_flake_url(flake.clone());
+                            state.set_flake_url(flake_url.clone());
                             nav.replace(Route::Flake {});
                         },
                         class: "cursor-pointer text-primary-600 underline hover:no-underline",
-                        "{flake.clone()}"
+                        "{flake_url.clone()}"
                     }
                 }
             }
