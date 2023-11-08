@@ -100,16 +100,16 @@ impl AppState {
                 let flake_url = self.flake_url.read().clone();
                 if let Some(flake_url) = flake_url {
                     let flake_url_2 = flake_url.clone();
-                    tracing::info!("Updating flake [{}] refresh={} ...", flake_url, refresh);
-                    Datum::refresh_with(self.flake, async move {
+                    tracing::info!("Updating flake [{}] refresh={} ...", &flake_url, refresh);
+                    let res = Datum::refresh_with(self.flake, async move {
                         Flake::from_nix(&nix_rs::command::NixCmd::default(), flake_url_2)
                             .await
                             .map_err(|e| Into::<SystemError>::into(e.to_string()))
                     })
                     .await;
-                    if let Some(Ok(flake)) = self.flake.read().current_value() {
+                    if let Some(Ok(flake)) = res {
                         self.flake_cache.with_mut(|cache| {
-                            cache.update(flake_url, flake.clone());
+                            cache.update(flake_url, flake);
                         });
                     }
                 }

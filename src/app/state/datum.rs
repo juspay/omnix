@@ -36,10 +36,10 @@ impl<T> Datum<T> {
     /// Refresh the datum [Signal] using the given function
     ///
     /// If a previous refresh is still running, it will be cancelled.
-    pub async fn refresh_with<F>(signal: Signal<Datum<T>>, f: F)
+    pub async fn refresh_with<F>(signal: Signal<Datum<T>>, f: F) -> Option<T>
     where
         F: Future<Output = T> + Send + 'static,
-        T: Send + 'static,
+        T: Send + Clone + 'static,
     {
         // Cancel existing fetcher if any.
         signal.with_mut(move |x| {
@@ -65,11 +65,12 @@ impl<T> Datum<T> {
         // Wait for result and update the signal state.
         match join_handle.await {
             Ok(val) => {
-                signal.with_mut(move |x| {
+                signal.with_mut(|x| {
                     tracing::debug!("🍒 Setting {} datum value", std::any::type_name::<T>());
-                    x.value = Some(val);
+                    x.value = Some(val.clone());
                     *x.task.write() = None;
                 });
+                Some(val)
             }
             Err(err) => {
                 if !err.is_cancelled() {
@@ -80,6 +81,7 @@ impl<T> Datum<T> {
                 }
                 // x.task will be set to None by the caller who cancelled us, so
                 // we need not do anything here.
+                None
             }
         }
     }
