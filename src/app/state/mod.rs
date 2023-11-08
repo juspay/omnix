@@ -4,7 +4,8 @@ pub mod action;
 mod datum;
 mod error;
 
-use assoc::AssocExt;
+use std::{collections::HashMap, time::SystemTime};
+
 use dioxus::prelude::{use_context, use_context_provider, use_future, Scope};
 use dioxus_signals::Signal;
 use dioxus_std::storage::{new_storage, LocalStorage};
@@ -34,7 +35,7 @@ pub struct AppState {
     /// Cached [Flake] values indexed by [FlakeUrl]
     ///
     /// Most recently updated flakes appear first.
-    pub flake_cache: Signal<Vec<(FlakeUrl, Flake)>>,
+    pub flake_cache: Signal<HashMap<FlakeUrl, Option<(SystemTime, Flake)>>>,
 
     /// [Action] represents the next modification to perform on [AppState] signals
     pub action: Signal<(usize, Action)>,
@@ -46,7 +47,10 @@ impl AppState {
         // TODO: Should we use new_synced_storage, instead? To allow multiple app windows?
         let flake_cache = new_storage::<LocalStorage, _>(cx, "flake_cache".to_string(), || {
             tracing::warn!("📦 No flake cache found");
-            Vec::new()
+            FlakeUrl::suggestions()
+                .into_iter()
+                .map(|url| (url, None))
+                .collect()
         });
         AppState {
             flake_cache,
@@ -89,13 +93,18 @@ impl AppState {
         self.flake_url.set(Some(url));
     }
 
+    /// Recently updated flakes, along with any unavailable flakes in cache.
     pub fn recent_flakes(&self) -> Vec<FlakeUrl> {
-        let urls: Vec<FlakeUrl> = AssocExt::keys(&*self.flake_cache.read()).cloned().collect();
-        if urls.is_empty() {
-            FlakeUrl::suggestions()
-        } else {
-            urls
-        }
+        let cache = &*self.flake_cache.read();
+        let mut pairs: Vec<_> = cache
+            .iter()
+            .filter_map(|(k, v)| v.as_ref().map(|(t, _)| (k, t)))
+            .collect();
+
+        // Sort by the timestamp in descending order.
+        pairs.sort_unstable_by(|a, b| b.1.cmp(a.1));
+
+        pairs.into_iter().map(|(k, _)| k.clone()).collect()
     }
 }
 
@@ -123,7 +132,9 @@ impl AppState {
                     if let Some(Ok(flake)) = self.flake.read().current_value() {
                         tracing::info!("Caching flake [{}]", flake_url);
                         self.flake_cache.with_mut(|cache| {
-                            AssocExt::insert(cache, flake_url, flake.clone());
+                            let now = SystemTime::now();
+                            let v = Some((now, flake.clone()));
+                            cache.insert(flake_url, v);
                         });
                     }
                 }
@@ -135,8 +146,10 @@ impl AppState {
             // ... when URL changes.
             use_future(cx, (&flake_url,), |(flake_url,)| async move {
                 if let Some(flake_url) = flake_url {
-                    if let Some(cached_flake) = self.flake_cache.read().get(&flake_url).cloned() {
-                        tracing::info!("Cache hit for {}", flake_url);
+                    if let Some(Some((updated, cached_flake))) =
+                        self.flake_cache.read().get(&flake_url).cloned()
+                    {
+                        tracing::info!("Cache hit for {} (updated: {:?})", flake_url, updated);
                         Datum::refresh_with(self.flake, async { Ok(cached_flake) }).await;
                     } else {
                         self.act(Action::RefreshFlake);
