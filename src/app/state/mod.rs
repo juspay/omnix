@@ -32,9 +32,9 @@ pub struct AppState {
     /// [Flake] for [AppState::flake_url]
     pub flake: Signal<Datum<Result<Flake, SystemError>>>,
     /// Cached [Flake] values indexed by [FlakeUrl]
+    ///
+    /// Most recently updated flakes appear first.
     pub flake_cache: Signal<Vec<(FlakeUrl, Flake)>>,
-    /// List of recently selected [AppState::flake_url]s
-    pub recent_flakes: Signal<Vec<FlakeUrl>>,
 
     /// [Action] represents the next modification to perform on [AppState] signals
     pub action: Signal<(usize, Action)>,
@@ -42,12 +42,9 @@ pub struct AppState {
 
 impl AppState {
     fn new(cx: Scope) -> Self {
-        tracing::debug!("🔨 Creating new AppState");
-        let recent_flakes =
-            new_storage::<LocalStorage, _>(cx, "recent_flakes".to_string(), FlakeUrl::suggestions);
+        tracing::info!("🔨 Creating new AppState");
         let flake_cache = new_storage::<LocalStorage, _>(cx, "flake_cache".to_string(), Vec::new);
         AppState {
-            recent_flakes,
             flake_cache,
             ..AppState::default()
         }
@@ -87,6 +84,15 @@ impl AppState {
         tracing::info!("setting flake url to {}", &url);
         self.flake_url.set(Some(url));
     }
+
+    pub fn recent_flakes(&self) -> Vec<FlakeUrl> {
+        let urls: Vec<FlakeUrl> = AssocExt::keys(&*self.flake_cache.read()).cloned().collect();
+        if urls.is_empty() {
+            FlakeUrl::suggestions()
+        } else {
+            urls
+        }
+    }
 }
 
 impl AppState {
@@ -113,8 +119,7 @@ impl AppState {
                     if let Some(Ok(flake)) = self.flake.read().current_value() {
                         tracing::info!("Caching flake [{}]", flake_url);
                         self.flake_cache.with_mut(|cache| {
-                            vec_push_as_latest(cache, (flake_url.clone(), flake.clone()))
-                                .truncate(8);
+                            AssocExt::insert(cache, flake_url, flake.clone());
                         });
                     }
                 }
@@ -136,18 +141,6 @@ impl AppState {
             });
             // ... when refresh button is clicked.
             use_future(cx, (&idx,), |(idx,)| update_flake(idx.is_some()));
-        }
-
-        // Update recent_flakes
-        {
-            let flake_url = self.flake_url.read().clone();
-            use_future(cx, (&flake_url,), |(flake_url,)| async move {
-                if let Some(flake_url) = flake_url {
-                    self.recent_flakes.with_mut(|items| {
-                        vec_push_as_latest(items, flake_url).truncate(8);
-                    });
-                }
-            });
         }
 
         // Build `state.health_checks` when nix_info changes
@@ -186,15 +179,4 @@ impl AppState {
             });
         }
     }
-}
-
-/// Push an item to the front of a vector
-///
-/// If the item already exits, move it to the front.
-fn vec_push_as_latest<T: PartialEq>(vec: &mut Vec<T>, item: T) -> &mut Vec<T> {
-    if let Some(idx) = vec.iter().position(|x| *x == item) {
-        vec.remove(idx);
-    }
-    vec.insert(0, item);
-    vec
 }
