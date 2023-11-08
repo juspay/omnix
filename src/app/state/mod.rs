@@ -43,7 +43,10 @@ pub struct AppState {
 impl AppState {
     fn new(cx: Scope) -> Self {
         tracing::info!("🔨 Creating new AppState");
-        let flake_cache = new_storage::<LocalStorage, _>(cx, "flake_cache".to_string(), Vec::new);
+        let flake_cache = new_storage::<LocalStorage, _>(cx, "flake_cache".to_string(), || {
+            tracing::warn!("📦 No flake cache found");
+            Vec::new()
+        });
         AppState {
             flake_cache,
             ..AppState::default()
