@@ -16,6 +16,7 @@
         ]) ++ lib.optionals pkgs.stdenv.isDarwin (
         with pkgs.darwin.apple_sdk.frameworks; [
           IOKit
+          pkgs.darwin.apple_sdk_11_0.frameworks.IOKit
           Carbon
           WebKit
           Security
