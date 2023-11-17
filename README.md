@@ -1,11 +1,11 @@
 # nix-browser
 
-🚧 This project is a work in progress. The ultimate goal is to create a GUI app that inspires people towards using [Nix](https://zero-to-flakes.com/).
+🚧 This project is a work in progress. The ultimate goal is to create a GUI app that inspires people towards using [Nix](https://flakular.in/).
 
 ## Getting Started
 
-1. [Install Nix](https://zero-to-flakes.com/install)
-1. [Setup `direnv`](https://zero-to-flakes.com/direnv)
+1. [Install Nix](https://flakular.in/install)
+1. [Setup `direnv`](https://flakular.in/direnv)
 1. Clone this repo, `cd` to it, and run `direnv allow`.
 
 This will automatically activate the nix develop shell. Open VSCode and install recommended extensions, ensuring that direnv activates in VSCode as well.
