@@ -50,11 +50,11 @@ impl FlakeCache {
         let mut pairs: Vec<_> = self
             .0
             .iter()
-            .filter_map(|(k, v)| v.as_ref().map(|(t, _)| (k, t)))
+            .map(|(k, v)| (k, v.as_ref().map(|(t, _)| t)))
             .collect();
 
         // Sort by the timestamp in descending order.
-        pairs.sort_unstable_by(|a, b| b.1.cmp(a.1));
+        pairs.sort_unstable_by(|a, b| b.1.cmp(&a.1));
 
         pairs.into_iter().map(|(k, _)| k.clone()).collect()
     }
