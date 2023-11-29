@@ -22,7 +22,7 @@ impl Checkable for MaxJobs {
                 CheckResult::Green
             } else {
                 CheckResult::Red {
-                    msg: "You are using only 1 core for nix builds".into(),
+                    msg: "You are using only 1 CPU core for nix builds".into(),
                     suggestion: format!(
                         "Set `max-jobs = auto` in {}",
                         nix_info.nix_env.os.nix_config_label()
