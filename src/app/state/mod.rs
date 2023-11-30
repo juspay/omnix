@@ -94,7 +94,8 @@ impl AppState {
             let flake_url = self.flake_url.read().clone();
             use_future(cx, (&flake_url,), |(flake_url,)| async move {
                 if let Some(flake_url) = flake_url {
-                    if let Some(cached_flake) = self.flake_cache.read().get(&flake_url) {
+                    let maybe_flake = self.flake_cache.read().get(&flake_url);
+                    if let Some(cached_flake) = maybe_flake {
                         Datum::set_value(self.flake, Ok(cached_flake)).await;
                     } else {
                         self.flake_refresh.write().request_refresh();

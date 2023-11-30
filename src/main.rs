@@ -1,6 +1,5 @@
 #![feature(let_chains)]
 use dioxus_desktop::{LogicalSize, WindowBuilder};
-use dioxus_std::storage::set_dir_name;
 
 mod app;
 mod cli;
