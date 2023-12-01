@@ -80,10 +80,14 @@ pub fn FlakeView(cx: Scope, flake: Flake) -> Element {
 }
 
 #[component]
-pub fn SectionHeading(cx: Scope, title: &'static str) -> Element {
+pub fn SectionHeading(cx: Scope, title: &'static str, extra: Option<String>) -> Element {
     render! {
         h3 { class: "p-2 mt-4 mb-2 font-bold bg-gray-300 border-b-2 border-l-2 border-black text-l",
             "{title}"
+            match extra {
+                Some(v) => render! { span { class: "text-xs text-gray-500 ml-1", "(", "{v}", ")" } },
+                None => render! { "" }
+            }
         }
     }
 }
@@ -129,7 +133,7 @@ pub fn BtreeMapView<'a>(
 ) -> Element {
     render! {
         div {
-            SectionHeading { title: title }
+            SectionHeading { title: title, extra: tree.len().to_string() }
             BtreeMapBodyView { tree: tree }
         }
     }
