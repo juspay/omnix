@@ -15,6 +15,7 @@
           webkitgtk_4_1
         ]) ++ lib.optionals pkgs.stdenv.isDarwin (
         with pkgs.darwin.apple_sdk.frameworks; [
+          pkgs.darwin.apple_sdk_11_0.frameworks.IOKit
           IOKit
           Carbon
           WebKit
