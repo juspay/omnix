@@ -4,6 +4,7 @@ use std::{fmt::Display, path::Path};
 use bytesize::ByteSize;
 use os_info;
 use serde::{Deserialize, Serialize};
+use tokio::process::Command;
 use tracing::instrument;
 
 /// The environment in which Nix operates
@@ -11,6 +12,8 @@ use tracing::instrument;
 pub struct NixEnv {
     /// Current user ($USER)
     pub current_user: String,
+    /// Current user groups
+    pub current_user_groups: Vec<String>,
     /// Underlying OS in which Nix runs
     pub os: OS,
     /// Total disk space of the volume where /nix exists.
@@ -29,15 +32,22 @@ impl NixEnv {
         use sysinfo::{DiskExt, SystemExt};
         tracing::info!("Detecting Nix environment");
         let os = OS::detect().await;
-        tokio::task::spawn_blocking(|| {
+        let output = Command::new("groups").output().await.unwrap();
+        tokio::task::spawn_blocking(move || {
             let current_user = std::env::var("USER")?;
             let sys = sysinfo::System::new_with_specifics(
                 sysinfo::RefreshKind::new().with_disks_list().with_memory(),
             );
             let total_disk_space = to_bytesize(get_nix_disk(&sys)?.total_space());
             let total_memory = to_bytesize(sys.total_memory());
+            let group_info = &String::from_utf8_lossy(&output.stdout);
             Ok(NixEnv {
                 current_user,
+                current_user_groups: group_info
+                    .as_ref()
+                    .split_whitespace()
+                    .map(|v| v.to_string())
+                    .collect(),
                 os,
                 total_disk_space,
                 total_memory,

@@ -15,18 +15,18 @@ impl Checkable for TrustedUsers {
     ) -> Vec<Check> {
         let val = &nix_info.nix_config.trusted_users.value;
         let current_user = &nix_info.nix_env.current_user;
-        let group_info = &nix_info.group_info;
+        let user_groups = &nix_info.nix_env.current_user_groups;
         let result = if val.contains(current_user) {
             CheckResult::Green
         } else {
             let mut out = None;
             for x in val {
-                if x.contains(&String::from("@")) && group_info.contains(&x[1..]) {
+                if x.contains(&String::from("@")) && user_groups.contains(&x[1..].to_string()) {
                     out = Some(CheckResult::Green);
                     break;
                 }
             }
-            let r = match out {
+            match out {
                 Some(i) => i,
                 _ => {
                     let msg = format!("User '{}' not present in trusted_users", current_user);
@@ -42,8 +42,7 @@ impl Checkable for TrustedUsers {
                     };
                     CheckResult::Red { msg, suggestion }
                 }
-            };
-            r
+            }
         };
         let check = Check {
             title: "Trusted Users".to_string(),
