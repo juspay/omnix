@@ -1,5 +1,6 @@
 //! Information about the user's Nix installation
 use serde::{Deserialize, Serialize};
+use tokio::process::Command;
 
 use crate::{config::NixConfig, env::NixEnv, version::NixVersion};
 
@@ -10,6 +11,7 @@ pub struct NixInfo {
     pub nix_version: NixVersion,
     pub nix_config: NixConfig,
     pub nix_env: NixEnv,
+    pub group_info: String,
 }
 
 impl NixInfo {
@@ -18,10 +20,18 @@ impl NixInfo {
         let nix_version = NixVersion::from_nix(nix_cmd).await?;
         let nix_config = NixConfig::from_nix(nix_cmd).await?;
         let nix_env = NixEnv::detect().await?;
+        let output = Command::new("groups")
+            .arg(&nix_env.current_user)
+            .output()
+            .await
+            .unwrap();
+        let group_info = &String::from_utf8_lossy(&output.stdout);
+
         Ok(NixInfo {
             nix_version,
             nix_config,
             nix_env,
+            group_info: (&group_info).to_string(),
         })
     }
 }

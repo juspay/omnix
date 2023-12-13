@@ -15,21 +15,35 @@ impl Checkable for TrustedUsers {
     ) -> Vec<Check> {
         let val = &nix_info.nix_config.trusted_users.value;
         let current_user = &nix_info.nix_env.current_user;
+        let group_info = &nix_info.group_info;
         let result = if val.contains(current_user) {
             CheckResult::Green
         } else {
-            let msg = format!("User '{}' not present in trusted_users", current_user);
-            let suggestion = match nix_info.nix_env.os.nix_system_config_label() {
-                Some(conf_label) => format!(
-                    r#"Add `nix.trustedUsers = [ "root" "{}" ];` to your {}"#,
-                    current_user, conf_label,
-                ),
-                None => format!(
-                    r#"Set `trusted-users = root {}` in /etc/nix/nix.conf and then restart the Nix daemon using `sudo pkill nix-daemon`"#,
-                    current_user
-                ),
+            let mut out = None;
+            for x in val {
+                if x.contains(&String::from("@")) && group_info.contains(&x[1..]) {
+                    out = Some(CheckResult::Green);
+                    break;
+                }
+            }
+            let r = match out {
+                Some(i) => i,
+                _ => {
+                    let msg = format!("User '{}' not present in trusted_users", current_user);
+                    let suggestion = match nix_info.nix_env.os.nix_system_config_label() {
+                        Some(conf_label) => format!(
+                            r#"Add `nix.trustedUsers = [ "root" "{}" ];` to your {}"#,
+                            current_user, conf_label,
+                        ),
+                        None => format!(
+                            r#"Set `trusted-users = root {}` in /etc/nix/nix.conf and then restart the Nix daemon using `sudo pkill nix-daemon`"#,
+                            current_user
+                        ),
+                    };
+                    CheckResult::Red { msg, suggestion }
+                }
             };
-            CheckResult::Red { msg, suggestion }
+            r
         };
         let check = Check {
             title: "Trusted Users".to_string(),
