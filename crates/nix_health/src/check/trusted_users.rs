@@ -16,9 +16,7 @@ impl Checkable for TrustedUsers {
         let val = &nix_info.nix_config.trusted_users.value;
         let current_user = &nix_info.nix_env.current_user;
         let user_groups = &nix_info.nix_env.current_user_groups;
-        let (groups, users): (_, Vec<_>) = val
-            .into_iter()
-            .partition(|x| x.contains(&String::from("@")));
+        let (groups, users): (_, Vec<_>) = val.iter().partition(|x| x.contains(&String::from("@")));
         let result = if users.contains(&current_user)
             || groups
                 .into_iter()
