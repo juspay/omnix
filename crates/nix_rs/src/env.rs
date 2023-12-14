@@ -32,7 +32,7 @@ impl NixEnv {
         use sysinfo::{DiskExt, SystemExt};
         tracing::info!("Detecting Nix environment");
         let os = OS::detect().await;
-        let output = Command::new("groups").output().await.unwrap();
+        let output = Command::new("groups").output().await?;
         tokio::task::spawn_blocking(move || {
             let current_user = std::env::var("USER")?;
             let sys = sysinfo::System::new_with_specifics(
@@ -195,6 +195,9 @@ impl OS {
 pub enum NixEnvError {
     #[error("Failed to fetch ENV: {0}")]
     EnvVarError(#[from] std::env::VarError),
+
+    #[error("Failed to fetch groups")]
+    IOError(#[from] std::io::Error),
 
     #[error("Unable to find root disk or /nix volume")]
     NoDisk,

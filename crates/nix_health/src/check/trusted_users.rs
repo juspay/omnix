@@ -16,33 +16,22 @@ impl Checkable for TrustedUsers {
         let val = &nix_info.nix_config.trusted_users.value;
         let current_user = &nix_info.nix_env.current_user;
         let user_groups = &nix_info.nix_env.current_user_groups;
-        let result = if val.contains(current_user) {
+        let (groups, users) : (_, Vec<_>) = val.into_iter().partition(|x| x.contains(&String::from("@")));
+        let result = if users.contains(&current_user) || groups.into_iter().any(|x| user_groups.contains(&x[1..].to_string()))  {
             CheckResult::Green
         } else {
-            let mut out = None;
-            for x in val {
-                if x.contains(&String::from("@")) && user_groups.contains(&x[1..].to_string()) {
-                    out = Some(CheckResult::Green);
-                    break;
-                }
-            }
-            match out {
-                Some(i) => i,
-                _ => {
-                    let msg = format!("User '{}' not present in trusted_users", current_user);
-                    let suggestion = match nix_info.nix_env.os.nix_system_config_label() {
-                        Some(conf_label) => format!(
-                            r#"Add `nix.trustedUsers = [ "root" "{}" ];` to your {}"#,
-                            current_user, conf_label,
-                        ),
-                        None => format!(
-                            r#"Set `trusted-users = root {}` in /etc/nix/nix.conf and then restart the Nix daemon using `sudo pkill nix-daemon`"#,
-                            current_user
-                        ),
-                    };
-                    CheckResult::Red { msg, suggestion }
-                }
-            }
+            let msg = format!("User '{}' not present in trusted_users", current_user);
+            let suggestion = match nix_info.nix_env.os.nix_system_config_label() {
+                Some(conf_label) => format!(
+                    r#"Add `nix.trustedUsers = [ "root" "{}" ];` to your {}"#,
+                    current_user, conf_label,
+                ),
+                None => format!(
+                    r#"Set `trusted-users = root {}` in /etc/nix/nix.conf and then restart the Nix daemon using `sudo pkill nix-daemon`"#,
+                    current_user
+                ),
+            };
+            CheckResult::Red { msg, suggestion }
         };
         let check = Check {
             title: "Trusted Users".to_string(),
