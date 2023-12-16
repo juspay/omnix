@@ -3,7 +3,6 @@
         "rust-lang.rust-analyzer",
         "mkhl.direnv",
         "jnoortheen.nix-ide",
-        "bradlc.vscode-tailwindcss",
-        "ms-playwright.playwright"
+        "bradlc.vscode-tailwindcss"
     ]
 }
