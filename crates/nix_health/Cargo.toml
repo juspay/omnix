@@ -32,4 +32,3 @@ anyhow = { version = "1.0.75" }
 colored = { version = "2.0" }
 which = { version = "4.4.2" }
 bytesize.workspace = true
-itertools = "0.12.0"

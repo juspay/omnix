@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use itertools::{Either, Itertools};
+use nix_rs::config::TrustedUserValue;
 use serde::{Deserialize, Serialize};
 
 use crate::traits::*;
@@ -52,16 +52,10 @@ fn is_current_user_trusted(nix_info: &nix_rs::info::NixInfo) -> bool {
     let current_user = &nix_info.nix_env.current_user;
     let current_user_groups: HashSet<&String> =
         nix_info.nix_env.current_user_groups.iter().collect();
-    let val = &nix_info.nix_config.trusted_users.value;
-    // In nix.conf, groups are prefixed with '@'. '*' means all users are
-    // trusted.
-    if val.contains(&"*".to_string()) {
-        return true;
-    }
-    let (val_groups, val_users): (Vec<String>, Vec<String>) =
-        val.iter().partition_map(|x| match x.strip_prefix('@') {
-            Some(x) => Either::Left(x.to_string()),
-            None => Either::Right(x.clone()),
-        });
-    val_users.contains(current_user) || val_groups.iter().any(|x| current_user_groups.contains(&x))
+    let trusted_user_values = nix_info.nix_config.get_trusted_users_vals();
+    trusted_user_values.iter().any(|x| match x {
+        TrustedUserValue::Group(x) => current_user_groups.contains(&x),
+        TrustedUserValue::User(x) => x == current_user,
+        TrustedUserValue::All => true,
+    })
 }

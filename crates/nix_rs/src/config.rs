@@ -45,6 +45,44 @@ impl NixConfig {
             .await?;
         Ok(v)
     }
+
+    pub fn get_trusted_users_vals(&self) -> Vec<TrustedUserValue> {
+        self.trusted_users
+            .value
+            .iter()
+            .map(|s| TrustedUserValue::from_str(s))
+            .collect()
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum TrustedUserValue {
+    /// All users are trusted
+    All,
+    /// A specific user is trusted
+    User(String),
+    /// Users belonging to a specific group are trusted
+    Group(String),
+}
+
+impl TrustedUserValue {
+    fn from_str(s: &str) -> Self {
+        // In nix.conf, groups are prefixed with '@'. '*' means all users are
+        // trusted.
+        if s == "*" {
+            return Self::All;
+        }
+        match s.strip_prefix('@') {
+            Some(s) => Self::Group(s.to_string()),
+            None => Self::User(s.to_string()),
+        }
+    }
+}
+
+impl From<String> for TrustedUserValue {
+    fn from(s: String) -> Self {
+        Self::from_str(&s)
+    }
 }
 
 #[tokio::test]
