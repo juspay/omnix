@@ -4,7 +4,7 @@ use std::{fmt::Display, path::Path};
 use bytesize::ByteSize;
 use os_info;
 use serde::{Deserialize, Serialize};
-use tokio::process::Command;
+use std::process::Command;
 use tracing::instrument;
 
 /// The environment in which Nix operates
@@ -32,14 +32,14 @@ impl NixEnv {
         use sysinfo::{DiskExt, SystemExt};
         tracing::info!("Detecting Nix environment");
         let os = OS::detect().await;
-        let output = Command::new("groups").output().await?;
-        tokio::task::spawn_blocking(move || {
+        tokio::task::spawn_blocking(|| {
             let current_user = std::env::var("USER")?;
             let sys = sysinfo::System::new_with_specifics(
                 sysinfo::RefreshKind::new().with_disks_list().with_memory(),
             );
             let total_disk_space = to_bytesize(get_nix_disk(&sys)?.total_space());
             let total_memory = to_bytesize(sys.total_memory());
+            let output = Command::new("groups").output()?;
             let group_info = &String::from_utf8_lossy(&output.stdout);
             Ok(NixEnv {
                 current_user,
