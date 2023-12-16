@@ -53,6 +53,7 @@ fn is_current_user_trusted(nix_info: &nix_rs::info::NixInfo) -> bool {
     let current_user_groups: HashSet<&String> =
         nix_info.nix_env.current_user_groups.iter().collect();
     let val = &nix_info.nix_config.trusted_users.value;
+    // In nix.conf, groups are prefixed with '@'.
     let (val_groups, val_users): (Vec<String>, Vec<String>) =
         val.iter().partition_map(|x| match x.strip_prefix('@') {
             Some(x) => Either::Left(x.to_string()),
