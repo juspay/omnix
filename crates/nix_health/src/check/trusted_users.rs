@@ -17,13 +17,11 @@ impl Checkable for TrustedUsers {
         let val = &nix_info.nix_config.trusted_users.value;
         let current_user = &nix_info.nix_env.current_user;
         let current_user_groups = &nix_info.nix_env.current_user_groups;
-        let (val_groups, val_users): (Vec<String>, Vec<String>) = val.iter().partition_map(|x| {
-            if x.contains(&String::from("@")) {
-                Either::Left(x[1..].to_string())
-            } else {
-                Either::Right(x.clone())
-            }
-        });
+        let (val_groups, val_users): (Vec<String>, Vec<String>) =
+            val.iter().partition_map(|x| match x.strip_prefix('@') {
+                Some(x) => Either::Left(x.to_string()),
+                None => Either::Right(x.clone()),
+            });
         let result = if val_users.contains(current_user)
             || val_groups
                 .into_iter()
