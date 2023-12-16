@@ -1,7 +1,9 @@
 //! Rust module for `nix show-config`
 
-use serde::{Deserialize, Serialize};
+use std::{convert::Infallible, str::FromStr};
 
+use serde::{Deserialize, Serialize};
+use serde_with::DeserializeFromStr;
 use tracing::instrument;
 use url::Url;
 
@@ -18,7 +20,7 @@ pub struct NixConfig {
     pub max_jobs: ConfigVal<i32>,
     pub substituters: ConfigVal<Vec<Url>>,
     pub system: ConfigVal<System>,
-    pub trusted_users: ConfigVal<Vec<String>>,
+    pub trusted_users: ConfigVal<Vec<TrustedUserValue>>,
 }
 
 /// The value for each 'nix show-config --json' key.
@@ -44,6 +46,55 @@ impl NixConfig {
             .run_with_args_expecting_json(&["show-config", "--json"])
             .await?;
         Ok(v)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, DeserializeFromStr)]
+pub enum TrustedUserValue {
+    /// All users are trusted
+    All,
+    /// A specific user is trusted
+    User(String),
+    /// Users belonging to a specific group are trusted
+    Group(String),
+}
+
+impl TrustedUserValue {
+    fn from_str(s: &str) -> Self {
+        // In nix.conf, groups are prefixed with '@'. '*' means all users are
+        // trusted.
+        if s == "*" {
+            return Self::All;
+        }
+        match s.strip_prefix('@') {
+            Some(s) => Self::Group(s.to_string()),
+            None => Self::User(s.to_string()),
+        }
+    }
+
+    pub fn display_original(val: &[TrustedUserValue]) -> String {
+        val.iter()
+            .map(|x| match x {
+                TrustedUserValue::All => "*".to_string(),
+                TrustedUserValue::User(x) => x.to_string(),
+                TrustedUserValue::Group(x) => format!("@{}", x),
+            })
+            .collect::<Vec<String>>()
+            .join(" ")
+    }
+}
+
+impl From<String> for TrustedUserValue {
+    fn from(s: String) -> Self {
+        Self::from_str(&s)
+    }
+}
+
+impl FromStr for TrustedUserValue {
+    type Err = Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self::from_str(s))
     }
 }
 
