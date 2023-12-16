@@ -39,17 +39,10 @@ impl NixEnv {
             );
             let total_disk_space = to_bytesize(get_nix_disk(&sys)?.total_space());
             let total_memory = to_bytesize(sys.total_memory());
-            let output = Command::new("groups")
-                .output()
-                .map_err(NixEnvError::GroupsError)?;
-            let group_info = &String::from_utf8_lossy(&output.stdout);
+            let current_user_groups = get_current_user_groups()?;
             Ok(NixEnv {
                 current_user,
-                current_user_groups: group_info
-                    .as_ref()
-                    .split_whitespace()
-                    .map(|v| v.to_string())
-                    .collect(),
+                current_user_groups,
                 os,
                 total_disk_space,
                 total_memory,
@@ -60,8 +53,20 @@ impl NixEnv {
     }
 }
 
-/// Get the disk where /nix exists
+/// Get the current user's groups
+fn get_current_user_groups() -> Result<Vec<String>, NixEnvError> {
+    let output = Command::new("groups")
+        .output()
+        .map_err(NixEnvError::GroupsError)?;
+    let group_info = &String::from_utf8_lossy(&output.stdout);
+    Ok(group_info
+        .as_ref()
+        .split_whitespace()
+        .map(|v| v.to_string())
+        .collect())
+}
 
+/// Get the disk where /nix exists
 fn get_nix_disk(sys: &sysinfo::System) -> Result<&sysinfo::Disk, NixEnvError> {
     use sysinfo::{DiskExt, SystemExt};
     let by_mount_point: std::collections::HashMap<&Path, &sysinfo::Disk> = sys
