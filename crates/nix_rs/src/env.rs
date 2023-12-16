@@ -39,7 +39,9 @@ impl NixEnv {
             );
             let total_disk_space = to_bytesize(get_nix_disk(&sys)?.total_space());
             let total_memory = to_bytesize(sys.total_memory());
-            let output = Command::new("groups").output()?;
+            let output = Command::new("groups")
+                .output()
+                .map_err(NixEnvError::GroupsError)?;
             let group_info = &String::from_utf8_lossy(&output.stdout);
             Ok(NixEnv {
                 current_user,
@@ -197,7 +199,7 @@ pub enum NixEnvError {
     EnvVarError(#[from] std::env::VarError),
 
     #[error("Failed to fetch groups: {0}")]
-    IOError(#[from] std::io::Error),
+    GroupsError(std::io::Error),
 
     #[error("Unable to find root disk or /nix volume")]
     NoDisk,
