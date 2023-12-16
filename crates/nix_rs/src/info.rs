@@ -18,7 +18,6 @@ impl NixInfo {
         let nix_version = NixVersion::from_nix(nix_cmd).await?;
         let nix_config = NixConfig::from_nix(nix_cmd).await?;
         let nix_env = NixEnv::detect().await?;
-
         Ok(NixInfo {
             nix_version,
             nix_config,
