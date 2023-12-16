@@ -15,12 +15,13 @@ impl Checkable for TrustedUsers {
     ) -> Vec<Check> {
         let val = &nix_info.nix_config.trusted_users.value;
         let current_user = &nix_info.nix_env.current_user;
-        let user_groups = &nix_info.nix_env.current_user_groups;
-        let (groups, users): (_, Vec<_>) = val.iter().partition(|x| x.contains(&String::from("@")));
-        let result = if users.contains(&current_user)
-            || groups
+        let current_user_groups = &nix_info.nix_env.current_user_groups;
+        let (val_groups, val_users): (_, Vec<_>) =
+            val.iter().partition(|x| x.contains(&String::from("@")));
+        let result = if val_users.contains(&current_user)
+            || val_groups
                 .into_iter()
-                .any(|x| user_groups.contains(&x[1..].to_string()))
+                .any(|x| current_user_groups.contains(&x[1..].to_string()))
         {
             CheckResult::Green
         } else {
