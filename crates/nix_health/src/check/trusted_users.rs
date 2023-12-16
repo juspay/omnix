@@ -37,7 +37,7 @@ impl Checkable for TrustedUsers {
             title: "Trusted Users".to_string(),
             info: format!(
                 "trusted-users = {}",
-                nix_info.nix_config.trusted_users.value.join(" ")
+                TrustedUserValue::display_original(&nix_info.nix_config.trusted_users.value)
             ),
             result,
             required: true,
@@ -52,10 +52,14 @@ fn is_current_user_trusted(nix_info: &nix_rs::info::NixInfo) -> bool {
     let current_user = &nix_info.nix_env.current_user;
     let current_user_groups: HashSet<&String> =
         nix_info.nix_env.current_user_groups.iter().collect();
-    let trusted_user_values = nix_info.nix_config.get_trusted_users_vals();
-    trusted_user_values.iter().any(|x| match x {
-        TrustedUserValue::Group(x) => current_user_groups.contains(&x),
-        TrustedUserValue::User(x) => x == current_user,
-        TrustedUserValue::All => true,
-    })
+    nix_info
+        .nix_config
+        .trusted_users
+        .value
+        .iter()
+        .any(|x| match x {
+            TrustedUserValue::Group(x) => current_user_groups.contains(&x),
+            TrustedUserValue::User(x) => x == current_user,
+            TrustedUserValue::All => true,
+        })
 }

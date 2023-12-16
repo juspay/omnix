@@ -1,7 +1,9 @@
 //! Rust module for `nix show-config`
 
-use serde::{Deserialize, Serialize};
+use std::{convert::Infallible, str::FromStr};
 
+use serde::{Deserialize, Serialize};
+use serde_with::DeserializeFromStr;
 use tracing::instrument;
 use url::Url;
 
@@ -18,7 +20,7 @@ pub struct NixConfig {
     pub max_jobs: ConfigVal<i32>,
     pub substituters: ConfigVal<Vec<Url>>,
     pub system: ConfigVal<System>,
-    pub trusted_users: ConfigVal<Vec<String>>,
+    pub trusted_users: ConfigVal<Vec<TrustedUserValue>>,
 }
 
 /// The value for each 'nix show-config --json' key.
@@ -45,17 +47,9 @@ impl NixConfig {
             .await?;
         Ok(v)
     }
-
-    pub fn get_trusted_users_vals(&self) -> Vec<TrustedUserValue> {
-        self.trusted_users
-            .value
-            .iter()
-            .map(|s| TrustedUserValue::from_str(s))
-            .collect()
-    }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, DeserializeFromStr)]
 pub enum TrustedUserValue {
     /// All users are trusted
     All,
@@ -77,11 +71,30 @@ impl TrustedUserValue {
             None => Self::User(s.to_string()),
         }
     }
+
+    pub fn display_original(val: &[TrustedUserValue]) -> String {
+        val.iter()
+            .map(|x| match x {
+                TrustedUserValue::All => "*".to_string(),
+                TrustedUserValue::User(x) => x.to_string(),
+                TrustedUserValue::Group(x) => format!("@{}", x),
+            })
+            .collect::<Vec<String>>()
+            .join(" ")
+    }
 }
 
 impl From<String> for TrustedUserValue {
     fn from(s: String) -> Self {
         Self::from_str(&s)
+    }
+}
+
+impl FromStr for TrustedUserValue {
+    type Err = Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self::from_str(s))
     }
 }
 
