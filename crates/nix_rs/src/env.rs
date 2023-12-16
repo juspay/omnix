@@ -196,7 +196,7 @@ pub enum NixEnvError {
     #[error("Failed to fetch ENV: {0}")]
     EnvVarError(#[from] std::env::VarError),
 
-    #[error("Failed to fetch groups")]
+    #[error("Failed to fetch groups: {0}")]
     IOError(#[from] std::io::Error),
 
     #[error("Unable to find root disk or /nix volume")]
