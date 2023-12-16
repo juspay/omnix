@@ -13,6 +13,7 @@
       rustBuildInputs = lib.optionals pkgs.stdenv.isLinux
         (with pkgs; [
           webkitgtk_4_1
+          pkg-config
         ]) ++ lib.optionals pkgs.stdenv.isDarwin (
         with pkgs.darwin.apple_sdk.frameworks; [
           IOKit
