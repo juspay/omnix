@@ -16,20 +16,10 @@ impl Checkable for TrustedUsers {
         nix_info: &nix_rs::info::NixInfo,
         _: Option<nix_rs::flake::url::FlakeUrl>,
     ) -> Vec<Check> {
-        let val = &nix_info.nix_config.trusted_users.value;
-        let current_user = &nix_info.nix_env.current_user;
-        let current_user_groups: HashSet<&String> =
-            nix_info.nix_env.current_user_groups.iter().collect();
-        let (val_groups, val_users): (Vec<String>, Vec<String>) =
-            val.iter().partition_map(|x| match x.strip_prefix('@') {
-                Some(x) => Either::Left(x.to_string()),
-                None => Either::Right(x.clone()),
-            });
-        let result = if val_users.contains(current_user)
-            || val_groups.iter().any(|x| current_user_groups.contains(&x))
-        {
+        let result = if is_current_user_trusted(nix_info) {
             CheckResult::Green
         } else {
+            let current_user = &nix_info.nix_env.current_user;
             let msg = format!("User '{}' not present in trusted_users", current_user);
             let suggestion = match nix_info.nix_env.os.nix_system_config_label() {
                 Some(conf_label) => format!(
@@ -45,10 +35,28 @@ impl Checkable for TrustedUsers {
         };
         let check = Check {
             title: "Trusted Users".to_string(),
-            info: format!("trusted-users = {}", val.join(" ")),
+            info: format!(
+                "trusted-users = {}",
+                nix_info.nix_config.trusted_users.value.join(" ")
+            ),
             result,
             required: true,
         };
         vec![check]
     }
+}
+
+/// Check that [crate::nix::config::NixConfig::trusted_users] is set to a good
+/// value such that the current user is trusted.
+fn is_current_user_trusted(nix_info: &nix_rs::info::NixInfo) -> bool {
+    let current_user = &nix_info.nix_env.current_user;
+    let current_user_groups: HashSet<&String> =
+        nix_info.nix_env.current_user_groups.iter().collect();
+    let val = &nix_info.nix_config.trusted_users.value;
+    let (val_groups, val_users): (Vec<String>, Vec<String>) =
+        val.iter().partition_map(|x| match x.strip_prefix('@') {
+            Some(x) => Either::Left(x.to_string()),
+            None => Either::Right(x.clone()),
+        });
+    val_users.contains(current_user) || val_groups.iter().any(|x| current_user_groups.contains(&x))
 }
