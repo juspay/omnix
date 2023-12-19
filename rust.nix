@@ -53,7 +53,11 @@
         cargo-expand
         cargo-nextest
         config.process-compose.cargo-doc-live.outputs.package
-      ];
+      ] ++ lib.optionals pkgs.stdenv.isDarwin (
+        [
+          pkgs.darwin.apple_sdk_11_0.frameworks.IOKit
+          pkgs.darwin.apple_sdk_11_0.frameworks.Security
+        ]);
       shellHook = ''
         echo
         echo "🍎🍎 Run 'just <recipe>' to get started"
