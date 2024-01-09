@@ -54,7 +54,7 @@ impl Checkable for Direnv {
 /// [Check] that direnv was installed.
 
 fn install_check(required: bool) -> Check {
-    let suggestion = "Install direnv <https://flakular.in/direnv/#setup>".to_string();
+    let suggestion = "Install direnv <https://nixos.asia/en/direnv#setup>".to_string();
     let direnv_install = DirenvInstall::detect();
     Check {
         title: "Direnv installation".to_string(),
