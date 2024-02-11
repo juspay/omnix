@@ -70,9 +70,20 @@ impl FlakeUrl {
     pub fn sub_flake_url(&self, dir: String) -> FlakeUrl {
         if dir == "." {
             self.clone()
+        } else if let Some(path) = self.as_local_path() {
+            // Local path; just join the dir
+            let path_with_dir = path.join(dir);
+            FlakeUrl(format!("path:{}", path_with_dir.display()))
         } else {
-            let sep = if self.0.contains('?') { '&' } else { '?' };
-            FlakeUrl(format!("{}{}dir={}", self.0, sep, dir))
+            // Non-path URL; append `dir` query parameter
+            let mut url = self.0.clone();
+            if url.contains('?') {
+                url.push_str("&dir=");
+            } else {
+                url.push_str("?dir=");
+            }
+            url.push_str(&dir);
+            FlakeUrl(url)
         }
     }
 }
@@ -186,6 +197,15 @@ mod tests {
 
     #[test]
     fn test_sub_flake_url() {
+        // Path refs
+        let url = FlakeUrl(".".to_string());
+        assert_eq!(url.sub_flake_url(".".to_string()), url.clone());
+        assert_eq!(
+            url.sub_flake_url("sub".to_string()),
+            FlakeUrl("path:./sub".to_string())
+        );
+
+        // URI refs
         let url = FlakeUrl("github:srid/nixci".to_string());
         assert_eq!(url.sub_flake_url(".".to_string()), url.clone());
         assert_eq!(
