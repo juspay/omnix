@@ -13,10 +13,10 @@ jobs:
         # https://github.com/garnix-io/issues/issues/16
         os: [macos-latest]
     steps:
-      - uses: actions/checkout@v3
-      - uses: cachix/install-nix-action@v22
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
       - uses: DeterminateSystems/magic-nix-cache-action@main
       - uses: yaxitech/nix-install-pkgs-action@v3
         with:
-          packages: "nixpkgs#nixci"
+          packages: "github:srid/nixci"
       - run: nixci
