@@ -39,7 +39,7 @@ impl FlakeUrl {
     /// syntax](https://nixos.org/manual/nix/stable/command-ref/new-cli/nix3-flake.html#path-like-syntax)
     pub fn as_local_path(&self) -> Option<&Path> {
         let s = self.0.strip_prefix("path:").unwrap_or(&self.0);
-        if s.starts_with('.') || s.starts_with('/') {
+        if !s.contains(':') {
             // Strip query (`?..`) and attrs (`#..`)
             let s = s.split('?').next().unwrap_or(s);
             let s = s.split('#').next().unwrap_or(s);
