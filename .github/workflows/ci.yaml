@@ -1,11 +1,11 @@
-name: "CI"
+name: "CI Intel Mac"
 on:
   push:
     branches:
       - main
   pull_request:
 jobs:
-  checks:
+  build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
