@@ -2388,7 +2388,7 @@ dependencies = [
 
 [[package]]
 name = "nix_rs"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "bytesize",
  "cfg-if",

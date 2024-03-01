@@ -2,7 +2,7 @@
 edition.workspace = true
 name = "nix_rs"
 # Important: remember to update the top-level Cargo.toml if updating major version
-version = "0.3.0"
+version = "0.3.1"
 license.workspace = true
 repository.workspace = true
 description = "Rust library for interacting with the Nix command"

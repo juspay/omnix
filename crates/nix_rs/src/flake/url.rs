@@ -143,6 +143,14 @@ impl FlakeAttr {
     pub fn is_none(&self) -> bool {
         self.0.is_none()
     }
+
+    /// Return nested attrs if the user specified one is separated by '.'
+    pub fn as_list(&self) -> Vec<String> {
+        self.0
+            .clone()
+            .map(|s| s.split('.').map(|s| s.to_string()).collect())
+            .unwrap_or_default()
+    }
 }
 
 #[cfg(test)]
@@ -150,9 +158,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_flake_url() {
+    fn test_flake_url_and_attr() {
         let url = FlakeUrl("github:srid/nixci".to_string());
         assert_eq!(url.split_attr(), (url.clone(), FlakeAttr(None)));
+        assert_eq!(url.split_attr().1.as_list(), [] as [&str; 0]);
 
         let url = FlakeUrl("github:srid/nixci#extra-tests".to_string());
         assert_eq!(
@@ -162,6 +171,23 @@ mod tests {
                 FlakeAttr(Some("extra-tests".to_string()))
             )
         );
+        assert_eq!(
+            url.split_attr().1.as_list(),
+            vec!["extra-tests".to_string()]
+        );
+
+        let url = FlakeUrl(".#foo.bar.qux".to_string());
+        assert_eq!(
+            url.split_attr(),
+            (
+                FlakeUrl(".".to_string()),
+                FlakeAttr(Some("foo.bar.qux".to_string()))
+            )
+        );
+        assert_eq!(
+            url.split_attr().1.as_list(),
+            vec!["foo".to_string(), "bar".to_string(), "qux".to_string()]
+        )
     }
 
     #[test]
