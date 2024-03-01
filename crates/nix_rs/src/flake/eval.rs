@@ -6,7 +6,10 @@ use super::url::FlakeUrl;
 ///
 /// If the flake does not output the given attribute, return the [Default]
 /// value of `T`.
-pub async fn nix_eval_attr_json<T>(url: &FlakeUrl) -> Result<T, NixCmdError>
+pub async fn nix_eval_attr_json<T>(
+    url: &FlakeUrl,
+    default_if_missing: bool,
+) -> Result<T, NixCmdError>
 where
     T: Default + serde::de::DeserializeOwned,
 {
@@ -15,7 +18,7 @@ where
         .run_with_args_expecting_json(&["eval", url.0.as_str(), "--json"])
         .await;
     match result {
-        Err(err) if error_is_missing_attribute(&err) => {
+        Err(err) if default_if_missing && error_is_missing_attribute(&err) => {
             // The 'nixci' flake output attr is missing. User wants the default config.
             Ok(T::default())
         }

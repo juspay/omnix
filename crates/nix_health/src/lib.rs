@@ -59,7 +59,7 @@ impl NixHealth {
         url: nix_rs::flake::url::FlakeUrl,
     ) -> Result<Self, nix_rs::command::NixCmdError> {
         use nix_rs::flake::eval::nix_eval_attr_json;
-        nix_eval_attr_json(&url).await
+        nix_eval_attr_json(&url, true).await
     }
 
     /// Run all checks and collect the results
