@@ -138,6 +138,11 @@ impl FlakeAttr {
     pub fn get_name(&self) -> String {
         self.0.clone().unwrap_or_else(|| "default".to_string())
     }
+
+    /// Whether an explicit attribute is set
+    pub fn is_none(&self) -> bool {
+        self.0.is_none()
+    }
 }
 
 #[cfg(test)]
