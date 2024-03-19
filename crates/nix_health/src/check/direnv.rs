@@ -119,6 +119,7 @@ struct DirenvStatus {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 struct DirenvConfig {
+    /// Path to the config folder of direnv
     #[serde(rename = "ConfigDir")]
     config_dir: PathBuf,
     /// Path to the direnv binary
@@ -139,7 +140,12 @@ struct DirenvState {
 // Information about the .envrc file
 #[derive(Debug, Serialize, Deserialize, Clone)]
 struct DirenvRC {
+    /// Can be 0, 1 or 2
+    /// 0: Allowed
+    /// 1: NotAllowed
+    /// 2: Denied
     allowed: u32,
+    /// Path to the .envrc file
     path: PathBuf,
 }
 
