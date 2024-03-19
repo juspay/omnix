@@ -155,7 +155,8 @@ fn direnv_version() -> anyhow::Result<String> {
         .output()?;
     if output.status.success() {
         let out = String::from_utf8_lossy(&output.stdout);
-        Ok(out.to_string())
+        let trimmed_out = out.trim();
+        Ok(trimmed_out.to_string())
     } else {
         anyhow::bail!("Unable to run direnv --version: {:?}", output.stderr)
     }
