@@ -2,6 +2,8 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
+use semver::Version;
+
 use crate::traits::{Check, CheckResult, Checkable};
 
 use nix_rs::{flake::url::FlakeUrl, info};
@@ -28,6 +30,13 @@ impl Checkable for Direnv {
     fn check(&self, _nix_info: &info::NixInfo, flake_url: Option<FlakeUrl>) -> Vec<Check> {
         let mut checks = vec![];
         if !self.enable {
+            return checks;
+        }
+
+        let direnv_version_check = version_check();
+        let direnv_version_green = direnv_version_check.result.green();
+        checks.push(direnv_version_check);
+        if !direnv_version_green {
             return checks;
         }
 
@@ -71,6 +80,37 @@ fn install_check(required: bool) -> Check {
     }
 }
 
+/// [Check] that direnv version >= 2.33.0 for `direnv status --json` support
+
+fn version_check() -> Check {
+    let suggestion = "Upgrade direnv to >= 2.33.0".to_string();
+    let direnv_version = direnv_version();
+    let parsed_direnv_version = direnv_version
+        .as_ref()
+        .map(|version| Version::parse(version).ok());
+    Check {
+        title: "Direnv version".to_string(),
+        info: format!("direnv version = {:?}", direnv_version),
+        // Use semver to compare versions
+        result: match parsed_direnv_version {
+            Ok(Some(version)) if version >= Version::parse("2.33.0").unwrap() => CheckResult::Green,
+            Ok(Some(version)) => CheckResult::Red {
+                msg: format!("direnv version {} is not supported", version),
+                suggestion,
+            },
+            Ok(None) => CheckResult::Red {
+                msg: "Unable to parse direnv version".to_string(),
+                suggestion,
+            },
+            Err(e) => CheckResult::Red {
+                msg: format!("Unable to locate direnv: {}", e),
+                suggestion,
+            },
+        },
+        required: false,
+    }
+}
+
 /// [Check] that direnv was activated on the local flake
 
 fn activation_check(local_flake: &std::path::Path, required: bool) -> Check {
@@ -106,6 +146,18 @@ fn is_direnv_allowed_on(project_dir: &std::path::Path) -> anyhow::Result<bool> {
         Ok(status.state.is_found_rc_allowed())
     } else {
         anyhow::bail!("Unable to run direnv status --json: {:?}", output.stderr)
+    }
+}
+
+fn direnv_version() -> anyhow::Result<String> {
+    let output = std::process::Command::new("direnv")
+        .args(["--version"])
+        .output()?;
+    if output.status.success() {
+        let out = String::from_utf8_lossy(&output.stdout);
+        Ok(out.to_string())
+    } else {
+        anyhow::bail!("Unable to run direnv --version: {:?}", output.stderr)
     }
 }
 
