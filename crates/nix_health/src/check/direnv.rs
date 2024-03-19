@@ -193,7 +193,7 @@ struct DirenvState {
 
 impl DirenvState {
     /// Check if the .envrc file is allowed
-    fn is_found_rc_allowed(&self) -> bool {
+    fn is_allowed(&self) -> bool {
         self.found_rc.as_ref().map_or(false, |rc| rc.allowed == 0)
     }
 }
