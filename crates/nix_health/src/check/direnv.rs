@@ -103,8 +103,7 @@ fn is_direnv_allowed_on(project_dir: &std::path::Path) -> anyhow::Result<bool> {
     if output.status.success() {
         let out = String::from_utf8_lossy(&output.stdout);
         let status = DirenvStatus::from_json(&out)?;
-        // rc.allowed == 0 means that the .envrc is allowed, see: https://github.com/direnv/direnv/pull/1142#issuecomment-1848677532
-        Ok(status.state.found_rc.map_or(false, |rc| rc.allowed == 0))
+        Ok(status.state.is_found_rc_allowed())
     } else {
         anyhow::bail!("Unable to run direnv status --json: {:?}", output.stderr)
     }
@@ -135,6 +134,13 @@ struct DirenvState {
     /// Information about the .envrc that is currently allowed using `direnv allow`
     #[serde(rename = "loadedRC")]
     loaded_rc: Option<DirenvRC>,
+}
+
+impl DirenvState {
+    /// Check if the .envrc file is allowed
+    fn is_found_rc_allowed(&self) -> bool {
+        self.found_rc.as_ref().map_or(false, |rc| rc.allowed == 0)
+    }
 }
 
 // Information about the .envrc file
