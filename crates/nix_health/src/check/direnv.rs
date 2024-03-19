@@ -64,13 +64,15 @@ impl Checkable for Direnv {
 
 fn install_check(required: bool) -> Check {
     let suggestion = "Install direnv <https://nixos.asia/en/direnv#setup>".to_string();
-    let direnv_install = DirenvStatus::detect();
+    let direnv_status = DirenvStatus::detect();
     Check {
         title: "Direnv installation".to_string(),
-        // TODO: Show direnv path
-        info: format!("direnv install = {:?}", direnv_install),
-        result: match direnv_install {
-            Ok(_direnv_install) => CheckResult::Green,
+        info: format!(
+            "direnv installed at = {:?}",
+            direnv_status.as_ref().map(|s| &s.config.self_path)
+        ),
+        result: match direnv_status {
+            Ok(_direnv_status) => CheckResult::Green,
             Err(e) => CheckResult::Red {
                 msg: format!("Unable to locate direnv: {}", e),
                 suggestion,
