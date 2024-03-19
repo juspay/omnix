@@ -87,14 +87,11 @@ fn install_check(required: bool) -> Check {
 fn version_check() -> Check {
     let suggestion = "Upgrade direnv to >= 2.33.0".to_string();
     let direnv_version = direnv_version();
-    let parsed_direnv_version = direnv_version
-        .as_ref()
-        .map(|version| Version::parse(version).ok());
     Check {
         title: "Direnv version".to_string(),
         info: format!("direnv version = {:?}", direnv_version),
         // Use semver to compare versions
-        result: match parsed_direnv_version {
+        result: match direnv_version {
             Ok(Some(version)) if version >= Version::parse("2.33.0").unwrap() => CheckResult::Green,
             Ok(Some(version)) => CheckResult::Red {
                 msg: format!("direnv version {} is not supported", version),
@@ -145,20 +142,21 @@ fn is_direnv_allowed_on(project_dir: &std::path::Path) -> anyhow::Result<bool> {
     if output.status.success() {
         let out = String::from_utf8_lossy(&output.stdout);
         let status = DirenvStatus::from_json(&out)?;
-        Ok(status.state.is_found_rc_allowed())
+        Ok(status.state.is_allowed())
     } else {
         anyhow::bail!("Unable to run direnv status --json: {:?}", output.stderr)
     }
 }
 
-fn direnv_version() -> anyhow::Result<String> {
+fn direnv_version() -> anyhow::Result<Option<Version>> {
     let output = std::process::Command::new("direnv")
         .args(["--version"])
         .output()?;
     if output.status.success() {
         let out = String::from_utf8_lossy(&output.stdout);
         let trimmed_out = out.trim();
-        Ok(trimmed_out.to_string())
+        let parsed_version = Version::parse(trimmed_out);
+        Ok(parsed_version.ok())
     } else {
         anyhow::bail!("Unable to run direnv --version: {:?}", output.stderr)
     }
