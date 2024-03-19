@@ -55,7 +55,7 @@ impl Checkable for Direnv {
 
 fn install_check(required: bool) -> Check {
     let suggestion = "Install direnv <https://nixos.asia/en/direnv#setup>".to_string();
-    let direnv_install = DirenvInstall::detect();
+    let direnv_install = DirenvStatus::detect();
     Check {
         title: "Direnv installation".to_string(),
         // TODO: Show direnv path
@@ -76,9 +76,9 @@ fn install_check(required: bool) -> Check {
 fn activation_check(local_flake: &std::path::Path, required: bool) -> Check {
     let suggestion = format!("Run `direnv allow` under `{}`", local_flake.display());
     Check {
-        title: "Direnv activation".to_string(),
-        info: format!("Local flake: {:?} (has .envrc)", local_flake),
-        result: match is_direnv_active_on(local_flake) {
+        title: "Direnv allowed".to_string(),
+        info: format!("Local flake: {:?} (has .envrc and is allowed)", local_flake),
+        result: match is_direnv_allowed_on(local_flake) {
             Ok(true) => CheckResult::Green,
             Ok(false) => CheckResult::Red {
                 msg: "direnv was not allowed on this project".to_string(),
@@ -93,71 +93,74 @@ fn activation_check(local_flake: &std::path::Path, required: bool) -> Check {
     }
 }
 
-/// Information about a direnv install
-#[derive(Debug, Default, Serialize, Deserialize, Clone)]
-pub struct DirenvInstall {
-    /// Path to the direnv binary
-    pub bin_path: PathBuf,
+/// [Check] if direnv was already allowed in [project_dir]
 
-    /// Contents of `direnvrc`
-    pub direnv_config: Option<String>,
-
-    // bash_path used by direnv
-    pub bash_path: Option<PathBuf>,
-}
-
-impl DirenvInstall {
-    /// Detect user's direnv installation
-
-    pub fn detect() -> anyhow::Result<Self> {
-        let bin_path = which::which("direnv")?;
-        let output = std::process::Command::new(&bin_path)
-            .arg("status")
-            .output()?;
-        let out = String::from_utf8_lossy(&output.stdout);
-        let mut bash_path = None;
-        let mut direnv_config = None;
-        // NOTE: One day we'll switch to using JSON output
-        // https://github.com/direnv/direnv/pull/1142
-        for line in out.lines() {
-            if let Some(path) = line.strip_prefix("bash_path ") {
-                bash_path = Some(PathBuf::from(path));
-            }
-            if let Some(config_dir) = line.strip_prefix("DIRENV_CONFIG ") {
-                let config_file = PathBuf::from(config_dir).join("direnvrc");
-                // Read config_file and assign to direnv_config
-                if config_file.exists() {
-                    let config = std::fs::read_to_string(config_file)?;
-                    direnv_config = Some(config);
-                }
-            }
-        }
-        Ok(Self {
-            bin_path,
-            direnv_config,
-            bash_path,
-        })
-    }
-}
-
-/// Check if direnv was already activated in [project_dir]
-
-pub fn is_direnv_active_on(project_dir: &std::path::Path) -> anyhow::Result<bool> {
+fn is_direnv_allowed_on(project_dir: &std::path::Path) -> anyhow::Result<bool> {
     let output = std::process::Command::new("direnv")
-        .arg("status")
+        .args(["status", "--json"])
         .current_dir(project_dir)
         .output()?;
     if output.status.success() {
         let out = String::from_utf8_lossy(&output.stdout);
-        let mut allowed = false;
-        for line in out.lines() {
-            if line == "Found RC allowed true" {
-                allowed = true;
-                break;
-            }
-        }
-        Ok(allowed)
+        let status = DirenvStatus::from_json(&out)?;
+        // rc.allowed == 0 means that the .envrc is allowed, see: https://github.com/direnv/direnv/pull/1142#issuecomment-1848677532
+        Ok(status.state.found_rc.map_or(false, |rc| rc.allowed == 0))
     } else {
-        anyhow::bail!("Unable to run direnv status: {:?}", output.stderr)
+        anyhow::bail!("Unable to run direnv status --json: {:?}", output.stderr)
+    }
+}
+
+/// Information about the direnv status
+#[derive(Debug, Serialize, Deserialize, Clone)]
+struct DirenvStatus {
+    config: DirenvConfig,
+    state: DirenvState,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+struct DirenvConfig {
+    #[serde(rename = "ConfigDir")]
+    config_dir: PathBuf,
+    /// Path to the direnv binary
+    #[serde(rename = "SelfPath")]
+    self_path: PathBuf,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+struct DirenvState {
+    /// Information about the .envrc found in the current directory
+    #[serde(rename = "foundRC")]
+    found_rc: Option<DirenvRC>,
+    /// Information about the .envrc that is currently allowed using `direnv allow`
+    #[serde(rename = "loadedRC")]
+    loaded_rc: Option<DirenvRC>,
+}
+
+// Information about the .envrc file
+#[derive(Debug, Serialize, Deserialize, Clone)]
+struct DirenvRC {
+    allowed: u32,
+    path: PathBuf,
+}
+
+impl DirenvStatus {
+    /// Parse the output of `direnv status --json`
+    fn from_json(json: &str) -> anyhow::Result<Self> {
+        let status: DirenvStatus = serde_json::from_str(json)?;
+        Ok(status)
+    }
+
+    /// Detect user's direnv installation
+    fn detect() -> anyhow::Result<Self> {
+        let output = std::process::Command::new("direnv")
+            .args(["status", "--json"])
+            .output()?;
+        if output.status.success() {
+            let out = String::from_utf8_lossy(&output.stdout);
+            let status = DirenvStatus::from_json(&out)?;
+            Ok(status)
+        } else {
+            anyhow::bail!("Unable to run direnv status --json: {:?}", output.stderr)
+        }
     }
 }
