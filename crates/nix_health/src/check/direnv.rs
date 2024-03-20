@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use nix_rs::{flake::url::FlakeUrl, info};
-use semver::Version;
+use semver::{Version, VersionReq};
 use serde::{Deserialize, Serialize};
 
 use crate::traits::{Check, CheckResult, Checkable};
@@ -88,13 +88,14 @@ fn install_check(direnv_install: &anyhow::Result<DirenvInstall>, required: bool)
 
 /// [Check] that direnv version >= 2.33.0 for `direnv status --json` support
 fn version_check(direnv_install: &DirenvInstall) -> Check {
-    let suggestion = "Upgrade direnv to >= 2.33.0".to_string();
+    let req = VersionReq::parse(">=2.33.0").unwrap();
+    let suggestion = format!("Upgrade direnv to {}", req);
     let direnv_version = &direnv_install.version;
     Check {
         title: "Direnv version".to_string(),
         info: format!("direnv version = {:?}", direnv_version),
         // Use semver to compare versions
-        result: if direnv_version >= &Version::parse("2.33.0").unwrap() {
+        result: if req.matches(direnv_version) {
             CheckResult::Green
         } else {
             CheckResult::Red {
