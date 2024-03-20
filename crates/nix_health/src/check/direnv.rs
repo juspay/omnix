@@ -22,7 +22,6 @@ impl Default for Direnv {
 }
 
 impl Checkable for Direnv {
-    // TODO: This code flow is confusing; refactor for legibility.
     fn check(&self, _nix_info: &info::NixInfo, flake_url: Option<FlakeUrl>) -> Vec<Check> {
         let mut checks = vec![];
         if !self.enable {
@@ -30,25 +29,20 @@ impl Checkable for Direnv {
         }
 
         let direnv_install_result = direnv::DirenvInstall::detect();
+        checks.push(install_check(&direnv_install_result, self.required));
 
-        let direnv_install_check = install_check(&direnv_install_result, self.required);
-        let direnv_installed = direnv_install_check.result.green();
-        checks.push(direnv_install_check);
-
-        if !direnv_installed {
-            return checks;
-        }
-
-        // FIXME: Avoid unwrap, by refactoring code flow.
-        let direnv_install = direnv_install_result.as_ref().unwrap();
-
-        // If direnv is installed, check for version and then allowed_check
-        // This check is currently only relevant if the flake is local and an `.envrc` exists.
-        match flake_url.as_ref().and_then(|url| url.as_local_path()) {
-            None => {}
-            Some(local_path) => {
-                if local_path.join(".envrc").exists() {
-                    checks.push(allowed_check(direnv_install, local_path, self.required));
+        match direnv_install_result.as_ref() {
+            Err(_) => return checks,
+            Ok(direnv_install) => {
+                // If direnv is installed, check for version and then allowed_check
+                // This check is currently only relevant if the flake is local and an `.envrc` exists.
+                match flake_url.as_ref().and_then(|url| url.as_local_path()) {
+                    None => {}
+                    Some(local_path) => {
+                        if local_path.join(".envrc").exists() {
+                            checks.push(allowed_check(direnv_install, local_path, self.required));
+                        }
+                    }
                 }
             }
         }
