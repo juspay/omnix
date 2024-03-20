@@ -31,9 +31,9 @@ impl Checkable for Direnv {
             return checks;
         }
 
-        let direnv_install = DirenvInstall::detect();
+        let direnv_install_result = DirenvInstall::detect();
 
-        let direnv_install_check = install_check(&direnv_install, self.required);
+        let direnv_install_check = install_check(&direnv_install_result, self.required);
         let direnv_installed = direnv_install_check.result.green();
         checks.push(direnv_install_check);
 
@@ -41,7 +41,7 @@ impl Checkable for Direnv {
             return checks;
         }
 
-        let direnv_version = version_check(direnv_install.as_ref().unwrap());
+        let direnv_version = version_check(direnv_install_result.as_ref().unwrap());
         let direnv_version_green = direnv_version.result.green();
         checks.push(direnv_version);
 
@@ -53,7 +53,7 @@ impl Checkable for Direnv {
                 Some(local_path) => {
                     if local_path.join(".envrc").exists() {
                         checks.push(allowed_check(
-                            &direnv_install.unwrap(),
+                            &direnv_install_result.unwrap(),
                             local_path,
                             self.required,
                         ));
