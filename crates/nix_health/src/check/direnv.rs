@@ -69,18 +69,17 @@ fn install_check(
     direnv_install: &anyhow::Result<direnv_crate::DirenvInstall>,
     required: bool,
 ) -> Check {
-    let suggestion = "Install direnv <https://nixos.asia/en/direnv#setup>".to_string();
     Check {
         title: "Direnv installation".to_string(),
         info: format!(
-            "direnv installed at = {:?}",
-            direnv_install.as_ref().map(|s| &s.bin_path)
+            "direnv location = {:?}",
+            direnv_install.as_ref().ok().map(|s| &s.bin_path)
         ),
         result: match direnv_install {
             Ok(_direnv_status) => CheckResult::Green,
             Err(e) => CheckResult::Red {
-                msg: format!("Unable to locate direnv: {}", e),
-                suggestion,
+                msg: format!("Unable to locate direnv ({})", e),
+                suggestion: "Install direnv <https://nixos.asia/en/direnv#setup>".to_string(),
             },
         },
         required,
