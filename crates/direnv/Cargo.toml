@@ -1,37 +1,22 @@
 [package]
 edition.workspace = true
-name = "nix_health"
-version = "0.2.3"
+name = "direnv"
+version = "0.1.0"
 license.workspace = true
 repository.workspace = true
-description = "Check the health of your Nix setup"
+description = "Rust bindings for direnv"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
-
-[[bin]]
-name = "nix-health"
-path = "src/main.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 cfg-if.workspace = true
-clap = { workspace = true }
-regex = "1.9.3"
 thiserror.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-serde_with.workspace = true
-tokio = { version = "1.29", features = ["full"] }
-tracing.workspace = true
-url = { version = "2.4", features = ["serde"] }
-nix_rs.workspace = true
-direnv.workspace = true
-human-panic.workspace = true
 anyhow = { version = "1.0.75" }
-colored = { version = "2.0" }
 which = { version = "4.4.2" }
-bytesize.workspace = true
 semver = { version = "1.0.22", features = ["serde"] }
 serde_repr = "0.1.18"

@@ -1025,6 +1025,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "direnv"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "cfg-if",
+ "semver",
+ "serde",
+ "serde_json",
+ "serde_repr",
+ "thiserror",
+ "which",
+]
+
+[[package]]
 name = "dirs-sys"
 version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2373,6 +2387,7 @@ dependencies = [
  "cfg-if",
  "clap",
  "colored",
+ "direnv",
  "human-panic",
  "nix_rs",
  "regex",

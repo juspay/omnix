@@ -13,6 +13,7 @@ human-panic = "1.1.5"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 nix_rs = { version = "0.3.0", path = "./crates/nix_rs" }
+direnv = { version = "0.1.0", path = "./crates/direnv" }
 nix_health = { path = "./crates/nix_health" }
 thiserror = "1.0"
 serde = { version = "1.0.197", features = ["derive"] }
