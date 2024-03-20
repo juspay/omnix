@@ -1,7 +1,5 @@
-use std::path::PathBuf;
-
 use nix_rs::{flake::url::FlakeUrl, info};
-use semver::{Version, VersionReq};
+use semver::VersionReq;
 use serde::{Deserialize, Serialize};
 
 use crate::traits::{Check, CheckResult, Checkable};
@@ -32,7 +30,7 @@ impl Checkable for Direnv {
             return checks;
         }
 
-        let direnv_install_result = DirenvInstall::detect();
+        let direnv_install_result = direnv_crate::DirenvInstall::detect();
 
         let direnv_install_check = install_check(&direnv_install_result, self.required);
         let direnv_installed = direnv_install_check.result.green();
@@ -67,7 +65,10 @@ impl Checkable for Direnv {
 }
 
 /// [Check] that direnv was installed.
-fn install_check(direnv_install: &anyhow::Result<DirenvInstall>, required: bool) -> Check {
+fn install_check(
+    direnv_install: &anyhow::Result<direnv_crate::DirenvInstall>,
+    required: bool,
+) -> Check {
     let suggestion = "Install direnv <https://nixos.asia/en/direnv#setup>".to_string();
     Check {
         title: "Direnv installation".to_string(),
@@ -87,7 +88,7 @@ fn install_check(direnv_install: &anyhow::Result<DirenvInstall>, required: bool)
 }
 
 /// [Check] that direnv version >= 2.33.0 for `direnv status --json` support
-fn version_check(direnv_install: &DirenvInstall) -> Check {
+fn version_check(direnv_install: &direnv_crate::DirenvInstall) -> Check {
     let req = VersionReq::parse(">=2.33.0").unwrap();
     let suggestion = format!("Upgrade direnv to {}", req);
     let direnv_version = &direnv_install.version;
@@ -109,7 +110,7 @@ fn version_check(direnv_install: &DirenvInstall) -> Check {
 
 /// [Check] that direnv was allowed on the local flake
 fn allowed_check(
-    direnv_install: &DirenvInstall,
+    direnv_install: &direnv_crate::DirenvInstall,
     local_flake: &std::path::Path,
     required: bool,
 ) -> Check {
@@ -132,101 +133,110 @@ fn allowed_check(
     }
 }
 
-/// Information about a local direnv installation
-#[derive(Debug, Serialize, Deserialize, Clone)]
-struct DirenvInstall {
-    /// Path to the direnv binary
-    bin_path: PathBuf,
-    /// Version of the installed direnv
-    version: Version,
-}
+/// TODO: Move this to a separate crate, called `direnv`
+/// TODO: Don't use anyhow::Result in library crates
+mod direnv_crate {
+    use semver::Version;
+    use serde::{Deserialize, Serialize};
+    use std::path::PathBuf;
 
-impl DirenvInstall {
-    /// Detect user's direnv installation
-    fn detect() -> anyhow::Result<Self> {
-        let bin_path = which::which("direnv")?;
-        let version = Self::get_version(&bin_path)?;
-        Ok(DirenvInstall { bin_path, version })
+    /// Information about a local direnv installation
+    #[derive(Debug, Serialize, Deserialize, Clone)]
+    pub struct DirenvInstall {
+        /// Path to the direnv binary
+        pub bin_path: PathBuf,
+        /// Version of the installed direnv
+        pub version: Version,
     }
 
-    /// Get the version of direnv
-    fn get_version(bin_path: &PathBuf) -> anyhow::Result<Version> {
-        let output = std::process::Command::new(bin_path)
-            .args(["--version"])
-            .output()?;
-        let out = String::from_utf8_lossy(&output.stdout);
-        let trimmed_out = out.trim();
-        Ok(Version::parse(trimmed_out)?)
+    impl DirenvInstall {
+        /// Detect user's direnv installation
+        pub fn detect() -> anyhow::Result<Self> {
+            let bin_path = which::which("direnv")?;
+            let version = Self::get_version(&bin_path)?;
+            Ok(DirenvInstall { bin_path, version })
+        }
+
+        /// Get the version of direnv
+        fn get_version(bin_path: &PathBuf) -> anyhow::Result<Version> {
+            let output = std::process::Command::new(bin_path)
+                .args(["--version"])
+                .output()?;
+            let out = String::from_utf8_lossy(&output.stdout);
+            let trimmed_out = out.trim();
+            Ok(Version::parse(trimmed_out)?)
+        }
+
+        /// Whether direnv was already allowed in [project_dir]
+        pub fn is_allowed_on(&self, project_dir: &std::path::Path) -> anyhow::Result<bool> {
+            let status = DirenvStatus::new(project_dir)?;
+            Ok(status.state.is_allowed())
+        }
     }
 
-    /// Whether direnv was already allowed in [project_dir]
-    fn is_allowed_on(&self, project_dir: &std::path::Path) -> anyhow::Result<bool> {
-        let status = DirenvStatus::new(project_dir)?;
-        Ok(status.state.is_allowed())
-    }
-}
-
-/// Information about the direnv status
-#[derive(Debug, Serialize, Deserialize, Clone)]
-struct DirenvStatus {
-    config: DirenvConfig,
-    state: DirenvState,
-}
-
-impl DirenvStatus {
-    /// Run `direnv status` and parse the output, for the given project directory.
-    fn new(dir: &std::path::Path) -> anyhow::Result<Self> {
-        let output = std::process::Command::new("direnv")
-            .args(["status", "--json"])
-            .current_dir(dir)
-            .output()?;
-        let out = String::from_utf8_lossy(&output.stdout);
-        let status = DirenvStatus::from_json(&out)?;
-        Ok(status)
+    /// Information about the direnv status
+    #[derive(Debug, Serialize, Deserialize, Clone)]
+    struct DirenvStatus {
+        config: DirenvConfig,
+        state: DirenvState,
     }
 
-    /// Parse the output of `direnv status --json`
-    fn from_json(json: &str) -> anyhow::Result<Self> {
-        let status: DirenvStatus = serde_json::from_str(json)?;
-        Ok(status)
+    impl DirenvStatus {
+        /// Run `direnv status` and parse the output, for the given project directory.
+        fn new(dir: &std::path::Path) -> anyhow::Result<Self> {
+            let output = std::process::Command::new("direnv")
+                .args(["status", "--json"])
+                .current_dir(dir)
+                .output()?;
+            let out = String::from_utf8_lossy(&output.stdout);
+            let status = DirenvStatus::from_json(&out)?;
+            Ok(status)
+        }
+
+        /// Parse the output of `direnv status --json`
+        fn from_json(json: &str) -> anyhow::Result<Self> {
+            let status: DirenvStatus = serde_json::from_str(json)?;
+            Ok(status)
+        }
     }
-}
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-struct DirenvConfig {
-    /// Path to the config folder of direnv
-    #[serde(rename = "ConfigDir")]
-    config_dir: PathBuf,
-    /// Path to the direnv binary
-    #[serde(rename = "SelfPath")]
-    self_path: PathBuf,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-struct DirenvState {
-    /// Information about the .envrc found in the current directory
-    #[serde(rename = "foundRC")]
-    found_rc: Option<DirenvRC>,
-    /// Information about the .envrc that is currently allowed using `direnv allow`
-    #[serde(rename = "loadedRC")]
-    loaded_rc: Option<DirenvRC>,
-}
-
-impl DirenvState {
-    /// Check if the .envrc file is allowed
-    fn is_allowed(&self) -> bool {
-        self.found_rc.as_ref().map_or(false, |rc| rc.allowed == 0)
+    #[derive(Debug, Serialize, Deserialize, Clone)]
+    struct DirenvConfig {
+        /// Path to the config folder of direnv
+        #[serde(rename = "ConfigDir")]
+        config_dir: PathBuf,
+        /// Path to the direnv binary
+        #[serde(rename = "SelfPath")]
+        self_path: PathBuf,
     }
-}
 
-// Information about the .envrc file
-#[derive(Debug, Serialize, Deserialize, Clone)]
-struct DirenvRC {
-    /// Can be 0, 1 or 2
-    /// 0: Allowed
-    /// 1: NotAllowed
-    /// 2: Denied
-    allowed: u32,
-    /// Path to the .envrc file
-    path: PathBuf,
+    #[derive(Debug, Serialize, Deserialize, Clone)]
+    struct DirenvState {
+        /// Information about the .envrc found in the current directory
+        #[serde(rename = "foundRC")]
+        found_rc: Option<DirenvRC>,
+        /// Information about the .envrc that is currently allowed using `direnv allow`
+        #[serde(rename = "loadedRC")]
+        loaded_rc: Option<DirenvRC>,
+    }
+
+    impl DirenvState {
+        /// Check if the .envrc file is allowed
+        fn is_allowed(&self) -> bool {
+            self.found_rc.as_ref().map_or(false, |rc| rc.allowed == 0)
+        }
+    }
+
+    /// Information about the .envrc file
+    /// TODO: Represent 0/1/2 values in a 3-value enum
+    #[derive(Debug, Serialize, Deserialize, Clone)]
+    struct DirenvRC {
+        /// Can be 0, 1 or 2
+        /// 0: Allowed
+        /// 1: NotAllowed
+        /// 2: Denied
+        allowed: u32,
+        /// Path to the .envrc file
+        path: PathBuf,
+    }
 }
