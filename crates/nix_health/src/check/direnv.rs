@@ -25,6 +25,7 @@ impl Default for Direnv {
 }
 
 impl Checkable for Direnv {
+    // TODO: This code flow is confusing; refactor for legibility.
     fn check(&self, _nix_info: &info::NixInfo, flake_url: Option<FlakeUrl>) -> Vec<Check> {
         let mut checks = vec![];
         if !self.enable {
@@ -41,6 +42,7 @@ impl Checkable for Direnv {
             return checks;
         }
 
+        // FIXME: Avoid unwrap, by refactoring code flow.
         let direnv_install = direnv_install_result.as_ref().unwrap();
 
         let direnv_version = version_check(direnv_install);
