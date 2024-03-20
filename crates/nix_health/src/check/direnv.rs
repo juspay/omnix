@@ -1,10 +1,7 @@
-use std::path::PathBuf;
-
+use nix_rs::{flake::url::FlakeUrl, info};
 use serde::{Deserialize, Serialize};
 
 use crate::traits::{Check, CheckResult, Checkable};
-
-use nix_rs::{flake::url::FlakeUrl, info};
 
 /// Check if direnv is installed
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -31,17 +28,20 @@ impl Checkable for Direnv {
             return checks;
         }
 
-        let direnv_install_check = install_check(self.required);
-        let direnv_installed = direnv_install_check.result.green();
-        checks.push(direnv_install_check);
+        let direnv_install_result = direnv::DirenvInstall::detect();
+        checks.push(install_check(&direnv_install_result, self.required));
 
-        if direnv_installed {
-            // This check is currently only relevant if the flake is local and an `.envrc` exists.
-            match flake_url.as_ref().and_then(|url| url.as_local_path()) {
-                None => {}
-                Some(local_path) => {
-                    if local_path.join(".envrc").exists() {
-                        checks.push(activation_check(local_path, self.required));
+        match direnv_install_result.as_ref() {
+            Err(_) => return checks,
+            Ok(direnv_install) => {
+                // If direnv is installed, check for version and then allowed_check
+                // This check is currently only relevant if the flake is local and an `.envrc` exists.
+                match flake_url.as_ref().and_then(|url| url.as_local_path()) {
+                    None => {}
+                    Some(local_path) => {
+                        if local_path.join(".envrc").exists() {
+                            checks.push(allowed_check(direnv_install, local_path, self.required));
+                        }
                     }
                 }
             }
@@ -52,33 +52,41 @@ impl Checkable for Direnv {
 }
 
 /// [Check] that direnv was installed.
-
-fn install_check(required: bool) -> Check {
-    let suggestion = "Install direnv <https://nixos.asia/en/direnv#setup>".to_string();
-    let direnv_install = DirenvInstall::detect();
+fn install_check(
+    direnv_install: &Result<direnv::DirenvInstall, direnv::DirenvInstallError>,
+    required: bool,
+) -> Check {
     Check {
         title: "Direnv installation".to_string(),
-        // TODO: Show direnv path
-        info: format!("direnv install = {:?}", direnv_install),
+        info: format!(
+            "direnv location = {:?}",
+            direnv_install.as_ref().ok().map(|s| &s.bin_path)
+        ),
         result: match direnv_install {
-            Ok(_direnv_install) => CheckResult::Green,
+            Ok(_direnv_status) => CheckResult::Green,
             Err(e) => CheckResult::Red {
-                msg: format!("Unable to locate direnv: {}", e),
-                suggestion,
+                msg: format!("Unable to locate direnv ({})", e),
+                suggestion: "Install direnv <https://nixos.asia/en/direnv#setup>".to_string(),
             },
         },
         required,
     }
 }
 
-/// [Check] that direnv was activated on the local flake
-
-fn activation_check(local_flake: &std::path::Path, required: bool) -> Check {
+/// [Check] that direnv was allowed on the local flake
+fn allowed_check(
+    direnv_install: &direnv::DirenvInstall,
+    local_flake: &std::path::Path,
+    required: bool,
+) -> Check {
     let suggestion = format!("Run `direnv allow` under `{}`", local_flake.display());
+    let direnv_allowed = direnv_install
+        .status(local_flake)
+        .map(|status| status.state.is_allowed());
     Check {
-        title: "Direnv activation".to_string(),
-        info: format!("Local flake: {:?} (has .envrc)", local_flake),
-        result: match is_direnv_active_on(local_flake) {
+        title: "Direnv allowed".to_string(),
+        info: format!("Local flake: {:?} (has .envrc and is allowed)", local_flake),
+        result: match direnv_allowed {
             Ok(true) => CheckResult::Green,
             Ok(false) => CheckResult::Red {
                 msg: "direnv was not allowed on this project".to_string(),
@@ -90,74 +98,5 @@ fn activation_check(local_flake: &std::path::Path, required: bool) -> Check {
             },
         },
         required,
-    }
-}
-
-/// Information about a direnv install
-#[derive(Debug, Default, Serialize, Deserialize, Clone)]
-pub struct DirenvInstall {
-    /// Path to the direnv binary
-    pub bin_path: PathBuf,
-
-    /// Contents of `direnvrc`
-    pub direnv_config: Option<String>,
-
-    // bash_path used by direnv
-    pub bash_path: Option<PathBuf>,
-}
-
-impl DirenvInstall {
-    /// Detect user's direnv installation
-
-    pub fn detect() -> anyhow::Result<Self> {
-        let bin_path = which::which("direnv")?;
-        let output = std::process::Command::new(&bin_path)
-            .arg("status")
-            .output()?;
-        let out = String::from_utf8_lossy(&output.stdout);
-        let mut bash_path = None;
-        let mut direnv_config = None;
-        // NOTE: One day we'll switch to using JSON output
-        // https://github.com/direnv/direnv/pull/1142
-        for line in out.lines() {
-            if let Some(path) = line.strip_prefix("bash_path ") {
-                bash_path = Some(PathBuf::from(path));
-            }
-            if let Some(config_dir) = line.strip_prefix("DIRENV_CONFIG ") {
-                let config_file = PathBuf::from(config_dir).join("direnvrc");
-                // Read config_file and assign to direnv_config
-                if config_file.exists() {
-                    let config = std::fs::read_to_string(config_file)?;
-                    direnv_config = Some(config);
-                }
-            }
-        }
-        Ok(Self {
-            bin_path,
-            direnv_config,
-            bash_path,
-        })
-    }
-}
-
-/// Check if direnv was already activated in [project_dir]
-
-pub fn is_direnv_active_on(project_dir: &std::path::Path) -> anyhow::Result<bool> {
-    let output = std::process::Command::new("direnv")
-        .arg("status")
-        .current_dir(project_dir)
-        .output()?;
-    if output.status.success() {
-        let out = String::from_utf8_lossy(&output.stdout);
-        let mut allowed = false;
-        for line in out.lines() {
-            if line == "Found RC allowed true" {
-                allowed = true;
-                break;
-            }
-        }
-        Ok(allowed)
-    } else {
-        anyhow::bail!("Unable to run direnv status: {:?}", output.stderr)
     }
 }

@@ -1,0 +1,21 @@
+[package]
+edition.workspace = true
+name = "direnv"
+version = "0.1.0"
+license.workspace = true
+repository.workspace = true
+description = "Rust bindings for direnv"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+cfg-if.workspace = true
+thiserror.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+which = { version = "4.4.2" }
+semver = { version = "1.0.22", features = ["serde"] }
+serde_repr = "0.1.18"
