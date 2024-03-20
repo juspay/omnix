@@ -1,4 +1,3 @@
-/// TODO: Don't use anyhow::Result in library crates
 use semver::Version;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -13,27 +12,34 @@ pub struct DirenvInstall {
     pub version: Version,
 }
 
+#[derive(thiserror::Error, Debug)]
+pub enum DirenvInstallError {
+    #[error("Cannot find direnv binary")]
+    DirenvWhichError(#[from] which::Error),
+
+    #[error("Direnv command error: {0}")]
+    DirenvCmdError(#[from] std::io::Error),
+
+    #[error("Cannot parse direnv version: {0}")]
+    DirenvVersionError(#[from] semver::Error),
+}
+
 impl DirenvInstall {
     /// Detect user's direnv installation
-    pub fn detect() -> anyhow::Result<Self> {
+    pub fn detect() -> Result<Self, DirenvInstallError> {
         let bin_path = which::which("direnv")?;
-        let version = get_direnv_version(&bin_path)?;
+        let output = std::process::Command::new(&bin_path)
+            .args(["--version"])
+            .output()?;
+        let out = String::from_utf8_lossy(&output.stdout);
+        let version = Version::parse(out.trim())?;
         Ok(DirenvInstall { bin_path, version })
     }
 
     /// Return the `direnv status` on the given project directory
-    pub fn status(&self, project_dir: &std::path::Path) -> anyhow::Result<DirenvStatus> {
+    pub fn status(&self, project_dir: &std::path::Path) -> Result<DirenvStatus, DirenvStatusError> {
         DirenvStatus::new(&self.bin_path, project_dir)
     }
-}
-
-/// Get the version of direnv
-fn get_direnv_version(direnv_bin: &PathBuf) -> anyhow::Result<Version> {
-    let output = std::process::Command::new(direnv_bin)
-        .args(["--version"])
-        .output()?;
-    let out = String::from_utf8_lossy(&output.stdout);
-    Ok(Version::parse(out.trim())?)
 }
 
 /// Information about the direnv status
@@ -45,21 +51,24 @@ pub struct DirenvStatus {
 
 impl DirenvStatus {
     /// Run `direnv status` and parse the output, for the given project directory.
-    fn new(direnv_bin: &PathBuf, dir: &std::path::Path) -> anyhow::Result<Self> {
+    fn new(direnv_bin: &PathBuf, dir: &std::path::Path) -> Result<Self, DirenvStatusError> {
         let output = std::process::Command::new(direnv_bin)
             .args(["status", "--json"])
             .current_dir(dir)
             .output()?;
         let out = String::from_utf8_lossy(&output.stdout);
-        let status = DirenvStatus::from_json(&out)?;
+        let status: DirenvStatus = serde_json::from_str(&out)?;
         Ok(status)
     }
+}
 
-    /// Parse the output of `direnv status --json`
-    fn from_json(json: &str) -> anyhow::Result<Self> {
-        let status: DirenvStatus = serde_json::from_str(json)?;
-        Ok(status)
-    }
+#[derive(thiserror::Error, Debug)]
+pub enum DirenvStatusError {
+    #[error("Direnv command error: {0}")]
+    DirenvCmdError(#[from] std::io::Error),
+
+    #[error("Cannot parse direnv status JSON: {0}")]
+    DirenvStatusError(#[from] serde_json::Error),
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

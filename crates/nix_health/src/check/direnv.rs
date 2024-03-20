@@ -65,7 +65,10 @@ impl Checkable for Direnv {
 }
 
 /// [Check] that direnv was installed.
-fn install_check(direnv_install: &anyhow::Result<direnv::DirenvInstall>, required: bool) -> Check {
+fn install_check(
+    direnv_install: &Result<direnv::DirenvInstall, direnv::DirenvInstallError>,
+    required: bool,
+) -> Check {
     Check {
         title: "Direnv installation".to_string(),
         info: format!(
@@ -84,6 +87,8 @@ fn install_check(direnv_install: &anyhow::Result<direnv::DirenvInstall>, require
 }
 
 /// [Check] that direnv version >= 2.33.0 for `direnv status --json` support
+///
+/// TODO: The version check can be eliminated once we use thiserror in direnv crate
 fn version_check(direnv_install: &direnv::DirenvInstall) -> Check {
     let req = VersionReq::parse(">=2.33.0").unwrap();
     let suggestion = format!("Upgrade direnv to {}", req);
