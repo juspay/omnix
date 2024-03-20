@@ -89,21 +89,18 @@ fn install_check(direnv_install: &anyhow::Result<DirenvInstall>, required: bool)
 /// [Check] that direnv version >= 2.33.0 for `direnv status --json` support
 fn version_check(direnv_install: &DirenvInstall) -> Check {
     let suggestion = "Upgrade direnv to >= 2.33.0".to_string();
-    let direnv_version = direnv_install.version();
+    let direnv_version = &direnv_install.version;
     Check {
         title: "Direnv version".to_string(),
         info: format!("direnv version = {:?}", direnv_version),
         // Use semver to compare versions
-        result: match direnv_version {
-            Ok(version) if version >= Version::parse("2.33.0").unwrap() => CheckResult::Green,
-            Ok(version) => CheckResult::Red {
-                msg: format!("direnv version {} is not supported", version),
+        result: if direnv_version >= &Version::parse("2.33.0").unwrap() {
+            CheckResult::Green
+        } else {
+            CheckResult::Red {
+                msg: format!("direnv version {} is not supported", direnv_version),
                 suggestion,
-            },
-            Err(e) => CheckResult::Red {
-                msg: format!("Unable to check direnv version: {}", e),
-                suggestion,
-            },
+            }
         },
         required: false,
     }
@@ -135,22 +132,25 @@ fn allowed_check(
 }
 
 /// Information about a local direnv installation
-#[derive(Debug, Default, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 struct DirenvInstall {
     /// Path to the direnv binary
     bin_path: PathBuf,
+    /// Version of the installed direnv
+    version: Version,
 }
 
 impl DirenvInstall {
     /// Detect user's direnv installation
     fn detect() -> anyhow::Result<Self> {
         let bin_path = which::which("direnv")?;
-        Ok(DirenvInstall { bin_path })
+        let version = Self::get_version(&bin_path)?;
+        Ok(DirenvInstall { bin_path, version })
     }
 
     /// Get the version of direnv
-    fn version(&self) -> anyhow::Result<Version> {
-        let output = std::process::Command::new(&self.bin_path)
+    fn get_version(bin_path: &PathBuf) -> anyhow::Result<Version> {
+        let output = std::process::Command::new(bin_path)
             .args(["--version"])
             .output()?;
         let out = String::from_utf8_lossy(&output.stdout);
