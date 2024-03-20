@@ -160,12 +160,7 @@ impl DirenvInstall {
 
     /// Whether direnv was already allowed in [project_dir]
     fn is_allowed_on(&self, project_dir: &std::path::Path) -> anyhow::Result<bool> {
-        let output = std::process::Command::new(&self.bin_path)
-            .args(["status", "--json"])
-            .current_dir(project_dir)
-            .output()?;
-        let out = String::from_utf8_lossy(&output.stdout);
-        let status = DirenvStatus::from_json(&out)?;
+        let status = DirenvStatus::new(project_dir)?;
         Ok(status.state.is_allowed())
     }
 }
@@ -175,6 +170,25 @@ impl DirenvInstall {
 struct DirenvStatus {
     config: DirenvConfig,
     state: DirenvState,
+}
+
+impl DirenvStatus {
+    /// Run `direnv status` and parse the output, for the given project directory.
+    fn new(dir: &std::path::Path) -> anyhow::Result<Self> {
+        let output = std::process::Command::new("direnv")
+            .args(["status", "--json"])
+            .current_dir(dir)
+            .output()?;
+        let out = String::from_utf8_lossy(&output.stdout);
+        let status = DirenvStatus::from_json(&out)?;
+        Ok(status)
+    }
+
+    /// Parse the output of `direnv status --json`
+    fn from_json(json: &str) -> anyhow::Result<Self> {
+        let status: DirenvStatus = serde_json::from_str(json)?;
+        Ok(status)
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -214,12 +228,4 @@ struct DirenvRC {
     allowed: u32,
     /// Path to the .envrc file
     path: PathBuf,
-}
-
-impl DirenvStatus {
-    /// Parse the output of `direnv status --json`
-    fn from_json(json: &str) -> anyhow::Result<Self> {
-        let status: DirenvStatus = serde_json::from_str(json)?;
-        Ok(status)
-    }
 }
