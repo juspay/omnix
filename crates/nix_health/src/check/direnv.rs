@@ -1,12 +1,10 @@
 use std::path::PathBuf;
 
+use nix_rs::{flake::url::FlakeUrl, info};
+use semver::Version;
 use serde::{Deserialize, Serialize};
 
-use semver::Version;
-
 use crate::traits::{Check, CheckResult, Checkable};
-
-use nix_rs::{flake::url::FlakeUrl, info};
 
 /// Check if direnv is installed
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -48,7 +46,6 @@ impl Checkable for Direnv {
         checks.push(direnv_version);
 
         // If direnv is installed, check for version and then allowed_check
-
         if direnv_version_green {
             // This check is currently only relevant if the flake is local and an `.envrc` exists.
             match flake_url.as_ref().and_then(|url| url.as_local_path()) {
@@ -70,7 +67,6 @@ impl Checkable for Direnv {
 }
 
 /// [Check] that direnv was installed.
-
 fn install_check(direnv_install: &anyhow::Result<DirenvInstall>, required: bool) -> Check {
     let suggestion = "Install direnv <https://nixos.asia/en/direnv#setup>".to_string();
     Check {
@@ -91,7 +87,6 @@ fn install_check(direnv_install: &anyhow::Result<DirenvInstall>, required: bool)
 }
 
 /// [Check] that direnv version >= 2.33.0 for `direnv status --json` support
-
 fn version_check(direnv_install: &DirenvInstall) -> Check {
     let suggestion = "Upgrade direnv to >= 2.33.0".to_string();
     let direnv_version = direnv_install.version();
@@ -115,7 +110,6 @@ fn version_check(direnv_install: &DirenvInstall) -> Check {
 }
 
 /// [Check] that direnv was allowed on the local flake
-
 fn allowed_check(
     direnv_install: &DirenvInstall,
     local_flake: &std::path::Path,
@@ -140,7 +134,7 @@ fn allowed_check(
     }
 }
 
-/// Information about a direnv install
+/// Information about a local direnv installation
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
 struct DirenvInstall {
     /// Path to the direnv binary
