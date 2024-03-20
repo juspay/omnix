@@ -1,4 +1,4 @@
-use semver::Version;
+use semver::{Version, VersionReq};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::path::PathBuf;
@@ -38,7 +38,12 @@ impl DirenvInstall {
 
     /// Return the `direnv status` on the given project directory
     pub fn status(&self, project_dir: &std::path::Path) -> Result<DirenvStatus, DirenvStatusError> {
-        DirenvStatus::new(&self.bin_path, project_dir)
+        let min_version = VersionReq::parse(">=2.33.0").unwrap(); // --json was added in latter versions
+        if min_version.matches(&self.version) {
+            DirenvStatus::new(&self.bin_path, project_dir)
+        } else {
+            Err(DirenvStatusError::DirenvVersionError(min_version))
+        }
     }
 }
 
@@ -69,6 +74,9 @@ pub enum DirenvStatusError {
 
     #[error("Cannot parse direnv status JSON: {0}")]
     DirenvStatusError(#[from] serde_json::Error),
+
+    #[error("Direnv version is too old; you need direnv {0}")]
+    DirenvVersionError(semver::VersionReq),
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

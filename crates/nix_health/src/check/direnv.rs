@@ -1,5 +1,4 @@
 use nix_rs::{flake::url::FlakeUrl, info};
-use semver::VersionReq;
 use serde::{Deserialize, Serialize};
 
 use crate::traits::{Check, CheckResult, Checkable};
@@ -43,19 +42,13 @@ impl Checkable for Direnv {
         // FIXME: Avoid unwrap, by refactoring code flow.
         let direnv_install = direnv_install_result.as_ref().unwrap();
 
-        let direnv_version = version_check(direnv_install);
-        let direnv_version_green = direnv_version.result.green();
-        checks.push(direnv_version);
-
         // If direnv is installed, check for version and then allowed_check
-        if direnv_version_green {
-            // This check is currently only relevant if the flake is local and an `.envrc` exists.
-            match flake_url.as_ref().and_then(|url| url.as_local_path()) {
-                None => {}
-                Some(local_path) => {
-                    if local_path.join(".envrc").exists() {
-                        checks.push(allowed_check(direnv_install, local_path, self.required));
-                    }
+        // This check is currently only relevant if the flake is local and an `.envrc` exists.
+        match flake_url.as_ref().and_then(|url| url.as_local_path()) {
+            None => {}
+            Some(local_path) => {
+                if local_path.join(".envrc").exists() {
+                    checks.push(allowed_check(direnv_install, local_path, self.required));
                 }
             }
         }
@@ -83,29 +76,6 @@ fn install_check(
             },
         },
         required,
-    }
-}
-
-/// [Check] that direnv version >= 2.33.0 for `direnv status --json` support
-///
-/// TODO: The version check can be eliminated once we use thiserror in direnv crate
-fn version_check(direnv_install: &direnv::DirenvInstall) -> Check {
-    let req = VersionReq::parse(">=2.33.0").unwrap();
-    let suggestion = format!("Upgrade direnv to {}", req);
-    let direnv_version = &direnv_install.version;
-    Check {
-        title: "Direnv version".to_string(),
-        info: format!("direnv version = {:?}", direnv_version),
-        // Use semver to compare versions
-        result: if req.matches(direnv_version) {
-            CheckResult::Green
-        } else {
-            CheckResult::Red {
-                msg: format!("direnv version {} is not supported", direnv_version),
-                suggestion,
-            }
-        },
-        required: false,
     }
 }
 
