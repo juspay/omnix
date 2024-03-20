@@ -137,6 +137,7 @@ fn allowed_check(
 mod direnv_crate {
     use semver::Version;
     use serde::{Deserialize, Serialize};
+    use serde_repr::{Deserialize_repr, Serialize_repr};
     use std::path::PathBuf;
 
     /// Information about a local direnv installation
@@ -222,7 +223,9 @@ mod direnv_crate {
     impl DirenvState {
         /// Check if the .envrc file is allowed
         fn is_allowed(&self) -> bool {
-            self.found_rc.as_ref().map_or(false, |rc| rc.allowed == 0)
+            self.found_rc
+                .as_ref()
+                .map_or(false, |rc| rc.allowed == AllowedStatus::Allowed)
         }
     }
 
@@ -230,12 +233,20 @@ mod direnv_crate {
     /// TODO: Represent 0/1/2 values in a 3-value enum
     #[derive(Debug, Serialize, Deserialize, Clone)]
     struct DirenvRC {
-        /// Can be 0, 1 or 2
-        /// 0: Allowed
-        /// 1: NotAllowed
-        /// 2: Denied
-        allowed: u32,
+        allowed: AllowedStatus,
         /// Path to the .envrc file
         path: PathBuf,
+    }
+
+    #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Clone)]
+    #[repr(u8)]
+    /// Can be 0, 1 or 2
+    /// 0: Allowed
+    /// 1: NotAllowed
+    /// 2: Denied
+    enum AllowedStatus {
+        Allowed = 0,
+        NotAllowed = 1,
+        Denied = 2,
     }
 }
