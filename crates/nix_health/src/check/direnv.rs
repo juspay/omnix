@@ -53,23 +53,37 @@ impl Checkable for Direnv {
 
 /// [Check] that direnv was installed.
 fn install_check(
-    direnv_install: &Result<direnv::DirenvInstall, direnv::DirenvInstallError>,
+    direnv_install_result: &Result<direnv::DirenvInstall, direnv::DirenvInstallError>,
     required: bool,
 ) -> Check {
     Check {
         title: "Direnv installation".to_string(),
         info: format!(
             "direnv location = {:?}",
-            direnv_install.as_ref().ok().map(|s| &s.bin_path)
+            direnv_install_result.as_ref().ok().map(|s| &s.bin_path)
         ),
-        result: match direnv_install {
-            Ok(_direnv_status) => CheckResult::Green,
+        result: match direnv_install_result {
+            Ok(direnv_install) => is_global(direnv_install),
             Err(e) => CheckResult::Red {
                 msg: format!("Unable to locate direnv ({})", e),
                 suggestion: "Install direnv <https://nixos.asia/en/direnv#setup>".to_string(),
             },
         },
         required,
+    }
+}
+
+/// Verify that direnv was not installed globally, under `/usr`.
+fn is_global(direnv_install: &direnv::DirenvInstall) -> CheckResult {
+    let usr_path = std::path::Path::new("/usr");
+    if direnv_install.bin_path.starts_with(usr_path) {
+        CheckResult::Red {
+            msg: "direnv is installed globally".to_string(),
+            suggestion: "Install direnv via Nix, it will also manage shell integration. See <https://nixos.asia/en/direnv>"
+                .to_string(),
+        }
+    } else {
+        CheckResult::Green
     }
 }
 
