@@ -67,8 +67,11 @@ fn install_check(
             Ok(direnv_install) if is_path_in_nix_store(&direnv_install.canonical_path) => {
                 CheckResult::Green
             }
-            Ok(_) => CheckResult::Red {
-                msg: "direnv is installed outside of Nix".to_string(),
+            Ok(direnv_install) => CheckResult::Red {
+                msg: format!(
+                    "direnv is installed outside of Nix ({:?})",
+                    &direnv_install.canonical_path
+                ),
                 suggestion: format!(
                     "Install direnv via Nix, it will also manage shell integration. See <{}>",
                     setup_url
