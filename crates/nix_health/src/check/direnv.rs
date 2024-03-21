@@ -53,24 +53,42 @@ impl Checkable for Direnv {
 
 /// [Check] that direnv was installed.
 fn install_check(
-    direnv_install: &Result<direnv::DirenvInstall, direnv::DirenvInstallError>,
+    direnv_install_result: &Result<direnv::DirenvInstall, direnv::DirenvInstallError>,
     required: bool,
 ) -> Check {
+    let setup_url = "https://nixos.asia/en/direnv#setup";
     Check {
         title: "Direnv installation".to_string(),
         info: format!(
             "direnv location = {:?}",
-            direnv_install.as_ref().ok().map(|s| &s.bin_path)
+            direnv_install_result.as_ref().ok().map(|s| &s.bin_path)
         ),
-        result: match direnv_install {
-            Ok(_direnv_status) => CheckResult::Green,
+        result: match direnv_install_result {
+            Ok(direnv_install) if is_path_in_nix_store(&direnv_install.canonical_path) => {
+                CheckResult::Green
+            }
+            Ok(direnv_install) => CheckResult::Red {
+                msg: format!(
+                    "direnv is installed outside of Nix ({:?})",
+                    &direnv_install.canonical_path
+                ),
+                suggestion: format!(
+                    "Install direnv via Nix, it will also manage shell integration. See <{}>",
+                    setup_url
+                ),
+            },
             Err(e) => CheckResult::Red {
                 msg: format!("Unable to locate direnv ({})", e),
-                suggestion: "Install direnv <https://nixos.asia/en/direnv#setup>".to_string(),
+                suggestion: format!("Install direnv <{}>", setup_url),
             },
         },
         required,
     }
+}
+
+/// Check that the path is in the Nix store (usually /nix/store)
+fn is_path_in_nix_store(path: &std::path::Path) -> bool {
+    path.starts_with("/nix/store")
 }
 
 /// [Check] that direnv was allowed on the local flake
