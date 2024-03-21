@@ -56,6 +56,7 @@ fn install_check(
     direnv_install_result: &Result<direnv::DirenvInstall, direnv::DirenvInstallError>,
     required: bool,
 ) -> Check {
+    let setup_url = "https://nixos.asia/en/direnv#setup";
     Check {
         title: "Direnv installation".to_string(),
         info: format!(
@@ -63,26 +64,22 @@ fn install_check(
             direnv_install_result.as_ref().ok().map(|s| &s.bin_path)
         ),
         result: match direnv_install_result {
-            Ok(direnv_install) => is_path_in_nix_store_check_result(direnv_install),
+            Ok(direnv_install) if is_path_in_nix_store(&direnv_install.canonical_path) => {
+                CheckResult::Green
+            }
+            Ok(_) => CheckResult::Red {
+                msg: "direnv is installed outside of Nix".to_string(),
+                suggestion: format!(
+                    "Install direnv via Nix, it will also manage shell integration. See <{}>",
+                    setup_url
+                ),
+            },
             Err(e) => CheckResult::Red {
                 msg: format!("Unable to locate direnv ({})", e),
-                suggestion: "Install direnv <https://nixos.asia/en/direnv#setup>".to_string(),
+                suggestion: format!("Install direnv <{}>", setup_url),
             },
         },
         required,
-    }
-}
-
-/// Verify that direnv binary is present under the Nix store.
-fn is_path_in_nix_store_check_result(direnv_install: &direnv::DirenvInstall) -> CheckResult {
-    if is_path_in_nix_store(&direnv_install.canonical_path) {
-        CheckResult::Green
-    } else {
-        CheckResult::Red {
-            msg: "direnv is installed globally".to_string(),
-            suggestion: "Install direnv via Nix, it will also manage shell integration. See <https://nixos.asia/en/direnv>"
-                .to_string(),
-        }
     }
 }
 
