@@ -63,7 +63,7 @@ fn install_check(
             direnv_install_result.as_ref().ok().map(|s| &s.bin_path)
         ),
         result: match direnv_install_result {
-            Ok(direnv_install) => is_global(direnv_install),
+            Ok(direnv_install) => is_path_under_nix_store(direnv_install),
             Err(e) => CheckResult::Red {
                 msg: format!("Unable to locate direnv ({})", e),
                 suggestion: "Install direnv <https://nixos.asia/en/direnv#setup>".to_string(),
@@ -74,16 +74,16 @@ fn install_check(
 }
 
 /// Verify that direnv was not installed globally, under `/usr`.
-fn is_global(direnv_install: &direnv::DirenvInstall) -> CheckResult {
-    let usr_path = std::path::Path::new("/usr");
-    if direnv_install.bin_path.starts_with(usr_path) {
+fn is_path_under_nix_store(direnv_install: &direnv::DirenvInstall) -> CheckResult {
+    let nix_store_path = std::path::Path::new("/nix/store");
+    if direnv_install.canonical_path.starts_with(nix_store_path) {
+        CheckResult::Green
+    } else {
         CheckResult::Red {
             msg: "direnv is installed globally".to_string(),
             suggestion: "Install direnv via Nix, it will also manage shell integration. See <https://nixos.asia/en/direnv>"
                 .to_string(),
         }
-    } else {
-        CheckResult::Green
     }
 }
 
