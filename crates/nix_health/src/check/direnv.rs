@@ -75,8 +75,7 @@ fn install_check(
 
 /// Verify that direnv binary is present under the Nix store.
 fn is_path_in_nix_store_check_result(direnv_install: &direnv::DirenvInstall) -> CheckResult {
-    let nix_store_path = std::path::Path::new("/nix/store");
-    if direnv_install.canonical_path.starts_with(nix_store_path) {
+    if is_path_in_nix_store(&direnv_install.canonical_path) {
         CheckResult::Green
     } else {
         CheckResult::Red {
@@ -85,6 +84,11 @@ fn is_path_in_nix_store_check_result(direnv_install: &direnv::DirenvInstall) -> 
                 .to_string(),
         }
     }
+}
+
+/// Check that the path is in the Nix store (usually /nix/store)
+fn is_path_in_nix_store(path: &std::path::Path) -> bool {
+    path.starts_with("/nix/store")
 }
 
 /// [Check] that direnv was allowed on the local flake
