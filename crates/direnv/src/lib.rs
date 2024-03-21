@@ -8,14 +8,28 @@ use std::path::PathBuf;
 pub struct DirenvInstall {
     /// Path to the direnv binary
     pub bin_path: PathBuf,
+    /// Path to the direnv binary without any symbolic links
+    pub canonical_path: PathBuf,
     /// Version of the installed direnv
     pub version: Version,
+}
+
+#[derive(thiserror::Error, Debug)]
+pub struct CanonicalizeError(#[from] std::io::Error);
+
+impl std::fmt::Display for CanonicalizeError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self.0)
+    }
 }
 
 #[derive(thiserror::Error, Debug)]
 pub enum DirenvInstallError {
     #[error("Cannot find direnv binary")]
     DirenvWhichError(#[from] which::Error),
+
+    #[error("Cannot canonicalize direnv path: {0}")]
+    DirenvCanonicalizeError(#[from] CanonicalizeError),
 
     #[error("Direnv command error: {0}")]
     DirenvCmdError(#[from] std::io::Error),
@@ -28,12 +42,17 @@ impl DirenvInstall {
     /// Detect user's direnv installation
     pub fn detect() -> Result<Self, DirenvInstallError> {
         let bin_path = which::which("direnv")?;
+        let canonical_path = bin_path.canonicalize().map_err(CanonicalizeError)?;
         let output = std::process::Command::new(&bin_path)
             .args(["--version"])
             .output()?;
         let out = String::from_utf8_lossy(&output.stdout);
         let version = Version::parse(out.trim())?;
-        Ok(DirenvInstall { bin_path, version })
+        Ok(DirenvInstall {
+            bin_path,
+            canonical_path,
+            version,
+        })
     }
 
     /// Return the `direnv status` on the given project directory
