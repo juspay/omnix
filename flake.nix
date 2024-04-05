@@ -73,7 +73,6 @@
           ];
           packages = with pkgs; [
             just
-            nixci
             # For when we start using Tauri
             cargo-tauri
             trunk
