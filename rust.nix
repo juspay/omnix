@@ -28,21 +28,7 @@
       );
     };
 
-    packages = {
-      default = self'.packages.nix-browser;
-      nix-health = config.dioxus-desktop.craneLib.buildPackage {
-        inherit (config.dioxus-desktop) src;
-        pname = "nix-health";
-        nativeBuildInputs = [
-          pkgs.nix # cargo tests need nix
-        ];
-        buildInputs = config.dioxus-desktop.rustBuildInputs;
-        cargoExtraArgs = "-p nix_health";
-        # Disable tests on macOS for https://github.com/garnix-io/issues/issues/69
-        # If/when we move to Jenkins, this won't be necessary.
-        doCheck = !pkgs.stdenv.isDarwin;
-      };
-    };
+    packages.default = self'.packages.nix-browser;
 
     devShells.rust = pkgs.mkShell {
       inputsFrom = [

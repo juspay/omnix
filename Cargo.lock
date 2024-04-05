@@ -993,7 +993,7 @@ dependencies = [
 [[package]]
 name = "dioxus-std"
 version = "0.4.0"
-source = "git+https://github.com/ealmloff/dioxus-std.git?branch=storage#9e4e53b05a194522e2cac5705fabad6062fb82e6"
+source = "git+https://github.com/DioxusLabs/sdk.git?rev=9e4e53b05a194522e2cac5705fabad6062fb82e6#9e4e53b05a194522e2cac5705fabad6062fb82e6"
 dependencies = [
  "cfg-if",
  "console_error_panic_hook",
@@ -1026,7 +1026,9 @@ dependencies = [
 
 [[package]]
 name = "direnv"
-version = "0.1.0"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "691d98072428846b881361c9afae2867f082ae7122b068daf3e5c9eebdc61802"
 dependencies = [
  "cfg-if",
  "semver",
@@ -2352,6 +2354,7 @@ name = "nix-browser"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "bytesize",
  "cfg-if",
  "clap",
  "console_error_panic_hook",
@@ -2361,6 +2364,7 @@ dependencies = [
  "dioxus-router",
  "dioxus-signals",
  "dioxus-std",
+ "direnv",
  "fermi",
  "http",
  "human-panic",
@@ -2379,7 +2383,9 @@ dependencies = [
 
 [[package]]
 name = "nix_health"
-version = "0.2.3"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "628dda35305f458a5af26ede7d8dd68c05d77da853a18a3ba375c164ef8542bf"
 dependencies = [
  "anyhow",
  "bytesize",
@@ -2404,7 +2410,9 @@ dependencies = [
 
 [[package]]
 name = "nix_rs"
-version = "0.3.1"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f97a08d5a3e2a3013e8ed6f3874c6cfac8df699eb3063f9f894e3a6a95ac205d"
 dependencies = [
  "bytesize",
  "cfg-if",
