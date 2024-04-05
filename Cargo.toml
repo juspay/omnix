@@ -59,8 +59,8 @@ dioxus = { git = "https://github.com/DioxusLabs/dioxus.git", rev = "647815fa6f6d
 dioxus-desktop = { git = "https://github.com/DioxusLabs/dioxus.git", rev = "647815fa6f6db2304cda5bd36c78b4f8b0379f39" }
 dioxus-router = { git = "https://github.com/DioxusLabs/dioxus.git", rev = "647815fa6f6db2304cda5bd36c78b4f8b0379f39" }
 dioxus-signals = { git = "https://github.com/DioxusLabs/dioxus.git", rev = "647815fa6f6db2304cda5bd36c78b4f8b0379f39" }
-# https://github.com/DioxusLabs/dioxus-std/pull/17
-dioxus-std = { git = "https://github.com/ealmloff/dioxus-std.git", branch = "storage", features = [
+# TODO: Using https://github.com/DioxusLabs/dioxus-std/pull/17 which was merged, so we must switch back to 0.5 version along with Dioxus upgrade.
+dioxus-std = { git = "https://github.com/ealmloff/dioxus-std.git", rev = "9e4e53b05a194522e2cac5705fabad6062fb82e6", features = [
     "storage",
 ] }
 fermi = { git = "https://github.com/DioxusLabs/dioxus.git", rev = "c7963a03440d5a050bf229f91665d60a0d108a8a" }
