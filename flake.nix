@@ -10,16 +10,11 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
     systems.url = "github:nix-systems/default";
 
-    rust-overlay.url = "github:oxalica/rust-overlay";
-    crane.url = "github:ipetkov/crane";
-    crane.inputs.nixpkgs.follows = "nixpkgs";
+    rust-flake.url = "github:juspay/rust-flake";
     treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
     process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
     cargo-doc-live.url = "github:srid/cargo-doc-live";
-
-    dioxus-desktop-template.url = "github:srid/dioxus-desktop-template";
-    dioxus-desktop-template.flake = false;
   };
 
   outputs = inputs:
@@ -30,7 +25,8 @@
         inputs.treefmt-nix.flakeModule
         inputs.process-compose-flake.flakeModule
         inputs.cargo-doc-live.flakeModule
-        (inputs.dioxus-desktop-template + /nix/flake-module.nix)
+        inputs.rust-flake.flakeModules.default
+        inputs.rust-flake.flakeModules.nixpkgs
         ./rust.nix
       ];
 
@@ -48,13 +44,6 @@
       };
 
       perSystem = { config, self', pkgs, lib, system, ... }: {
-        _module.args.pkgs = import inputs.nixpkgs {
-          inherit system;
-          overlays = [
-            inputs.rust-overlay.overlays.default
-          ];
-        };
-
         # Add your auto-formatters here.
         # cf. https://numtide.github.io/treefmt/
         treefmt.config = {
