@@ -16,7 +16,7 @@ alias f := fmt
 bundle $CI="true":
     # HACK (change PWD): Until https://github.com/DioxusLabs/dioxus/issues/1283
     cd assets && dx bundle --release
-    nix run nixpkgs#eza -- -T ./dist/bundle/macos/nix-browser.app
+    nix run nixpkgs#lsd -- --tree ./dist/bundle/macos/nix-browser.app
 
 # Run the project locally
 watch $RUST_BACKTRACE="1":
