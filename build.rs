@@ -8,7 +8,7 @@ fn main() {
 }
 
 fn run_tailwind() {
-    let mut command = Command::new("tailwind");
+    let mut command = Command::new("tailwindcss");
 
     command
         .args([
