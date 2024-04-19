@@ -1,6 +1,7 @@
 # nix-browser
 
-🚧 This project is a work in progress. The ultimate goal is to create a GUI app that inspires people towards using [Nix](https://nixos.asia/en/nix).
+> [!NOTE] 
+> 🚧 nix-browser is in active development. It aims to be a GUI app that motivates people towards adopting [Nix](https://nixos.asia/en/nix) on their own.
 
 ## Getting Started
 
@@ -56,11 +57,10 @@ We use [Tailwind](https://tailwindcss.com/) for styling; 🎓 familiarize yourse
 
 See `tailwind.config.js` for colour aliases we use throughout the app. Instead of, say, `text-pink-500` we use `text-primary-500` ("primary" is more semantic than "pink").
 
-## Crates
+## Related crates
 
-We publish the following crates from this repo:
-
-| Crate Link                          | Description                             |
-| ----------------------------------- | --------------------------------------- |
-| https://crates.io/crates/nix_rs     | Rust interface to the Nix command line  |
-| https://crates.io/crates/nix_health | Nix health check library and executable |
+| Crate                                | Description                             |
+| ------------------------------------ | --------------------------------------- |
+| https://github.com/juspay/nix-rs     | Rust interface to the Nix command line  |
+| https://github.com/juspay/direnv-rs  | Rust bindings for direnv                |
+| https://github.com/juspay/nix-health | Nix health check library and executable |
