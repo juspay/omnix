@@ -68,10 +68,7 @@ fn NixConfigView(config: NixConfig) -> Element {
 }
 
 #[component]
-fn ConfigValList<T: 'static + PartialEq>(items: Vec<T>) -> Element
-where
-    T: Display,
-{
+fn ConfigValList<T: 'static + PartialEq + Display>(items: Vec<T>) -> Element {
     rsx! {
         div { class: "flex flex-col space-y-4",
             for item in items {

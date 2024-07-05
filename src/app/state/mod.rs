@@ -64,7 +64,7 @@ impl AppState {
 
     pub fn provide_state() {
         tracing::debug!("🏗️ Providing AppState");
-        let mut state = use_context_provider(|| Self::new());
+        let mut state = use_context_provider(Self::new);
         // FIXME: Can we avoid calling build_network multiple times?
         state.build_network();
     }
