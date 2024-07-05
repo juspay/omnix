@@ -5,8 +5,11 @@ mod db;
 mod error;
 mod refresh;
 
-use dioxus::prelude::{use_context, use_context_provider, use_future, Scope};
+use dioxus::hooks::use_resource;
+use dioxus::prelude::{use_context, use_context_provider};
+use dioxus_signals::Readable;
 use dioxus_signals::Signal;
+use dioxus_signals::Writable;
 use nix_health::NixHealth;
 use nix_rs::{
     flake::{url::FlakeUrl, Flake},
@@ -57,12 +60,12 @@ impl AppState {
 
     /// Get the [AppState] from context
     pub fn use_state() -> Self {
-        *use_context::<Self>().unwrap()
+        use_context::<Self>()
     }
 
     pub fn provide_state() {
         tracing::debug!("🏗️ Providing AppState");
-        let state = *use_context_provider(|| Self::new());
+        let state = use_context_provider(|| Self::new());
         // FIXME: Can we avoid calling build_network multiple times?
         state.build_network();
     }
@@ -86,7 +89,7 @@ impl AppState {
     ///
     /// If a signal's value is dependent on another signal's value, you must
     /// define that relationship here.
-    fn build_network(self, cx: Scope) {
+    fn build_network(self) {
         tracing::debug!("🕸️ Building AppState network");
         // Build `state.flake` signal dependent signals change
         {
@@ -147,7 +150,7 @@ impl AppState {
         // Build `state.nix_info`
         {
             let refresh = *self.nix_info_refresh.read();
-            use_resource(cx, (&refresh,), |(refresh,)| async move {
+            use_resource((&refresh,), |(refresh,)| async move {
                 tracing::info!("Updating nix info [{}] ...", refresh);
                 Datum::refresh_with(self.nix_info, async {
                     NixInfo::from_nix(&nix_rs::command::NixCmd::default())

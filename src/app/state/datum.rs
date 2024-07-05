@@ -100,9 +100,9 @@ impl<T, E: Display> Datum<Result<T, E>> {
     /// The error message will be rendered appropriately. If the datum is
     /// unavailable, nothing will be rendered (loading state is rendered
     /// differently)
-    pub fn render_with<'a, F>(&self, cx: &'a Scoped<'a, ()>, component: F) -> Element<'a>
+    pub fn render_with<F>(&self, component: F) -> Element
     where
-        F: FnOnce(&T) -> Element<'a>,
+        F: FnOnce(&T) -> Element,
     {
         match self.current_value()? {
             Ok(value) => component(value),

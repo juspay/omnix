@@ -31,7 +31,7 @@ pub fn Flake() -> Element {
                 value: "{state.get_flake_url_string()}",
                 disabled: busy,
                 onchange: move |ev| {
-                    let url: FlakeUrl = ev.value.clone().into();
+                    let url: FlakeUrl = ev.value().clone().into();
                     state.set_flake_url(url);
                 }
             }
@@ -45,9 +45,9 @@ pub fn Flake() -> Element {
             }
         }
         if flake.is_loading_or_refreshing() {
-            { Loader {} }
+            Loader {}
         }
-        {{ flake.render_with(cx, |v| rsx! { FlakeView { flake: v.clone() } }) }}
+        { flake.render_with(|v| rsx! { FlakeView { flake: v.clone() } }) }
     }
 }
 
@@ -60,7 +60,7 @@ pub fn FlakeRaw() -> Element {
         div {
             Link { to: Route::Flake {}, "⬅ Back" }
             div { class: "px-4 py-2 font-mono text-xs text-left text-gray-500 border-2 border-black",
-                {{ flake.render_with(cx, |v| rsx! { FlakeOutputsRawView { outs: v.output.clone() } } ) }}
+                { flake.render_with(|v| rsx! { FlakeOutputsRawView { outs: v.output.clone() } } ) }
             }
         }
     }
@@ -70,11 +70,11 @@ pub fn FlakeRaw() -> Element {
 pub fn FlakeView(flake: Flake) -> Element {
     rsx! {
         div { class: "flex flex-col my-4",
-            h3 { class: "text-lg font-bold", {{ flake.url.to_string() }} }
+            h3 { class: "text-lg font-bold", { flake.url.to_string() } }
             div { class: "text-sm italic text-gray-600",
                 Link { to: Route::FlakeRaw {}, "View raw output" }
             }
-            FlakeSchemaView { schema: &flake.schema }
+            FlakeSchemaView { schema: flake.schema }
         }
     }
 }
@@ -93,7 +93,7 @@ pub fn SectionHeading(title: &'static str, extra: Option<String>) -> Element {
 }
 
 #[component]
-pub fn FlakeSchemaView(schema: &FlakeSchema) -> Element {
+pub fn FlakeSchemaView(schema: FlakeSchema) -> Element {
     let system = schema.system.clone();
     rsx! {
         div {
@@ -102,11 +102,11 @@ pub fn FlakeSchemaView(schema: &FlakeSchema) -> Element {
                 span { class: "font-mono text-xs text-gray-500", "(", "{system }", ")" }
             }
             div { class: "text-left",
-                BtreeMapView { title: "Packages", tree: &schema.packages }
-                BtreeMapView { title: "Legacy Packages", tree: &schema.legacy_packages }
-                BtreeMapView { title: "Dev Shells", tree: &schema.devshells }
-                BtreeMapView { title: "Checks", tree: &schema.checks }
-                BtreeMapView { title: "Apps", tree: &schema.apps }
+                BtreeMapView { title: "Packages", tree: schema.packages }
+                BtreeMapView { title: "Legacy Packages", tree: schema.legacy_packages }
+                BtreeMapView { title: "Dev Shells", tree: schema.devshells }
+                BtreeMapView { title: "Checks", tree: schema.checks }
+                BtreeMapView { title: "Apps", tree: schema.apps }
                 SectionHeading { title: "Formatter" }
                 match schema.formatter.as_ref() {
                     Some(v) => {
@@ -126,7 +126,7 @@ pub fn FlakeSchemaView(schema: &FlakeSchema) -> Element {
 }
 
 #[component]
-pub fn BtreeMapView(title: &'static str, tree: &BTreeMap<String, Val>) -> Element {
+pub fn BtreeMapView(title: &'static str, tree: BTreeMap<String, Val>) -> Element {
     rsx! {
         div {
             SectionHeading { title: title, extra: tree.len().to_string() }
@@ -136,7 +136,7 @@ pub fn BtreeMapView(title: &'static str, tree: &BTreeMap<String, Val>) -> Elemen
 }
 
 #[component]
-pub fn BtreeMapBodyView(tree: &BTreeMap<String, Val>) -> Element {
+pub fn BtreeMapBodyView(tree: BTreeMap<String, Val>) -> Element {
     rsx! {
         div { class: "flex flex-wrap justify-start",
             for (k , v) in tree.iter() {
@@ -153,7 +153,7 @@ pub fn FlakeValView(k: String, v: Val) -> Element {
             title: "{v.type_}",
             class: "flex flex-col p-2 my-2 mr-2 space-y-2 bg-white border-4 border-gray-300 rounded hover:border-gray-400",
             div { class: "flex flex-row justify-start space-x-2 font-bold text-primary-500",
-                div { {{ v.type_.to_icon() }} }
+                div { { v.type_.to_icon() } }
                 div { "{k}" }
             }
             match &v.name {
@@ -175,20 +175,20 @@ pub fn FlakeValView(k: String, v: Val) -> Element {
 #[component]
 pub fn FlakeOutputsRawView(outs: FlakeOutputs) -> Element {
     #[component]
-    fn ValView<'a>(val: &'a Val) -> Element {
+    fn ValView(val: Val) -> Element {
         rsx! {
             span {
-                b { val.name.clone() }
+                b { { val.name.clone()  }}
                 " ("
-                TypeView { type_: &val.type_ }
+                TypeView { type_: val.type_ }
                 ") "
-                em { val.description.clone() }
+                em { { val.description.clone() } }
             }
         }
     }
 
     #[component]
-    pub fn TypeView<'a>(type_: &'a Type) -> Element {
+    pub fn TypeView(type_: Type) -> Element {
         rsx! {
             span {
                 match type_ {

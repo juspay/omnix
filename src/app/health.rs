@@ -13,15 +13,15 @@ pub fn Health() -> Element {
     rsx! {
         h1 { class: "text-5xl font-bold", title }
         if health_checks.is_loading_or_refreshing() {
-            { Loader {} }
+            Loader {}
         }
-        {{ health_checks.render_with(cx, |checks| rsx! {
+        { health_checks.render_with(|checks| rsx! {
             div { class: "flex flex-col items-stretch justify-start space-y-8 text-left",
                 for check in checks {
                         ViewCheck { check: check.clone() }
                 }
             }
-        }) }}
+        }) }
     }
 }
 
@@ -35,18 +35,18 @@ fn ViewCheck(check: Check) -> Element {
                 summary { class: "p-4 text-xl font-bold",
                     CheckResultSummaryView { green: check.result.green() }
                     " "
-                    {{ check.title.clone() }}
+                    { check.title.clone() }
                 }
                 div { class: "p-4",
-                    div { class: "p-2 my-2 font-mono text-sm bg-black text-base-100", {{ check.info.clone() }} }
+                    div { class: "p-2 my-2 font-mono text-sm bg-black text-base-100", { check.info.clone() } }
                     div { class: "flex flex-col justify-start space-y-4",
                         match check.result.clone() {
                             CheckResult::Green => rsx! { "" },
                             CheckResult::Red { msg, suggestion } => rsx! {
                                 h3 { class: "my-2 font-bold text-l" }
-                                div { class: "p-2 bg-red-400 rounded bg-border", msg }
+                                div { class: "p-2 bg-red-400 rounded bg-border", { msg } }
                                 h3 { class: "my-2 font-bold text-l" }
-                                div { class: "p-2 bg-blue-400 rounded bg-border", suggestion }
+                                div { class: "p-2 bg-blue-400 rounded bg-border", { suggestion } }
                             }
                         }
                     }

@@ -12,7 +12,7 @@ async fn main() {
     crate::logging::setup_logging(&args.verbosity);
 
     // Set data directory for persisting [Signal]s. On macOS, this is ~/Library/Application Support/nix-browser.
-    dioxus_std::storage::set_dir!();
+    dioxus_sdk::storage::set_dir!();
 
     dioxus_desktop::launch_cfg(
         app::App,

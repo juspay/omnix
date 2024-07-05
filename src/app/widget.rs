@@ -14,14 +14,14 @@ where
 {
     rsx! {
         button {
-            disabled: *busy,
+            disabled: busy,
             onclick: move |evt| {
-                if !*busy {
+                if !busy {
                     handler(evt)
                 }
             },
             title: "Refresh current data being viewed",
-            { LoaderIcon {loading: *busy} }
+            LoaderIcon {loading: busy}
         }
     }
 }
@@ -35,7 +35,7 @@ where
 #[component]
 pub fn FolderDialogButton<F>(handler: F) -> Element
 where
-    F: Fn(PathBuf),
+    F: Fn(PathBuf) + 'static,
 {
     // FIXME: The id should be unique if this widget is used multiple times on
     // the same page.
@@ -68,7 +68,7 @@ where
 /// If the user has not selected any (eg: cancels the dialog), this returns
 /// None. Otherwise, it returns the first entry in the selected list.
 fn get_selected_path(evt: Event<FormData>) -> Option<PathBuf> {
-    match evt.files.as_ref() {
+    match evt.files().as_ref() {
         None => {
             tracing::error!("unable to get files from event");
             None
@@ -91,7 +91,7 @@ pub fn Loader() -> Element {
 
 #[component]
 pub fn LoaderIcon(loading: bool) -> Element {
-    let cls = if *loading {
+    let cls = if loading {
         "animate-spin text-base-800"
     } else {
         "text-primary-700 hover:text-primary-500"
@@ -123,6 +123,6 @@ pub fn LoaderIcon(loading: bool) -> Element {
 #[allow(dead_code)] // https://github.com/juspay/nix-browser/issues/132
 pub fn Scrollable(children: Element) -> Element {
     rsx! {
-        div { class: "overflow-auto", {{ children }} }
+        div { class: "overflow-auto", { children } }
     }
 }

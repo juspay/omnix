@@ -16,10 +16,10 @@ pub fn Info() -> Element {
     rsx! {
         h1 { class: "text-5xl font-bold", title }
         if nix_info.is_loading_or_refreshing() {
-            { Loader {} }
+            Loader {}
         }
         div { class: "flex items-center justify-center",
-            {{ nix_info.render_with(cx, |v| rsx! { NixInfoView { info: v.clone() } }) }}
+            { nix_info.render_with(|v| rsx! { NixInfoView { info: v.clone() } }) }
         }
     }
 }
@@ -55,10 +55,10 @@ fn NixConfigView(config: NixConfig) -> Element {
         div { class: "py-1 my-1 rounded bg-primary-50",
             table { class: "text-right",
                 tbody {
-                    TableRow { name: "Local System", title: &config.system.description, "{config.system.value}" }
-                    TableRow { name: "Max Jobs", title: &config.max_jobs.description, "{config.max_jobs.value}" }
-                    TableRow { name: "Cores per build", title: &config.cores.description, "{config.cores.value}" }
-                    TableRow { name: "Nix Caches", title: &config.substituters.description, ConfigValList { items: &config.substituters.value } }
+                    TableRow { name: "Local System", title: config.system.description, "{config.system.value}" }
+                    TableRow { name: "Max Jobs", title: config.max_jobs.description, "{config.max_jobs.value}" }
+                    TableRow { name: "Cores per build", title: config.cores.description, "{config.cores.value}" }
+                    TableRow { name: "Nix Caches", title: config.substituters.description, ConfigValList { items: config.substituters.value } }
                 }
             }
         }
@@ -66,7 +66,7 @@ fn NixConfigView(config: NixConfig) -> Element {
 }
 
 #[component]
-fn ConfigValList<T>(items: &Vec<T>) -> Element
+fn ConfigValList<T>(items: Vec<T>) -> Element
 where
     T: Display,
 {
@@ -96,12 +96,12 @@ fn NixEnvView(env: NixEnv) -> Element {
 }
 
 #[component]
-fn TableRow(name: &'static str, title: &str, children: Element<'a>) -> Element {
+fn TableRow(name: &'static str, title: String, children: Element) -> Element {
     rsx! {
         tr { title: "{title}",
             td { class: "px-4 py-2 font-semibold text-base-700", "{name}" }
             td { class: "px-4 py-2 text-left",
-                code { {{ children }} }
+                code { { children } }
             }
         }
     }
