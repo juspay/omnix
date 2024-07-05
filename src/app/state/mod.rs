@@ -94,32 +94,38 @@ impl AppState {
         // Build `state.flake` signal dependent signals change
         {
             // ... when [AppState::flake_url] changes.
-            let flake_url = self.flake_url.read().clone();
+            let flake_url = self.flake_url;
+            let flake_cache = self.flake_cache;
+            let mut flake_refresh = self.flake_refresh;
+            let mut flake = self.flake;
             use_resource(move || async move {
-                if let Some(flake_url) = flake_url {
-                    let maybe_flake = self.flake_cache.read().get(&flake_url);
+                if let Some(flake_url) = flake_url.read().clone() {
+                    let maybe_flake = flake_cache.read().get(&flake_url);
                     if let Some(cached_flake) = maybe_flake {
-                        Datum::set_value(&mut self.flake, Ok(cached_flake)).await;
+                        Datum::set_value(&mut flake, Ok(cached_flake)).await;
                     } else {
-                        self.flake_refresh.write().request_refresh();
+                        flake_refresh.write().request_refresh();
                     }
                 }
             });
             // ... when refresh button is clicked.
             let refresh = *self.flake_refresh.read();
+            let flake_url = self.flake_url;
+            let mut flake = self.flake;
+            let mut flake_cache = self.flake_cache;
             use_resource(move || async move {
-                let flake_url = self.flake_url.read().clone();
+                let flake_url = flake_url.read().clone();
                 if let Some(flake_url) = flake_url {
                     let flake_url_2 = flake_url.clone();
                     tracing::info!("Updating flake [{}] refresh={} ...", &flake_url, refresh);
-                    let res = Datum::refresh_with(&mut self.flake, async move {
+                    let res = Datum::refresh_with(&mut flake, async move {
                         Flake::from_nix(&nix_rs::command::NixCmd::default(), flake_url_2)
                             .await
                             .map_err(|e| Into::<SystemError>::into(e.to_string()))
                     })
                     .await;
                     if let Some(Ok(flake)) = res {
-                        self.flake_cache.with_mut(|cache| {
+                        flake_cache.with_mut(|cache| {
                             cache.update(flake_url, flake);
                         });
                     }
@@ -129,16 +135,18 @@ impl AppState {
 
         // Build `state.health_checks`
         {
-            let nix_info = self.nix_info.read().clone();
+            let nix_info = self.nix_info;
             let refresh = *self.health_checks_refresh.read();
+            let mut health_checks = self.health_checks;
             use_resource(move || async move {
+                let nix_info = nix_info.read().clone();
                 if let Some(nix_info) = nix_info.current_value().map(|x| {
                     x.as_ref()
                         .map_err(|e| Into::<SystemError>::into(e.to_string()))
                         .cloned()
                 }) {
                     tracing::info!("Updating nix health [{}] ...", refresh);
-                    Datum::refresh_with(&mut self.health_checks, async move {
+                    Datum::refresh_with(&mut health_checks, async move {
                         let health_checks = NixHealth::default().run_checks(&nix_info?, None);
                         Ok(health_checks)
                     })
@@ -150,9 +158,10 @@ impl AppState {
         // Build `state.nix_info`
         {
             let refresh = *self.nix_info_refresh.read();
+            let mut nix_info = self.nix_info;
             use_resource(move || async move {
                 tracing::info!("Updating nix info [{}] ...", refresh);
-                Datum::refresh_with(&mut self.nix_info, async {
+                Datum::refresh_with(&mut nix_info, async {
                     NixInfo::from_nix(&nix_rs::command::NixCmd::default())
                         .await
                         .map_err(|e| SystemError {
