@@ -1,26 +1,18 @@
-name: "CI Intel Mac"
+name: "CI"
 on:
   push:
     branches:
       - main
   pull_request:
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
+  checks:
+    runs-on: ${{ matrix.system }}
+    permissions:
+      contents: read
     strategy:
       matrix:
-        # Run only on Intel mac, because garnix doesn't support it yet
-        # https://github.com/garnix-io/issues/issues/16
-        os: [macos-latest]
+        system: [ x86_64-linux, aarch64-darwin, x86_64-darwin ]
     steps:
       - uses: actions/checkout@v4
-      - uses: DeterminateSystems/nix-installer-action@main
-        with:
-          extra-conf: |
-            trusted-public-keys = cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
-            substituters = https://cache.garnix.io?priority=41 https://cache.nixos.org/
-      - uses: DeterminateSystems/magic-nix-cache-action@main
-      - uses: yaxitech/nix-install-pkgs-action@v3
-        with:
-          packages: "github:srid/nixci"
-      - run: nixci build
+      - name: Build
+        run: nixci --extra-access-tokens ${{ secrets.GITHUB_TOKEN }} build --systems "${{ matrix.system }}"
