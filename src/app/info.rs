@@ -9,24 +9,26 @@ use crate::{app::state::AppState, app::widget::Loader};
 
 /// Nix information
 #[component]
-pub fn Info(cx: Scope) -> Element {
+pub fn Info() -> Element {
     let title = "Nix Info";
-    let state = AppState::use_state(cx);
+    let state = AppState::use_state();
     let nix_info = state.nix_info.read();
-    render! {
+    rsx! {
         h1 { class: "text-5xl font-bold", title }
-        if nix_info.is_loading_or_refreshing() {
-            render! { Loader {} }
-        }
-        div { class: "flex items-center justify-center",
-            nix_info.render_with(cx, |v| render! { NixInfoView { info: v.clone() } })
+        {
+            if nix_info.is_loading_or_refreshing() {
+                rsx!( Loader {} )
+            }
+            div { class: "flex items-center justify-center",
+                nix_info.render_with(|v| rsx! { NixInfoView { info: v.clone() } })
+            }
         }
     }
 }
 
 #[component]
-fn NixInfoView(cx: Scope, info: NixInfo) -> Element {
-    render! {
+fn NixInfoView(info: NixInfo) -> Element {
+    rsx! {
         div { class: "flex flex-col max-w-prose p-4 space-y-8 bg-white border-2 rounded border-base-400",
             div {
                 b { "Nix Version" }
@@ -45,20 +47,20 @@ fn NixInfoView(cx: Scope, info: NixInfo) -> Element {
 }
 
 #[component]
-fn NixVersionView(cx: Scope, version: NixVersion) -> Element {
-    render! {a { href: nix_rs::refs::RELEASE_HISTORY, class: "font-mono hover:underline", target: "_blank", "{version}" }}
+fn NixVersionView(version: NixVersion) -> Element {
+    rsx! {a { href: nix_rs::refs::RELEASE_HISTORY, class: "font-mono hover:underline", target: "_blank", "{version}" }}
 }
 
 #[component]
-fn NixConfigView(cx: Scope, config: NixConfig) -> Element {
-    render! {
+fn NixConfigView(config: NixConfig) -> Element {
+    rsx! {
         div { class: "py-1 my-1 rounded bg-primary-50",
             table { class: "text-right",
                 tbody {
                     TableRow { name: "Local System", title: &config.system.description, "{config.system.value}" }
                     TableRow { name: "Max Jobs", title: &config.max_jobs.description, "{config.max_jobs.value}" }
                     TableRow { name: "Cores per build", title: &config.cores.description, "{config.cores.value}" }
-                    TableRow { name: "Nix Caches", title: &config.substituters.description, ConfigValList { items: &config.substituters.value } }
+                    TableRow { name: "Nix Caches", title: &config.substituters.description, ConfigValList { items: config.substituters.value.clone() } }
                 }
             }
         }
@@ -66,11 +68,11 @@ fn NixConfigView(cx: Scope, config: NixConfig) -> Element {
 }
 
 #[component]
-fn ConfigValList<T, 'a>(cx: Scope, items: &'a Vec<T>) -> Element
+fn ConfigValList<T: 'static + std::cmp::PartialEq>(items: Vec<T>) -> Element
 where
-    T: Display,
+    T: Display + Clone,
 {
-    render! {
+    rsx! {
         div { class: "flex flex-col space-y-4",
             for item in items {
                 li { class: "list-disc", "{item}" }
@@ -80,8 +82,8 @@ where
 }
 
 #[component]
-fn NixEnvView(cx: Scope, env: NixEnv) -> Element {
-    render! {
+fn NixEnvView(env: NixEnv) -> Element {
+    rsx! {
         div { class: "py-1 my-1 rounded bg-primary-50",
             table { class: "text-right",
                 tbody {
@@ -96,12 +98,16 @@ fn NixEnvView(cx: Scope, env: NixEnv) -> Element {
 }
 
 #[component]
-fn TableRow<'a>(cx: Scope, name: &'static str, title: &'a str, children: Element<'a>) -> Element {
-    render! {
+fn TableRow(
+    name: &'static str,
+    title: ReadOnlySignal<String>,
+    children: ReadOnlySignal<Element>,
+) -> Element {
+    rsx! {
         tr { title: "{title}",
             td { class: "px-4 py-2 font-semibold text-base-700", "{name}" }
             td { class: "px-4 py-2 text-left",
-                code { children }
+                code { {children} }
             }
         }
     }

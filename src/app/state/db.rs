@@ -2,13 +2,13 @@
 //!
 //! This is purposefully dumb right now, but we might revisit this in future based on actual performance.
 
-use dioxus::prelude::Scope;
+use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, time::SystemTime};
 
 use dioxus_signals::Signal;
-use dioxus_std::storage::new_storage;
-use dioxus_std::storage::LocalStorage;
+use dioxus_sdk::storage::new_storage;
+use dioxus_sdk::storage::LocalStorage;
 
 use crate::app::state::FlakeUrl;
 use nix_rs::flake::Flake;
@@ -21,8 +21,8 @@ pub struct FlakeCache(HashMap<FlakeUrl, Option<(SystemTime, Flake)>>);
 
 impl FlakeCache {
     /// Create a new [Signal] for [FlakeCache] from [LocalStorage].
-    pub fn new_signal(cx: Scope) -> Signal<FlakeCache> {
-        new_storage::<LocalStorage, _>(cx, "flake_cache".to_string(), || {
+    pub fn new_signal() -> Signal<FlakeCache> {
+        new_storage::<LocalStorage, _>("flake_cache".to_string(), || {
             tracing::warn!("📦 No flake cache found");
             let init = FlakeUrl::suggestions()
                 .into_iter()

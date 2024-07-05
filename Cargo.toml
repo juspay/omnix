@@ -35,7 +35,7 @@ dioxus-desktop = { git = "https://github.com/DioxusLabs/dioxus.git", rev = "b19a
 dioxus-router = { git = "https://github.com/DioxusLabs/dioxus.git", rev = "b19a546c0ac639a5cf9e942fff7729ad30e91a5e" }
 dioxus-signals = { git = "https://github.com/DioxusLabs/dioxus.git", rev = "b19a546c0ac639a5cf9e942fff7729ad30e91a5e" }
 # TODO: Using https://github.com/DioxusLabs/dioxus-std/pull/17 which was merged, so we must switch back to 0.5 version along with Dioxus upgrade.
-dioxus-std = { git = "https://github.com/DioxusLabs/sdk.git", rev = "9e4e53b05a194522e2cac5705fabad6062fb82e6", features = [
+dioxus-sdk = { git = "https://github.com/DioxusLabs/sdk.git", rev = "809d90440988a55a2db3b816de67e2c219f19865", features = [
     "storage",
 ] }
 fermi = { git = "https://github.com/DioxusLabs/dioxus.git", rev = "c7963a03440d5a050bf229f91665d60a0d108a8a" }

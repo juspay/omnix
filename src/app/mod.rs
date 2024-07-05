@@ -37,15 +37,15 @@ enum Route {
 }
 
 /// Main frontend application container
-pub fn App(cx: Scope) -> Element {
-    AppState::provide_state(cx);
-    render! {
+pub fn App() -> Element {
+    AppState::provide_state();
+    rsx! {
         body { class: "bg-base-100 overflow-hidden", Router::<Route> {} }
     }
 }
 
-fn Wrapper(cx: Scope) -> Element {
-    render! {
+fn Wrapper() -> Element {
+    rsx! {
         div { class: "flex flex-col text-center justify-between w-full h-screen",
             TopBar {}
             div { class: "m-2 py-2 overflow-auto", Outlet::<Route> {} }
@@ -55,11 +55,11 @@ fn Wrapper(cx: Scope) -> Element {
 }
 
 #[component]
-fn TopBar(cx: Scope) -> Element {
-    let state = AppState::use_state(cx);
+fn TopBar() -> Element {
+    let state = use_context::<AppState>();
     let health_checks = state.health_checks.read();
     let nix_info = state.nix_info.read();
-    render! {
+    rsx! {
         div { class: "flex justify-between items-center w-full p-2 bg-primary-100 shadow",
             div { class: "flex space-x-2",
                 Link { to: Route::Dashboard {}, "🏠" }
@@ -69,15 +69,15 @@ fn TopBar(cx: Scope) -> Element {
                 Link { to: Route::Health {},
                     span { title: "Nix Health Status",
                         match (*health_checks).current_value() {
-                            Some(Ok(checks)) => render! {
+                            Some(Ok(checks)) => rsx! {
                                 if checks.iter().all(|check| check.result.green()) {
                                     "✅"
                                 } else {
                                     "❌"
                                 }
                             },
-                            Some(Err(err)) => render! { "{err}" },
-                            None => render! { Loader {} },
+                            Some(Err(err)) => rsx! { "{err}" },
+                            None => rsx! { Loader {} },
                         }
                     }
                 }
@@ -85,11 +85,11 @@ fn TopBar(cx: Scope) -> Element {
                     span {
                         "Nix "
                         match (*nix_info).current_value() {
-                            Some(Ok(info)) => render! {
+                            Some(Ok(info)) => rsx! {
                                 "{info.nix_version} on {info.nix_env.os}"
                             },
-                            Some(Err(err)) => render! { "{err}" },
-                            None => render! { Loader {} },
+                            Some(Err(err)) => rsx! { "{err}" },
+                            None => rsx! { Loader {} },
                         }
                     }
                 }
@@ -100,9 +100,9 @@ fn TopBar(cx: Scope) -> Element {
 
 /// Intended to refresh the data behind the current route.
 #[component]
-fn ViewRefreshButton(cx: Scope) -> Element {
-    let state = AppState::use_state(cx);
-    let (busy, refresh_signal) = match use_route(cx).unwrap() {
+fn ViewRefreshButton() -> Element {
+    let state = use_context::<AppState>();
+    let (busy, mut refresh_signal) = match use_route::<Route>() {
         Route::Flake {} => Some((
             state.flake.read().is_loading_or_refreshing(),
             state.flake_refresh,
@@ -117,9 +117,9 @@ fn ViewRefreshButton(cx: Scope) -> Element {
         )),
         _ => None,
     }?;
-    render! {
+    rsx! {
         RefreshButton {
-            busy: busy,
+            busy,
             handler: move |_| {
                 refresh_signal.write().request_refresh();
             }
@@ -128,19 +128,21 @@ fn ViewRefreshButton(cx: Scope) -> Element {
 }
 
 #[component]
-fn Footer(cx: Scope) -> Element {
-    render! {
+fn Footer() -> Element {
+    rsx! {
         footer { class: "flex flex-row justify-center w-full bg-primary-100 p-2",
-            a { href: "https://github.com/juspay/nix-browser", img { src: "images/128x128.png", class: "h-4" } }
+            a { href: "https://github.com/juspay/nix-browser",
+                img { src: "images/128x128.png", class: "h-4" }
+            }
         }
     }
 }
 
 // Home page
-fn Dashboard(cx: Scope) -> Element {
+fn Dashboard() -> Element {
     tracing::debug!("Rendering Dashboard page");
-    let state = AppState::use_state(cx);
-    render! {
+    let state = use_context::<AppState>();
+    rsx! {
         div { class: "pl-4",
             h2 { class: "text-2xl", "Enter a flake URL:" }
             // TODO: search input here
@@ -150,8 +152,8 @@ fn Dashboard(cx: Scope) -> Element {
                 for flake_url in state.flake_cache.read().recent_flakes() {
                     a {
                         onclick: move |_| {
-                            let state = AppState::use_state(cx);
-                            let nav = use_navigator(cx);
+                            let mut state = use_context::<AppState>();
+                            let nav = use_navigator();
                             state.set_flake_url(flake_url.clone());
                             nav.replace(Route::Flake {});
                         },
