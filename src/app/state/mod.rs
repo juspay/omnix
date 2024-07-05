@@ -5,8 +5,7 @@ mod db;
 mod error;
 mod refresh;
 
-use dioxus::hooks::use_resource;
-use dioxus::prelude::{use_context, use_context_provider};
+use dioxus::prelude::{spawn, use_context, use_context_provider};
 use dioxus_signals::Readable;
 use dioxus_signals::Signal;
 use dioxus_signals::Writable;
@@ -98,7 +97,7 @@ impl AppState {
             let flake_cache = self.flake_cache;
             let mut flake_refresh = self.flake_refresh;
             let mut flake = self.flake;
-            use_resource(move || async move {
+            spawn(async move {
                 if let Some(flake_url) = flake_url.read().clone() {
                     let maybe_flake = flake_cache.read().get(&flake_url);
                     if let Some(cached_flake) = maybe_flake {
@@ -113,7 +112,7 @@ impl AppState {
             let flake_url = self.flake_url;
             let mut flake = self.flake;
             let mut flake_cache = self.flake_cache;
-            use_resource(move || async move {
+            spawn(async move {
                 let flake_url = flake_url.read().clone();
                 if let Some(flake_url) = flake_url {
                     let flake_url_2 = flake_url.clone();
@@ -138,7 +137,7 @@ impl AppState {
             let nix_info = self.nix_info;
             let refresh = *self.health_checks_refresh.read();
             let mut health_checks = self.health_checks;
-            use_resource(move || async move {
+            spawn(async move {
                 let nix_info = nix_info.read().clone();
                 if let Some(nix_info) = nix_info.current_value().map(|x| {
                     x.as_ref()
@@ -159,7 +158,7 @@ impl AppState {
         {
             let refresh = *self.nix_info_refresh.read();
             let mut nix_info = self.nix_info;
-            use_resource(move || async move {
+            spawn(async move {
                 tracing::info!("Updating nix info [{}] ...", refresh);
                 Datum::refresh_with(&mut nix_info, async {
                     NixInfo::from_nix(&nix_rs::command::NixCmd::default())
