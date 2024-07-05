@@ -6,8 +6,7 @@ mod app;
 mod cli;
 mod logging;
 
-#[tokio::main]
-async fn main() {
+fn main() {
     use clap::Parser;
     let args = crate::cli::Args::parse();
     crate::logging::setup_logging(&args.verbosity);
