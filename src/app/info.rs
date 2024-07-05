@@ -14,7 +14,7 @@ pub fn Info() -> Element {
     let state = AppState::use_state();
     let nix_info = state.nix_info.read();
     rsx! {
-        h1 { class: "text-5xl font-bold", title }
+        h1 { class: "text-5xl font-bold", title: title }
         if nix_info.is_loading_or_refreshing() {
             Loader {}
         }
@@ -46,7 +46,9 @@ fn NixInfoView(info: NixInfo) -> Element {
 
 #[component]
 fn NixVersionView(version: NixVersion) -> Element {
-    rsx! {a { href: nix_rs::refs::RELEASE_HISTORY, class: "font-mono hover:underline", target: "_blank", "{version}" }}
+    rsx! {
+        a { href: nix_rs::refs::RELEASE_HISTORY, class: "font-mono hover:underline", target: "_blank", "{version}" }
+    }
 }
 
 #[component]

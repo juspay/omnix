@@ -178,7 +178,7 @@ pub fn FlakeOutputsRawView(outs: FlakeOutputs) -> Element {
     fn ValView(val: Val) -> Element {
         rsx! {
             span {
-                b { { val.name.clone()  }}
+                b { { val.name.clone()  } }
                 " ("
                 TypeView { type_: val.type_ }
                 ") "

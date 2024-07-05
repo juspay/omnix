@@ -17,7 +17,7 @@ pub fn RefreshButton<F: 'static + FnMut(Event<MouseData>)>(busy: bool, mut handl
                 }
             },
             title: "Refresh current data being viewed",
-            LoaderIcon {loading: busy}
+            LoaderIcon { loading: busy }
         }
     }
 }

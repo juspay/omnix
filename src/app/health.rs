@@ -11,7 +11,7 @@ pub fn Health() -> Element {
     let health_checks = state.health_checks.read();
     let title = "Nix Health";
     rsx! {
-        h1 { class: "text-5xl font-bold", title }
+        h1 { class: "text-5xl font-bold", title: title }
         if health_checks.is_loading_or_refreshing() {
             Loader {}
         }
@@ -38,7 +38,9 @@ fn ViewCheck(check: Check) -> Element {
                     { check.title.clone() }
                 }
                 div { class: "p-4",
-                    div { class: "p-2 my-2 font-mono text-sm bg-black text-base-100", { check.info.clone() } }
+                    div { class: "p-2 my-2 font-mono text-sm bg-black text-base-100",
+                        { check.info.clone() }
+                    }
                     div { class: "flex flex-col justify-start space-y-4",
                         match check.result.clone() {
                             CheckResult::Green => rsx! { "" },
