@@ -38,6 +38,9 @@ doc:
 ci:
     nixci
 
+clippy:
+    cargo clippy --release --locked --all-targets --all-features -- --deny warnings
+
 # Setup node_modules using Nix (invoked automatically by nix-shell)
 node_modules NODE_PATH:
     rm -f ./e2e/node_modules
