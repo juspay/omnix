@@ -8,11 +8,11 @@ use dioxus::prelude::*;
 ///
 /// You want to use [crate::state::datum] for this.
 #[component]
-pub fn RefreshButton<F>(cx: Scope, busy: bool, handler: F) -> Element
+pub fn RefreshButton<F>(busy: bool, handler: F) -> Element
 where
     F: Fn(Event<MouseData>),
 {
-    render! {
+    rsx! {
         button {
             disabled: *busy,
             onclick: move |evt| {
@@ -21,7 +21,7 @@ where
                 }
             },
             title: "Refresh current data being viewed",
-            render! { LoaderIcon {loading: *busy} }
+            { LoaderIcon {loading: *busy} }
         }
     }
 }
@@ -33,14 +33,14 @@ where
 /// NOTE(for future): When migrating to Dioxus using Tauri 2.0, switch to using
 /// https://github.com/tauri-apps/tauri-plugin-dialog
 #[component]
-pub fn FolderDialogButton<F>(cx: Scope, handler: F) -> Element
+pub fn FolderDialogButton<F>(handler: F) -> Element
 where
     F: Fn(PathBuf),
 {
     // FIXME: The id should be unique if this widget is used multiple times on
     // the same page.
     let id = "folder-dialog-input";
-    render! {
+    rsx! {
         input {
             r#type: "file",
             multiple: false,
@@ -81,8 +81,8 @@ fn get_selected_path(evt: Event<FormData>) -> Option<PathBuf> {
 }
 
 #[component]
-pub fn Loader(cx: Scope) -> Element {
-    render! {
+pub fn Loader() -> Element {
+    rsx! {
         div { class: "flex justify-center items-center",
             div { class: "animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-500" }
         }
@@ -90,13 +90,13 @@ pub fn Loader(cx: Scope) -> Element {
 }
 
 #[component]
-pub fn LoaderIcon(cx: Scope, loading: bool) -> Element {
+pub fn LoaderIcon(loading: bool) -> Element {
     let cls = if *loading {
         "animate-spin text-base-800"
     } else {
         "text-primary-700 hover:text-primary-500"
     };
-    render! {
+    rsx! {
         div { class: cls,
             svg {
                 class: "h-6 w-6 scale-x-[-1]",
@@ -121,8 +121,8 @@ pub fn LoaderIcon(cx: Scope, loading: bool) -> Element {
 /// can get long in this component.
 #[component]
 #[allow(dead_code)] // https://github.com/juspay/nix-browser/issues/132
-pub fn Scrollable<'a>(cx: Scope, children: Element<'a>) -> Element {
-    render! {
-        div { class: "overflow-auto", children }
+pub fn Scrollable(children: Element) -> Element {
+    rsx! {
+        div { class: "overflow-auto", {{ children }} }
     }
 }

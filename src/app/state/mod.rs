@@ -45,10 +45,10 @@ pub struct AppState {
 }
 
 impl AppState {
-    fn new(cx: Scope) -> Self {
+    fn new() -> Self {
         tracing::info!("🔨 Creating new AppState");
         // TODO: Should we use new_synced_storage, instead? To allow multiple app windows?
-        let flake_cache = db::FlakeCache::new_signal(cx);
+        let flake_cache = db::FlakeCache::new_signal();
         AppState {
             flake_cache,
             ..AppState::default()
@@ -56,15 +56,15 @@ impl AppState {
     }
 
     /// Get the [AppState] from context
-    pub fn use_state(cx: Scope) -> Self {
-        *use_context::<Self>(cx).unwrap()
+    pub fn use_state() -> Self {
+        *use_context::<Self>().unwrap()
     }
 
-    pub fn provide_state(cx: Scope) {
+    pub fn provide_state() {
         tracing::debug!("🏗️ Providing AppState");
-        let state = *use_context_provider(cx, || Self::new(cx));
+        let state = *use_context_provider(|| Self::new());
         // FIXME: Can we avoid calling build_network multiple times?
-        state.build_network(cx);
+        state.build_network();
     }
 
     /// Return the [String] representation of the current [AppState::flake_url] value. If there is none, return empty string.
@@ -92,7 +92,7 @@ impl AppState {
         {
             // ... when [AppState::flake_url] changes.
             let flake_url = self.flake_url.read().clone();
-            use_future(cx, (&flake_url,), |(flake_url,)| async move {
+            use_resource((&flake_url,), |(flake_url,)| async move {
                 if let Some(flake_url) = flake_url {
                     let maybe_flake = self.flake_cache.read().get(&flake_url);
                     if let Some(cached_flake) = maybe_flake {
@@ -104,7 +104,7 @@ impl AppState {
             });
             // ... when refresh button is clicked.
             let refresh = *self.flake_refresh.read();
-            use_future(cx, (&refresh,), |(refresh,)| async move {
+            use_resource((&refresh,), |(refresh,)| async move {
                 let flake_url = self.flake_url.read().clone();
                 if let Some(flake_url) = flake_url {
                     let flake_url_2 = flake_url.clone();
@@ -128,30 +128,26 @@ impl AppState {
         {
             let nix_info = self.nix_info.read().clone();
             let refresh = *self.health_checks_refresh.read();
-            use_future(
-                cx,
-                (&nix_info, &refresh),
-                |(nix_info, refresh)| async move {
-                    if let Some(nix_info) = nix_info.current_value().map(|x| {
-                        x.as_ref()
-                            .map_err(|e| Into::<SystemError>::into(e.to_string()))
-                            .cloned()
-                    }) {
-                        tracing::info!("Updating nix health [{}] ...", refresh);
-                        Datum::refresh_with(self.health_checks, async move {
-                            let health_checks = NixHealth::default().run_checks(&nix_info?, None);
-                            Ok(health_checks)
-                        })
-                        .await;
-                    }
-                },
-            );
+            use_resource((&nix_info, &refresh), |(nix_info, refresh)| async move {
+                if let Some(nix_info) = nix_info.current_value().map(|x| {
+                    x.as_ref()
+                        .map_err(|e| Into::<SystemError>::into(e.to_string()))
+                        .cloned()
+                }) {
+                    tracing::info!("Updating nix health [{}] ...", refresh);
+                    Datum::refresh_with(self.health_checks, async move {
+                        let health_checks = NixHealth::default().run_checks(&nix_info?, None);
+                        Ok(health_checks)
+                    })
+                    .await;
+                }
+            });
         }
 
         // Build `state.nix_info`
         {
             let refresh = *self.nix_info_refresh.read();
-            use_future(cx, (&refresh,), |(refresh,)| async move {
+            use_resource(cx, (&refresh,), |(refresh,)| async move {
                 tracing::info!("Updating nix info [{}] ...", refresh);
                 Datum::refresh_with(self.nix_info, async {
                     NixInfo::from_nix(&nix_rs::command::NixCmd::default())

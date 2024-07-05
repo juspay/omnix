@@ -21,7 +21,7 @@ pub struct FlakeCache(HashMap<FlakeUrl, Option<(SystemTime, Flake)>>);
 
 impl FlakeCache {
     /// Create a new [Signal] for [FlakeCache] from [LocalStorage].
-    pub fn new_signal(cx: Scope) -> Signal<FlakeCache> {
+    pub fn new_signal() -> Signal<FlakeCache> {
         new_storage::<LocalStorage, _>(cx, "flake_cache".to_string(), || {
             tracing::warn!("📦 No flake cache found");
             let init = FlakeUrl::suggestions()
