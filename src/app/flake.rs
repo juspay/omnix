@@ -18,7 +18,7 @@ use crate::{
 
 #[component]
 pub fn Flake() -> Element {
-    let state = AppState::use_state();
+    let mut state = AppState::use_state();
     let flake = state.flake.read();
     let busy = (*flake).is_loading_or_refreshing();
     rsx! {

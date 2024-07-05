@@ -58,7 +58,7 @@ fn ViewCheck(check: Check) -> Element {
 
 #[component]
 pub fn CheckResultSummaryView(green: bool) -> Element {
-    if *green {
+    if green {
         rsx! { span { class: "text-green-500", "✓" } }
     } else {
         rsx! { span { class: "text-red-500", "✗" } }

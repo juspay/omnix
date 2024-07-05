@@ -102,7 +102,7 @@ fn TopBar() -> Element {
 #[component]
 fn ViewRefreshButton() -> Element {
     let state = AppState::use_state();
-    let (busy, refresh_signal) = match use_route() {
+    let (busy, mut refresh_signal) = match use_route() {
         Route::Flake {} => Some((
             state.flake.read().is_loading_or_refreshing(),
             state.flake_refresh,
@@ -150,7 +150,7 @@ fn Dashboard() -> Element {
                 for flake_url in state.flake_cache.read().recent_flakes() {
                     a {
                         onclick: move |_| {
-                            let state = AppState::use_state();
+                            let mut state = AppState::use_state();
                             let nav = use_navigator();
                             state.set_flake_url(flake_url.clone());
                             nav.replace(Route::Flake {});

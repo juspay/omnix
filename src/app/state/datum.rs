@@ -33,7 +33,7 @@ impl<T> Datum<T> {
         self.value.as_ref()
     }
 
-    pub async fn set_value(signal: Signal<Datum<T>>, value: T)
+    pub async fn set_value(signal: &mut Signal<Datum<T>>, value: T)
     where
         T: Send + Clone + 'static,
     {
@@ -43,7 +43,7 @@ impl<T> Datum<T> {
     /// Refresh the datum [Signal] using the given function
     ///
     /// If a previous refresh is still running, it will be cancelled.
-    pub async fn refresh_with<F>(signal: Signal<Datum<T>>, f: F) -> Option<T>
+    pub async fn refresh_with<F>(signal: &mut Signal<Datum<T>>, f: F) -> Option<T>
     where
         F: Future<Output = T> + Send + 'static,
         T: Send + Clone + 'static,

@@ -10,7 +10,7 @@ use dioxus::prelude::*;
 #[component]
 pub fn RefreshButton<F>(busy: bool, handler: F) -> Element
 where
-    F: Fn(Event<MouseData>),
+    F: FnMut(Event<MouseData>),
 {
     rsx! {
         button {
@@ -35,7 +35,7 @@ where
 #[component]
 pub fn FolderDialogButton<F>(handler: F) -> Element
 where
-    F: Fn(PathBuf) + 'static,
+    F: FnMut(PathBuf) + 'static,
 {
     // FIXME: The id should be unique if this widget is used multiple times on
     // the same page.
