@@ -66,7 +66,7 @@ fn NixConfigView(config: NixConfig) -> Element {
 }
 
 #[component]
-fn ConfigValList<T>(items: Vec<T>) -> Element
+fn ConfigValList<T: 'static + PartialEq>(items: Vec<T>) -> Element
 where
     T: Display,
 {

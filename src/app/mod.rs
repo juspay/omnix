@@ -118,12 +118,12 @@ fn ViewRefreshButton() -> Element {
         _ => None,
     }?;
     rsx! {
-        RefreshButton {
-            busy: busy,
-            handler: move |_| {
+        { RefreshButton (
+            busy,
+            move |_| {
                 refresh_signal.write().request_refresh();
             }
-        }
+        ) }
     }
 }
 

@@ -36,12 +36,12 @@ pub fn Flake() -> Element {
                 }
             }
             div { class: "ml-2 flex flex-col",
-                FolderDialogButton {
-                    handler: move |flake_path: PathBuf| {
+                { FolderDialogButton(
+                    move |flake_path: PathBuf| {
                         let url: FlakeUrl = flake_path.into();
                         state.set_flake_url(url);
                     }
-                }
+                ) }
             }
         }
         if flake.is_loading_or_refreshing() {
