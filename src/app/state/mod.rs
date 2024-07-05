@@ -135,7 +135,7 @@ impl AppState {
                     if let Some(nix_info) = nix_info.current_value().map(|x| {
                         x.as_ref()
                             .map_err(|e| Into::<SystemError>::into(e.to_string()))
-                            .map(|v| v.clone())
+                            .cloned()
                     }) {
                         tracing::info!("Updating nix health [{}] ...", refresh);
                         Datum::refresh_with(self.health_checks, async move {
