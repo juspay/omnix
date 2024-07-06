@@ -108,12 +108,13 @@ impl AppState {
                 }
             });
             // ... when refresh button is clicked.
-            let refresh = *self.flake_refresh.read();
+            let flake_refresh = self.flake_refresh;
             let flake_url = self.flake_url;
             let mut flake = self.flake;
             let mut flake_cache = self.flake_cache;
             let _ = use_resource(move || async move {
                 let flake_url = flake_url.read().clone();
+                let refresh = *flake_refresh.read();
                 if let Some(flake_url) = flake_url {
                     let flake_url_2 = flake_url.clone();
                     tracing::info!("Updating flake [{}] refresh={} ...", &flake_url, refresh);
@@ -135,10 +136,11 @@ impl AppState {
         // Build `state.health_checks`
         {
             let nix_info = self.nix_info;
-            let refresh = *self.health_checks_refresh.read();
+            let health_checks_refresh = self.health_checks_refresh;
             let mut health_checks = self.health_checks;
             let _ = use_resource(move || async move {
                 let nix_info = nix_info.read().clone();
+                let refresh = *health_checks_refresh.read();
                 if let Some(nix_info) = nix_info.current_value().map(|x| {
                     x.as_ref()
                         .map_err(|e| Into::<SystemError>::into(e.to_string()))
@@ -156,9 +158,10 @@ impl AppState {
 
         // Build `state.nix_info`
         {
-            let refresh = *self.nix_info_refresh.read();
             let mut nix_info = self.nix_info;
+            let nix_info_refresh = self.nix_info_refresh;
             let _ = use_resource(move || async move {
+                let refresh = *nix_info_refresh.read();
                 tracing::info!("Updating nix info [{}] ...", refresh);
                 Datum::refresh_with(&mut nix_info, async {
                     NixInfo::from_nix(&nix_rs::command::NixCmd::default())
