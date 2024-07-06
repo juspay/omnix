@@ -6,9 +6,7 @@ mod error;
 mod refresh;
 
 use dioxus::prelude::*;
-use dioxus_signals::Readable;
-use dioxus_signals::Signal;
-use dioxus_signals::Writable;
+use dioxus_signals::{Readable, Signal, Writable};
 use nix_health::NixHealth;
 use nix_rs::{
     flake::{url::FlakeUrl, Flake},
