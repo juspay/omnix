@@ -5,8 +5,8 @@ mod db;
 mod error;
 mod refresh;
 
-use dioxus::prelude::{use_context, use_context_provider, use_future, Scope};
-use dioxus_signals::Signal;
+use dioxus::prelude::*;
+use dioxus_signals::{Readable, Signal, Writable};
 use nix_health::NixHealth;
 use nix_rs::{
     flake::{url::FlakeUrl, Flake},
@@ -45,10 +45,10 @@ pub struct AppState {
 }
 
 impl AppState {
-    fn new(cx: Scope) -> Self {
+    fn new() -> Self {
         tracing::info!("🔨 Creating new AppState");
         // TODO: Should we use new_synced_storage, instead? To allow multiple app windows?
-        let flake_cache = db::FlakeCache::new_signal(cx);
+        let flake_cache = db::FlakeCache::new_signal();
         AppState {
             flake_cache,
             ..AppState::default()
@@ -56,15 +56,15 @@ impl AppState {
     }
 
     /// Get the [AppState] from context
-    pub fn use_state(cx: Scope) -> Self {
-        *use_context::<Self>(cx).unwrap()
+    pub fn use_state() -> Self {
+        use_context::<Self>()
     }
 
-    pub fn provide_state(cx: Scope) {
+    pub fn provide_state() {
         tracing::debug!("🏗️ Providing AppState");
-        let state = *use_context_provider(cx, || Self::new(cx));
+        let mut state = use_context_provider(Self::new);
         // FIXME: Can we avoid calling build_network multiple times?
-        state.build_network(cx);
+        state.build_network();
     }
 
     /// Return the [String] representation of the current [AppState::flake_url] value. If there is none, return empty string.
@@ -75,7 +75,7 @@ impl AppState {
             .map_or("".to_string(), |url| url.to_string())
     }
 
-    pub fn set_flake_url(&self, url: FlakeUrl) {
+    pub fn set_flake_url(&mut self, url: FlakeUrl) {
         tracing::info!("setting flake url to {}", &url);
         self.flake_url.set(Some(url));
     }
@@ -86,37 +86,44 @@ impl AppState {
     ///
     /// If a signal's value is dependent on another signal's value, you must
     /// define that relationship here.
-    fn build_network(self, cx: Scope) {
+    fn build_network(&mut self) {
         tracing::debug!("🕸️ Building AppState network");
         // Build `state.flake` signal dependent signals change
         {
             // ... when [AppState::flake_url] changes.
-            let flake_url = self.flake_url.read().clone();
-            use_future(cx, (&flake_url,), |(flake_url,)| async move {
-                if let Some(flake_url) = flake_url {
-                    let maybe_flake = self.flake_cache.read().get(&flake_url);
+            let flake_url = self.flake_url;
+            let flake_cache = self.flake_cache;
+            let mut flake_refresh = self.flake_refresh;
+            let mut flake = self.flake;
+            let _ = use_resource(move || async move {
+                if let Some(flake_url) = flake_url.read().clone() {
+                    let maybe_flake = flake_cache.read().get(&flake_url);
                     if let Some(cached_flake) = maybe_flake {
-                        Datum::set_value(self.flake, Ok(cached_flake)).await;
+                        Datum::set_value(&mut flake, Ok(cached_flake)).await;
                     } else {
-                        self.flake_refresh.write().request_refresh();
+                        flake_refresh.write().request_refresh();
                     }
                 }
             });
             // ... when refresh button is clicked.
-            let refresh = *self.flake_refresh.read();
-            use_future(cx, (&refresh,), |(refresh,)| async move {
-                let flake_url = self.flake_url.read().clone();
+            let flake_refresh = self.flake_refresh;
+            let flake_url = self.flake_url;
+            let mut flake = self.flake;
+            let mut flake_cache = self.flake_cache;
+            let _ = use_resource(move || async move {
+                let flake_url = flake_url.read().clone();
+                let refresh = *flake_refresh.read();
                 if let Some(flake_url) = flake_url {
                     let flake_url_2 = flake_url.clone();
                     tracing::info!("Updating flake [{}] refresh={} ...", &flake_url, refresh);
-                    let res = Datum::refresh_with(self.flake, async move {
+                    let res = Datum::refresh_with(&mut flake, async move {
                         Flake::from_nix(&nix_rs::command::NixCmd::default(), flake_url_2)
                             .await
                             .map_err(|e| Into::<SystemError>::into(e.to_string()))
                     })
                     .await;
                     if let Some(Ok(flake)) = res {
-                        self.flake_cache.with_mut(|cache| {
+                        flake_cache.with_mut(|cache| {
                             cache.update(flake_url, flake);
                         });
                     }
@@ -126,34 +133,35 @@ impl AppState {
 
         // Build `state.health_checks`
         {
-            let nix_info = self.nix_info.read().clone();
-            let refresh = *self.health_checks_refresh.read();
-            use_future(
-                cx,
-                (&nix_info, &refresh),
-                |(nix_info, refresh)| async move {
-                    if let Some(nix_info) = nix_info.current_value().map(|x| {
-                        x.as_ref()
-                            .map_err(|e| Into::<SystemError>::into(e.to_string()))
-                            .cloned()
-                    }) {
-                        tracing::info!("Updating nix health [{}] ...", refresh);
-                        Datum::refresh_with(self.health_checks, async move {
-                            let health_checks = NixHealth::default().run_checks(&nix_info?, None);
-                            Ok(health_checks)
-                        })
-                        .await;
-                    }
-                },
-            );
+            let nix_info = self.nix_info;
+            let health_checks_refresh = self.health_checks_refresh;
+            let mut health_checks = self.health_checks;
+            let _ = use_resource(move || async move {
+                let nix_info = nix_info.read().clone();
+                let refresh = *health_checks_refresh.read();
+                if let Some(nix_info) = nix_info.current_value().map(|x| {
+                    x.as_ref()
+                        .map_err(|e| Into::<SystemError>::into(e.to_string()))
+                        .cloned()
+                }) {
+                    tracing::info!("Updating nix health [{}] ...", refresh);
+                    Datum::refresh_with(&mut health_checks, async move {
+                        let health_checks = NixHealth::default().run_checks(&nix_info?, None);
+                        Ok(health_checks)
+                    })
+                    .await;
+                }
+            });
         }
 
         // Build `state.nix_info`
         {
-            let refresh = *self.nix_info_refresh.read();
-            use_future(cx, (&refresh,), |(refresh,)| async move {
+            let mut nix_info = self.nix_info;
+            let nix_info_refresh = self.nix_info_refresh;
+            let _ = use_resource(move || async move {
+                let refresh = *nix_info_refresh.read();
                 tracing::info!("Updating nix info [{}] ...", refresh);
-                Datum::refresh_with(self.nix_info, async {
+                Datum::refresh_with(&mut nix_info, async {
                     NixInfo::from_nix(&nix_rs::command::NixCmd::default())
                         .await
                         .map_err(|e| SystemError {

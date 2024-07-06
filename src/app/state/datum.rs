@@ -33,7 +33,7 @@ impl<T> Datum<T> {
         self.value.as_ref()
     }
 
-    pub async fn set_value(signal: Signal<Datum<T>>, value: T)
+    pub async fn set_value(signal: &mut Signal<Datum<T>>, value: T)
     where
         T: Send + Clone + 'static,
     {
@@ -43,7 +43,7 @@ impl<T> Datum<T> {
     /// Refresh the datum [Signal] using the given function
     ///
     /// If a previous refresh is still running, it will be cancelled.
-    pub async fn refresh_with<F>(signal: Signal<Datum<T>>, f: F) -> Option<T>
+    pub async fn refresh_with<F>(signal: &mut Signal<Datum<T>>, f: F) -> Option<T>
     where
         F: Future<Output = T> + Send + 'static,
         T: Send + Clone + 'static,
@@ -100,13 +100,13 @@ impl<T, E: Display> Datum<Result<T, E>> {
     /// The error message will be rendered appropriately. If the datum is
     /// unavailable, nothing will be rendered (loading state is rendered
     /// differently)
-    pub fn render_with<'a, F>(&self, cx: &'a Scoped<'a, ()>, component: F) -> Element<'a>
+    pub fn render_with<F>(&self, component: F) -> Element
     where
-        F: FnOnce(&T) -> Element<'a>,
+        F: FnOnce(&T) -> Element,
     {
         match self.current_value()? {
             Ok(value) => component(value),
-            Err(err) => render! {
+            Err(err) => rsx! {
                 div {
                     class: "p-4 my-1 text-left text-sm font-mono text-white bg-red-500 rounded",
                     "Error: {err}"
