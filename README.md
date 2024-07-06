@@ -47,7 +47,7 @@ nix run
 
 ### Rust desktop app
 
-We use [Dioxus](https://dioxuslabs.com/) to build the desktop app using web technologies. The yet to be released [dioxus-signals](https://github.com/DioxusLabs/dioxus/tree/master/packages/signals) package is also used for data reactivity.
+We use [Dioxus](https://dioxuslabs.com/) to build the desktop app using web technologies, as well as [dioxus-signals](https://github.com/DioxusLabs/dioxus/tree/master/packages/signals) for data reactivity.
 
 ### Styling
 
