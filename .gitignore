@@ -1,7 +1,7 @@
 /target
 /result
 /result-lib
-/dist
+dist
 .direnv
 
 /assets/tailwind.css
