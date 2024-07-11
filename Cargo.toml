@@ -1,40 +1,27 @@
-[package]
-edition = "2021"
-license = "AGPL-3.0-only"
-repository = "https://github.com/juspay/nix-browser"
-# If you change the name here, you must also do it in flake.nix (and run `cargo generate-lockfile` afterwards)
-name = "nix-browser"
-version = "0.1.0"
-homepage = "https://github.com/juspay/nix-browser"
-build = "build.rs"
+[workspace]
+resolver = "2"
 
-[dependencies]
+members = ["crates/nix-browser"]
+
+[workspace.dependencies]
 cfg-if = "1"
-clap = { version = "4.3", features = ["derive", "env"] }
+clap = "4.3"
 human-panic = "1.1.5"
 tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-subscriber = "0.3"
 nix_rs = "0.3.2"
 direnv = "0.1.1"
 nix_health = "0.3.0"
 thiserror = "1.0"
-serde = { version = "1.0.197", features = ["derive"] }
+serde = "1.0.197"
 serde_json = "1.0"
-serde_with = { version = "3.2", features = ["json"] }
-bytesize = { version = "1.3.0", features = ["serde"] }
+serde_with = "3.2"
+bytesize = "1.3.0"
 anyhow = "1.0.75"
 console_error_panic_hook = "0.1"
 console_log = "1"
 http = "0.2"
 regex = "1.9.3"
-tokio = { version = "1.33.0", features = ["full"] }
-uuid = { version = "1.3.0", features = ["serde", "v4", "js"] }
-dioxus = { version = "0.5.0", features = ["desktop"] }
-dioxus-desktop = "0.5.0"
-dioxus-router = "0.5.0"
-dioxus-signals = "0.5.0"
-dioxus-sdk = { version = "0.5.0", features = ["storage"] }
-fermi = { version = "0.4.3" }
-
-[package.metadata.docs.rs]
-all-features = true
+tokio = "1.33.0"
+uuid = "1.3.0"
+fermi = "0.4.3"
