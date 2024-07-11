@@ -69,7 +69,7 @@
       # Copy over assets for the desktop app to access
       installPhase =
         (oa.installPhase or "") + ''
-          cp -r ./assets/* $out/bin/
+          cp -r ./crates/nix-browser/assets/* $out/bin/
         '';
       postFixup =
         (oa.postFixup or "") + ''
