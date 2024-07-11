@@ -22,6 +22,8 @@
 
     rust-project = {
       crane.args = {
+        pname = "nix-browser";
+        version = "0.1.0";
         buildInputs = lib.optionals pkgs.stdenv.isLinux
           (with pkgs; [
             webkitgtk_4_1
@@ -67,7 +69,7 @@
       # Copy over assets for the desktop app to access
       installPhase =
         (oa.installPhase or "") + ''
-          cp -r ./assets/* $out/bin/
+          cp -r ./crates/nix-browser/assets/* $out/bin/
         '';
       postFixup =
         (oa.postFixup or "") + ''
@@ -76,10 +78,12 @@
           # So, `cd` to the directory containing assets (which is
           # `bin/`, per the installPhase above) before launching the
           # app.
-          wrapProgram $out/bin/${config.rust-project.cargoToml.package.name} \
+          wrapProgram $out/bin/${config.rust-project.crane.args.pname} \
             --chdir $out/bin
         '';
     });
+
+    cargo-doc-live.crateName = "nix-browser";
 
     devShells.rust = pkgs.mkShell {
       inputsFrom = [
