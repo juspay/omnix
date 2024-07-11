@@ -22,7 +22,7 @@ bundle $CI="true":
 watch $RUST_BACKTRACE="1":
     # XXX: hot reload doesn't work with tailwind
     # dx serve --hot-reload
-    dx serve
+    dx serve --bin nix-browser
 
 alias w := watch
 
