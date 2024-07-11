@@ -1,7 +1,8 @@
 /target
 /result
 /result-lib
-/dist
+dist
+/crates/nix-browser/dist
 .direnv
 
 /assets/tailwind.css

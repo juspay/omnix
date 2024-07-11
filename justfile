@@ -15,7 +15,7 @@ alias f := fmt
 # CI=true for https://github.com/tauri-apps/tauri/issues/3055#issuecomment-1624389208)
 bundle $CI="true":
     # HACK (change PWD): Until https://github.com/DioxusLabs/dioxus/issues/1283
-    cd assets && dx bundle --release
+    cd ./crates/nix-browser/assets && dx bundle --release
     nix run nixpkgs#lsd -- --tree ./dist/bundle/macos/nix-browser.app
 
 # Run the project locally
