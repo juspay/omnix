@@ -17,6 +17,7 @@ jobs:
       - name: Build
         run: |
           # Prep systems list
+          # https://github.com/srid/nixci/issues/83
           mkdir ~/systems
           echo '{ outputs = _: {}; }' > ~/systems/flake.nix
           echo '[ "${{ matrix.system }}" ]' > ~/systems/default.nix
