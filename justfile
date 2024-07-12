@@ -6,7 +6,7 @@ default:
 # Auto-format the source tree
 fmt:
     # Due a bug in dx fmt, we cannot run it on files using macros
-    find src/app/ -name \*.rs | grep -v state.rs | grep -v state/ | xargs -n1 sh -c 'echo "📔 $1"; dx fmt -f $1' sh
+    find crates/omnix-gui/src/app/ -name \*.rs | grep -v state.rs | grep -v state/ | xargs -n1 sh -c 'echo "📔 $1"; dx fmt -f $1' sh
     # Run treefmt *after* 'dx fmt' because the latter rewrites the former!
     treefmt
 
