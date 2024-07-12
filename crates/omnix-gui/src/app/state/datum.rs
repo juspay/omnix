@@ -107,8 +107,7 @@ impl<T, E: Display> Datum<Result<T, E>> {
         match self.current_value()? {
             Ok(value) => component(value),
             Err(err) => rsx! {
-                div {
-                    class: "p-4 my-1 text-left text-sm font-mono text-white bg-red-500 rounded",
+                div { class: "p-4 my-1 text-left text-sm font-mono text-white bg-red-500 rounded",
                     "Error: {err}"
                 }
             },
