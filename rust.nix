@@ -24,6 +24,7 @@
       crates = rec {
         "omnix-cli" = {
           path = ./crates/omnix-cli;
+          # TODO: maintain distinct buildInputs for each crate
           crane.args = { inherit (omnix-gui.crane.args) buildInputs nativeBuildInputs; };
           crane.extraBuildArgs.meta.description = "Command-line interface for Omnix";
         };
