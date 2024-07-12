@@ -22,7 +22,7 @@
 
     rust-project = {
       crane.args = {
-        pname = "nix-browser";
+        pname = "omnix-gui";
         version = "0.1.0";
         buildInputs = lib.optionals pkgs.stdenv.isLinux
           (with pkgs; [
@@ -48,7 +48,7 @@
           dioxus-cli
           pkgs.nix # cargo tests need nix
         ];
-        meta.description = "WIP: nix-browser";
+        meta.description = "Graphical user interface for Omnix";
       };
 
       src = lib.cleanSourceWith {
@@ -65,11 +65,11 @@
       };
     };
 
-    packages.default = self'.packages.nix-browser.overrideAttrs (oa: {
+    packages.default = self'.packages.omnix-gui.overrideAttrs (oa: {
       # Copy over assets for the desktop app to access
       installPhase =
         (oa.installPhase or "") + ''
-          cp -r ./crates/nix-browser/assets/* $out/bin/
+          cp -r ./crates/omnix-gui/assets/* $out/bin/
         '';
       postFixup =
         (oa.postFixup or "") + ''
@@ -83,11 +83,11 @@
         '';
     });
 
-    cargo-doc-live.crateName = "nix-browser";
+    cargo-doc-live.crateName = "omnix-gui";
 
     devShells.rust = pkgs.mkShell {
       inputsFrom = [
-        self'.devShells.nix-browser
+        self'.devShells.omnix-gui
       ];
       packages = with pkgs; [
         cargo-watch

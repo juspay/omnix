@@ -1,7 +1,7 @@
-# nix-browser
+# omnix
 
 > [!NOTE] 
-> 🚧 nix-browser is in active development. It aims to be a GUI app that motivates people towards adopting [Nix](https://nixos.asia/en/nix) on their own.
+> 🚧 omnix is in active development. It aims to be a supplement to the [Nix](https://nixos.asia/en/nix) interface to facilitate ease & adoption.
 
 ## Getting Started
 

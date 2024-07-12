@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
 
-members = ["crates/nix-browser"]
+members = ["crates/omnix-gui"]
 
 [workspace.dependencies]
 cfg-if = "1"

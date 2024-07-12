@@ -1,11 +1,11 @@
 [package]
 edition = "2021"
 license = "AGPL-3.0-only"
-repository = "https://github.com/juspay/nix-browser"
+repository = "https://github.com/juspay/omnix"
 # If you change the name here, you must also do it in flake.nix (and run `cargo generate-lockfile` afterwards)
-name = "nix-browser"
+name = "omnix-gui"
 version = "0.1.0"
-homepage = "https://github.com/juspay/nix-browser"
+homepage = "https://github.com/juspay/omnix"
 build = "build.rs"
 
 [dependencies]

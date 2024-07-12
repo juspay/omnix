@@ -15,14 +15,14 @@ alias f := fmt
 # CI=true for https://github.com/tauri-apps/tauri/issues/3055#issuecomment-1624389208)
 bundle $CI="true":
     # HACK (change PWD): Until https://github.com/DioxusLabs/dioxus/issues/1283
-    cd ./crates/nix-browser/assets && dx bundle --release
-    nix run nixpkgs#lsd -- --tree ./dist/bundle/macos/nix-browser.app
+    cd ./crates/omnix-gui/assets && dx bundle --release
+    nix run nixpkgs#lsd -- --tree ./dist/bundle/macos/omnix-gui.app
 
 # Run the project locally
 watch $RUST_BACKTRACE="1":
     # XXX: hot reload doesn't work with tailwind
     # dx serve --hot-reload
-    dx serve --bin nix-browser
+    dx serve --bin omnix-gui
 
 alias w := watch
 
