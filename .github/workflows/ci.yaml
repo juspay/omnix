@@ -15,4 +15,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build
-        run: nixci --extra-access-tokens ${{ secrets.GITHUB_TOKEN }} build --systems "${{ matrix.system }}"
+        run: |
+          # Prep systems list
+          mkdir ~/systems
+          echo '{ outputs = _: {}; }' > ~/systems/flake.nix
+          echo '[ "${{ matrix.system }}" ]' > ~/systems/default.nix
+
+          # Build all flake outputs
+          nixci \
+            --extra-access-tokens ${{ secrets.GITHUB_TOKEN }} \
+            build --systems "path:$HOME/systems"
