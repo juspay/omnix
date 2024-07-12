@@ -4,7 +4,7 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
     systems.url = "github:nix-systems/default";
 
-    rust-flake.url = "github:juspay/rust-flake";
+    rust-flake.url = "github:juspay/rust-flake/multicrate";
     treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
     process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
@@ -40,7 +40,7 @@
 
       perSystem = { config, self', pkgs, lib, system, ... }: {
         # Add your auto-formatters here.
-        # cf. https://numtide.github.io/treefmt/
+        # cf. https://nixos.asia/en/treefmt
         treefmt.config = {
           projectRootFile = "flake.nix";
           programs = {

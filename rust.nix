@@ -21,34 +21,44 @@
     ];
 
     rust-project = {
-      crane.args = {
-        pname = "omnix-gui";
-        version = "0.1.0";
-        buildInputs = lib.optionals pkgs.stdenv.isLinux
-          (with pkgs; [
-            webkitgtk_4_1
-            xdotool
-            pkg-config
-          ]) ++ lib.optionals pkgs.stdenv.isDarwin (
-          with pkgs.darwin.apple_sdk.frameworks; [
-            IOKit
-            Carbon
-            WebKit
-            Security
-            Cocoa
-            # Use newer SDK because some crates require it
-            # cf. https://github.com/NixOS/nixpkgs/pull/261683#issuecomment-1772935802
-            pkgs.darwin.apple_sdk_11_0.frameworks.CoreFoundation
-          ]
-        );
-        nativeBuildInputs = with pkgs;[
-          pkg-config
-          makeWrapper
-          tailwindcss
-          dioxus-cli
-          pkgs.nix # cargo tests need nix
-        ];
-        meta.description = "Graphical user interface for Omnix";
+      crates = {
+        "omnix-cli" = {
+          path = ./crates/omnix-cli;
+        };
+        "omnix-gui" = {
+          path = ./crates/omnix-gui;
+          crane = {
+            args = {
+              buildInputs = lib.optionals pkgs.stdenv.isLinux
+                (with pkgs; [
+                  webkitgtk_4_1
+                  xdotool
+                  pkg-config
+                ]) ++ lib.optionals pkgs.stdenv.isDarwin (
+                with pkgs.darwin.apple_sdk.frameworks; [
+                  IOKit
+                  Carbon
+                  WebKit
+                  Security
+                  Cocoa
+                  # Use newer SDK because some crates require it
+                  # cf. https://github.com/NixOS/nixpkgs/pull/261683#issuecomment-1772935802
+                  pkgs.darwin.apple_sdk_11_0.frameworks.CoreFoundation
+                ]
+              );
+              nativeBuildInputs = with pkgs;[
+                pkg-config
+                makeWrapper
+                tailwindcss
+                dioxus-cli
+                pkgs.nix # cargo tests need nix
+              ];
+            };
+            extraBuildArgs = {
+              meta.description = "Graphical user interface for Omnix";
+            };
+          };
+        };
       };
 
       src = lib.cleanSourceWith {
@@ -60,7 +70,7 @@
           (lib.hasInfix "/assets/" path) ||
           (lib.hasInfix "/css/" path) ||
           # Default filter from crane (allow .rs files)
-          (config.rust-project.crane.lib.filterCargoSources path type)
+          (config.rust-project.crane-lib.filterCargoSources path type)
         ;
       };
     };
@@ -78,7 +88,7 @@
           # So, `cd` to the directory containing assets (which is
           # `bin/`, per the installPhase above) before launching the
           # app.
-          wrapProgram $out/bin/${config.rust-project.crane.args.pname} \
+          wrapProgram $out/bin/${oa.pname} \
             --chdir $out/bin
         '';
     });
