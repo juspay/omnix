@@ -57,6 +57,10 @@
           ];
           packages = with pkgs; [
             just
+            cargo-watch
+            cargo-expand
+            cargo-nextest
+            config.process-compose.cargo-doc-live.outputs.package
             # For when we start using Tauri
             cargo-tauri
             trunk

@@ -21,9 +21,11 @@
     ];
 
     rust-project = {
-      crates = {
+      crates = rec {
         "omnix-cli" = {
           path = ./crates/omnix-cli;
+          crane.args = { inherit (omnix-gui.crane.args) buildInputs nativeBuildInputs; };
+          crane.extraBuildArgs.meta.description = "Command-line interface for Omnix";
         };
         "omnix-gui" = {
           path = ./crates/omnix-gui;
@@ -94,22 +96,5 @@
     });
 
     cargo-doc-live.crateName = "omnix-gui";
-
-    devShells.rust = pkgs.mkShell {
-      inputsFrom = [
-        self'.devShells.omnix-gui
-      ];
-      packages = with pkgs; [
-        cargo-watch
-        cargo-expand
-        cargo-nextest
-        config.process-compose.cargo-doc-live.outputs.package
-      ];
-      shellHook = ''
-        echo
-        echo "🍎🍎 Run 'just <recipe>' to get started"
-        just
-      '';
-    };
   };
 }
