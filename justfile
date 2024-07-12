@@ -20,7 +20,7 @@ bundle $CI="true":
 watch $RUST_BACKTRACE="1":
     # XXX: hot reload doesn't work with tailwind
     # dx serve --hot-reload
-    dx serve --bin omnix-gui
+    cd ./crates/omnix-gui && dx serve --bin omnix-gui
 
 alias w := watch
 
