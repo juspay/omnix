@@ -1,5 +1,3 @@
-export NIX_BROWSER_NO_OPEN := "true"
-
 default:
     @just --list
 
