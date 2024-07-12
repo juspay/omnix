@@ -22,10 +22,11 @@ pub struct Verbosity {
 impl Verbosity {
     /// Return the log filter for CLI flag.
     fn log_filter(&self) -> EnvFilter {
-        self.log_directives().iter().fold(
-            EnvFilter::from_env("OMNIX_LOG"),
-            |filter, directive| filter.add_directive(directive.clone()),
-        )
+        self.log_directives()
+            .iter()
+            .fold(EnvFilter::from_env("OMNIX_LOG"), |filter, directive| {
+                filter.add_directive(directive.clone())
+            })
     }
 
     fn log_directives(&self) -> Vec<Directive> {
