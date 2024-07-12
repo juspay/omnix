@@ -23,10 +23,27 @@
     rust-project = {
       crates = rec {
         "omnix-cli" = {
+          # TODO: Fix upstream to set this path automatically for us
+          # Currently that fails, by requiring --impure (!)
           path = ./crates/omnix-cli;
-          # TODO: maintain distinct buildInputs for each crate
-          crane.args = { inherit (omnix-gui.crane.args) buildInputs nativeBuildInputs; };
-          crane.extraBuildArgs.meta.description = "Command-line interface for Omnix";
+          crane = {
+            args = {
+              buildInputs = lib.optionals pkgs.stdenv.isLinux
+                (with pkgs; [
+                ]) ++ lib.optionals pkgs.stdenv.isDarwin (
+                with pkgs.darwin.apple_sdk.frameworks; [
+                  IOKit
+                ]
+              );
+              nativeBuildInputs = with pkgs;[
+                pkg-config
+              ];
+            };
+            extraBuildArgs = {
+              cargoExtraArgs = "-p omnix-cli"; # TODO: upstream!
+              meta.description = "Command-line interface for Omnix";
+            };
+          };
         };
         "omnix-gui" = {
           path = ./crates/omnix-gui;
@@ -58,6 +75,7 @@
               ];
             };
             extraBuildArgs = {
+              cargoExtraArgs = "-p omnix-gui"; # TODO: upstream!
               meta.description = "Graphical user interface for Omnix";
             };
           };
