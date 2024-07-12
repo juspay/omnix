@@ -79,6 +79,13 @@ impl AppState {
         tracing::info!("setting flake url to {}", &url);
         self.flake_url.set(Some(url));
     }
+
+    /// Empty flake related data (`flake_url` and `flake`)
+    pub fn empty_flake_data(&mut self) {
+        tracing::info!("empty flake data");
+        self.flake.set(Datum::default());
+        self.flake_url.set(None);
+    }
 }
 
 impl AppState {

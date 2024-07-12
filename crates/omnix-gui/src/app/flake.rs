@@ -28,7 +28,7 @@ pub fn Flake() -> Element {
                 class: "flex-1 w-full p-1 mb-4 font-mono",
                 id: "nix-flake-input",
                 "type": "text",
-                value: "{state.get_flake_url_string()}",
+                value: state.get_flake_url_string(),
                 disabled: busy,
                 onchange: move |ev| {
                     let url: FlakeUrl = ev.value().clone().into();

@@ -20,6 +20,8 @@ use crate::app::{
     widget::{Loader, RefreshButton},
 };
 
+use nix_rs::flake::url::FlakeUrl;
+
 #[derive(Routable, PartialEq, Debug, Clone)]
 #[rustfmt::skip]
 enum Route {
@@ -56,13 +58,26 @@ fn Wrapper() -> Element {
 
 #[component]
 fn TopBar() -> Element {
-    let state = AppState::use_state();
+    let nav = use_navigator();
+    let full_route = use_route::<Route>();
+    let isDashboard = full_route == Route::Dashboard {};
+    let mut state = AppState::use_state();
     let health_checks = state.health_checks.read();
     let nix_info = state.nix_info.read();
     rsx! {
         div { class: "flex justify-between items-center w-full p-2 bg-primary-100 shadow",
             div { class: "flex space-x-2",
-                Link { to: Route::Dashboard {}, "🏠" }
+                  a {
+                    onclick: move |_| {
+                      if !isDashboard {
+                        state.empty_flake_data();
+                        nav.replace(Route::Dashboard {});
+                      }
+                    },
+                    class: if isDashboard {"cursor-auto"},
+                    class: if !isDashboard {"cursor-pointer"},
+                      "🏠"
+                  }
             }
             div { class: "flex space-x-2",
                 ViewRefreshButton {}
@@ -139,19 +154,29 @@ fn Footer() -> Element {
 // Home page
 fn Dashboard() -> Element {
     tracing::debug!("Rendering Dashboard page");
-    let state = AppState::use_state();
+    let nav = use_navigator();
+    let mut state = AppState::use_state();
+    let busy = state.flake.read().is_loading_or_refreshing();
     rsx! {
         div { class: "pl-4",
             h2 { class: "text-2xl", "Enter a flake URL:" }
-            // TODO: search input here
-            p { "TODO: search input" }
+            input {
+              class: "w-2/3 p-1 mb-4 font-mono",
+              id: "nix-flake-input",
+              "type": "text",
+              value: "{state.get_flake_url_string()}",
+              disabled: busy,
+              onchange: move |ev| {
+                  let url: FlakeUrl = ev.value().clone().into();
+                  state.set_flake_url(url);
+                  nav.replace(Route::Flake {});
+              }
+            }
             h2 { class: "text-2xl", "Or, try one of these:" }
             div { class: "flex flex-col",
                 for flake_url in state.flake_cache.read().recent_flakes() {
                     a {
                         onclick: move |_| {
-                            let mut state = AppState::use_state();
-                            let nav = use_navigator();
                             state.set_flake_url(flake_url.clone());
                             nav.replace(Route::Flake {});
                         },
