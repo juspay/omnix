@@ -41,7 +41,6 @@
               ];
             };
             extraBuildArgs = {
-              cargoExtraArgs = "-p omnix-cli"; # TODO: upstream!
               meta.description = "Command-line interface for Omnix";
             };
           };
@@ -76,7 +75,6 @@
               ];
             };
             extraBuildArgs = {
-              cargoExtraArgs = "-p omnix-gui"; # TODO: upstream!
               meta.description = "Graphical user interface for Omnix";
             };
           };
