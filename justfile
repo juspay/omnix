@@ -3,9 +3,8 @@ default:
 
 # Auto-format the source tree
 fmt:
-    # Due a bug in dx fmt, we cannot run it on files using macros
-    find crates/omnix-gui/src/app/ -name \*.rs | grep -v state.rs | grep -v state/ | xargs -n1 sh -c 'echo "📔 $1"; dx fmt -f $1' sh
-    # Run treefmt *after* 'dx fmt' because the latter rewrites the former!
+    find crates/omnix-gui/src -name \*.rs | xargs -n1 sh -c 'echo "📔 $1"; dx fmt -f $1' sh
+    # Run treefmt *after* 'dx fmt' because the later rewrites the former!
     treefmt
 
 alias f := fmt
@@ -20,7 +19,7 @@ bundle $CI="true":
 watch $RUST_BACKTRACE="1":
     # XXX: hot reload doesn't work with tailwind
     # dx serve --hot-reload
-    dx serve --bin omnix-gui
+    cd ./crates/omnix-gui && dx serve --bin omnix-gui
 
 alias w := watch
 
