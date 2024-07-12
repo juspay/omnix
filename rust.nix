@@ -30,6 +30,7 @@
             args = {
               buildInputs = lib.optionals pkgs.stdenv.isLinux
                 (with pkgs; [
+                  pkg-config
                 ]) ++ lib.optionals pkgs.stdenv.isDarwin (
                 with pkgs.darwin.apple_sdk.frameworks; [
                   IOKit
