@@ -113,7 +113,7 @@ pub fn LoaderIcon(loading: bool) -> Element {
 /// Since our body container is `overflow-hidden`, we need to wrap content that
 /// can get long in this component.
 #[component]
-#[allow(dead_code)] // https://github.com/juspay/nix-browser/issues/132
+#[allow(dead_code)] // https://github.com/juspay/omnix/issues/132
 pub fn Scrollable(children: Element) -> Element {
     rsx! {
         div { class: "overflow-auto", { children } }

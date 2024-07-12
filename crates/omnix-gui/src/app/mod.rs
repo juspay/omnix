@@ -131,7 +131,7 @@ fn ViewRefreshButton() -> Element {
 fn Footer() -> Element {
     rsx! {
         footer { class: "flex flex-row justify-center w-full bg-primary-100 p-2",
-            a { href: "https://github.com/juspay/nix-browser", img { src: "images/128x128.png", class: "h-4" } }
+            a { href: "https://github.com/juspay/omnix", img { src: "images/128x128.png", class: "h-4" } }
         }
     }
 }

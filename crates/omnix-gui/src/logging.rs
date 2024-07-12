@@ -22,10 +22,11 @@ pub struct Verbosity {
 impl Verbosity {
     /// Return the log filter for CLI flag.
     fn log_filter(&self) -> EnvFilter {
-        self.log_directives().iter().fold(
-            EnvFilter::from_env("NIX_BROWSER_LOG"),
-            |filter, directive| filter.add_directive(directive.clone()),
-        )
+        self.log_directives()
+            .iter()
+            .fold(EnvFilter::from_env("OMNIX_LOG"), |filter, directive| {
+                filter.add_directive(directive.clone())
+            })
     }
 
     fn log_directives(&self) -> Vec<Directive> {
@@ -34,21 +35,21 @@ impl Verbosity {
             // Default
             0 => vec![
                 LevelFilter::WARN.into(),
-                "nix_browser=info".parse().unwrap(),
+                "omnix=info".parse().unwrap(),
                 "nix_rs=info".parse().unwrap(),
                 "nix_health=info".parse().unwrap(),
             ],
             // -v: log app DEBUG level, as well as http requests
             1 => vec![
                 LevelFilter::WARN.into(),
-                "nix_browser=debug".parse().unwrap(),
+                "omnix=debug".parse().unwrap(),
                 "nix_rs=debug".parse().unwrap(),
                 "nix_health=debug".parse().unwrap(),
             ],
             // -vv: log app TRACE level, as well as http requests
             2 => vec![
                 LevelFilter::WARN.into(),
-                "nix_browser=trace".parse().unwrap(),
+                "omnix=trace".parse().unwrap(),
                 "nix_rs=trace".parse().unwrap(),
                 "nix_health=trace".parse().unwrap(),
             ],

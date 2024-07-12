@@ -1,5 +1,4 @@
 {
-  description = "WIP: nix-browser";
   nixConfig = {
     # https://garnix.io/docs/caching
     extra-substituters = "https://cache.garnix.io";
@@ -55,7 +54,7 @@
         };
 
         devShells.default = pkgs.mkShell {
-          name = "nix-browser";
+          name = "omnix";
           inputsFrom = [
             config.treefmt.build.devShell
             self'.devShells.rust

@@ -2732,38 +2732,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "nix-browser"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "bytesize",
- "cfg-if",
- "clap",
- "console_error_panic_hook",
- "console_log",
- "dioxus",
- "dioxus-desktop",
- "dioxus-router",
- "dioxus-sdk",
- "dioxus-signals",
- "direnv",
- "fermi",
- "http 0.2.11",
- "human-panic",
- "nix_health",
- "nix_rs",
- "regex",
- "serde",
- "serde_json",
- "serde_with",
- "thiserror",
- "tokio",
- "tracing",
- "tracing-subscriber",
- "uuid",
-]
-
-[[package]]
 name = "nix_health"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2924,6 +2892,38 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9cf5f9dd3933bd50a9e1f149ec995f39ae2c496d31fd772c1fd45ebc27e902b0"
 dependencies = [
  "memchr",
+]
+
+[[package]]
+name = "omnix-gui"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "bytesize",
+ "cfg-if",
+ "clap",
+ "console_error_panic_hook",
+ "console_log",
+ "dioxus",
+ "dioxus-desktop",
+ "dioxus-router",
+ "dioxus-sdk",
+ "dioxus-signals",
+ "direnv",
+ "fermi",
+ "http 0.2.11",
+ "human-panic",
+ "nix_health",
+ "nix_rs",
+ "regex",
+ "serde",
+ "serde_json",
+ "serde_with",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "uuid",
 ]
 
 [[package]]

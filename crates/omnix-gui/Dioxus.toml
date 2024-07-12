@@ -1,11 +1,11 @@
 [application]
-name = "nix-browser"
+name = "omnix-gui"
 default_platform = "desktop"
 out_dir = "dist"
 asset_dir = "assets"
 
 [web.app]
-title = "nix-browser | 🌍"
+title = "Omnix | 🌍"
 
 [web.watcher]
 # when watcher trigger, regenerate the `index.html`
@@ -27,15 +27,15 @@ script = []
 
 # FIXME: Need to `cd assets` before running `dx bundle` due to https://github.com/DioxusLabs/dioxus/issues/1283
 [bundle]
-name = "Nix Browser"
-identifier = "in.juspay.nix-browser"
-icon = ["images/128x128.png"]        # ["32x32.png", "128x128.png", "128x128@2x.png"]
+name = "Omnix"
+identifier = "in.juspay.omnix"
+icon = ["images/128x128.png"]  # ["32x32.png", "128x128.png", "128x128@2x.png"]
 version = "1.0.0"
 # TODO: Must add these files
 resources = ["**/tailwind.css", "images/**/*.png"] # , "secrets/public_key.txt"]
 copyright = "Copyright (c) Juspay 2023. All rights reserved."
 category = "Developer Tool"
-short_description = "WIP: nix-browser"
+short_description = "Graphical user interface for Omnix"
 long_description = """
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
 eiusmod tempor incididunt ut labore et dolore magna aliqua.  Ut
