@@ -102,22 +102,6 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1715447595,
-        "narHash": "sha256-VsVAUQOj/cS1LCOmMjAGeRksXIAdPnFIjCQ0XLkCsT0=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "062ca2a9370a27a35c524dc82d540e6e9824b652",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "ref": "nixos-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs_3": {
-      "locked": {
         "lastModified": 1706487304,
         "narHash": "sha256-LE8lVX28MV2jWJsidW13D2qrHU/RUUONendL2Q/WlJg=",
         "owner": "NixOS",
@@ -161,15 +145,17 @@
     "rust-flake": {
       "inputs": {
         "crane": "crane",
-        "nixpkgs": "nixpkgs_2",
+        "nixpkgs": [
+          "nixpkgs"
+        ],
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1720826927,
-        "narHash": "sha256-WpfCuWUqHmFfF1xUH4nhhYVu++v8ZClI+1ewjANEDqw=",
+        "lastModified": 1720839679,
+        "narHash": "sha256-JR4MqTfpPjCgqqVZX+sUZjkgVO8XiIBCcLDPbD3s5tI=",
         "owner": "juspay",
         "repo": "rust-flake",
-        "rev": "27755f837468bd9e84788e63b90886612dec9549",
+        "rev": "9edd71df9fc0980892871d92a36db6d9096ffe3a",
         "type": "github"
       },
       "original": {
@@ -182,7 +168,7 @@
     "rust-overlay": {
       "inputs": {
         "flake-utils": "flake-utils",
-        "nixpkgs": "nixpkgs_3"
+        "nixpkgs": "nixpkgs_2"
       },
       "locked": {
         "lastModified": 1715480255,

@@ -5,6 +5,7 @@
     systems.url = "github:nix-systems/default";
 
     rust-flake.url = "github:juspay/rust-flake/multicrate";
+    rust-flake.inputs.nixpkgs.follows = "nixpkgs";
     treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
     process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";

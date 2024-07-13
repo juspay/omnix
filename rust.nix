@@ -21,11 +21,8 @@
     ];
 
     rust-project = {
-      crates = rec {
+      crates = {
         "omnix-cli" = {
-          # TODO: Fix upstream to set this path automatically for us
-          # Currently that fails, by requiring --impure (!)
-          path = ./crates/omnix-cli;
           crane = {
             args = {
               buildInputs = lib.optionals pkgs.stdenv.isLinux
@@ -39,14 +36,11 @@
               nativeBuildInputs = with pkgs;[
                 pkg-config
               ];
-            };
-            extraBuildArgs = {
               meta.description = "Command-line interface for Omnix";
             };
           };
         };
         "omnix-gui" = {
-          path = ./crates/omnix-gui;
           crane = {
             args = {
               buildInputs = lib.optionals pkgs.stdenv.isLinux
@@ -73,8 +67,6 @@
                 dioxus-cli
                 pkgs.nix # cargo tests need nix
               ];
-            };
-            extraBuildArgs = {
               meta.description = "Graphical user interface for Omnix";
             };
           };
