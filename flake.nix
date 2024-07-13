@@ -5,6 +5,7 @@
     systems.url = "github:nix-systems/default";
 
     rust-flake.url = "github:juspay/rust-flake";
+    rust-flake.inputs.nixpkgs.follows = "nixpkgs";
     treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
     process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
@@ -40,7 +41,7 @@
 
       perSystem = { config, self', pkgs, lib, system, ... }: {
         # Add your auto-formatters here.
-        # cf. https://numtide.github.io/treefmt/
+        # cf. https://nixos.asia/en/treefmt
         treefmt.config = {
           projectRootFile = "flake.nix";
           programs = {
@@ -57,6 +58,10 @@
           ];
           packages = with pkgs; [
             just
+            cargo-watch
+            cargo-expand
+            cargo-nextest
+            config.process-compose.cargo-doc-live.outputs.package
             # For when we start using Tauri
             cargo-tauri
             trunk
