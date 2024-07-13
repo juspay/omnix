@@ -1,15 +1,11 @@
 {
-  nixConfig = {
-    # https://garnix.io/docs/caching
-    extra-substituters = "https://cache.garnix.io";
-    extra-trusted-public-keys = "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=";
-  };
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";
     systems.url = "github:nix-systems/default";
 
     rust-flake.url = "github:juspay/rust-flake";
+    rust-flake.inputs.nixpkgs.follows = "nixpkgs";
     treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
     process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
@@ -32,7 +28,8 @@
       flake = {
         nix-health.default = {
           nix-version.min-required = "2.16.0";
-          caches.required = [ "https://cache.garnix.io" ];
+          # We don't use a Nix cache yet
+          # caches.required = [ "https://cache.juspay.dev" ];
           direnv.required = true;
           system = {
             # required = true;
@@ -44,7 +41,7 @@
 
       perSystem = { config, self', pkgs, lib, system, ... }: {
         # Add your auto-formatters here.
-        # cf. https://numtide.github.io/treefmt/
+        # cf. https://nixos.asia/en/treefmt
         treefmt.config = {
           projectRootFile = "flake.nix";
           programs = {
@@ -61,6 +58,10 @@
           ];
           packages = with pkgs; [
             just
+            cargo-watch
+            cargo-expand
+            cargo-nextest
+            config.process-compose.cargo-doc-live.outputs.package
             # For when we start using Tauri
             cargo-tauri
             trunk
