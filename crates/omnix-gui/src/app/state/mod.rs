@@ -77,8 +77,6 @@ impl AppState {
 
     pub fn set_flake_url(&mut self, url: FlakeUrl) {
         tracing::info!("setting flake url to {}", &url);
-        // empty flake data before setting new `flake_url`
-        self.flake.set(Datum::default());
         self.flake_url.set(Some(url));
     }
 
