@@ -1,2 +1,2 @@
 flake.lock linguist-generated=true
-assets/tailwind.css linguist-generated=true
+crates/omnix-gui/assets/tailwind.css linguist-generated=true

@@ -22,7 +22,7 @@
         inputs.cargo-doc-live.flakeModule
         inputs.rust-flake.flakeModules.default
         inputs.rust-flake.flakeModules.nixpkgs
-        ./rust.nix
+        ./nix/rust.nix
       ];
 
       flake = {
