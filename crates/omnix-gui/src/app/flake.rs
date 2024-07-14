@@ -3,7 +3,7 @@
 use std::{collections::BTreeMap, path::PathBuf};
 
 use dioxus::prelude::*;
-use dioxus_router::prelude::Link;
+use dioxus_router::components::Link;
 use nix_rs::flake::{
     outputs::{FlakeOutputs, Type, Val},
     schema::FlakeSchema,
@@ -18,36 +18,44 @@ use crate::{
 
 #[component]
 pub fn Flake() -> Element {
-    let mut state = AppState::use_state();
+    let state = AppState::use_state();
     let flake = state.flake.read();
-    let busy = (*flake).is_loading_or_refreshing();
     rsx! {
         h1 { class: "text-5xl font-bold", "Flake browser" }
+        { FlakeInput() },
+        if flake.is_loading_or_refreshing() {
+            Loader {}
+        }
+        { flake.render_with(|v| rsx! { FlakeView { flake: v.clone() } }) }
+    }
+}
+
+#[component]
+pub fn FlakeInput() -> Element {
+    let state = AppState::use_state();
+    let busy = state.flake.read().is_loading_or_refreshing();
+    rsx! {
         div { class: "p-2 my-1 flex w-full",
             input {
                 class: "flex-1 w-full p-1 mb-4 font-mono",
                 id: "nix-flake-input",
                 "type": "text",
-                value: "{state.get_flake_url_string()}",
+                value: state.get_flake_url_string(),
                 disabled: busy,
                 onchange: move |ev| {
                     let url: FlakeUrl = ev.value().clone().into();
-                    state.set_flake_url(url);
+                    Route::go_to_flake(url);
                 }
             }
             div { class: "ml-2 flex flex-col",
                 { FolderDialogButton(
                     move |flake_path: PathBuf| {
                         let url: FlakeUrl = flake_path.into();
-                        state.set_flake_url(url);
+                        Route::go_to_flake(url);
                     }
                 ) }
             }
         }
-        if flake.is_loading_or_refreshing() {
-            Loader {}
-        }
-        { flake.render_with(|v| rsx! { FlakeView { flake: v.clone() } }) }
     }
 }
 

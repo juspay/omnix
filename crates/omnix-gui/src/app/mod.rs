@@ -11,6 +11,7 @@ mod widget;
 
 use dioxus::prelude::*;
 use dioxus_router::prelude::*;
+use nix_rs::flake::url::FlakeUrl;
 
 use crate::app::{
     flake::{Flake, FlakeRaw},
@@ -36,6 +37,18 @@ enum Route {
         Info {},
 }
 
+impl Route {
+    fn go_to_flake(url: FlakeUrl) {
+        AppState::use_state().set_flake_url(url);
+        use_navigator().replace(Route::Flake {});
+    }
+
+    fn go_to_dashboard() {
+        AppState::use_state().reset_flake_data();
+        use_navigator().replace(Route::Dashboard {});
+    }
+}
+
 /// Main frontend application container
 pub fn App() -> Element {
     AppState::provide_state();
@@ -56,13 +69,22 @@ fn Wrapper() -> Element {
 
 #[component]
 fn TopBar() -> Element {
+    let is_dashboard = use_route::<Route>() == Route::Dashboard {};
     let state = AppState::use_state();
     let health_checks = state.health_checks.read();
     let nix_info = state.nix_info.read();
     rsx! {
         div { class: "flex justify-between items-center w-full p-2 bg-primary-100 shadow",
             div { class: "flex space-x-2",
-                Link { to: Route::Dashboard {}, "🏠" }
+                a {
+                    onclick: move |_| {
+                        if !is_dashboard {
+                            Route::go_to_dashboard();
+                        }
+                    },
+                    class: if is_dashboard { "cursor-auto" } else { "cursor-pointer" },
+                    "🏠"
+                }
             }
             div { class: "flex space-x-2",
                 ViewRefreshButton {}
@@ -143,17 +165,13 @@ fn Dashboard() -> Element {
     rsx! {
         div { class: "pl-4",
             h2 { class: "text-2xl", "Enter a flake URL:" }
-            // TODO: search input here
-            p { "TODO: search input" }
+            { flake::FlakeInput () },
             h2 { class: "text-2xl", "Or, try one of these:" }
             div { class: "flex flex-col",
                 for flake_url in state.flake_cache.read().recent_flakes() {
                     a {
                         onclick: move |_| {
-                            let mut state = AppState::use_state();
-                            let nav = use_navigator();
-                            state.set_flake_url(flake_url.clone());
-                            nav.replace(Route::Flake {});
+                            Route::go_to_flake(flake_url.clone());
                         },
                         class: "cursor-pointer text-primary-600 underline hover:no-underline",
                         "{flake_url.clone()}"
