@@ -4,12 +4,11 @@ use dioxus_desktop::{LogicalSize, WindowBuilder};
 
 mod app;
 mod cli;
-mod logging;
 
 fn main() {
     use clap::Parser;
     let args = crate::cli::Args::parse();
-    crate::logging::setup_logging(&args.verbosity);
+    omnix::logging::setup_logging(&args.verbosity);
 
     // Set data directory for persisting [Signal]s. On macOS, this is ~/Library/Application Support/omnix-gui.
     dioxus_sdk::storage::set_dir!();
