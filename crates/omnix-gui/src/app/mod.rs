@@ -161,8 +161,7 @@ fn Footer() -> Element {
 // Home page
 fn Dashboard() -> Element {
     tracing::debug!("Rendering Dashboard page");
-    let nav = use_navigator();
-    let mut state = AppState::use_state();
+    let state = AppState::use_state();
     rsx! {
         div { class: "pl-4",
             h2 { class: "text-2xl", "Enter a flake URL:" }
@@ -172,8 +171,7 @@ fn Dashboard() -> Element {
                 for flake_url in state.flake_cache.read().recent_flakes() {
                     a {
                         onclick: move |_| {
-                            state.set_flake_url(flake_url.clone());
-                            nav.replace(Route::Flake {});
+                            Route::go_to_flake(flake_url.clone());
                         },
                         class: "cursor-pointer text-primary-600 underline hover:no-underline",
                         "{flake_url.clone()}"
