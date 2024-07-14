@@ -12,6 +12,8 @@ mod widget;
 use dioxus::prelude::*;
 use dioxus_router::prelude::*;
 
+use nix_rs::flake::url::FlakeUrl;
+
 use crate::app::{
     flake::{Flake, FlakeRaw},
     health::Health,
@@ -19,8 +21,6 @@ use crate::app::{
     state::AppState,
     widget::{Loader, RefreshButton},
 };
-
-use nix_rs::flake::url::FlakeUrl;
 
 #[derive(Routable, PartialEq, Debug, Clone)]
 #[rustfmt::skip]
@@ -60,24 +60,23 @@ fn Wrapper() -> Element {
 fn TopBar() -> Element {
     let nav = use_navigator();
     let full_route = use_route::<Route>();
-    let isDashboard = full_route == Route::Dashboard {};
+    let is_dashboard = full_route == Route::Dashboard {};
     let mut state = AppState::use_state();
     let health_checks = state.health_checks.read();
     let nix_info = state.nix_info.read();
     rsx! {
         div { class: "flex justify-between items-center w-full p-2 bg-primary-100 shadow",
             div { class: "flex space-x-2",
-                  a {
+                a {
                     onclick: move |_| {
-                      if !isDashboard {
-                        state.empty_flake_data();
-                        nav.replace(Route::Dashboard {});
-                      }
+                        if !is_dashboard {
+                            state.reset_flake_data();
+                            nav.replace(Route::Dashboard {});
+                        }
                     },
-                    class: if isDashboard {"cursor-auto"},
-                    class: if !isDashboard {"cursor-pointer"},
-                      "🏠"
-                  }
+                    class: if is_dashboard { "cursor-auto" } else { "cursor-pointer" },
+                    "🏠"
+                }
             }
             div { class: "flex space-x-2",
                 ViewRefreshButton {}
@@ -161,16 +160,16 @@ fn Dashboard() -> Element {
         div { class: "pl-4",
             h2 { class: "text-2xl", "Enter a flake URL:" }
             input {
-              class: "w-2/3 p-1 mb-4 font-mono",
-              id: "nix-flake-input",
-              "type": "text",
-              value: "{state.get_flake_url_string()}",
-              disabled: busy,
-              onchange: move |ev| {
-                  let url: FlakeUrl = ev.value().clone().into();
-                  state.set_flake_url(url);
-                  nav.replace(Route::Flake {});
-              }
+                class: "w-2/3 p-1 mb-4 font-mono",
+                id: "nix-flake-input",
+                "type": "text",
+                value: "{state.get_flake_url_string()}",
+                disabled: busy,
+                onchange: move |ev| {
+                    let url: FlakeUrl = ev.value().clone().into();
+                    state.set_flake_url(url);
+                    nav.replace(Route::Flake {});
+                }
             }
             h2 { class: "text-2xl", "Or, try one of these:" }
             div { class: "flex flex-col",
