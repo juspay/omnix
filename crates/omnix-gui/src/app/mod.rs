@@ -12,8 +12,6 @@ mod widget;
 use dioxus::prelude::*;
 use dioxus_router::prelude::*;
 
-use nix_rs::flake::url::FlakeUrl;
-
 use crate::app::{
     flake::{Flake, FlakeRaw},
     health::Health,
@@ -155,22 +153,10 @@ fn Dashboard() -> Element {
     tracing::debug!("Rendering Dashboard page");
     let nav = use_navigator();
     let mut state = AppState::use_state();
-    let busy = state.flake.read().is_loading_or_refreshing();
     rsx! {
         div { class: "pl-4",
             h2 { class: "text-2xl", "Enter a flake URL:" }
-            input {
-                class: "w-2/3 p-1 mb-4 font-mono",
-                id: "nix-flake-input",
-                "type": "text",
-                value: state.get_flake_url_string(),
-                disabled: busy,
-                onchange: move |ev| {
-                    let url: FlakeUrl = ev.value().clone().into();
-                    state.set_flake_url(url);
-                    nav.replace(Route::Flake {});
-                }
-            }
+            { flake::FlakeInput () },
             h2 { class: "text-2xl", "Or, try one of these:" }
             div { class: "flex flex-col",
                 for flake_url in state.flake_cache.read().recent_flakes() {
