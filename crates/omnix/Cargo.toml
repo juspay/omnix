@@ -7,5 +7,5 @@ edition = "2021"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-clap = { version = "4.3", features = ["derive", "env"] }
+clap = { workspace = true }
+tracing-subscriber = { workspace = true }
