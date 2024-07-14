@@ -1,5 +1,6 @@
 //! Logging setup for omnix
 
+use clap;
 use tracing_subscriber::filter::{Directive, LevelFilter};
 use tracing_subscriber::EnvFilter;
 
