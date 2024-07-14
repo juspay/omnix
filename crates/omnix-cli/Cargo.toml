@@ -2,5 +2,9 @@
 name = "omnix-cli"
 version = "0.1.0"
 edition = "2021"
+default-run = "omnix-cli"
 
 [dependencies]
+clap = { workspace = true }
+omnix = { workspace = true }
+tracing = { workspace = true }
