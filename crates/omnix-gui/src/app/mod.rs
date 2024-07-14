@@ -11,6 +11,7 @@ mod widget;
 
 use dioxus::prelude::*;
 use dioxus_router::prelude::*;
+use nix_rs::flake::url::FlakeUrl;
 
 use crate::app::{
     flake::{Flake, FlakeRaw},
@@ -36,6 +37,18 @@ enum Route {
         Info {},
 }
 
+impl Route {
+    fn go_to_flake(url: FlakeUrl) {
+        AppState::use_state().set_flake_url(url);
+        use_navigator().replace(Route::Flake {});
+    }
+
+    fn go_to_dashboard() {
+        AppState::use_state().reset_flake_data();
+        use_navigator().replace(Route::Dashboard {});
+    }
+}
+
 /// Main frontend application container
 pub fn App() -> Element {
     AppState::provide_state();
@@ -56,9 +69,8 @@ fn Wrapper() -> Element {
 
 #[component]
 fn TopBar() -> Element {
-    let nav = use_navigator();
     let is_dashboard = use_route::<Route>() == Route::Dashboard {};
-    let mut state = AppState::use_state();
+    let state = AppState::use_state();
     let health_checks = state.health_checks.read();
     let nix_info = state.nix_info.read();
     rsx! {
@@ -67,8 +79,7 @@ fn TopBar() -> Element {
                 a {
                     onclick: move |_| {
                         if !is_dashboard {
-                            state.reset_flake_data();
-                            nav.replace(Route::Dashboard {});
+                            Route::go_to_dashboard();
                         }
                     },
                     class: if is_dashboard { "cursor-auto" } else { "cursor-pointer" },

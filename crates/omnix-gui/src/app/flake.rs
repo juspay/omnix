@@ -3,7 +3,7 @@
 use std::{collections::BTreeMap, path::PathBuf};
 
 use dioxus::prelude::*;
-use dioxus_router::prelude::{use_navigator, Link};
+use dioxus_router::components::Link;
 use nix_rs::flake::{
     outputs::{FlakeOutputs, Type, Val},
     schema::FlakeSchema,
@@ -32,8 +32,7 @@ pub fn Flake() -> Element {
 
 #[component]
 pub fn FlakeInput() -> Element {
-    let mut state = AppState::use_state();
-    let nav = use_navigator();
+    let state = AppState::use_state();
     let busy = state.flake.read().is_loading_or_refreshing();
     rsx! {
         div { class: "p-2 my-1 flex w-full",
@@ -45,16 +44,14 @@ pub fn FlakeInput() -> Element {
                 disabled: busy,
                 onchange: move |ev| {
                     let url: FlakeUrl = ev.value().clone().into();
-                    state.set_flake_url(url);
-                    nav.replace(Route::Flake {});
+                    Route::go_to_flake(url);
                 }
             }
             div { class: "ml-2 flex flex-col",
                 { FolderDialogButton(
                     move |flake_path: PathBuf| {
                         let url: FlakeUrl = flake_path.into();
-                        state.set_flake_url(url);
-                        nav.replace(Route::Flake {});
+                        Route::go_to_flake(url);
                     }
                 ) }
             }
