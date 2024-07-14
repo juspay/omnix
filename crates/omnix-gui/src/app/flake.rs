@@ -18,7 +18,7 @@ use crate::{
 
 #[component]
 pub fn Flake() -> Element {
-    let mut state = AppState::use_state();
+    let state = AppState::use_state();
     let flake = state.flake.read();
     rsx! {
         h1 { class: "text-5xl font-bold", "Flake browser" }
@@ -44,7 +44,6 @@ pub fn FlakeInput() -> Element {
                 value: state.get_flake_url_string(),
                 disabled: busy,
                 onchange: move |ev| {
-                    tracing::info!("Event change: {:?}", ev.value());
                     let url: FlakeUrl = ev.value().clone().into();
                     state.set_flake_url(url);
                     nav.replace(Route::Flake {});

@@ -57,8 +57,7 @@ fn Wrapper() -> Element {
 #[component]
 fn TopBar() -> Element {
     let nav = use_navigator();
-    let full_route = use_route::<Route>();
-    let is_dashboard = full_route == Route::Dashboard {};
+    let is_dashboard = use_route::<Route>() == Route::Dashboard {};
     let mut state = AppState::use_state();
     let health_checks = state.health_checks.read();
     let nix_info = state.nix_info.read();
