@@ -1,4 +1,4 @@
-//! Logging setup for the server and client
+//! Logging setup for omnix
 
 use tracing_subscriber::filter::{Directive, LevelFilter};
 use tracing_subscriber::EnvFilter;

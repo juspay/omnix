@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
 
-members = [ "crates/omnix-cli","crates/omnix-gui"]
+members = [ "crates/omnix", "crates/omnix-cli","crates/omnix-gui"]
 
 [workspace.dependencies]
 cfg-if = "1"
