@@ -4,6 +4,7 @@
         "mkhl.direnv",
         "jnoortheen.nix-ide",
         "bradlc.vscode-tailwindcss",
-        "tamasfe.even-better-toml"
+        "tamasfe.even-better-toml",
+        "fill-labs.dependi"
     ]
 }
