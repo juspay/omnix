@@ -36,7 +36,10 @@
               nativeBuildInputs = with pkgs;[
                 pkg-config
               ];
-              meta.description = "Command-line interface for Omnix";
+              meta = {
+                description = "Command-line interface for Omnix";
+                mainProgram = "om";
+              };
             };
           };
         };
