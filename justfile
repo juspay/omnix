@@ -16,18 +16,18 @@ bundle $CI="true":
     nix run nixpkgs#lsd -- --tree ./dist/bundle/macos/omnix-gui.app
 
 # Run omnix-gui locally
-watch $RUST_BACKTRACE="1":
+watch-gui $RUST_BACKTRACE="1":
     # XXX: hot reload doesn't work with tailwind
     # dx serve --hot-reload
     cd ./crates/omnix-gui && dx serve --bin omnix-gui
 
-alias w := watch
+alias wg := watch-gui
 
 # Run omnix-cli locally
-watch-cli *ARGS:
+watch *ARGS:
     cargo watch -p omnix-cli -x 'run -- {{ARGS}}'
 
-alias wc := watch-cli
+alias w := watch
 
 # Run tests
 test:

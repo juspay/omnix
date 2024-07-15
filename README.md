@@ -1,7 +1,7 @@
 # omnix
 
 > [!NOTE] 
-> 🚧 omnix is in active development. It aims to be a supplement to the [Nix](https://nixos.asia/en/nix) interface to facilitate ease & adoption.
+> 🚧 omnix is in active development. It aims to supplement the [Nix](https://nixos.asia/en/nix) CLI to facilitate ease & adoption.
 
 ## Getting Started
 
@@ -16,13 +16,19 @@ This will automatically activate the nix develop shell. Open VSCode and install 
 
 ## Running locally
 
-In nix shell,
+To run `omnix-cli`,
 
-```
-just watch
+```sh
+just watch # Or `just w`; you can also pass args, e.g.: `just w show` 
 ```
 
-`just watch` runs `dx serve` (with hot reload disabled) that will restart the desktop app after compilation.
+To run `omnix-gui`,
+
+```sh
+just watch-gui # Or `just wg`
+```
+
+`just watch-gui` runs `dx serve` (with hot reload disabled) that will restart the desktop app after compilation.
 
 ## Nix workflows
 
