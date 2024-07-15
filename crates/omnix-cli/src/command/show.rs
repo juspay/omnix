@@ -4,7 +4,8 @@ use clap::Parser;
 pub struct ShowConfig {}
 
 impl ShowConfig {
-    pub fn run(&self) {
-        println!("TODO(om show)");
+    pub async fn run(&self) -> anyhow::Result<()> {
+        tracing::info!("TODO(om show)");
+        Ok(())
     }
 }

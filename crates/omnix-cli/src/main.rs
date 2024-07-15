@@ -13,9 +13,10 @@ pub struct Args {
     pub command: command::Command,
 }
 
-fn main() {
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
     let args = Args::parse();
     omnix::logging::setup_logging(&args.verbosity);
     tracing::debug!("Args: {:?}", args);
-    args.command.run();
+    args.command.run().await
 }

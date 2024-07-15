@@ -2906,8 +2906,10 @@ dependencies = [
 name = "omnix-cli"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "clap",
  "omnix",
+ "tokio",
  "tracing",
 ]
 

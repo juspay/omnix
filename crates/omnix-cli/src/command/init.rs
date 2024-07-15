@@ -4,7 +4,8 @@ use clap::Parser;
 pub struct InitConfig {}
 
 impl InitConfig {
-    pub fn run(&self) {
+    pub async fn run(&self) -> anyhow::Result<()> {
         println!("TODO(om init)");
+        Ok(())
     }
 }

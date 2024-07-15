@@ -13,10 +13,10 @@ pub enum Command {
 }
 
 impl Command {
-    pub fn run(&self) {
+    pub async fn run(&self) -> anyhow::Result<()> {
         match self {
-            Command::Show(config) => config.run(),
-            Command::Init(config) => config.run(),
+            Command::Show(config) => config.run().await,
+            Command::Init(config) => config.run().await,
         }
     }
 }

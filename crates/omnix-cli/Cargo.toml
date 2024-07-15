@@ -5,6 +5,8 @@ edition = "2021"
 default-run = "omnix-cli"
 
 [dependencies]
+anyhow = { workspace = true }
 clap = { workspace = true }
 omnix = { workspace = true }
+tokio = { workspace = true }
 tracing = { workspace = true }
