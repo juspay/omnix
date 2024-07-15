@@ -2,7 +2,11 @@
 name = "omnix-cli"
 version = "0.1.0"
 edition = "2021"
-default-run = "omnix-cli"
+default-run = "om"
+
+[[bin]]
+name = "om"
+path = "src/main.rs"
 
 [dependencies]
 anyhow = { workspace = true }
