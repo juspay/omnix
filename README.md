@@ -45,15 +45,15 @@ nix run
 
 ## Tech
 
-### Rust desktop app
+### GUI app (`omnix-gui`)
 
-We use [Dioxus](https://dioxuslabs.com/) to build the desktop app using web technologies, as well as [dioxus-signals](https://github.com/DioxusLabs/dioxus/tree/master/packages/signals) for data reactivity.
+We use [Dioxus](https://dioxuslabs.com/) to build the GUI using web technologies, as well as [dioxus-signals](https://github.com/DioxusLabs/dioxus/tree/master/packages/signals) for data reactivity.
 
-### Styling
+#### Styling
 
 We use [Tailwind](https://tailwindcss.com/) for styling; 🎓 familiarize yourself with it! Tailwind enables developers not familiar with design to create reasonably good looking sites. You should also 🎓 get familiar with CSS flexboxes (see [Flexbox Froggy](https://flexboxfroggy.com/)).
 
-#### Color palette
+##### Color palette
 
 See `tailwind.config.js` for colour aliases we use throughout the app. Instead of, say, `text-pink-500` we use `text-primary-500` ("primary" is more semantic than "pink").
 
