@@ -23,6 +23,7 @@
     rust-project = {
       crates = {
         "omnix-cli" = {
+          autoWire = false;
           crane = {
             args = {
               buildInputs = lib.optionals pkgs.stdenv.isLinux
@@ -44,6 +45,7 @@
           };
         };
         "omnix-gui" = {
+          autoWire = false;
           crane = {
             args = {
               buildInputs = lib.optionals pkgs.stdenv.isLinux
@@ -90,23 +92,30 @@
       };
     };
 
-    packages.default = self'.packages.omnix-gui.overrideAttrs (oa: {
-      # Copy over assets for the desktop app to access
-      installPhase =
-        (oa.installPhase or "") + ''
-          cp -r ./crates/omnix-gui/assets/* $out/bin/
-        '';
-      postFixup =
-        (oa.postFixup or "") + ''
-          # HACK: The Linux desktop app is unable to locate the assets
-          # directory, but it does look into the current directory.
-          # So, `cd` to the directory containing assets (which is
-          # `bin/`, per the installPhase above) before launching the
-          # app.
-          wrapProgram $out/bin/${oa.pname} \
-            --chdir $out/bin
-        '';
-    });
+    packages =
+      let
+        inherit (config.rust-project) crates;
+      in
+      {
+        default = crates."omnix-cli".crane.outputs.drv.crate;
+        gui = crates."omnix-gui".crane.outputs.drv.crate.overrideAttrs (oa: {
+          # Copy over assets for the desktop app to access
+          installPhase =
+            (oa.installPhase or"") + ''
+              cp -r ./crates/omnix-gui/assets/* $out/bin/
+            '';
+          postFixup =
+            (oa.postFixup or"") + ''
+              # HACK: The Linux desktop app is unable to locate the assets
+              # directory, but it does look into the current directory.
+              # So, `cd` to the directory containing assets (which is
+              # `bin/`, per the installPhase above) before launching the
+              # app.
+              wrapProgram $out/bin/${ oa. pname} \
+                --chdir $out/bin
+            '';
+        });
+      };
 
     cargo-doc-live.crateName = "omnix-gui";
   };

@@ -28,4 +28,4 @@ jobs:
             build --systems "path:$HOME/systems"
       - name: Run CLI
         run: |
-          nix run .#omnix-cli -- --help
+          nix run -- --help

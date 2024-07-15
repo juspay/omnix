@@ -35,11 +35,13 @@ just watch-gui # Or `just wg`
 Inside the nix develop shell (activated by direnv) you can use any of the `cargo` or `rustc` commands, as well as [`just`](https://just.systems/) workflows. Nix specific commands can also be used to work with the project:
 
 ```sh
-# Full nix build
-nix build
+# Full nix build of CLI & GUI
+nix build .#default .#gui
 
-# Build and run
+# Build and run the CLI
 nix run
+# Build and run the GUI
+nix run .#gui
 ```
 
 ## Contributing
