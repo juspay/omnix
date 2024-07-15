@@ -17,5 +17,5 @@ fn main() {
     let args = Args::parse();
     omnix::logging::setup_logging(&args.verbosity);
     tracing::debug!("Args: {:?}", args);
-    tracing::info!("Hello from omnix-cli");
+    args.command.run();
 }

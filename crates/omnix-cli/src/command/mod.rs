@@ -11,3 +11,12 @@ pub enum Command {
     /// Initialize a flake
     Init(init::InitConfig),
 }
+
+impl Command {
+    pub fn run(&self) {
+        match self {
+            Command::Show(config) => config.run(),
+            Command::Init(config) => config.run(),
+        }
+    }
+}
