@@ -26,6 +26,6 @@ jobs:
           nixci \
             --extra-access-tokens ${{ secrets.GITHUB_TOKEN }} \
             build --systems "path:$HOME/systems"
-      - name: Run CLI
+      - name: Run
         run: |
-          nix run . -- --help
+          nix run .#ci

@@ -50,6 +50,17 @@
           };
         };
 
+        # Extra things to run in CI, on top of nixci
+        apps.ci.program = pkgs.writeShellApplication {
+          name = "ci-extra";
+          runtimeInputs = [ self'.packages.default ];
+          text = ''
+            om --help
+          '';
+          # TODO: Upstream this to nixci?
+          meta.nixci.run = true;
+        };
+
         devShells.default = pkgs.mkShell {
           name = "omnix";
           inputsFrom = [
