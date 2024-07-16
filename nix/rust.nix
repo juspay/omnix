@@ -152,6 +152,7 @@
                 --chdir $out/bin
             '';
         });
+        nix-health = self'.packages.nix_health;
       };
 
     cargo-doc-live.crateName = "omnix-gui";

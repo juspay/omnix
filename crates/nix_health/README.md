@@ -12,16 +12,16 @@ slug: /health
 
 ## Checks performed
 
-| Check | Configurable in `flake.nix`? |
-| --- | --- |
-| Flakes are enabled | - |
-| Nix version is not too old | Yes |
-| Nix runs natively (no rosetta)[^2] | Yes |
-| Builds use multiple cores (`max-jobs`) | Yes |
-| Nix Caches in use | Yes |
-| $USER is in `trusted-users` | - |
-| Direnv: installed and activated | Yes |
-| Min RAM / Disk space | Yes |
+| Check                                  | Configurable in `flake.nix`? |
+| -------------------------------------- | ---------------------------- |
+| Flakes are enabled                     | -                            |
+| Nix version is not too old             | Yes                          |
+| Nix runs natively (no rosetta)[^2]     | Yes                          |
+| Builds use multiple cores (`max-jobs`) | Yes                          |
+| Nix Caches in use                      | Yes                          |
+| $USER is in `trusted-users`            | -                            |
+| Direnv: installed and activated        | Yes                          |
+| Min RAM / Disk space                   | Yes                          |
 
 [^2]: This check is only performed on macOS with Apple Silicon.
 
@@ -37,14 +37,14 @@ To run the development version,
 ```bash
 # NOTE: You may have to add `--extra-experimental-features "flakes nix-command"`
 # if flakes are not already enabled
-nix --accept-flake-config run github:juspay/nix-health
+nix run github:juspay/omnix#nix-health
 ```
 
 To run nix-health along with health check configuration specified in a project flake, pass that flake as an argument. For eg., to run nix-health with additional checks from the nammayatri project, run:
 
 ```bash
 # The argument can be any flake URL (including a local path)
-nix --accept-flake-config run github:juspay/nix-health github:nammayatri/nammayatri
+nix run github:juspay/omnix#nix-health github:nammayatri/nammayatri
 ```
 
 ## Configuring in `flake.nix` {#conf}
