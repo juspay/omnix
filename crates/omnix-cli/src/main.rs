@@ -1,4 +1,5 @@
 use clap::Parser;
+use clap_verbosity_flag::{InfoLevel, Verbosity};
 
 mod command;
 
@@ -7,7 +8,7 @@ mod command;
 #[derive(Parser, Debug)]
 pub struct Args {
     #[command(flatten)]
-    pub verbosity: omnix::logging::Verbosity,
+    pub verbosity: Verbosity<InfoLevel>,
 
     #[clap(subcommand)]
     pub command: command::Command,
