@@ -91,6 +91,28 @@
             };
           };
         };
+        "nix_health" = {
+          autoWire = true;
+          crane = {
+            args = {
+              buildInputs = lib.optionals pkgs.stdenv.isDarwin (
+                with pkgs.darwin.apple_sdk.frameworks; [
+                  IOKit
+                  # apple_sdk refers to SDK version 10.12. To compile for `x86_64-darwin` we need 11.0
+                  # see: https://github.com/NixOS/nixpkgs/pull/261683#issuecomment-1772935802
+                  pkgs.darwin.apple_sdk_11_0.frameworks.CoreFoundation
+                ]
+              );
+              nativeBuildInputs = with pkgs; [
+                nix # Tests need nix cli
+              ];
+              meta.mainProgram = "nix-health";
+            } // lib.optionalAttrs pkgs.stdenv.isLinux {
+              CARGO_BUILD_TARGET = "x86_64-unknown-linux-musl";
+              CARGO_BUILD_RUSTFLAGS = "-C target-feature=+crt-static";
+            };
+          };
+        };
       };
 
       src = lib.cleanSourceWith {
