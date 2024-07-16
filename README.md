@@ -1,3 +1,5 @@
+[![project chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://nixos.zulipchat.com/#narrow/stream/415454-omnix)
+
 # omnix
 
 *Pronounced [`/ɒmˈnɪks/`](http://ipa-reader.xyz/?text=%C9%92m%CB%88n%C9%AAks&voice=Geraint)*
