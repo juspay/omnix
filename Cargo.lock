@@ -2906,6 +2906,8 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "clap",
+ "nix_health",
+ "nix_rs",
  "omnix",
  "tokio",
  "tracing",
