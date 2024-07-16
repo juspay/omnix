@@ -7,10 +7,6 @@ pub struct HealthConfig {
     /// Include health checks defined in the given flake
     pub flake_url: Option<FlakeUrl>,
 
-    /// Be quiet by outputting only failed checks
-    #[arg(long = "quiet", short = 'q')]
-    pub quiet: bool,
-
     /// Dump the config schema of the health checks (useful when adding them to
     /// a flake.nix)
     #[arg(long = "dump-schema")]

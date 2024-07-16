@@ -1,6 +1,6 @@
 //! Logging setup for omnix
 
-use clap;
+use clap_verbosity_flag::{InfoLevel, Level, Verbosity};
 use std::fmt;
 use tracing::{Event, Subscriber};
 use tracing_subscriber::{
@@ -10,61 +10,53 @@ use tracing_subscriber::{
     EnvFilter,
 };
 
-pub fn setup_logging(verbosity: &Verbosity) {
+pub fn setup_logging(verbosity: &Verbosity<InfoLevel>) {
     let builder = tracing_subscriber::fmt()
-        .with_env_filter(verbosity.log_filter())
+        .with_env_filter(log_filter(verbosity))
         .compact();
     builder.event_format(BareFormatter).init();
 }
 
-#[derive(clap::Args, Debug, Clone)]
-pub struct Verbosity {
-    /// Server logging level
-    ///
-    /// Pass multiple v's (`-vvv...`) to increase logging level.
-    #[arg(short = 'v', long = "verbose", action = clap::ArgAction::Count, default_value_t = 0)]
-    pub verbose: u8,
+/// Return the log filter for CLI flag.
+fn log_filter(v: &Verbosity<InfoLevel>) -> EnvFilter {
+    log_directives(v)
+        .iter()
+        .fold(EnvFilter::from_env("OMNIX_LOG"), |filter, directive| {
+            filter.add_directive(directive.clone())
+        })
 }
 
-impl Verbosity {
-    /// Return the log filter for CLI flag.
-    fn log_filter(&self) -> EnvFilter {
-        self.log_directives()
-            .iter()
-            .fold(EnvFilter::from_env("OMNIX_LOG"), |filter, directive| {
-                filter.add_directive(directive.clone())
-            })
-    }
-
-    fn log_directives(&self) -> Vec<Directive> {
-        // Allow warnings+errors from all crates.
-        match self.verbose {
-            // Default
-            0 => vec![
-                LevelFilter::WARN.into(),
-                "omnix=info".parse().unwrap(),
-                "nix_rs=info".parse().unwrap(),
-                "nix_health=info".parse().unwrap(),
-            ],
-            // -v: log app DEBUG level, as well as http requests
-            1 => vec![
-                LevelFilter::WARN.into(),
-                "omnix=debug".parse().unwrap(),
-                "nix_rs=debug".parse().unwrap(),
-                "nix_health=debug".parse().unwrap(),
-            ],
-            // -vv: log app TRACE level, as well as http requests
-            2 => vec![
-                LevelFilter::WARN.into(),
-                "omnix=trace".parse().unwrap(),
-                "nix_rs=trace".parse().unwrap(),
-                "nix_health=trace".parse().unwrap(),
-            ],
-            // -vvv: log DEBUG level of app and libraries
-            3 => vec![LevelFilter::DEBUG.into()],
-            // -vvvv: log TRACE level of app and libraries
-            _ => vec![LevelFilter::TRACE.into()],
-        }
+fn log_directives(v: &Verbosity<InfoLevel>) -> Vec<Directive> {
+    // Allow warnings+errors from all crates.
+    match v.log_level() {
+        None => vec![LevelFilter::WARN.into()],
+        Some(Level::Warn) => vec![LevelFilter::WARN.into()],
+        Some(Level::Error) => vec![LevelFilter::ERROR.into()],
+        // Default
+        Some(Level::Info) => vec![
+            LevelFilter::WARN.into(),
+            "omnix=info".parse().unwrap(),
+            "nix_rs=info".parse().unwrap(),
+            "nix_health=info".parse().unwrap(),
+        ],
+        // -v: log app DEBUG level, as well as http requests
+        Some(Level::Debug) => vec![
+            LevelFilter::WARN.into(),
+            "omnix=debug".parse().unwrap(),
+            "nix_rs=debug".parse().unwrap(),
+            "nix_health=debug".parse().unwrap(),
+        ],
+        // -vv: log app TRACE level, as well as http requests
+        Some(Level::Trace) => vec![
+            LevelFilter::WARN.into(),
+            "omnix=trace".parse().unwrap(),
+            "nix_rs=trace".parse().unwrap(),
+            "nix_health=trace".parse().unwrap(),
+        ],
+        // -vvv: log DEBUG level of app and libraries
+        // 3 => vec![LevelFilter::DEBUG.into()],
+        // -vvvv: log TRACE level of app and libraries
+        // _ => vec![LevelFilter::TRACE.into()],
     }
 }
 
