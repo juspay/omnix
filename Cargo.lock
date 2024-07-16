@@ -2734,8 +2734,6 @@ dependencies = [
 [[package]]
 name = "nix_health"
 version = "0.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c0ce802498f479b5bc68cc5aa3b70e3750ff13ec09fdb6e097f96b6e1f9aae7"
 dependencies = [
  "anyhow",
  "bytesize",
@@ -2744,7 +2742,7 @@ dependencies = [
  "colored",
  "direnv",
  "human-panic",
- "nix_rs 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "nix_rs",
  "regex",
  "semver",
  "serde",
@@ -2766,29 +2764,6 @@ dependencies = [
  "bytesize",
  "cfg-if",
  "clap",
- "colored",
- "is_proc_translated",
- "os_info",
- "regex",
- "serde",
- "serde_json",
- "serde_with",
- "shell-words",
- "sysinfo",
- "thiserror",
- "tokio",
- "tracing",
- "url",
-]
-
-[[package]]
-name = "nix_rs"
-version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "da25f502c0280182deca738d14d878c77e5886d5d9af60e8d51c150afbd9b7e5"
-dependencies = [
- "bytesize",
- "cfg-if",
  "colored",
  "is_proc_translated",
  "os_info",
@@ -2956,7 +2931,7 @@ dependencies = [
  "http 0.2.11",
  "human-panic",
  "nix_health",
- "nix_rs 0.5.0",
+ "nix_rs",
  "omnix",
  "regex",
  "serde",
