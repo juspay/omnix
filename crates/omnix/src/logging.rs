@@ -1,14 +1,20 @@
 //! Logging setup for omnix
 
 use clap;
-use tracing_subscriber::filter::{Directive, LevelFilter};
-use tracing_subscriber::EnvFilter;
+use std::fmt;
+use tracing::{Event, Subscriber};
+use tracing_subscriber::{
+    filter::{Directive, LevelFilter},
+    fmt::{format, FmtContext, FormatEvent, FormatFields},
+    registry::LookupSpan,
+    EnvFilter,
+};
 
 pub fn setup_logging(verbosity: &Verbosity) {
-    tracing_subscriber::fmt()
+    let builder = tracing_subscriber::fmt()
         .with_env_filter(verbosity.log_filter())
-        .compact()
-        .init();
+        .compact();
+    builder.event_format(BareFormatter).init();
 }
 
 #[derive(clap::Args, Debug, Clone)]
@@ -59,5 +65,25 @@ impl Verbosity {
             // -vvvv: log TRACE level of app and libraries
             _ => vec![LevelFilter::TRACE.into()],
         }
+    }
+}
+
+/// A [tracing_subscriber] event formatter that suppresses everything but the
+/// log message.
+struct BareFormatter;
+
+impl<S, N> FormatEvent<S, N> for BareFormatter
+where
+    S: Subscriber + for<'a> LookupSpan<'a>,
+    N: for<'a> FormatFields<'a> + 'static,
+{
+    fn format_event(
+        &self,
+        ctx: &FmtContext<'_, S, N>,
+        mut writer: format::Writer<'_>,
+        event: &Event<'_>,
+    ) -> fmt::Result {
+        ctx.field_format().format_fields(writer.by_ref(), event)?;
+        writeln!(writer)
     }
 }
