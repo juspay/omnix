@@ -1,4 +1,5 @@
 use clap::Parser;
+use clap_verbosity_flag::{InfoLevel, Verbosity};
 
 mod command;
 
@@ -7,7 +8,7 @@ mod command;
 #[derive(Parser, Debug)]
 pub struct Args {
     #[command(flatten)]
-    pub verbosity: omnix::logging::Verbosity,
+    pub verbosity: Verbosity<InfoLevel>,
 
     #[clap(subcommand)]
     pub command: command::Command,
@@ -15,8 +16,9 @@ pub struct Args {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    human_panic::setup_panic!();
     let args = Args::parse();
-    omnix::logging::setup_logging(&args.verbosity);
+    omnix::logging::setup_logging(&args.verbosity, true);
     tracing::debug!("Args: {:?}", args);
     args.command.run().await
 }

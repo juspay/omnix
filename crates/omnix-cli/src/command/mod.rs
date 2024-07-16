@@ -1,5 +1,7 @@
 use clap::Subcommand;
 
+pub mod ci;
+pub mod health;
 pub mod init;
 pub mod show;
 
@@ -10,6 +12,12 @@ pub enum Command {
 
     /// Initialize a flake
     Init(init::InitConfig),
+
+    /// Build all flake outputs (run CI locally)
+    CI(ci::CIConfig),
+
+    /// Show Nix's health
+    Health(health::HealthConfig),
 }
 
 impl Command {
@@ -17,6 +25,8 @@ impl Command {
         match self {
             Command::Show(config) => config.run().await,
             Command::Init(config) => config.run().await,
+            Command::CI(config) => config.run().await,
+            Command::Health(config) => config.run().await,
         }
     }
 }

@@ -1,3 +1,5 @@
+[![project chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://nixos.zulipchat.com/#narrow/stream/415454-omnix)
+
 # omnix
 
 *Pronounced [`/ɒmˈnɪks/`](http://ipa-reader.xyz/?text=%C9%92m%CB%88n%C9%AAks&voice=Geraint)*
@@ -48,10 +50,14 @@ nix run .#gui
 
 ## Contributing
 
-- When you are done with your changes, run `just fmt` to **autoformat** the source tree; the CI checks for this.
-- Add tests if relevant, and run them:
-    - Run `just test` to run the **unit tests**.
-- Add documentation wherever useful. To preview the **docs**, run `just doc`.
+>[!TIP]
+> Run `just fmt` to autoformat the source tree.
+
+- Run `nix run github:srid/nixci` to **run CI locally**.
+- Add **documentation** wherever useful. To preview Rust API docs, run `just doc`.
+- Changes to library crates must accompany a corresponding `CHANGELOG.md` entry.[^cc]
+
+[^cc]: We don't use any automatic changelog generator for this repo.
 
 ## Tech
 

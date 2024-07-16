@@ -5,14 +5,16 @@ pub mod logging;
 pub mod report;
 pub mod traits;
 
+use anyhow::Context;
 use colored::Colorize;
 
 use check::direnv::Direnv;
-use nix_rs::command::NixCmd;
 use nix_rs::flake::eval::nix_eval_attr_json;
 use nix_rs::flake::url::FlakeUrl;
+use nix_rs::{command::NixCmd, info::NixInfo};
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
+use traits::Check;
 
 use self::check::{
     caches::Caches, flake_enabled::FlakeEnabled, max_jobs::MaxJobs, min_nix_version::MinNixVersion,
@@ -121,6 +123,29 @@ impl NixHealth {
     pub fn schema() -> Result<String, serde_json::Error> {
         serde_json::to_string_pretty(&NixHealth::default())
     }
+}
+
+/// Run health checks, optionally using the given flake's configuration
+pub async fn run_checks_with(flake_url: Option<FlakeUrl>) -> anyhow::Result<Vec<Check>> {
+    let nix_info = NixInfo::from_nix(&NixCmd::default())
+        .await
+        .with_context(|| "Unable to gather nix info")?;
+    let action_msg = format!(
+        "🩺️ Checking the health of your Nix setup ({} on {})",
+        &nix_info.nix_config.system.value, &nix_info.nix_env.os
+    );
+    let health: NixHealth = match flake_url.as_ref() {
+        Some(flake_url) => {
+            tracing::info!("{}, using config from flake '{}':", action_msg, flake_url);
+            NixHealth::from_flake(flake_url).await
+        }
+        None => {
+            tracing::info!("{}:", action_msg);
+            Ok(NixHealth::default())
+        }
+    }?;
+    let checks = health.run_checks(&nix_info, flake_url.clone());
+    Ok(checks)
 }
 
 /// A convenient type to aggregate check failures, and summary report at end.

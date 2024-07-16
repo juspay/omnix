@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+* **api**:
+  * Expose `run_checks_with`
+* **minor**:
+  * Remove redundant `NixEnv` detection
+
 ## [0.4.0](https://github.com/juspay/nix-health/compare/0.3.0...0.4.0) (2024-07-10)
 
 ### Features
