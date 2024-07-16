@@ -58,6 +58,7 @@
             om --help
           '';
           # TODO: Upstream this to nixci?
+          # https://github.com/srid/nixci/issues/86
           meta.nixci.run = true;
         };
 
