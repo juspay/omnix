@@ -9,7 +9,6 @@ use anyhow::Context;
 use colored::Colorize;
 
 use check::direnv::Direnv;
-use nix_rs::env::NixEnv;
 use nix_rs::flake::eval::nix_eval_attr_json;
 use nix_rs::flake::url::FlakeUrl;
 use nix_rs::{command::NixCmd, info::NixInfo};
@@ -131,12 +130,9 @@ pub async fn run_checks_with(flake_url: Option<FlakeUrl>) -> anyhow::Result<Vec<
     let nix_info = NixInfo::from_nix(&NixCmd::default())
         .await
         .with_context(|| "Unable to gather nix info")?;
-    let nix_env = NixEnv::detect()
-        .await
-        .with_context(|| "Unable to gather system info")?;
     let action_msg = format!(
         "🩺️ Checking the health of your Nix setup ({} on {})",
-        &nix_info.nix_config.system.value, &nix_env.os
+        &nix_info.nix_config.system.value, &nix_info.nix_env.os
     );
     let health: NixHealth = match flake_url.as_ref() {
         Some(flake_url) => {
