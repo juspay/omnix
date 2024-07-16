@@ -2935,6 +2935,7 @@ dependencies = [
  "bytesize",
  "cfg-if",
  "clap",
+ "clap-verbosity-flag",
  "console_error_panic_hook",
  "console_log",
  "dioxus",
