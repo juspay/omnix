@@ -2919,6 +2919,7 @@ dependencies = [
  "anyhow",
  "clap",
  "clap-verbosity-flag",
+ "human-panic",
  "nix_health",
  "nix_rs",
  "omnix",

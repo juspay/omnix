@@ -16,6 +16,7 @@ pub struct Args {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    human_panic::setup_panic!();
     let args = Args::parse();
     omnix::logging::setup_logging(&args.verbosity);
     tracing::debug!("Args: {:?}", args);
