@@ -17,6 +17,6 @@ human-panic = { workspace = true }
 nix_health = { workspace = true }
 nix_rs = { workspace = true }
 omnix = { workspace = true }
+tabled = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
-tabled = { workspace = true }
