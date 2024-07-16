@@ -10,11 +10,15 @@ use tracing_subscriber::{
     EnvFilter,
 };
 
-pub fn setup_logging(verbosity: &Verbosity<InfoLevel>) {
+pub fn setup_logging(verbosity: &Verbosity<InfoLevel>, bare: bool) {
     let builder = tracing_subscriber::fmt()
         .with_env_filter(log_filter(verbosity))
         .compact();
-    builder.event_format(BareFormatter).init();
+    if bare {
+        builder.event_format(BareFormatter).init();
+    } else {
+        builder.init();
+    }
 }
 
 /// Return the log filter for CLI flag.
