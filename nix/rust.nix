@@ -76,6 +76,21 @@
             };
           };
         };
+        "nix_rs" = {
+          autoWire = true;
+          crane = {
+            args = {
+              buildInputs = lib.optionals pkgs.stdenv.isDarwin (
+                with pkgs.darwin.apple_sdk.frameworks; [
+                  IOKit
+                ]
+              );
+              nativeBuildInputs = with pkgs; [
+                nix # Tests need nix cli
+              ];
+            };
+          };
+        };
       };
 
       src = lib.cleanSourceWith {

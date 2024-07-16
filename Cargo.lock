@@ -2744,7 +2744,7 @@ dependencies = [
  "colored",
  "direnv",
  "human-panic",
- "nix_rs",
+ "nix_rs 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex",
  "semver",
  "serde",
@@ -2757,6 +2757,28 @@ dependencies = [
  "tracing-subscriber",
  "url",
  "which",
+]
+
+[[package]]
+name = "nix_rs"
+version = "0.5.0"
+dependencies = [
+ "bytesize",
+ "cfg-if",
+ "clap",
+ "colored",
+ "is_proc_translated",
+ "os_info",
+ "regex",
+ "serde",
+ "serde_json",
+ "serde_with",
+ "shell-words",
+ "sysinfo",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "url",
 ]
 
 [[package]]
@@ -2934,7 +2956,7 @@ dependencies = [
  "http 0.2.11",
  "human-panic",
  "nix_health",
- "nix_rs",
+ "nix_rs 0.5.0",
  "omnix",
  "regex",
  "serde",
