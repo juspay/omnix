@@ -57,6 +57,9 @@
           runtimeInputs = [ self'.packages.default ];
           text = ''
             om --help
+
+            # Test `om health`
+            om health
           '';
           # TODO: Upstream this to nixci?
           # https://github.com/srid/nixci/issues/86
