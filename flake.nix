@@ -67,6 +67,7 @@
           name = "omnix";
           inputsFrom = [
             config.treefmt.build.devShell
+            config.nix-health.outputs.devShell
             self'.devShells.rust
           ];
           packages = with pkgs; [
