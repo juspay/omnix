@@ -1,7 +1,7 @@
-use anyhow::Context;
+// TODO: Replace this by re-use `omnix-cli`?
 use clap::{command, Parser};
-use nix_health::{traits::Check, NixHealth};
-use nix_rs::{command::NixCmd, env::NixEnv, flake::url::FlakeUrl, info::NixInfo};
+use nix_health::{run_checks_with, NixHealth};
+use nix_rs::flake::url::FlakeUrl;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -31,36 +31,9 @@ async fn main() -> anyhow::Result<()> {
         return Ok(());
     }
 
-    let checks = run_checks(args.flake_url).await?;
+    let checks = run_checks_with(args.flake_url).await?;
 
     let exit_code = NixHealth::print_report_returning_exit_code(&checks);
 
     std::process::exit(exit_code)
-}
-
-/// Run health checks, taking current directory flake into account if there is
-/// one.
-async fn run_checks(flake_url: Option<FlakeUrl>) -> anyhow::Result<Vec<Check>> {
-    let nix_info = NixInfo::from_nix(&NixCmd::default())
-        .await
-        .with_context(|| "Unable to gather nix info")?;
-    let nix_env = NixEnv::detect()
-        .await
-        .with_context(|| "Unable to gather system info")?;
-    let action_msg = format!(
-        "🩺️ Checking the health of your Nix setup ({} on {})",
-        &nix_info.nix_config.system.value, &nix_env.os
-    );
-    let health: NixHealth = match flake_url.as_ref() {
-        Some(flake_url) => {
-            tracing::info!("{}, using config from flake '{}':", action_msg, flake_url);
-            NixHealth::from_flake(flake_url).await
-        }
-        None => {
-            tracing::info!("{}:", action_msg);
-            Ok(NixHealth::default())
-        }
-    }?;
-    let checks = health.run_checks(&nix_info, flake_url.clone());
-    Ok(checks)
 }
