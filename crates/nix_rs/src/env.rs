@@ -200,7 +200,7 @@ impl OS {
 
 #[derive(thiserror::Error, Debug)]
 pub enum NixEnvError {
-    #[error("Failed to fetch ENV: {0}")]
+    #[error("Environment error: {0}")]
     EnvVarError(#[from] std::env::VarError),
 
     #[error("Failed to fetch groups: {0}")]
