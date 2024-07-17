@@ -22,7 +22,7 @@ pub struct ShowConfig {
     pub flake_url: FlakeUrl,
 }
 
-/// Tabular output for a given field in [nix_rs::flake::schema::FlakeSchema]
+/// Tabular representation of a set of flake outputs (eg: `packages.*`)
 pub struct FlakeOutputTable {
     /// Rows of the table
     pub rows: Vec<Row>,
