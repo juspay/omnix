@@ -12,6 +12,7 @@ jobs:
     strategy:
       matrix:
         system: [ x86_64-linux, aarch64-darwin ]
+      fail-fast: false
     steps:
       - uses: actions/checkout@v4
       - name: Build
@@ -26,6 +27,8 @@ jobs:
           nixci \
             --extra-access-tokens ${{ secrets.GITHUB_TOKEN }} \
             build --systems "path:$HOME/systems"
-      - name: Run
+      - name: CLI Tests
         run: |
-          nix run .#ci
+          # We disable tests on Nix due to sandboxing issues.
+          cd ./crates/omnix-cli
+          nix develop -c cargo test

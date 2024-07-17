@@ -18,3 +18,8 @@ nix_rs = { workspace = true }
 omnix = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
+
+[dev-dependencies]
+assert_cmd = "2"
+predicates = "3"
+anyhow = { workspace = true }

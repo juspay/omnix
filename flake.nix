@@ -52,21 +52,6 @@
           };
         };
 
-        # Extra things to run in CI, on top of nixci
-        apps.ci.program = pkgs.writeShellApplication {
-          name = "ci-extra";
-          runtimeInputs = [ self'.packages.default ];
-          text = ''
-            om --help
-
-            # Test `om health`
-            om health
-          '';
-          # TODO: Upstream this to nixci?
-          # https://github.com/srid/nixci/issues/86
-          meta.nixci.run = true;
-        };
-
         devShells.default = pkgs.mkShell {
           name = "omnix";
           inputsFrom = [
