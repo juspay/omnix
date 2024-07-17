@@ -37,6 +37,9 @@
               nativeBuildInputs = with pkgs;[
                 pkg-config
               ];
+              # Disable tests due to sandboxing issues; we run them on CI
+              # instead.
+              doCheck = false;
               meta = {
                 description = "Command-line interface for Omnix";
                 mainProgram = "om";
