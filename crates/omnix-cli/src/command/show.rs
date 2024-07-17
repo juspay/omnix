@@ -7,7 +7,13 @@ use nix_rs::{
     command::NixCmd,
     flake::{outputs::Val, url::FlakeUrl, Flake},
 };
-use tabled::{settings::Style, Table, Tabled};
+use tabled::{
+    settings::{
+        style::{HorizontalLine, VerticalLine},
+        Style,
+    },
+    Table, Tabled,
+};
 
 #[derive(Parser, Debug)]
 pub struct ShowConfig {
@@ -29,7 +35,15 @@ impl FlakeOutputTable {
     /// Convert the table to a [Table] struct
     fn to_tabled(&self) -> Table {
         let mut table = Table::new(&self.rows);
-        table.with(Style::modern());
+        table.with(
+            Style::modern()
+                .horizontals([(1, HorizontalLine::inherit(Style::modern()).horizontal('═'))])
+                .verticals([(1, VerticalLine::inherit(Style::modern()))])
+                .remove_horizontal()
+                .remove_vertical()
+                .remove_left()
+                .remove_right(),
+        );
         table
     }
     /// Print the table to stdout
