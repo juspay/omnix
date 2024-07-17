@@ -26,8 +26,9 @@
         ./crates/nix_health/module/flake-module.nix
       ];
 
-      flake = {
-        nix-health.default = {
+      # omnix configuration
+      flake.om = {
+        health.default = {
           nix-version.min-required = "2.16.0";
           # We don't use a Nix cache yet
           # caches.required = [ "https://cache.juspay.dev" ];
