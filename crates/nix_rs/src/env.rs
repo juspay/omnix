@@ -200,8 +200,8 @@ impl OS {
 
 #[derive(thiserror::Error, Debug)]
 pub enum NixEnvError {
-    #[error("Environment error: {0}")]
-    EnvVarError(#[from] std::env::VarError),
+    #[error("Cannot find $USER: {0}")]
+    UserError(#[from] std::env::VarError),
 
     #[error("Failed to fetch groups: {0}")]
     GroupsError(std::io::Error),
