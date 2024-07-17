@@ -23,7 +23,7 @@ use self::check::{
 
 /// Nix Health check information for user's install
 ///
-/// Each field represents an individual check which satisfies the [Checkable] trait.
+/// Each field represents an individual check which satisfies the [traits::Checkable] trait.
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
 #[serde(default, rename_all = "kebab-case")]
 pub struct NixHealth {

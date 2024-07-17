@@ -19,8 +19,6 @@ use self::{datum::Datum, error::SystemError, refresh::Refresh};
 ///
 /// They use [Datum] which is a glorified [Option] to distinguish between initial
 /// loading and subsequent refreshing.
-///
-/// Use [Action] to mutate this state, in addition to [Signal::set].
 #[derive(Default, Clone, Copy, Debug, PartialEq)]
 pub struct AppState {
     /// [NixInfo] as detected on the user's system
