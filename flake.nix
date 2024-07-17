@@ -26,8 +26,9 @@
         ./crates/nix_health/module/flake-module.nix
       ];
 
-      flake = {
-        nix-health.default = {
+      # omnix configuration
+      flake.om = {
+        health.default = {
           nix-version.min-required = "2.16.0";
           # We don't use a Nix cache yet
           # caches.required = [ "https://cache.juspay.dev" ];
@@ -49,21 +50,6 @@
             nixpkgs-fmt.enable = true;
             rustfmt.enable = true;
           };
-        };
-
-        # Extra things to run in CI, on top of nixci
-        apps.ci.program = pkgs.writeShellApplication {
-          name = "ci-extra";
-          runtimeInputs = [ self'.packages.default ];
-          text = ''
-            om --help
-
-            # Test `om health`
-            om health
-          '';
-          # TODO: Upstream this to nixci?
-          # https://github.com/srid/nixci/issues/86
-          meta.nixci.run = true;
         };
 
         devShells.default = pkgs.mkShell {

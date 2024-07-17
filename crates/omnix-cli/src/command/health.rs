@@ -4,7 +4,8 @@ use nix_rs::flake::url::FlakeUrl;
 
 #[derive(Parser, Debug)]
 pub struct HealthConfig {
-    /// Include health checks defined in the given flake
+    /// Use `om.health` configuration from the given flake
+    #[arg(name = "FLAKE")]
     pub flake_url: Option<FlakeUrl>,
 
     /// Dump the config schema of the health checks (useful when adding them to
@@ -19,8 +20,6 @@ impl HealthConfig {
             tracing::info!("{}", NixHealth::schema()?);
             return Ok(());
         }
-        // TODO: Setup logging (unify `crates/nix_health/src/logging.rs` and `crates/omnix/src/logging.rs`)
-        // TODO: `om.health` config?
         let checks = run_checks_with(self.flake_url.clone()).await?;
         let exit_code = NixHealth::print_report_returning_exit_code(&checks);
         if exit_code != 0 {

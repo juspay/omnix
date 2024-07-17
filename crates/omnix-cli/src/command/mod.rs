@@ -16,7 +16,7 @@ pub enum Command {
     /// Build all flake outputs (run CI locally)
     CI(ci::CIConfig),
 
-    /// Show Nix's health
+    /// Display the health of your system environment as suited for Nix
     Health(health::HealthConfig),
 }
 

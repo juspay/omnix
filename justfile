@@ -33,6 +33,9 @@ alias w := watch
 test:
     cargo test
 
+test-cli:
+    cd ./crates/omnix-cli && cargo watch -x test
+
 # Run docs server (live reloading)
 doc:
     cargo-doc-live
