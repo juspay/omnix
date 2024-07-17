@@ -17,7 +17,8 @@ use tabled::{
 
 #[derive(Parser, Debug)]
 pub struct ShowConfig {
-    /// The flake url to show outputs for
+    /// The flake to show outputs for
+    #[arg(name = "FLAKE")]
     pub flake_url: FlakeUrl,
 }
 
