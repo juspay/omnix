@@ -76,21 +76,21 @@ impl ShowConfig {
         FlakeOutputTable {
             rows: Row::vec_from_btreemap(flake.schema.packages),
             title: "📦 Packages".to_string(),
-            command: "nix build .#<name>".to_string(),
+            command: format!("nix build {}#<name>", self.flake_url),
         }
         .print();
 
         FlakeOutputTable {
             rows: Row::vec_from_btreemap(flake.schema.devshells),
             title: "🐚 Devshells".to_string(),
-            command: "nix develop .#<name>".to_string(),
+            command: format!("nix develop {}#<name>", self.flake_url),
         }
         .print();
 
         FlakeOutputTable {
             rows: Row::vec_from_btreemap(flake.schema.apps),
             title: "🚀 Apps".to_string(),
-            command: "nix run .#<name>".to_string(),
+            command: format!("nix run {}#<name>", self.flake_url),
         }
         .print();
 
