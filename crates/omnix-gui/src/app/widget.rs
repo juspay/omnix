@@ -5,8 +5,6 @@ use std::path::PathBuf;
 use dioxus::prelude::*;
 
 /// A refresh button with a busy indicator
-///
-/// You want to use [crate::state::datum] for this.
 pub fn RefreshButton<F: 'static + FnMut(Event<MouseData>)>(busy: bool, mut handler: F) -> Element {
     rsx! {
         button {
@@ -27,7 +25,7 @@ pub fn RefreshButton<F: 'static + FnMut(Event<MouseData>)>(busy: bool, mut handl
 /// Note: You can only select a single folder.
 ///
 /// NOTE(for future): When migrating to Dioxus using Tauri 2.0, switch to using
-/// https://github.com/tauri-apps/tauri-plugin-dialog
+/// <https://github.com/tauri-apps/tauri-plugin-dialog>
 // #[component]
 pub fn FolderDialogButton<F: 'static + FnMut(PathBuf)>(mut handler: F) -> Element {
     // FIXME: The id should be unique if this widget is used multiple times on
