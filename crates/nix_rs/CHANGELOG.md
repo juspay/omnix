@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **FlakeSchema**
+  - Add `nixos_configurations`
 - **eval**
   - `nix_eval_attr_json`: No longer takes `default_if_missing`; instead (always) returns `None` if attribute is missing.
 - **`NixEnv`**
