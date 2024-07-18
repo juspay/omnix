@@ -116,6 +116,13 @@ impl ShowConfig {
         }
         .print();
 
+        FlakeOutputTable {
+            rows: Row::vec_from_btreemap(flake.schema.nixos_configurations),
+            title: "🐧 NixOS Configurations".to_string(),
+            command: "nixos-rebuild switch --flake .#<name>".to_string(),
+        }
+        .print();
+
         Ok(())
     }
 }
