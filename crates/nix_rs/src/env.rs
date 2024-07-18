@@ -87,11 +87,11 @@ fn get_nix_disk(sys: &sysinfo::System) -> Result<&sysinfo::Disk, NixEnvError> {
 pub enum OS {
     /// On macOS
     MacOS {
-        /// Using https://github.com/LnL7/nix-darwin
+        /// Using nix-darwin
         nix_darwin: bool,
         arch: MacOSArch,
     },
-    /// https://nixos.org/
+    /// On NixOS
     NixOS,
     /// Nix is individually installed on Linux or macOS
     Other(os_info::Type),
