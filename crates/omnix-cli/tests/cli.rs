@@ -22,7 +22,11 @@ fn om_health() -> anyhow::Result<()> {
 /// `om show` runs, and succeeds for a local flake.
 #[test]
 fn om_show_local() -> anyhow::Result<()> {
-    om()?.arg("show").arg(".").assert().success();
+    om()?.arg("show").arg(".").assert().success().stdout(
+        predicate::str::contains("Packages")
+            .and(predicate::str::contains("Devshells"))
+            .and(predicate::str::contains("Checks")),
+    );
     Ok(())
 }
 
@@ -33,7 +37,12 @@ fn om_show_remote() -> anyhow::Result<()> {
         .arg("show")
         .arg("github:srid/haskell-multi-nix/c85563721c388629fa9e538a1d97274861bc8321")
         .assert()
-        .success();
+        .success()
+        .stdout(
+            predicate::str::contains("bar").and(predicate::str::contains(
+                "github:srid/haskell-multi-nix/c85563721c388629fa9e538a1d97274861bc8321",
+            )),
+        );
     Ok(())
 }
 
