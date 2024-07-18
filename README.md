@@ -7,7 +7,16 @@
 > [!NOTE] 
 > 🚧 omnix is in active development. It aims to supplement the [Nix](https://nixos.asia/en/nix) CLI to facilitate ease & adoption.
 
-## Getting Started
+## Status & Usage
+
+- [ ] `om show`
+    - [x] Basic `om show`
+    - [ ] Advanced `om show`
+- [x] `om health` (nix-health ng)
+- [ ] `om init` (Initialize flake templates)
+- [ ] ...
+
+## Developping
 
 1. [Install Nix](https://nixos.asia/en/install)
 1. [Setup `direnv`](https://nixos.asia/en/direnv)
@@ -18,7 +27,7 @@ This will automatically activate the nix develop shell. Open VSCode and install 
 > [!NOTE] 
 > If you would like to **learn the tools & technology** involved in this project, follow along this README noting the places where the emoji 🎓 is used.
 
-## Running locally
+### Running locally
 
 To run `omnix-cli`,
 
@@ -34,7 +43,7 @@ just watch-gui # Or `just wg`
 
 `just watch-gui` runs `dx serve` (with hot reload disabled) that will restart the desktop app after compilation.
 
-## Nix workflows
+### Nix workflows
 
 Inside the nix develop shell (activated by direnv) you can use any of the `cargo` or `rustc` commands, as well as [`just`](https://just.systems/) workflows. Nix specific commands can also be used to work with the project:
 
@@ -48,7 +57,7 @@ nix run
 nix run .#gui
 ```
 
-## Contributing
+### Contributing
 
 >[!TIP]
 > Run `just fmt` to autoformat the source tree.
@@ -59,21 +68,21 @@ nix run .#gui
 
 [^cc]: We don't use any automatic changelog generator for this repo.
 
-## Tech
+### Tech
 
-### GUI app (`omnix-gui`)
+#### GUI app (`omnix-gui`)
 
 We use [Dioxus](https://dioxuslabs.com/) to build the GUI using web technologies, as well as [dioxus-signals](https://github.com/DioxusLabs/dioxus/tree/master/packages/signals) for data reactivity.
 
-#### Styling
+##### Styling
 
 We use [Tailwind](https://tailwindcss.com/) for styling; 🎓 familiarize yourself with it! Tailwind enables developers not familiar with design to create reasonably good looking sites. You should also 🎓 get familiar with CSS flexboxes (see [Flexbox Froggy](https://flexboxfroggy.com/)).
 
-##### Color palette
+###### Color palette
 
 See `tailwind.config.js` for colour aliases we use throughout the app. Instead of, say, `text-pink-500` we use `text-primary-500` ("primary" is more semantic than "pink").
 
-## Crates
+### Crates
 
 | Crate                               | Description                             |
 | ----------------------------------- | --------------------------------------- |
