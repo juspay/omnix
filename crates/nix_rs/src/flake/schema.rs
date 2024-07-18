@@ -22,6 +22,7 @@ pub struct FlakeSchema {
     pub checks: BTreeMap<String, Val>,
     pub apps: BTreeMap<String, Val>,
     pub formatter: Option<Val>,
+    pub nixos_configurations: BTreeMap<String, Val>,
     /// Other unrecognized keys.
     pub other: Option<BTreeMap<String, FlakeOutputs>>,
     // TODO: Add nixosModules, nixosConfigurations, darwinModules, etc.
@@ -34,9 +35,9 @@ impl FlakeSchema {
     /// as is (in [FlakeSchema::other]).
     pub fn from(output: &FlakeOutputs, system: &System) -> Self {
         let output: &mut FlakeOutputs = &mut output.clone();
-        let pop_per_system_tree = |output: &mut FlakeOutputs, k: &str| -> BTreeMap<String, Val> {
+        let pop_tree = |output: &mut FlakeOutputs, ks: &[&str]| -> BTreeMap<String, Val> {
             let mut f = || -> Option<BTreeMap<String, Val>> {
-                let out = output.pop(&[k, system.as_ref()])?;
+                let out = output.pop(ks)?;
                 let outs = out.as_attrset()?;
                 let r = outs
                     .iter()
@@ -48,8 +49,11 @@ impl FlakeSchema {
                 Some(r)
             };
             let mr = f();
-            output.pop(&[k]);
+            output.pop(ks);
             mr.unwrap_or(BTreeMap::new())
+        };
+        let pop_per_system_tree = |output: &mut FlakeOutputs, k: &str| -> BTreeMap<String, Val> {
+            pop_tree(output, &[k, system.as_ref()])
         };
         let pop_leaf_type = |output: &mut FlakeOutputs, k: &str| -> Option<Val> {
             let leaf = output.pop(&[k, system.as_ref()])?.as_leaf()?.clone();
@@ -64,6 +68,7 @@ impl FlakeSchema {
             checks: pop_per_system_tree(output, "checks"),
             apps: pop_per_system_tree(output, "apps"),
             formatter: pop_leaf_type(output, "formatter"),
+            nixos_configurations: pop_tree(output, &["nixosConfigurations"]),
             other: (*output).as_attrset().cloned(),
         }
     }
