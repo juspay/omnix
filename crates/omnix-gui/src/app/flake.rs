@@ -115,6 +115,7 @@ pub fn FlakeSchemaView(schema: FlakeSchema) -> Element {
                 BtreeMapView { title: "Dev Shells", tree: schema.devshells }
                 BtreeMapView { title: "Checks", tree: schema.checks }
                 BtreeMapView { title: "Apps", tree: schema.apps }
+                BtreeMapView { title: "NixOS Configurations", tree: schema.nixos_configurations }
                 SectionHeading { title: "Formatter" }
                 match schema.formatter.as_ref() {
                     Some(v) => {
