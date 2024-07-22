@@ -24,7 +24,7 @@ pub async fn nixcmd() -> &'static NixCmd {
 }
 
 static REGISTRY: LazyLock<FlakeUrl> =
-    LazyLock::new(|| PathBuf::from(var("FLAKREATE_REGISTRY").unwrap()).into());
+    LazyLock::new(|| PathBuf::from(var("OM_INIT_REGISTRY").unwrap()).into());
 
 #[derive(Parser, Debug)]
 #[clap(author = "Sridhar Ratnakumar", version, about)]

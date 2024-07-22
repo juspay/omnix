@@ -37,7 +37,7 @@
               nativeBuildInputs = with pkgs;[
                 pkg-config
               ];
-              FLAKREATE_REGISTRY = inputs.self + /crates/flakreate/registry;
+              OM_INIT_REGISTRY = inputs.self + /crates/flakreate/registry;
               # Disable tests due to sandboxing issues; we run them on CI
               # instead.
               doCheck = false;
