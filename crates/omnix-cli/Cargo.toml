@@ -13,6 +13,7 @@ anyhow = { workspace = true }
 clap = { workspace = true }
 clap-verbosity-flag = { workspace = true }
 colored = { workspace = true }
+flakreate = { workspace = true }
 human-panic = { workspace = true }
 nix_health = { workspace = true }
 nix_rs = { workspace = true }

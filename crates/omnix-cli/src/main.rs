@@ -1,3 +1,4 @@
+#![feature(lazy_cell)]
 use clap::Parser;
 use clap_verbosity_flag::{InfoLevel, Verbosity};
 

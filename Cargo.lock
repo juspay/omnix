@@ -3076,6 +3076,7 @@ dependencies = [
  "clap",
  "clap-verbosity-flag",
  "colored",
+ "flakreate",
  "human-panic",
  "nix_health",
  "nix_rs",
