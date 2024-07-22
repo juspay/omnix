@@ -23,9 +23,6 @@ pub struct FlakeTemplate {
     #[serde(skip_deserializing)]
     pub name: String,
 
-    #[serde(default)]
-    pub tags: Vec<String>,
-
     pub description: String,
 
     pub path: String,
@@ -33,26 +30,45 @@ pub struct FlakeTemplate {
     #[serde(rename = "welcomeText")]
     pub welcome_text: Option<String>,
 
-    pub params: Vec<Param>,
+    #[serde(skip_deserializing)]
+    pub config: FlakeTemplateConfig,
 }
 
 impl Display for FlakeTemplate {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        if self.tags.is_empty() {
+        if self.config.tags.is_empty() {
             write!(f, "{}", self.name)
         } else {
-            write!(f, "{:<20} {}", self.name, self.tags.join(", ").dimmed())
+            write!(
+                f,
+                "{:<20} {}",
+                self.name,
+                self.config.tags.join(", ").dimmed()
+            )
         }
     }
 }
 
 impl FlakeTemplate {
     pub fn prompt_replacements(&self) -> anyhow::Result<Vec<Vec<FileOp>>> {
-        self.params
+        self.config
+            .params
             .iter()
             .map(|param| param.prompt_value())
             .collect()
     }
+}
+
+/// Custom flake properties not supported by Nix itself.
+#[derive(Debug, Default, Serialize, Deserialize, Clone)]
+pub struct FlakeTemplateConfig {
+    #[serde(skip_deserializing)]
+    pub name: String,
+
+    #[serde(default)]
+    pub tags: Vec<String>,
+
+    pub params: Vec<Param>,
 }
 
 /// Fetch the templates defined in a flake
@@ -63,9 +79,16 @@ pub async fn fetch(url: &FlakeUrl) -> Result<Vec<FlakeTemplate>, NixCmdError> {
     )
     .await?
     .unwrap_or_default();
-    // Set 'name' field in each template
+    let templates_config = nix_rs::flake::eval::nix_eval_attr_json::<
+        BTreeMap<String, FlakeTemplateConfig>,
+    >(nixcmd().await, &url.with_attr("om.templates"))
+    .await?
+    .unwrap_or_default();
     for (name, template) in templates.iter_mut() {
+        // Set 'name' field in each template
         template.name.clone_from(name);
+        // Pull in `om.templates` configuration
+        template.config = templates_config.get(name).cloned().unwrap_or_default();
     }
     Ok(templates.values().cloned().collect())
 }
