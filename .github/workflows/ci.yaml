@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - init-test
   pull_request:
 jobs:
   checks:

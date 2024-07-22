@@ -50,11 +50,15 @@ fn om_show_remote() -> anyhow::Result<()> {
 /// NOTE: Test ignored, because we need to avoid CLI prompts by support passing
 /// of params in CLI (via JSON) which the test can use to run the command
 /// non-interactively.
-#[ignore]
 #[test]
 fn om_init() -> anyhow::Result<()> {
     let temp_dir = assert_fs::TempDir::new().unwrap();
-    om()?.arg("init").arg(temp_dir.path()).assert().success();
+    om()?
+        .arg("init")
+        .arg(temp_dir.path())
+        .write_stdin("\n\n")
+        .assert()
+        .success();
     temp_dir.close().unwrap();
     Ok(())
 }
