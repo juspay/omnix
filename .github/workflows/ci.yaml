@@ -27,6 +27,11 @@ jobs:
           nixci \
             --extra-access-tokens ${{ secrets.GITHUB_TOKEN }} \
             build --systems "path:$HOME/systems"
+      # In lieu of https://github.com/srid/nixci/issues/88
+      - name: Registry flake check
+        run: |
+          cd ./crates/flakreate/registry
+          nix flake check
       - name: CLI Tests
         run: |
           # We disable tests on Nix due to sandboxing issues.

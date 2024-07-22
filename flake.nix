@@ -41,11 +41,6 @@
         };
       };
 
-      flake.nixci.default = {
-        omnix.dir = ./.;
-        flakreate-registry.dir = ./crates/flakreate/registry;
-      };
-
       perSystem = { config, self', pkgs, lib, system, ... }: {
         # Add your auto-formatters here.
         # cf. https://nixos.asia/en/treefmt
