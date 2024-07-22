@@ -7,7 +7,6 @@
     # Pull templates from external flake-parts modules
     # The pull happens in CI periodically.
     haskell-flake.url = "github:srid/haskell-flake";
-    haskell-flake.flake = false;
     haskell-template.url = "github:srid/haskell-template";
     haskell-template.flake = false;
     nix-dev-home.url = "github:juspay/nix-dev-home";
@@ -16,10 +15,19 @@
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       systems = import inputs.systems;
       flake = {
+        templates = {
+          nix-dev-home = inputs.nix-dev-home.templates.default;
+          haskell-flake = inputs.haskell-flake.templates.example;
+          haskell-template = {
+            # TODO: Upstream?
+            description = "A batteries-included Haskell project template";
+            path = builtins.path { path = inputs.haskell-template; };
+          };
+        };
         # TODO: Ideally, these params should be moved to upstream module.
         # But do that only as the spec stabilizes.
-        templates = rec {
-          nix-dev-home = inputs.nix-dev-home.templates.default // {
+        om.templates = {
+          nix-dev-home = {
             tags = [ "home-manager" "juspay" "development" ];
             params = [
               {
@@ -60,8 +68,6 @@
             ];
           };
           haskell-flake = {
-            description = "Haskell project template, using haskell-flake";
-            path = builtins.path { path = inputs.haskell-flake + /example; };
             tags = [ "haskell" "haskell-flake" ];
             params = [
               {
@@ -77,8 +83,6 @@
             ];
           };
           haskell-template = {
-            description = "A batteries-included Haskell project template";
-            path = builtins.path { path = inputs.haskell-template; };
             tags = [ "haskell" "haskell-flake" "relude" "just" ];
             params = [
               {
