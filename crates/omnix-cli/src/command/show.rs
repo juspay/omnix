@@ -15,6 +15,7 @@ use tabled::{
     Table, Tabled,
 };
 
+/// Inspect a flake
 #[derive(Parser, Debug)]
 pub struct ShowConfig {
     /// The flake to show outputs for

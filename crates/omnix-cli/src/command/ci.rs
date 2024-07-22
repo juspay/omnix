@@ -1,5 +1,6 @@
 use clap::Parser;
 
+/// Build all flake outputs (run CI locally)
 #[derive(Parser, Debug)]
 pub struct CIConfig {}
 
