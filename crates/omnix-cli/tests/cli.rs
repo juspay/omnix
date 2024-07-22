@@ -47,9 +47,10 @@ fn om_show_remote() -> anyhow::Result<()> {
 
 /// `om init` runs and successfully initializes a template
 ///
-/// NOTE: Test ignored, because we need to avoid CLI prompts by support passing
-/// of params in CLI (via JSON) which the test can use to run the command
-/// non-interactively.
+/// NOTE: Test ignored due to https://github.com/mikaelmello/inquire/issues/71
+///
+/// Alternatively, we can pass all prompt data via CLI args, as JSON. But this
+/// may be overkill.
 #[ignore]
 #[test]
 fn om_init() -> anyhow::Result<()> {
