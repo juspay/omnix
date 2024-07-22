@@ -4,7 +4,7 @@ use clap::Parser;
 use nix_rs::flake::url::FlakeUrl;
 
 static REGISTRY: LazyLock<FlakeUrl> =
-    LazyLock::new(|| PathBuf::from(env!("FLAKREATE_REGISTRY")).into());
+    LazyLock::new(|| PathBuf::from(env!("OM_INIT_REGISTRY")).into());
 
 /// Initialize a new flake project
 #[derive(Parser, Debug)]
