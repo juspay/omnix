@@ -2,11 +2,13 @@
 
 ## Unreleased
 
-- **FlakeSchema**
+- **`flake::schema::FlakeSchema`**
   - Add `nixos_configurations`
-- **eval**
+- **`flake::url`**
+  - Remove string convertion implementations; use `std::parse` instead, and handle errors explicitly.
+- **`eval`**
   - `nix_eval_attr_json`: No longer takes `default_if_missing`; instead (always) returns `None` if attribute is missing.
-- **`NixEnv`**
+- **`env::NixEnv`**
   - Clarify error message when `$USER` is not set
 
 ## [0.5.0](https://github.com/juspay/nix-rs/compare/0.4.0...0.5.0) (2024-06-05)
