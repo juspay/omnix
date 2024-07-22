@@ -1,6 +1,5 @@
-use assert_cmd::prelude::*;
+use assert_cmd::Command;
 use predicates::prelude::*;
-use std::process::Command;
 
 /// `om --help` works
 #[test]
@@ -43,6 +42,20 @@ fn om_show_remote() -> anyhow::Result<()> {
                 "github:srid/haskell-multi-nix/c85563721c388629fa9e538a1d97274861bc8321",
             )),
         );
+    Ok(())
+}
+
+/// `om init` runs and successfully initializes a template
+///
+/// NOTE: Test ignored, because we need to avoid CLI prompts by support passing
+/// of params in CLI (via JSON) which the test can use to run the command
+/// non-interactively.
+#[ignore]
+#[test]
+fn om_init() -> anyhow::Result<()> {
+    let temp_dir = assert_fs::TempDir::new().unwrap();
+    om()?.arg("init").arg(temp_dir.path()).assert().success();
+    temp_dir.close().unwrap();
     Ok(())
 }
 
