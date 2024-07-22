@@ -29,6 +29,9 @@ watch *ARGS:
 
 alias w := watch
 
+watch-flakreate *ARGS:
+    cd ./crates/flakreate && cargo watch -x 'run -- {{ARGS}}'
+
 # Run tests
 test:
     cargo test
