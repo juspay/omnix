@@ -1,10 +1,10 @@
-use std::{env::var, path::PathBuf, sync::LazyLock};
+use std::{path::PathBuf, sync::LazyLock};
 
 use clap::Parser;
 use nix_rs::flake::url::FlakeUrl;
 
 static REGISTRY: LazyLock<FlakeUrl> =
-    LazyLock::new(|| PathBuf::from(var("FLAKREATE_REGISTRY").unwrap()).into());
+    LazyLock::new(|| PathBuf::from(env!("FLAKREATE_REGISTRY")).into());
 
 /// Initialize a new flake project
 #[derive(Parser, Debug)]
