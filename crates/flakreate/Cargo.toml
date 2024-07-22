@@ -1,0 +1,20 @@
+[package]
+authors = ["Sridhar Ratnakumar <srid@srid.ca>"]
+edition = "2021"
+# If you change the name here, you must also do it in flake.nix (and run `cargo generate-lockfile` afterwards)
+name = "flakreate"
+version = "0.1.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = { workspace = true }
+clap = { workspace = true }
+colored = { workspace = true }
+console = { workspace = true }
+glob = { workspace = true }
+inquire = { workspace = true }
+nix_rs = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
