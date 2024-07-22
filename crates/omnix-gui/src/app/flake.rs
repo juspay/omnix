@@ -43,7 +43,8 @@ pub fn FlakeInput() -> Element {
                 value: state.get_flake_url_string(),
                 disabled: busy,
                 onchange: move |ev| {
-                    let url: FlakeUrl = ev.value().clone().into();
+                    // TODO: Handle URL parsing errors, and show in GUI
+                    let url: FlakeUrl = str::parse(&ev.value()).unwrap();
                     Route::go_to_flake(url);
                 }
             }

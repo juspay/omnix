@@ -22,11 +22,11 @@ impl FlakeUrl {
     /// Provide real-world examples of flake URLs
     pub fn suggestions() -> Vec<FlakeUrl> {
         vec![
-            "github:nammayatri/nammayatri".into(),
-            "github:srid/emanote".into(),
-            "github:srid/nixos-config".into(),
-            "github:juspay/nix-browser".into(),
-            "github:juspay/nix-dev-home".into(),
+            str::parse("github:nammayatri/nammayatri").unwrap(),
+            str::parse("github:srid/emanote").unwrap(),
+            str::parse("github:srid/nixos-config").unwrap(),
+            str::parse("github:juspay/nix-browser").unwrap(),
+            str::parse("github:juspay/nix-dev-home").unwrap(),
             // Commented out until we figure out rendering performance and/or
             // search filtering/limit.
             // "github:nixos/nixpkgs".into(),
@@ -94,18 +94,6 @@ impl FlakeUrl {
     }
 }
 
-impl From<&str> for FlakeUrl {
-    fn from(url: &str) -> Self {
-        url.to_string().into()
-    }
-}
-
-impl From<String> for FlakeUrl {
-    fn from(url: String) -> Self {
-        Self(url)
-    }
-}
-
 impl From<PathBuf> for FlakeUrl {
     fn from(path: PathBuf) -> Self {
         FlakeUrl(format!("path:{}", path.display()))
@@ -120,7 +108,7 @@ impl FromStr for FlakeUrl {
         if s.is_empty() {
             Err("Empty string is not a valid Flake URL".to_string())
         } else {
-            Ok(s.into())
+            Ok(FlakeUrl(s.to_string()))
         }
     }
 }
