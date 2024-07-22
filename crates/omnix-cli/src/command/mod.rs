@@ -7,16 +7,12 @@ pub mod show;
 
 #[derive(Subcommand, Debug)]
 pub enum Command {
-    /// Inspect a flake
     Show(show::ShowConfig),
 
-    /// Initialize a flake
     Init(init::InitConfig),
 
-    /// Build all flake outputs (run CI locally)
     CI(ci::CIConfig),
 
-    /// Display the health of your system environment as suited for Nix
     Health(health::HealthConfig),
 }
 

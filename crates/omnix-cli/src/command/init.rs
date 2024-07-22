@@ -1,5 +1,6 @@
 use clap::Parser;
 
+/// Initialize a new flake project
 #[derive(Parser, Debug)]
 pub struct InitConfig {}
 
