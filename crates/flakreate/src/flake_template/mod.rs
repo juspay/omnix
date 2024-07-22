@@ -84,9 +84,10 @@ pub async fn fetch(url: &FlakeUrl) -> Result<Vec<FlakeTemplate>, NixCmdError> {
     >(nixcmd().await, &url.with_attr("om.templates"))
     .await?
     .unwrap_or_default();
-    // Set 'name' field in each template
     for (name, template) in templates.iter_mut() {
+        // Set 'name' field in each template
         template.name.clone_from(name);
+        // Pull in `om.templates` configuration
         template.config = templates_config.get(name).cloned().unwrap_or_default();
     }
     Ok(templates.values().cloned().collect())
