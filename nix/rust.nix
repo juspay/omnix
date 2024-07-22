@@ -116,6 +116,15 @@
             };
           };
         };
+        "flakreate" = {
+          crane.args = {
+            buildInputs = lib.optionals pkgs.stdenv.isDarwin (
+              with pkgs.darwin.apple_sdk.frameworks; [
+                IOKit
+              ]
+            );
+          };
+        };
       };
 
       src = lib.cleanSourceWith {

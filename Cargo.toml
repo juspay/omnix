@@ -7,6 +7,7 @@ members = [
     "crates/omnix-gui",
     "crates/nix_rs",
     "crates/nix_health",
+    "crates/flakreate",
 ]
 
 [workspace.dependencies]
@@ -16,12 +17,15 @@ cfg-if = "1"
 clap = { version = "4.3", features = ["derive", "env"] }
 clap-verbosity-flag = "2.2.0"
 colored = { version = "2.0" }
+console = "0.15.8"
 console_error_panic_hook = "0.1"
 console_log = "1"
 direnv = "0.1.1"
 fermi = "0.4.3"
+glob = "0.3.1"
 http = "0.2"
 human-panic = "1.1.5"
+inquire = "0.7.5"
 is_proc_translated = { version = "0.1.1" }
 nix_health = { path = "./crates/nix_health" }
 nix_rs = { path = "./crates/nix_rs" }
