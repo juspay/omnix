@@ -123,6 +123,7 @@
                 IOKit
               ]
             );
+            FLAKREATE_REGISTRY = inputs.self + /crates/flakreate/registry;
           };
         };
       };

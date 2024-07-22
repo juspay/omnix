@@ -59,6 +59,7 @@
             config.nix-health.outputs.devShell
             self'.devShells.rust
           ];
+          FLAKREATE_REGISTRY = inputs.self + /crates/flakreate/registry;
           packages = with pkgs; [
             just
             cargo-watch
