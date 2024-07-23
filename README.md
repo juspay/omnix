@@ -9,6 +9,13 @@
 
 ## Status & Usage
 
+To install omnix,
+
+```sh
+nix --accept-flake-config profile install github:juspay/omnix
+# Then, run `om` command
+```
+
 - [ ] `om show`
     - [x] Basic `om show`
     - [ ] Advanced `om show`

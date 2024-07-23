@@ -35,9 +35,9 @@ jobs:
       - name: Registry flake check
         run: |
           cd ./crates/flakreate/registry
-          nix flake check
+          nix --accept-flake-config flake check
       - name: CLI Tests
         run: |
           # We disable tests on Nix due to sandboxing issues.
           cd ./crates/omnix-cli
-          nix develop -c cargo test
+          nix --accept-flake-config develop -c cargo test
