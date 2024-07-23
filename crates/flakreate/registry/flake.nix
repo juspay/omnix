@@ -8,7 +8,6 @@
     # The pull happens in CI periodically.
     haskell-flake.url = "github:srid/haskell-flake";
     haskell-template.url = "github:srid/haskell-template";
-    haskell-template.flake = false;
     nix-dev-home.url = "github:juspay/nix-dev-home";
   };
   outputs = inputs:
@@ -18,11 +17,7 @@
         templates = {
           nix-dev-home = inputs.nix-dev-home.templates.default;
           haskell-flake = inputs.haskell-flake.templates.example;
-          haskell-template = {
-            # TODO: Upstream?
-            description = "A batteries-included Haskell project template";
-            path = builtins.path { path = inputs.haskell-template; };
-          };
+          haskell-template = inputs.haskell-template.templates.default;
         };
         # TODO: Ideally, these params should be moved to upstream module.
         # But do that only as the spec stabilizes.
