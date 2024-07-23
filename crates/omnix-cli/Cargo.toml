@@ -23,7 +23,8 @@ tokio = { workspace = true }
 tracing = { workspace = true }
 
 [dev-dependencies]
+anyhow = { workspace = true }
 assert_cmd = "2"
 assert_fs = "1"
 predicates = "3"
-anyhow = { workspace = true }
+rexpect = "0.5"
