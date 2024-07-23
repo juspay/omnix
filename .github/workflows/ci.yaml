@@ -15,6 +15,10 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
+      - uses: cachix/cachix-action@v14
+        with:
+          name: om
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
       - name: Build
         run: |
           # Prep systems list
