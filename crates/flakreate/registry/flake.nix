@@ -87,7 +87,7 @@
                 required = false;
                 files = [
                   "haskell-template.cabal"
-                  "flake.nix"
+                  "nix/modules/haskell.nix"
                   "justfile"
                 ];
               }
@@ -107,6 +107,14 @@
                 default = true;
                 files = [
                   ".vscode"
+                ];
+              }
+              {
+                name = "Nix Template";
+                help = "Keep the flake template in the project";
+                default = false;
+                files = [
+                  "nix/modules/template.nix"
                 ];
               }
               {

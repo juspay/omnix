@@ -242,11 +242,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1721695612,
-        "narHash": "sha256-XhcMVpTWcBALdaERuLtpszBZ0ybdQm7ZY/vyaEOD29s=",
+        "lastModified": 1721699742,
+        "narHash": "sha256-1kY9KbXDJ3cGw81Yz6ju5GiUmrqawY9/RLFxQuCaVik=",
         "owner": "srid",
         "repo": "haskell-template",
-        "rev": "66c0fc7e5f1b4480a46d66d5b489bf10578c4ca9",
+        "rev": "43799d66979e681413f913f1a32f769659dc2a2e",
         "type": "github"
       },
       "original": {
