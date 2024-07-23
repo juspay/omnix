@@ -44,7 +44,7 @@ impl FileOp {
 
     pub async fn apply(ops: &[Self]) -> anyhow::Result<()> {
         // TODO: Refactor the LLM generated code below
-        // TODO: Append thesae paths to base dir
+        // TODO: Append these paths to base dir
         for op in ops {
             match op {
                 FileOp::ContentReplace(file, from, to) => {
@@ -59,8 +59,12 @@ impl FileOp {
                 }
                 FileOp::PathDelete(path) => {
                     println!("delete: {}", path.display());
-                    // FIXME: Careful not to delete anything outside of base dir!
-                    tokio::fs::remove_dir_all(path).await?;
+                    if path.is_file() {
+                        tokio::fs::remove_file(path).await?;
+                    } else {
+                        // FIXME: Careful not to delete anything outside of base dir!
+                        tokio::fs::remove_dir_all(path).await?;
+                    }
                 }
             }
         }
