@@ -169,11 +169,14 @@ impl AppState {
             let mut nix_info = self.nix_info;
             let nix_info_refresh = self.nix_info_refresh;
             let _ = use_resource(move || async move {
-                let nixcmd = nix_rs::command::NixCmd::get().await;
                 let refresh = *nix_info_refresh.read();
                 tracing::info!("Updating nix info [{}] ...", refresh);
                 Datum::refresh_with(&mut nix_info, async {
-                    NixInfo::from_nix(nixcmd).await.map_err(|e| SystemError {
+                    let cfg = NixConfig::get()
+                        .await
+                        .as_ref()
+                        .map_err(|e| Into::<SystemError>::into(e.to_string()))?;
+                    NixInfo::new(cfg.clone()).await.map_err(|e| SystemError {
                         message: format!("Error getting nix info: {:?}", e),
                     })
                 })

@@ -6,6 +6,8 @@ use thiserror::Error;
 
 use tracing::instrument;
 
+use crate::command::NixCmd;
+
 /// Nix version as parsed from `nix --version`
 #[derive(Clone, Copy, PartialOrd, PartialEq, Eq, Debug, SerializeDisplay, DeserializeFromStr)]
 pub struct NixVersion {
@@ -50,10 +52,8 @@ impl NixVersion {
     /// Get the output of `nix --version`
 
     #[instrument(name = "version")]
-    pub async fn from_nix(
-        nix_cmd: &super::command::NixCmd,
-    ) -> Result<NixVersion, super::command::NixCmdError> {
-        let v = nix_cmd
+    pub async fn from_nix() -> Result<NixVersion, super::command::NixCmdError> {
+        let v = NixCmd::default()
             .run_with_args_expecting_fromstr(&["--version"])
             .await?;
         Ok(v)
@@ -68,9 +68,7 @@ impl fmt::Display for NixVersion {
 
 #[tokio::test]
 async fn test_run_nix_version() {
-    let nix_version = NixVersion::from_nix(&crate::command::NixCmd::default())
-        .await
-        .unwrap();
+    let nix_version = NixVersion::from_nix().await.unwrap();
     println!("Nix version: {}", nix_version);
 }
 
