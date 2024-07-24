@@ -12,6 +12,7 @@
   - Clarify error message when `$USER` is not set
 - **``command`**
   - Add `NixCmd::get()` to return flakes-enabled global command
+  - `NixCmd::default()` returns the bare command (no experimental features enabled)
 
 ## [0.5.0](https://github.com/juspay/nix-rs/compare/0.4.0...0.5.0) (2024-06-05)
 

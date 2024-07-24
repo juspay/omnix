@@ -110,7 +110,8 @@ impl FromStr for TrustedUserValue {
 
 #[tokio::test]
 async fn test_nix_config() -> Result<(), crate::command::NixCmdError> {
-    let v = NixConfig::from_nix(&crate::command::NixCmd::default()).await?;
+    let cmd = crate::command::NixCmd::get().await;
+    let v = NixConfig::from_nix(cmd).await?;
     println!("Max Jobs: {}", v.max_jobs.value);
     Ok(())
 }
