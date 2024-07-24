@@ -1,9 +1,6 @@
 #![feature(lazy_cell)]
-use std::env::var;
 use std::path::PathBuf;
-use std::sync::LazyLock;
 
-use clap::Parser;
 use flake_template::fileop::FileOp;
 use flake_template::template::FlakeTemplate;
 use glob::{Pattern, PatternError};
@@ -21,29 +18,6 @@ pub async fn nixcmd() -> &'static NixCmd {
     NIXCMD
         .get_or_init(|| async { NixCmd::default().with_flakes().await.unwrap() })
         .await
-}
-
-static REGISTRY: LazyLock<FlakeUrl> =
-    LazyLock::new(|| PathBuf::from(var("OM_INIT_REGISTRY").unwrap()).into());
-
-#[derive(Parser, Debug)]
-#[clap(author = "Sridhar Ratnakumar", version, about)]
-/// Application configuration
-pub struct Args {
-    /// whether to be verbose
-    #[arg(short = 'v')]
-    pub verbose: bool,
-
-    /// Flake template registry to use
-    ///
-    /// The flake attribute is treated as a glob pattern to select the
-    /// particular template (or subset of templates) to use.
-    #[arg(short = 't', default_value_t = REGISTRY.clone())]
-    pub registry: FlakeUrl,
-
-    /// Where to create the template
-    #[arg()]
-    pub path: PathBuf,
 }
 
 struct FlakeTemplateRegistry {
