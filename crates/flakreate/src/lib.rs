@@ -5,7 +5,7 @@ use std::sync::LazyLock;
 
 use clap::Parser;
 use flake_template::fileop::FileOp;
-use flake_template::FlakeTemplate;
+use flake_template::template::FlakeTemplate;
 use glob::{Pattern, PatternError};
 use inquire::Select;
 use nix_rs::command::NixCmd;
@@ -67,7 +67,7 @@ impl FlakeTemplateRegistry {
     pub async fn load_and_select_template(&self) -> anyhow::Result<FlakeTemplate> {
         let term = console::Term::stdout();
         term.write_line(format!("Loading registry {}...", self.flake_url).as_str())?;
-        let templates = flake_template::fetch(&self.flake_url).await?;
+        let templates = flake_template::template::fetch(&self.flake_url).await?;
         term.clear_last_lines(1)?;
         println!("Loaded registry: {}", self.flake_url);
         // TODO: avoid duplicates (aliases)
