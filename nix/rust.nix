@@ -147,7 +147,15 @@
         inherit (config.rust-project) crates;
       in
       {
-        default = crates."omnix-cli".crane.outputs.drv.crate;
+        default = crates."omnix-cli".crane.outputs.drv.crate.overrideAttrs (oa: {
+          nativeBuildInputs = (oa.nativeBuildInputs or [ ]) ++ [ pkgs.installShellFiles ];
+          postInstall = ''
+            installShellCompletion --cmd om \
+              --bash <($out/bin/om completion bash) \
+              --zsh <($out/bin/om completion zsh) \
+              --fish <($out/bin/om completion fish)
+          '';
+        });
         gui = crates."omnix-gui".crane.outputs.drv.crate.overrideAttrs (oa: {
           # Copy over assets for the desktop app to access
           installPhase =

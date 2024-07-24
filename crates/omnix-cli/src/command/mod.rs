@@ -1,6 +1,7 @@
 use clap::Subcommand;
 
 pub mod ci;
+mod completion;
 pub mod health;
 pub mod init;
 pub mod show;
@@ -14,6 +15,12 @@ pub enum Command {
     CI(ci::CIConfig),
 
     Health(health::HealthConfig),
+
+    /// Generates shell completion scripts
+    Completion {
+        #[arg(value_enum)]
+        shell: clap_complete::Shell,
+    },
 }
 
 impl Command {
@@ -23,6 +30,7 @@ impl Command {
             Command::Init(config) => config.run().await,
             Command::CI(config) => config.run().await,
             Command::Health(config) => config.run().await,
+            Command::Completion { shell } => completion::generate_completion(*shell),
         }
     }
 }
