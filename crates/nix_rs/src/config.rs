@@ -4,8 +4,11 @@ use std::{convert::Infallible, str::FromStr};
 
 use serde::{Deserialize, Serialize};
 use serde_with::DeserializeFromStr;
+use tokio::sync::OnceCell;
 use tracing::instrument;
 use url::Url;
+
+use crate::command::{NixCmd, NixCmdError};
 
 use super::flake::system::System;
 
@@ -35,7 +38,22 @@ pub struct ConfigVal<T> {
     pub description: String,
 }
 
+static NIX_CONFIG: OnceCell<Result<NixConfig, NixCmdError>> = OnceCell::const_new();
+
 impl NixConfig {
+    /// Get the once version of `NixConfig`.
+    #[instrument(name = "show-config(once)")]
+    pub async fn get() -> &'static Result<NixConfig, NixCmdError> {
+        NIX_CONFIG
+            .get_or_init(|| async {
+                let mut cmd = NixCmd::default();
+                cmd.with_flakes(); // Enable flakes, since don't yet know if it is already enabled.
+                let cfg = NixConfig::from_nix(&cmd).await?;
+                Ok(cfg)
+            })
+            .await
+    }
+
     /// Get the output of `nix show-config`
     #[instrument(name = "show-config")]
     pub async fn from_nix(
@@ -110,8 +128,7 @@ impl FromStr for TrustedUserValue {
 
 #[tokio::test]
 async fn test_nix_config() -> Result<(), crate::command::NixCmdError> {
-    let cmd = crate::command::NixCmd::get().await;
-    let v = NixConfig::from_nix(cmd).await?;
+    let v = NixConfig::get().await.as_ref().unwrap();
     println!("Max Jobs: {}", v.max_jobs.value);
     Ok(())
 }

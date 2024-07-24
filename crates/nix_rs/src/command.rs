@@ -20,6 +20,8 @@ use tracing::instrument;
 #[cfg(feature = "clap")]
 use clap;
 
+use crate::config::NixConfig;
+
 /// The `nix` command's global options.
 ///
 /// See [available global
@@ -73,19 +75,21 @@ impl NixCmd {
     /// Return a global `NixCmd` instance with flakes enabled.
     pub async fn get() -> &'static NixCmd {
         NIXCMD
-            .get_or_init(|| async { NixCmd::default().with_flakes().await.unwrap() })
+            .get_or_init(|| async {
+                let cfg = NixConfig::get().await.as_ref().unwrap();
+                let mut cmd = NixCmd::default();
+                if !cfg.is_flakes_enabled() {
+                    cmd.with_flakes()
+                }
+                cmd
+            })
             .await
     }
 
-    /// Return a `NixCmd` with flakes enabled, if not already enabled.
-    pub async fn with_flakes(&self) -> Result<Self, NixCmdError> {
-        let cfg = super::config::NixConfig::from_nix(&Self::default()).await?;
-        let mut cmd = self.clone();
-        if !cfg.is_flakes_enabled() {
-            cmd.extra_experimental_features
-                .append(vec!["nix-command".to_string(), "flakes".to_string()].as_mut());
-        }
-        Ok(cmd)
+    /// Enable flakes on this [NixCmd] configuration
+    pub fn with_flakes(&mut self) {
+        self.extra_experimental_features
+            .append(vec!["nix-command".to_string(), "flakes".to_string()].as_mut());
     }
 
     /// Return a [Command] for this [NixCmd] configuration

@@ -13,6 +13,8 @@
 - **``command`**
   - Add `NixCmd::get()` to return flakes-enabled global command
   - `NixCmd::default()` returns the bare command (no experimental features enabled)
+- ``config``
+  - Add `NixConfig::get()` to get the once-created static value of `NixConfig`
 
 ## [0.5.0](https://github.com/juspay/nix-rs/compare/0.4.0...0.5.0) (2024-06-05)
 
