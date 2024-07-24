@@ -116,13 +116,14 @@ impl AppState {
             let mut flake = self.flake;
             let mut flake_cache = self.flake_cache;
             let _ = use_resource(move || async move {
+                let nixcmd = nix_rs::command::NixCmd::get().await;
                 let flake_url = flake_url.read().clone();
                 let refresh = *flake_refresh.read();
                 if let Some(flake_url) = flake_url {
                     let flake_url_2 = flake_url.clone();
                     tracing::info!("Updating flake [{}] refresh={} ...", &flake_url, refresh);
                     let res = Datum::refresh_with(&mut flake, async move {
-                        Flake::from_nix(&nix_rs::command::NixCmd::default(), flake_url_2)
+                        Flake::from_nix(nixcmd, flake_url_2)
                             .await
                             .map_err(|e| Into::<SystemError>::into(e.to_string()))
                     })
@@ -164,14 +165,13 @@ impl AppState {
             let mut nix_info = self.nix_info;
             let nix_info_refresh = self.nix_info_refresh;
             let _ = use_resource(move || async move {
+                let nixcmd = nix_rs::command::NixCmd::get().await;
                 let refresh = *nix_info_refresh.read();
                 tracing::info!("Updating nix info [{}] ...", refresh);
                 Datum::refresh_with(&mut nix_info, async {
-                    NixInfo::from_nix(&nix_rs::command::NixCmd::default())
-                        .await
-                        .map_err(|e| SystemError {
-                            message: format!("Error getting nix info: {:?}", e),
-                        })
+                    NixInfo::from_nix(nixcmd).await.map_err(|e| SystemError {
+                        message: format!("Error getting nix info: {:?}", e),
+                    })
                 })
                 .await;
             });

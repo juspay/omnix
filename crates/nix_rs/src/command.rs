@@ -13,7 +13,7 @@ use std::fmt::{self, Display};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use tokio::process::Command;
+use tokio::{process::Command, sync::OnceCell};
 
 use tracing::instrument;
 
@@ -53,6 +53,8 @@ impl Default for NixCmd {
     }
 }
 
+static NIXCMD: OnceCell<NixCmd> = OnceCell::const_new();
+
 /// Trace a user-copyable command line
 ///
 /// [tracing::info!] the given [tokio::process::Command] with human-readable
@@ -68,6 +70,13 @@ pub fn trace_cmd(cmd: &tokio::process::Command) {
 }
 
 impl NixCmd {
+    /// Return a global `NixCmd` instance with flakes enabled.
+    pub async fn get() -> &'static NixCmd {
+        NIXCMD
+            .get_or_init(|| async { NixCmd::default().with_flakes().await.unwrap() })
+            .await
+    }
+
     /// Return a `NixCmd` with flakes enabled, if not already enabled.
     pub async fn with_flakes(&self) -> Result<Self, NixCmdError> {
         let cfg = super::config::NixConfig::from_nix(&Self::default()).await?;

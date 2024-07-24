@@ -5,10 +5,11 @@ use std::{
     fmt::{Display, Formatter},
 };
 
-use nix_rs::{command::NixCmdError, flake::url::FlakeUrl};
+use nix_rs::{
+    command::{NixCmd, NixCmdError},
+    flake::url::FlakeUrl,
+};
 use serde::{Deserialize, Serialize};
-
-use crate::nixcmd;
 
 use super::{config::FlakeTemplateConfig, fileop::FileOp};
 
@@ -58,15 +59,16 @@ impl FlakeTemplate {
 
 /// Fetch the templates defined in a flake
 pub async fn fetch(url: &FlakeUrl) -> Result<Vec<FlakeTemplate>, NixCmdError> {
+    let nixcmd = NixCmd::get().await;
     let mut templates = nix_rs::flake::eval::nix_eval_attr_json::<BTreeMap<String, FlakeTemplate>>(
-        nixcmd().await,
+        nixcmd,
         &url.with_attr("templates"),
     )
     .await?
     .unwrap_or_default();
     let templates_config = nix_rs::flake::eval::nix_eval_attr_json::<
         BTreeMap<String, FlakeTemplateConfig>,
-    >(nixcmd().await, &url.with_attr("om.templates"))
+    >(nixcmd, &url.with_attr("om.templates"))
     .await?
     .unwrap_or_default();
     for (name, template) in templates.iter_mut() {
