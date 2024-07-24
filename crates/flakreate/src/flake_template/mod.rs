@@ -1,4 +1,5 @@
 use colored::Colorize;
+use config::FlakeTemplateConfig;
 use core::fmt;
 use std::{
     collections::BTreeMap,
@@ -7,13 +8,12 @@ use std::{
 
 use fileop::FileOp;
 use nix_rs::{command::NixCmdError, flake::url::FlakeUrl};
-use param::Param;
 use serde::{Deserialize, Serialize};
 
 use crate::nixcmd;
 
+pub mod config;
 pub mod fileop;
-pub mod param;
 
 /// A Nix flake template
 ///
@@ -57,18 +57,6 @@ impl FlakeTemplate {
             .map(|param| param.prompt_value())
             .collect()
     }
-}
-
-/// Custom flake properties not supported by Nix itself.
-#[derive(Debug, Default, Serialize, Deserialize, Clone)]
-pub struct FlakeTemplateConfig {
-    #[serde(skip_deserializing)]
-    pub name: String,
-
-    #[serde(default)]
-    pub tags: Vec<String>,
-
-    pub params: Vec<Param>,
 }
 
 /// Fetch the templates defined in a flake
