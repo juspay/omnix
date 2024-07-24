@@ -21,6 +21,7 @@ omnix = { workspace = true }
 tabled = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
+clap_complete = "4.5.0"
 
 [dev-dependencies]
 anyhow = { workspace = true }
