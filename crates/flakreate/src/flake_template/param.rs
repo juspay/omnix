@@ -27,7 +27,7 @@ pub struct Param {
 /// The `Param` type.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(untagged)]
-enum Val {
+pub enum Val {
     Str(String),
     Bool(bool),
 }
