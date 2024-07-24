@@ -5,6 +5,18 @@ use serde::{Deserialize, Serialize};
 
 use super::fileop::FileOp;
 
+/// Custom flake properties not supported by Nix itself.
+#[derive(Debug, Default, Serialize, Deserialize, Clone)]
+pub struct FlakeTemplateConfig {
+    #[serde(skip_deserializing)]
+    pub name: String,
+
+    #[serde(default)]
+    pub tags: Vec<String>,
+
+    pub params: Vec<Param>,
+}
+
 /// A parameter to be filled in by the user in a nix flake template path.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Param {
@@ -27,7 +39,7 @@ pub struct Param {
 /// The `Param` type.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(untagged)]
-enum Val {
+pub enum Val {
     Str(String),
     Bool(bool),
 }
