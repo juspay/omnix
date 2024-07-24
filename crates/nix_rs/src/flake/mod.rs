@@ -12,7 +12,10 @@ use tracing::instrument;
 
 use self::{outputs::FlakeOutputs, schema::FlakeSchema, system::System, url::FlakeUrl};
 
-use crate::command::NixCmdError;
+use crate::{
+    command::{NixCmd, NixCmdError},
+    config::NixConfig,
+};
 
 /// All the information about a Nix flake
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -31,16 +34,12 @@ impl Flake {
 
     #[instrument(name = "flake", skip(nix_cmd))]
     pub async fn from_nix(
-        nix_cmd: &crate::command::NixCmd,
+        nix_cmd: &NixCmd,
+        nix_config: &NixConfig,
         url: FlakeUrl,
     ) -> Result<Flake, NixCmdError> {
-        use crate::config::NixConfig;
-
-        // TODO: Can we cache this?
-        let nix_config = NixConfig::from_nix(nix_cmd).await?;
-        let system = nix_config.system.value;
         let output = FlakeOutputs::from_nix(nix_cmd, &url).await?;
-        let schema = FlakeSchema::from(&output, &system);
+        let schema = FlakeSchema::from(&output, &nix_config.system.value);
         Ok(Flake {
             url,
             output: output.clone(),

@@ -5,6 +5,7 @@
 - **`flake::schema::FlakeSchema`**
   - Add `nixos_configurations`
 - **`flake::url`**
+  - `Flake::from_nix` explicitly takes `NixConfig` as argument, rather than implicitly running nix to get it.
   - Remove string convertion implementations; use `std::parse` instead, and handle errors explicitly.
 - **`eval`**
   - `nix_eval_attr_json`: No longer takes `default_if_missing`; instead (always) returns `None` if attribute is missing.

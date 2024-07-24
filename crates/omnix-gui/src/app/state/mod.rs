@@ -9,6 +9,7 @@ use dioxus::prelude::*;
 use dioxus_signals::{Readable, Signal, Writable};
 use nix_health::NixHealth;
 use nix_rs::{
+    config::NixConfig,
     flake::{url::FlakeUrl, Flake},
     info::NixInfo,
 };
@@ -123,7 +124,10 @@ impl AppState {
                     let flake_url_2 = flake_url.clone();
                     tracing::info!("Updating flake [{}] refresh={} ...", &flake_url, refresh);
                     let res = Datum::refresh_with(&mut flake, async move {
-                        Flake::from_nix(nixcmd, flake_url_2)
+                        let nix_config = NixConfig::from_nix(nixcmd)
+                            .await
+                            .map_err(|e| Into::<SystemError>::into(e.to_string()))?;
+                        Flake::from_nix(nixcmd, &nix_config, flake_url_2)
                             .await
                             .map_err(|e| Into::<SystemError>::into(e.to_string()))
                     })
