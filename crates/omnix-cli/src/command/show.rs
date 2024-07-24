@@ -85,7 +85,7 @@ impl Row {
 
 impl ShowConfig {
     pub async fn run(&self) -> anyhow::Result<()> {
-        let flake = Flake::from_nix(&NixCmd::default(), self.flake_url.clone())
+        let flake = Flake::from_nix(NixCmd::get().await, self.flake_url.clone())
             .await
             .with_context(|| "Unable to fetch flake")?;
 

@@ -6,18 +6,8 @@ use std::path::PathBuf;
 
 use nix_rs::command::NixCmd;
 use nix_rs::flake::url::FlakeUrl;
-use tokio::sync::OnceCell;
 
 use crate::{flake_template::fileop::FileOp, registry::FlakeTemplateRegistry};
-
-static NIXCMD: OnceCell<NixCmd> = OnceCell::const_new();
-
-/// TODO: Can we normalize this across omnix-cli?
-async fn nixcmd() -> &'static NixCmd {
-    NIXCMD
-        .get_or_init(|| async { NixCmd::default().with_flakes().await.unwrap() })
-        .await
-}
 
 pub async fn flakreate(registry: FlakeUrl, path: PathBuf) -> anyhow::Result<()> {
     println!(
@@ -36,7 +26,7 @@ pub async fn flakreate(registry: FlakeUrl, path: PathBuf) -> anyhow::Result<()> 
     // Create the flake templatge
     let template_url = registry.with_attr(&template.name);
     println!("$ nix flake new {} -t {}", path, template_url);
-    nixcmd()
+    NixCmd::get()
         .await
         .run_with_args(&["flake", "new", &path, "-t", &template_url.0])
         .await?;
