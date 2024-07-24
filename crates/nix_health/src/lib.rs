@@ -131,8 +131,9 @@ impl NixHealth {
 
 /// Run health checks, optionally using the given flake's configuration
 pub async fn run_checks_with(flake_url: Option<FlakeUrl>) -> anyhow::Result<Vec<Check>> {
-    let nix_info = NixInfo::from_nix(NixCmd::get().await)
+    let nix_info = NixInfo::get()
         .await
+        .as_ref()
         .with_context(|| "Unable to gather nix info")?;
     let action_msg = format!(
         "🩺️ Checking the health of your Nix setup ({} on {})",
@@ -148,7 +149,7 @@ pub async fn run_checks_with(flake_url: Option<FlakeUrl>) -> anyhow::Result<Vec<
             Ok(NixHealth::default())
         }
     }?;
-    let checks = health.run_checks(&nix_info, flake_url.clone());
+    let checks = health.run_checks(nix_info, flake_url.clone());
     Ok(checks)
 }
 
