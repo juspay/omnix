@@ -41,12 +41,12 @@ pub struct NixCmd {
 }
 
 impl Default for NixCmd {
-    /// The default `nix` command with flakes already enabled.
+    /// The default `nix` command
     ///
-    /// See [NixCmd::with_flakes] for a smarter version that adds feature options only when necessary.
+    /// See [NixCmd::get] for the flakes enabled version.
     fn default() -> Self {
         Self {
-            extra_experimental_features: vec!["nix-command".to_string(), "flakes".to_string()],
+            extra_experimental_features: vec![],
             extra_access_tokens: vec![],
             refresh: false,
         }
