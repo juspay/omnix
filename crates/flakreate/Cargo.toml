@@ -12,7 +12,6 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 anyhow = { workspace = true }
-clap = { workspace = true }
 colored = { workspace = true }
 console = { workspace = true }
 glob = { workspace = true }
