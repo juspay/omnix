@@ -63,12 +63,12 @@ impl NixHealth {
     /// Fallback to using the default health check config if the flake doesn't
     /// override it.
     pub async fn from_flake(url: &FlakeUrl) -> Result<Self, nix_rs::command::NixCmdError> {
-        let cmd = NixCmd::default();
-        let v = nix_eval_attr_json(&cmd, &url.with_fully_qualified_root_attr("om.health")).await?;
+        let cmd = NixCmd::get().await;
+        let v = nix_eval_attr_json(cmd, &url.with_fully_qualified_root_attr("om.health")).await?;
         match v {
             Some(v) => Ok(v),
             None => {
-                let v = nix_eval_attr_json(&cmd, &url.with_fully_qualified_root_attr("nix-health"))
+                let v = nix_eval_attr_json(cmd, &url.with_fully_qualified_root_attr("nix-health"))
                     .await?;
                 Ok(v.unwrap_or_default())
             }
@@ -131,8 +131,9 @@ impl NixHealth {
 
 /// Run health checks, optionally using the given flake's configuration
 pub async fn run_checks_with(flake_url: Option<FlakeUrl>) -> anyhow::Result<Vec<Check>> {
-    let nix_info = NixInfo::from_nix(&NixCmd::default())
+    let nix_info = NixInfo::get()
         .await
+        .as_ref()
         .with_context(|| "Unable to gather nix info")?;
     let action_msg = format!(
         "🩺️ Checking the health of your Nix setup ({} on {})",
@@ -148,7 +149,7 @@ pub async fn run_checks_with(flake_url: Option<FlakeUrl>) -> anyhow::Result<Vec<
             Ok(NixHealth::default())
         }
     }?;
-    let checks = health.run_checks(&nix_info, flake_url.clone());
+    let checks = health.run_checks(nix_info, flake_url.clone());
     Ok(checks)
 }
 

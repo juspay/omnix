@@ -13,12 +13,14 @@ use std::fmt::{self, Display};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use tokio::process::Command;
+use tokio::{process::Command, sync::OnceCell};
 
 use tracing::instrument;
 
 #[cfg(feature = "clap")]
 use clap;
+
+use crate::config::NixConfig;
 
 /// The `nix` command's global options.
 ///
@@ -41,17 +43,19 @@ pub struct NixCmd {
 }
 
 impl Default for NixCmd {
-    /// The default `nix` command with flakes already enabled.
+    /// The default `nix` command
     ///
-    /// See [NixCmd::with_flakes] for a smarter version that adds feature options only when necessary.
+    /// See [NixCmd::get] for the flakes enabled version.
     fn default() -> Self {
         Self {
-            extra_experimental_features: vec!["nix-command".to_string(), "flakes".to_string()],
+            extra_experimental_features: vec![],
             extra_access_tokens: vec![],
             refresh: false,
         }
     }
 }
+
+static NIXCMD: OnceCell<NixCmd> = OnceCell::const_new();
 
 /// Trace a user-copyable command line
 ///
@@ -68,15 +72,24 @@ pub fn trace_cmd(cmd: &tokio::process::Command) {
 }
 
 impl NixCmd {
-    /// Return a `NixCmd` with flakes enabled, if not already enabled.
-    pub async fn with_flakes(&self) -> Result<Self, NixCmdError> {
-        let cfg = super::config::NixConfig::from_nix(&Self::default()).await?;
-        let mut cmd = self.clone();
-        if !cfg.is_flakes_enabled() {
-            cmd.extra_experimental_features
-                .append(vec!["nix-command".to_string(), "flakes".to_string()].as_mut());
-        }
-        Ok(cmd)
+    /// Return a global `NixCmd` instance with flakes enabled.
+    pub async fn get() -> &'static NixCmd {
+        NIXCMD
+            .get_or_init(|| async {
+                let cfg = NixConfig::get().await.as_ref().unwrap();
+                let mut cmd = NixCmd::default();
+                if !cfg.is_flakes_enabled() {
+                    cmd.with_flakes()
+                }
+                cmd
+            })
+            .await
+    }
+
+    /// Enable flakes on this [NixCmd] configuration
+    pub fn with_flakes(&mut self) {
+        self.extra_experimental_features
+            .append(vec!["nix-command".to_string(), "flakes".to_string()].as_mut());
     }
 
     /// Return a [Command] for this [NixCmd] configuration

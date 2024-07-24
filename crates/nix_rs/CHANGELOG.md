@@ -5,11 +5,20 @@
 - **`flake::schema::FlakeSchema`**
   - Add `nixos_configurations`
 - **`flake::url`**
+  - `Flake::from_nix` explicitly takes `NixConfig` as argument, rather than implicitly running nix to get it.
   - Remove string convertion implementations; use `std::parse` instead, and handle errors explicitly.
 - **`eval`**
   - `nix_eval_attr_json`: No longer takes `default_if_missing`; instead (always) returns `None` if attribute is missing.
 - **`env::NixEnv`**
   - Clarify error message when `$USER` is not set
+- **``command`**
+  - Add `NixCmd::get()` to return flakes-enabled global command
+  - `NixCmd::default()` returns the bare command (no experimental features enabled)
+- ``config``
+  - Add `NixConfig::get()` to get the once-created static value of `NixConfig`
+- `info`
+  - Add `NixInfo::get()` to get the once-created static value of `NixInfo`
+  - Rename `NixInfo::from_nix()` to `NixInfo::new()`; the latter explicitly takes `NixConfig`
 
 ## [0.5.0](https://github.com/juspay/nix-rs/compare/0.4.0...0.5.0) (2024-06-05)
 

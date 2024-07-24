@@ -5,6 +5,7 @@ use clap::Parser;
 use colored::Colorize;
 use nix_rs::{
     command::NixCmd,
+    config::NixConfig,
     flake::{outputs::Val, url::FlakeUrl, Flake},
 };
 use tabled::{
@@ -85,7 +86,9 @@ impl Row {
 
 impl ShowConfig {
     pub async fn run(&self) -> anyhow::Result<()> {
-        let flake = Flake::from_nix(&NixCmd::default(), self.flake_url.clone())
+        let nix_cmd = NixCmd::get().await;
+        let nix_config = NixConfig::get().await.as_ref()?;
+        let flake = Flake::from_nix(nix_cmd, nix_config, self.flake_url.clone())
             .await
             .with_context(|| "Unable to fetch flake")?;
 
