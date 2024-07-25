@@ -14,6 +14,9 @@
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
     process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
     cargo-doc-live.url = "github:srid/cargo-doc-live";
+
+    devour-flake.url = "github:srid/devour-flake";
+    devour-flake.flake = false;
   };
 
   outputs = inputs:
@@ -73,11 +76,16 @@
             cargo-tauri
             trunk
           ];
-          shellHook = ''
-            echo
-            echo "🍎🍎 Run 'just <recipe>' to get started"
-            just
-          '';
+          shellHook =
+            ''
+              # For nixci
+              export DEVOUR_FLAKE=${inputs.devour-flake}
+            '' +
+            ''
+              echo
+              echo "🍎🍎 Run 'just <recipe>' to get started"
+              just
+            '';
         };
       };
     };

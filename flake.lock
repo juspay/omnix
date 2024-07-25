@@ -36,6 +36,22 @@
         "type": "github"
       }
     },
+    "devour-flake": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1709858306,
+        "narHash": "sha256-Vey9n9hIlWiSAZ6CCTpkrL6jt4r2JvT2ik9wa2bjeC0=",
+        "owner": "srid",
+        "repo": "devour-flake",
+        "rev": "17b711b9deadbbc5629cb7d2b64cf86ae72af3fa",
+        "type": "github"
+      },
+      "original": {
+        "owner": "srid",
+        "repo": "devour-flake",
+        "type": "github"
+      }
+    },
     "flake-parts": {
       "inputs": {
         "nixpkgs-lib": "nixpkgs-lib"
@@ -118,6 +134,7 @@
     "root": {
       "inputs": {
         "cargo-doc-live": "cargo-doc-live",
+        "devour-flake": "devour-flake",
         "flake-parts": "flake-parts",
         "nixpkgs": "nixpkgs",
         "process-compose-flake": "process-compose-flake",
