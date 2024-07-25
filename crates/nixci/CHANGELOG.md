@@ -1,4 +1,8 @@
 
+## Unreleased
+
+- Port to newer `nix_rs`
+
 ## [1.0.0](https://github.com/srid/nixci/compare/0.5.0...1.0.0) (2024-07-23)
 
 ### Features

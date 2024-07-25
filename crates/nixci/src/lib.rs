@@ -4,7 +4,7 @@ pub mod github;
 pub mod logging;
 pub mod nix;
 
-use anyhow::{Context, Ok};
+use anyhow::Context;
 use clap::CommandFactory;
 use clap_complete::generate;
 use std::collections::HashSet;
@@ -28,7 +28,8 @@ pub async fn nixci(args: CliArgs) -> anyhow::Result<Vec<StorePath>> {
     match args.command {
         cli::Command::Build(build_cfg) => {
             let cfg = cli::Command::get_config(&args.nixcmd, &build_cfg.flake_ref).await?;
-            let nix_info = NixInfo::from_nix(&args.nixcmd)
+            let nix_config = NixConfig::get().await.as_ref()?;
+            let nix_info = NixInfo::new(nix_config.clone())
                 .await
                 .with_context(|| "Unable to gather nix info")?;
             // First, run the necessary health checks

@@ -66,11 +66,14 @@ impl NixStoreCmd {
 }
 
 impl NixStoreCmd {
-    /// Fetch all build and runtime dependencies of given [devour_flake::DrvOut]s
+    /// Fetch all build and runtime dependencies of given [DrvOut]s
     ///
-    /// This is done by querying the deriver of each output path from [devour_flake::DrvOut] using [nix_store_query_deriver] and
-    /// then querying all dependencies of each deriver using [nix_store_query_requisites_with_outputs].
-    /// Finally, all dependencies of each deriver are collected and returned as [Vec<StorePath>].
+    /// This is done by querying the deriver of each output path from [DrvOut]
+    /// using [NixStoreCmd::nix_store_query_deriver] and then querying all
+    /// dependencies of each deriver using
+    /// [NixStoreCmd::nix_store_query_requisites_with_outputs].  Finally, all
+    /// dependencies of each deriver are collected and returned as
+    /// `Vec<StorePath>`.
     pub async fn fetch_all_deps(
         &self,
         out_paths: Vec<DrvOut>,
@@ -92,12 +95,15 @@ impl NixStoreCmd {
     }
 
     /// Return the derivation used to build the given build output.
-    async fn nix_store_query_deriver(&self, out_path: PathBuf) -> Result<DrvOut, NixStoreCmdError> {
+    pub async fn nix_store_query_deriver(
+        &self,
+        out_path: PathBuf,
+    ) -> Result<DrvOut, NixStoreCmdError> {
         let mut cmd = self.command();
         cmd.args([
             "--query",
             "--valid-derivers",
-            &out_path.to_string_lossy().as_ref(),
+            out_path.to_string_lossy().as_ref(),
         ]);
         nix_rs::command::trace_cmd(&cmd);
         let out = cmd.output().await?;
@@ -118,7 +124,7 @@ impl NixStoreCmd {
 
     /// Given a [StorePath::Drv], this function recursively queries and return all
     /// of its dependencies in the Nix store.
-    async fn nix_store_query_requisites_with_outputs(
+    pub async fn nix_store_query_requisites_with_outputs(
         &self,
         drv_path: DrvOut,
     ) -> Result<Vec<StorePath>, NixStoreCmdError> {
@@ -127,7 +133,7 @@ impl NixStoreCmd {
             "--query",
             "--requisites",
             "--include-outputs",
-            &drv_path.0.to_string_lossy().as_ref(),
+            drv_path.0.to_string_lossy().as_ref(),
         ]);
         nix_rs::command::trace_cmd(&cmd);
         let out = cmd.output().await?;

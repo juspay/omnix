@@ -140,7 +140,8 @@ mod tests {
 
     async fn assert_systems_list(url: &str, expected: Vec<System>) {
         let cmd = NixCmd::default();
-        let systems = SystemsList::from_flake(&cmd, &SystemsListFlakeRef(url.into()))
+        let flake_url = FlakeUrl::from_str(url).unwrap();
+        let systems = SystemsList::from_flake(&cmd, &SystemsListFlakeRef(flake_url))
             .await
             .unwrap();
         assert_eq!(systems.0, expected);
