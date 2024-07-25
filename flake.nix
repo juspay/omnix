@@ -34,8 +34,7 @@
       flake.om = {
         health.default = {
           nix-version.min-required = "2.16.0";
-          # We don't use a Nix cache yet
-          # caches.required = [ "https://cache.juspay.dev" ];
+          caches.required = [ "https://om.cachix.org" ];
           direnv.required = true;
           system = {
             # required = true;
