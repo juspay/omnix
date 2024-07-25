@@ -6,6 +6,7 @@ members = [
     "crates/omnix-cli",
     "crates/omnix-gui",
     "crates/nix_rs",
+    "crates/nixci",
     "crates/nix_health",
     "crates/flakreate",
 ]
@@ -28,10 +29,12 @@ http = "0.2"
 human-panic = "1.1.5"
 inquire = "0.7.5"
 is_proc_translated = { version = "0.1.1" }
+nixci = { path = "./crates/nixci" }
 nix_health = { path = "./crates/nix_health" }
 nix_rs = { path = "./crates/nix_rs" }
 omnix = { path = "./crates/omnix" }
 os_info = "3.7.0"
+reqwest = { version = "0.11", features = ["blocking", "json"] }
 regex = "1.9.3"
 semver = { version = "1.0.22", features = ["serde"] }
 serde = { version = "1.0.197", features = ["derive"] }
@@ -45,7 +48,14 @@ thiserror = "1.0"
 tokio = { version = "1.33.0", features = ["full"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+try-guard = "0.2.0"
 url = { version = "2.4", features = ["serde"] }
+urlencoding = "2.1.3"
 uuid = { version = "1.3.0", features = ["serde", "v4", "js"] }
 which = { version = "4.4.2" }
 clap_complete = "4.5.0"
+
+[profile.release]
+strip = true    # Automatically strip symbols from the binary.
+opt-level = "z" # Optimize for size.
+lto = true

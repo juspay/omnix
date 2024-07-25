@@ -1,0 +1,43 @@
+[package]
+authors = ["Sridhar Ratnakumar <srid@srid.ca>"]
+edition = "2021"
+# If you change the name here, you must also do it in flake.nix (and run `cargo generate-lockfile` afterwards)
+name = "nixci"
+version = "1.1.0"
+license = "AGPL-3.0-only"
+readme = "README.md"
+description = "Define and build CI for Nix projects anywhere"
+homepage = "https://github.com/srid/nixci"
+repository = "https://github.com/srid/nixci"
+keywords = ["nix"]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = { workspace = true }
+clap = { workspace = true }
+clap_complete = { workspace = true }
+colored = { workspace = true }
+nix_health = { workspace = true }
+nix_rs = { workspace = true, features = ["clap"] }
+reqwest = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+try-guard = { workspace = true }
+url = { workspace = true }
+urlencoding = { workspace = true }
+
+[dev-dependencies]
+regex = "1.9"
+ctor = "0.2"
+assert_cmd = "2.0.14"
+
+[features]
+integration_test = []
