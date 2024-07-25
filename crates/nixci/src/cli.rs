@@ -80,7 +80,7 @@ impl CliArgs {
     // Pre-process `CliArgs`
     pub async fn preprocess(&mut self) -> anyhow::Result<()> {
         // Avoid using `--extra-experimental-features` if possible.
-        self.nixcmd = self.nixcmd.with_flakes().await?;
+        self.nixcmd.with_flakes();
         // Adjust to devour_flake's expectations
         if let Command::Build(build_cfg) = &mut self.command {
             devour_flake::transform_override_inputs(&mut build_cfg.extra_nix_build_args);
@@ -133,7 +133,7 @@ pub struct BuildConfig {
     ///
     /// Must be a flake reference which, when imported, must return a Nix list
     /// of systems. You may use one of the lists from
-    /// https://github.com/nix-systems.
+    /// <https://github.com/nix-systems>.
     #[arg(long, default_value = "github:nix-systems/empty")]
     pub systems: SystemsListFlakeRef,
 
