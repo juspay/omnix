@@ -57,10 +57,8 @@ impl Config {
             _ => anyhow::bail!("Invalid flake URL (too many nested attr): {}", flake_url.0),
         };
         let nixci_url = FlakeUrl(format!("{}#nixci.{}", flake_url.0, name));
-        let subflakes = match nix_eval_attr_json::<Subflakes>(cmd, &nixci_url).await? {
-            None => anyhow::bail!("attribute missing error in '{}'", nixci_url),
-            Some(subflakes) => subflakes,
-        };
+        let subflakes =
+            (nix_eval_attr_json::<Subflakes>(cmd, &nixci_url).await?).unwrap_or_default();
         if let Some(sub_flake_name) = selected_subflake.clone() {
             if !subflakes.0.contains_key(&sub_flake_name) {
                 anyhow::bail!(
