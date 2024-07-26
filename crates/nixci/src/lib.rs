@@ -10,7 +10,7 @@ use clap_complete::generate;
 use std::collections::HashSet;
 use std::io;
 
-use cli::{BuildConfig, CliArgs};
+use cli::{BuildConfig, CliArgs, Command};
 use colored::Colorize;
 use nix::{
     devour_flake::DevourFlakeOutput,
@@ -21,13 +21,15 @@ use nix_rs::{command::NixCmd, config::NixConfig, flake::url::FlakeUrl, info::Nix
 use tracing::instrument;
 
 /// Run nixci on the given [CliArgs], returning the built outputs in sorted order.
-#[instrument(name = "nixci", skip(args))]
-pub async fn nixci(args: CliArgs) -> anyhow::Result<Vec<StorePath>> {
-    tracing::debug!("Args: {args:?}");
-
-    match args.command {
+#[instrument(name = "nixci", skip(command))]
+pub async fn nixci(
+    nixcmd: &NixCmd,
+    command: &Command,
+    verbose: bool,
+) -> anyhow::Result<Vec<StorePath>> {
+    match command {
         cli::Command::Build(build_cfg) => {
-            let cfg = cli::Command::get_config(&args.nixcmd, &build_cfg.flake_ref).await?;
+            let cfg = cli::Command::get_config(nixcmd, &build_cfg.flake_ref).await?;
             let nix_config = NixConfig::get().await.as_ref()?;
             let nix_info = NixInfo::new(nix_config.clone())
                 .await
@@ -35,27 +37,20 @@ pub async fn nixci(args: CliArgs) -> anyhow::Result<Vec<StorePath>> {
             // First, run the necessary health checks
             check_nix_version(&cfg.flake_url, &nix_info).await?;
             // Then, do the build
-            nixci_build(
-                &args.nixcmd,
-                args.verbose,
-                &build_cfg,
-                &cfg,
-                &nix_info.nix_config,
-            )
-            .await
+            nixci_build(nixcmd, verbose, build_cfg, &cfg, &nix_info.nix_config).await
         }
         cli::Command::DumpGithubActionsMatrix {
             systems, flake_ref, ..
         } => {
-            let cfg = cli::Command::get_config(&args.nixcmd, &flake_ref).await?;
-            let matrix = github::matrix::GitHubMatrix::from(systems, &cfg.subflakes);
+            let cfg = cli::Command::get_config(nixcmd, flake_ref).await?;
+            let matrix = github::matrix::GitHubMatrix::from(systems.clone(), &cfg.subflakes);
             println!("{}", serde_json::to_string(&matrix)?);
             Ok(vec![])
         }
         cli::Command::Completion { shell } => {
             let mut cli = CliArgs::command();
             let name = cli.get_name().to_string();
-            generate(shell, &mut cli, name, &mut io::stdout());
+            generate(*shell, &mut cli, name, &mut io::stdout());
             Ok(vec![])
         }
     }

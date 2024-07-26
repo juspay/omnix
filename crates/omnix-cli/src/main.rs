@@ -21,5 +21,5 @@ async fn main() -> anyhow::Result<()> {
     let args = Args::parse();
     omnix::logging::setup_logging(&args.verbosity, true);
     tracing::debug!("Args: {:?}", args);
-    args.command.run().await
+    args.command.run(args.verbosity).await
 }
