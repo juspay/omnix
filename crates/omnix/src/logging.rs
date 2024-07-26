@@ -12,6 +12,7 @@ use tracing_subscriber::{
 
 pub fn setup_logging(verbosity: &Verbosity<InfoLevel>, bare: bool) {
     let builder = tracing_subscriber::fmt()
+        .with_writer(std::io::stderr)
         .with_env_filter(log_filter(verbosity))
         .compact();
     if bare {
