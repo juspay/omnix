@@ -19,7 +19,8 @@ pub struct Args {
 async fn main() -> anyhow::Result<()> {
     human_panic::setup_panic!();
     let args = Args::parse();
-    omnix::logging::setup_logging(&args.verbosity, true);
+    let verbose = args.verbosity.log_level() > Some(clap_verbosity_flag::Level::Info);
+    omnix::logging::setup_logging(&args.verbosity, !verbose);
     tracing::debug!("Args: {:?}", args);
     args.command.run(args.verbosity).await
 }
