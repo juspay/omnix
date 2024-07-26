@@ -12,7 +12,7 @@ fn om_help() -> anyhow::Result<()> {
 /// `om health` runs, and succeeds.
 #[test]
 fn om_health() -> anyhow::Result<()> {
-    om()?.arg("health").assert().success().stdout(
+    om()?.arg("health").assert().success().stderr(
         predicate::str::contains("All checks passed")
             .or(predicate::str::contains("Required checks passed")),
     );
