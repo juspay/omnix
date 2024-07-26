@@ -26,17 +26,25 @@
           autoWire = false;
           crane = {
             args = {
-              buildInputs = lib.optionals pkgs.stdenv.isLinux
-                (with pkgs; [
-                  pkg-config
-                ]) ++ lib.optionals pkgs.stdenv.isDarwin (
-                with pkgs.darwin.apple_sdk.frameworks; [
-                  IOKit
-                ]
-              );
-              nativeBuildInputs = with pkgs;[
+              nativeBuildInputs = with pkgs; with pkgs.darwin.apple_sdk.frameworks; lib.optionals stdenv.isDarwin [
+                Security
+                SystemConfiguration
+              ] ++ [
+                libiconv
                 pkg-config
               ];
+              buildInputs = lib.optionals pkgs.stdenv.isDarwin
+                (
+                  with pkgs.darwin.apple_sdk.frameworks; [
+                    IOKit
+                    # apple_sdk refers to SDK version 10.12. To compile for `x86_64-darwin` we need 11.0
+                    # see: https://github.com/NixOS/nixpkgs/pull/261683#issuecomment-1772935802
+                    pkgs.darwin.apple_sdk_11_0.frameworks.CoreFoundation
+                  ]
+                ) ++ lib.optionals pkgs.stdenv.isLinux [
+                pkgs.openssl
+              ];
+              DEVOUR_FLAKE = inputs.devour-flake;
               OM_INIT_REGISTRY = inputs.self + /crates/flakreate/registry;
               # Disable tests due to sandboxing issues; we run them on CI
               # instead.

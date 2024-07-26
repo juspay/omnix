@@ -50,7 +50,7 @@ mod integration_test {
             "build",
             "github:srid/haskell-multi-nix/c85563721c388629fa9e538a1d97274861bc8321",
         ]);
-        let outs = nixci::nixci(args).await?;
+        let outs = nixci::nixci(&args.nixcmd, &args.command, true).await?;
         let drv_outs: Vec<PathBuf> = outs
             .into_iter()
             .filter_map(|drv_result| {
@@ -83,7 +83,7 @@ mod integration_test {
             "--print-all-dependencies",
             "github:srid/haskell-multi-nix/c85563721c388629fa9e538a1d97274861bc8321",
         ]);
-        let outs = nixci::nixci(args).await?;
+        let outs = nixci::nixci(&args.nixcmd, &args.command, true).await?;
         // Since the number of dependencies is huge, we just check for the presence of system-independent
         // source of the `foo` sub-package in `haskell-multi-nix`.
         let expected = StorePath::Other(PathBuf::from(
@@ -103,7 +103,7 @@ mod integration_test {
             // TODO: Change after merging https://github.com/juspay/services-flake/pull/51
             "github:juspay/services-flake/3d764f19d0a121915447641fe49a9b8d02777ff8",
         ]);
-        let outs = nixci::nixci(args).await?;
+        let outs = nixci::nixci(&args.nixcmd, &args.command, true).await?;
         let drv_outs: Vec<PathBuf> = outs
             .into_iter()
             .filter_map(|drv_result| {

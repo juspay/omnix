@@ -1,4 +1,5 @@
 use clap::Subcommand;
+use clap_verbosity_flag::{InfoLevel, Verbosity};
 
 pub mod ci;
 mod completion;
@@ -24,11 +25,11 @@ pub enum Command {
 }
 
 impl Command {
-    pub async fn run(&self) -> anyhow::Result<()> {
+    pub async fn run(&self, verbosity: Verbosity<InfoLevel>) -> anyhow::Result<()> {
         match self {
             Command::Show(config) => config.run().await,
             Command::Init(config) => config.run().await,
-            Command::CI(config) => config.run().await,
+            Command::CI(config) => config.run(verbosity).await,
             Command::Health(config) => config.run().await,
             Command::Completion { shell } => completion::generate_completion(*shell),
         }

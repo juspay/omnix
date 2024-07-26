@@ -3354,6 +3354,7 @@ dependencies = [
  "human-panic",
  "nix_health",
  "nix_rs",
+ "nixci",
  "omnix",
  "predicates",
  "rexpect",

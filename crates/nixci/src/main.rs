@@ -5,6 +5,6 @@ use nixci::cli;
 async fn main() -> Result<()> {
     let args = cli::CliArgs::parse().await?;
     nixci::logging::setup_logging(args.verbose);
-    nixci::nixci(args).await?;
+    nixci::nixci(&args.nixcmd, &args.command, args.verbose).await?;
     Ok(())
 }
