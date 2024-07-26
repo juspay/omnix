@@ -14,11 +14,6 @@ mod integration_test {
     use nixci::{self, cli, nix::nix_store::StorePath};
     use regex::Regex;
 
-    #[ctor::ctor]
-    fn init() {
-        nixci::logging::setup_logging(true);
-    }
-
     #[tokio::test]
     /// Run `nixci build` and check if the stdout consists of only /nix/store/* paths
     async fn nixci_build_output() -> anyhow::Result<()> {
