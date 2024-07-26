@@ -20,6 +20,7 @@ nix --accept-flake-config profile install github:juspay/omnix
     - [x] Basic `om show`
     - [ ] Advanced `om show`
 - [x] `om health` (nix-health ng)
+- [x] `om ci` (nixci ng)
 - [ ] `om init` (Initialize flake templates)
 - [ ] ...
 
