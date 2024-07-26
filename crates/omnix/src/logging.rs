@@ -40,7 +40,7 @@ fn log_directives(v: &Verbosity<InfoLevel>) -> Vec<Directive> {
         // Default
         Some(Level::Info) => vec![
             LevelFilter::WARN.into(),
-            "omnix=info".parse().unwrap(),
+            "om=info".parse().unwrap(),
             "nix_rs=info".parse().unwrap(),
             "nix_health=info".parse().unwrap(),
             "nixci=info".parse().unwrap(),
@@ -48,7 +48,7 @@ fn log_directives(v: &Verbosity<InfoLevel>) -> Vec<Directive> {
         // -v: log app DEBUG level, as well as http requests
         Some(Level::Debug) => vec![
             LevelFilter::WARN.into(),
-            "omnix=debug".parse().unwrap(),
+            "om=debug".parse().unwrap(),
             "nix_rs=debug".parse().unwrap(),
             "nix_health=debug".parse().unwrap(),
             "nixci=debug".parse().unwrap(),
@@ -56,7 +56,7 @@ fn log_directives(v: &Verbosity<InfoLevel>) -> Vec<Directive> {
         // -vv: log app TRACE level, as well as http requests
         Some(Level::Trace) => vec![
             LevelFilter::WARN.into(),
-            "omnix=trace".parse().unwrap(),
+            "om=trace".parse().unwrap(),
             "nix_rs=trace".parse().unwrap(),
             "nix_health=trace".parse().unwrap(),
             "nixci=trace".parse().unwrap(),
