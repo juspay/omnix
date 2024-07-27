@@ -11,7 +11,7 @@ jobs:
       contents: read
     strategy:
       matrix:
-        system: [ x86_64-linux, aarch64-darwin ]
+        system: [ x86_64-linux, aarch64-darwin, x86_64-darwin ]
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
