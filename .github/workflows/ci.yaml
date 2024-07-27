@@ -52,5 +52,6 @@ jobs:
           nixci --extra-access-tokens "github.com=${{ secrets.GITHUB_TOKEN }}" build "github:juspay/services-flake/3d764f19d0a121915447641fe49a9b8d02777ff8" -- --no-link
       - name: nixci integration test
         run: |
-          nix --accept-flake-config develop -c cargo test -p nixci -F integration_test
+          cd ./crates/nixci
+          nix --accept-flake-config develop -c cargo test -F integration_test
 
