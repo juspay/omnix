@@ -36,8 +36,8 @@ jobs:
         run: |
           cd ./crates/flakreate/registry
           nix --accept-flake-config flake check
-      - name: CLI Tests
+      - name: Tests
         run: |
-          # We disable tests on Nix due to sandboxing issues.
-          cd ./crates/omnix-cli
+          # We disable some tests (e.g.: omnix-cli tests) on Nix due to
+          # sandboxing issues.
           nix --accept-flake-config develop -c cargo test
