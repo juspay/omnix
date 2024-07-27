@@ -79,12 +79,13 @@ fn om_init() -> anyhow::Result<()> {
     Ok(())
 }
 
-mod nixci_test {
+mod om_ci_tests {
     use std::path::{Path, PathBuf};
 
     use nixci::{self, nix::nix_store::StorePath};
     use regex::Regex;
 
+    /// Run `om ci build` passing given arguments, returning its stdout (parsed).
     async fn om_ci_build(args: &[&str]) -> anyhow::Result<Vec<StorePath>> {
         let mut cmd = crate::om()?;
         cmd.arg("ci").arg("build").args(args);
