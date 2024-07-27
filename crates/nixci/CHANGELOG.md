@@ -2,6 +2,7 @@
 ## Unreleased
 
 - Port to newer `nix_rs`
+- tests: Removed, and moved to omnix-cli crate.
 
 ## [1.0.0](https://github.com/srid/nixci/compare/0.5.0...1.0.0) (2024-07-23)
 
