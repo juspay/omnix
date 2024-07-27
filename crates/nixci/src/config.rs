@@ -157,7 +157,6 @@ impl SubFlakish {
 }
 
 #[cfg(test)]
-#[cfg(feature = "integration_test")]
 mod tests {
     use super::*;
 
