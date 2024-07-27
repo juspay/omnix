@@ -172,6 +172,7 @@ mod om_ci_tests {
             "github:juspay/services-flake/3d764f19d0a121915447641fe49a9b8d02777ff8",
         ])
         .await?;
+        println!("DEBUG(outs): {:?}", outs);
         let drv_outs: Vec<PathBuf> = outs
             .into_iter()
             .filter_map(|drv_result| {
