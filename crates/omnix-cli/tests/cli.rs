@@ -82,6 +82,7 @@ fn om_init() -> anyhow::Result<()> {
 mod om_ci_tests {
     use std::path::{Path, PathBuf};
 
+    use anyhow::bail;
     use nixci::{self, nix::nix_store::StorePath};
     use regex::Regex;
 
@@ -91,6 +92,12 @@ mod om_ci_tests {
         cmd.arg("ci").arg("build").args(args);
 
         let output = cmd.output()?;
+        if !output.status.success() {
+            bail!(
+                "Failed to run `om ci build`:\n{}",
+                String::from_utf8_lossy(&output.stderr).to_string(),
+            );
+        }
         let stdout = String::from_utf8_lossy(&output.stdout);
         let lines = stdout.lines();
         let outs = lines
@@ -172,7 +179,6 @@ mod om_ci_tests {
             "github:juspay/services-flake/3d764f19d0a121915447641fe49a9b8d02777ff8",
         ])
         .await?;
-        println!("DEBUG(outs): {:?}", outs);
         let drv_outs: Vec<PathBuf> = outs
             .into_iter()
             .filter_map(|drv_result| {
