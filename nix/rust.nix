@@ -5,7 +5,14 @@
 {
   perSystem = { config, self', pkgs, lib, system, ... }:
     let
-    in {
+      apple_sdk_frameworks =
+        if system == "x86_64-darwin"
+        # To compile for `x86_64-darwin` we need 11.0
+        # see: https://github.com/NixOS/nixpkgs/pull/261683#issuecomment-1772935802
+        then pkgs.darwin.apple_sdk_11_0.frameworks
+        else pkgs.darwin.apple_sdk.frameworks;
+    in
+    {
       nixpkgs.overlays = [
         # Configure tailwind to enable all relevant plugins
         (self: super: {
@@ -28,7 +35,7 @@
             autoWire = false;
             crane = {
               args = {
-                nativeBuildInputs = with pkgs; with pkgs.darwin.apple_sdk.frameworks; lib.optionals stdenv.isDarwin [
+                nativeBuildInputs = with pkgs; with apple_sdk_frameworks; lib.optionals stdenv.isDarwin [
                   Security
                   SystemConfiguration
                 ] ++ [
@@ -37,16 +44,15 @@
                 ];
                 buildInputs = lib.optionals pkgs.stdenv.isDarwin
                   (
-                    # apple_sdk refers to SDK version 10.12. To compile for `x86_64-darwin` we need 11.0
-                    # see: https://github.com/NixOS/nixpkgs/pull/261683#issuecomment-1772935802
-                    with pkgs.darwin.apple_sdk_11_0.frameworks; [
+                    with apple_sdk_frameworks; [
                       IOKit
                       CoreFoundation
                     ]
                   ) ++ lib.optionals pkgs.stdenv.isLinux [
                   pkgs.openssl
                 ];
-                DEVOUR_FLAKE = inputs.devour-flake;
+                DEVOUR_FLAKE =
+                  inputs.devour-flake;
                 OM_INIT_REGISTRY = inputs.self + /crates/flakreate/registry;
                 # Disable tests due to sandboxing issues; we run them on CI
                 # instead.
@@ -68,9 +74,7 @@
                     xdotool
                     pkg-config
                   ]) ++ lib.optionals pkgs.stdenv.isDarwin (
-                  # apple_sdk refers to SDK version 10.12. To compile for `x86_64-darwin` we need 11.0
-                  # see: https://github.com/NixOS/nixpkgs/pull/261683#issuecomment-1772935802
-                  with pkgs.darwin.apple_sdk_11_0.frameworks; [
+                  with apple_sdk_frameworks; [
                     IOKit
                     Carbon
                     WebKit
@@ -95,7 +99,7 @@
             crane = {
               args = {
                 buildInputs = lib.optionals pkgs.stdenv.isDarwin (
-                  with pkgs.darwin.apple_sdk.frameworks; [
+                  with apple_sdk_frameworks; [
                     IOKit
                   ]
                 );
@@ -110,11 +114,9 @@
             crane = {
               args = {
                 buildInputs = lib.optionals pkgs.stdenv.isDarwin (
-                  with pkgs.darwin.apple_sdk.frameworks; [
+                  with apple_sdk_frameworks; [
                     IOKit
-                    # apple_sdk refers to SDK version 10.12. To compile for `x86_64-darwin` we need 11.0
-                    # see: https://github.com/NixOS/nixpkgs/pull/261683#issuecomment-1772935802
-                    pkgs.darwin.apple_sdk_11_0.frameworks.CoreFoundation
+                    CoreFoundation
                   ]
                 );
                 nativeBuildInputs = with pkgs; [
@@ -130,7 +132,7 @@
           "nixci" = {
             crane = {
               args = {
-                nativeBuildInputs = with pkgs; with pkgs.darwin.apple_sdk.frameworks; lib.optionals stdenv.isDarwin [
+                nativeBuildInputs = with pkgs; with apple_sdk_frameworks; lib.optionals stdenv.isDarwin [
                   Security
                   SystemConfiguration
                 ] ++ [
@@ -139,11 +141,9 @@
                 ];
                 buildInputs = lib.optionals pkgs.stdenv.isDarwin
                   (
-                    with pkgs.darwin.apple_sdk.frameworks; [
+                    with apple_sdk_frameworks; [
                       IOKit
-                      # apple_sdk refers to SDK version 10.12. To compile for `x86_64-darwin` we need 11.0
-                      # see: https://github.com/NixOS/nixpkgs/pull/261683#issuecomment-1772935802
-                      pkgs.darwin.apple_sdk_11_0.frameworks.CoreFoundation
+                      CoreFoundation
                     ]
                   ) ++ lib.optionals pkgs.stdenv.isLinux [
                   pkgs.openssl
@@ -155,7 +155,7 @@
           "flakreate" = {
             crane.args = {
               buildInputs = lib.optionals pkgs.stdenv.isDarwin (
-                with pkgs.darwin.apple_sdk.frameworks; [
+                with apple_sdk_frameworks; [
                   IOKit
                 ]
               );
