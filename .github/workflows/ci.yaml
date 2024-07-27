@@ -36,8 +36,15 @@ jobs:
         run: |
           cd ./crates/flakreate/registry
           nix --accept-flake-config flake check
-      - name: CLI Tests
+      # First, build the repos used in the test to cache them locally, so as
+      # to avoid GitHub rate limits during the integration test (which
+      # doesn't use the token)
+      - name: Tests (preparation)
         run: |
-          # We disable tests on Nix due to sandboxing issues.
-          cd ./crates/omnix-cli
+          nixci --extra-access-tokens "github.com=${{ secrets.GITHUB_TOKEN }}" build "github:srid/haskell-multi-nix/c85563721c388629fa9e538a1d97274861bc8321" -- --no-link
+          nixci --extra-access-tokens "github.com=${{ secrets.GITHUB_TOKEN }}" build "github:juspay/services-flake/3d764f19d0a121915447641fe49a9b8d02777ff8" -- --no-link
+      - name: Tests
+        run: |
+          # We disable some tests (e.g.: omnix-cli tests) on Nix due to
+          # sandboxing issues.
           nix --accept-flake-config develop -c cargo test

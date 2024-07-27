@@ -33,11 +33,3 @@ tracing-subscriber = { workspace = true }
 try-guard = { workspace = true }
 url = { workspace = true }
 urlencoding = { workspace = true }
-
-[dev-dependencies]
-regex = "1.9"
-ctor = "0.2"
-assert_cmd = "2.0.14"
-
-[features]
-integration_test = []
