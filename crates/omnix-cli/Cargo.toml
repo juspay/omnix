@@ -28,5 +28,7 @@ clap_complete = { workspace = true }
 anyhow = { workspace = true }
 assert_cmd = "2"
 assert_fs = "1"
+ctor = "0.2"
 predicates = "3"
+regex = "1.9"
 rexpect = "0.5"
