@@ -41,8 +41,3 @@ jobs:
           # We disable tests on Nix due to sandboxing issues.
           cd ./crates/omnix-cli
           nix --accept-flake-config develop -c cargo test
-      # TODO: Move this to omnix-cli tests?
-      - name: nixci integration test
-        run: |
-          nix --accept-flake-config develop -c cargo test -p nixci -F integration_test
-
