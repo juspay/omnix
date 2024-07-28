@@ -50,6 +50,8 @@ jobs:
           nixci --extra-access-tokens "github.com=${{ secrets.GITHUB_TOKEN }}" build "github:srid/haskell-multi-nix/c85563721c388629fa9e538a1d97274861bc8321" -- --no-link
           nixci --extra-access-tokens "github.com=${{ secrets.GITHUB_TOKEN }}" build "github:juspay/services-flake/3d764f19d0a121915447641fe49a9b8d02777ff8" -- --no-link
       - name: Tests
+        # Too slow on rosetta
+        if: matrix.system != 'x86_64-darwin'
         run: |
           # We disable some tests (e.g.: omnix-cli tests) on Nix due to
           # sandboxing issues.
