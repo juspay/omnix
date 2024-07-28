@@ -51,8 +51,7 @@
                   ) ++ lib.optionals pkgs.stdenv.isLinux [
                   pkgs.pkgsStatic.openssl
                 ];
-                DEVOUR_FLAKE =
-                  inputs.devour-flake;
+                DEVOUR_FLAKE = inputs.devour-flake;
                 OM_INIT_REGISTRY = inputs.self + /crates/flakreate/registry;
                 # Disable tests due to sandboxing issues; we run them on CI
                 # instead.
@@ -168,8 +167,10 @@
         };
 
         src = lib.cleanSourceWith {
+          name = "omnix-project-root";
           src = inputs.self; # The original, unfiltered source
           filter = path: type:
+            # TODO: This should be applied for omnix-gui crate only (via rust-flake)
             (lib.hasSuffix "\.html" path) ||
             (lib.hasSuffix "tailwind.config.js" path) ||
             # Example of a folder for images, icons, etc
