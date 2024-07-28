@@ -55,4 +55,4 @@ jobs:
           nix --accept-flake-config develop -c cargo test
       - name: Push to cachix
         if: github.ref == 'refs/heads/pinfix'
-        run: nix run .#cachix-push
+        run: nix --option system "${{ matrix.system }}" run .#cachix-push
