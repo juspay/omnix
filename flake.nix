@@ -69,6 +69,7 @@
 
         devShells.default = pkgs.mkShell {
           name = "omnix";
+          meta.description = "Omnix development environment";
           inputsFrom = [
             config.treefmt.build.devShell
             config.nix-health.outputs.devShell
