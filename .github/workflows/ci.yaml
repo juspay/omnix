@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - cachix-pin
   pull_request:
 jobs:
   checks:
@@ -16,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: cachix/cachix-action@v14
-        if: ${{ github.event_name != 'pull_request' }}
+        # if: ${{ github.event_name != 'pull_request' }}
         with:
           name: om
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
@@ -52,3 +53,5 @@ jobs:
           # We disable some tests (e.g.: omnix-cli tests) on Nix due to
           # sandboxing issues.
           nix --accept-flake-config develop -c cargo test
+      - name: Pin on cachix
+        run: nix run .#cachix-pin

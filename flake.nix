@@ -31,6 +31,7 @@
         inputs.rust-flake.flakeModules.nixpkgs
         ./nix/rust.nix
         ./nix/closure-size.nix
+        ./nix/cache-pins.nix
         ./crates/nix_health/module/flake-module.nix
       ];
 
@@ -57,6 +58,10 @@
             nixpkgs-fmt.enable = true;
             rustfmt.enable = true;
           };
+        };
+
+        cache-pins.pathsToCache = {
+          cli = self'.packages.default;
         };
 
         devShells.default = pkgs.mkShell {
