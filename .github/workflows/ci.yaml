@@ -20,6 +20,7 @@ jobs:
         with:
           name: om
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+          skipPush: true
       - name: Build
         run: |
           # Prep systems list
