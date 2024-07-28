@@ -17,6 +17,7 @@ pub struct Args {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    println!("Test");
     human_panic::setup_panic!();
     let args = Args::parse();
     let verbose = args.verbosity.log_level() > Some(clap_verbosity_flag::Level::Info);
