@@ -30,6 +30,7 @@
         inputs.rust-flake.flakeModules.default
         inputs.rust-flake.flakeModules.nixpkgs
         ./nix/rust.nix
+        ./nix/closure-size.nix
         ./crates/nix_health/module/flake-module.nix
       ];
 
