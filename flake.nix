@@ -31,6 +31,7 @@
         inputs.rust-flake.flakeModules.nixpkgs
         ./nix/rust.nix
         ./nix/closure-size.nix
+        ./nix/cache-pins.nix
         ./crates/nix_health/module/flake-module.nix
       ];
 
@@ -57,6 +58,13 @@
             nixpkgs-fmt.enable = true;
             rustfmt.enable = true;
           };
+        };
+
+        # https://om.cachix.org will ensure that these paths are always
+        # available. The rest may be be GC'ed.
+        cache-pins.pathsToCache = {
+          cli = self'.packages.default;
+          nix-health = self'.packages.nix-health;
         };
 
         devShells.default = pkgs.mkShell {

@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: cachix/cachix-action@v14
-        if: ${{ github.event_name != 'pull_request' }}
+        if: github.ref == 'refs/heads/main'
         with:
           name: om
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
@@ -52,3 +52,8 @@ jobs:
           # We disable some tests (e.g.: omnix-cli tests) on Nix due to
           # sandboxing issues.
           nix --accept-flake-config develop -c cargo test
+      - name: Pin on cachix
+        if: github.ref == 'refs/heads/main'
+        run: nix run .#cachix-pin
+        # Because `cachix pin` randomly fails with server status code 500
+        continue-on-error: true
