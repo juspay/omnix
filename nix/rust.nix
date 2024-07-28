@@ -49,7 +49,7 @@
                       CoreFoundation
                     ]
                   ) ++ lib.optionals pkgs.stdenv.isLinux [
-                  pkgs.openssl
+                  pkgs.pkgsStatic.openssl
                 ];
                 DEVOUR_FLAKE =
                   inputs.devour-flake;
@@ -61,6 +61,10 @@
                   description = "Command-line interface for Omnix";
                   mainProgram = "om";
                 };
+              } //
+              lib.optionalAttrs pkgs.stdenv.isLinux {
+                CARGO_BUILD_RUSTFLAGS = "-C target-feature=+crt-static";
+                CARGO_BUILD_TARGET = "x86_64-unknown-linux-musl";
               };
             };
           };
