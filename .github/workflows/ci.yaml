@@ -2,7 +2,7 @@ name: "CI"
 on:
   push:
     branches:
-      - pinfix
+      - main
   pull_request:
 jobs:
   checks:
@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: cachix/cachix-action@v14
-        if: github.ref == 'refs/heads/pinfix'
+        if: github.ref == 'refs/heads/main'
         with:
           name: om
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
@@ -54,5 +54,5 @@ jobs:
           # sandboxing issues.
           nix --accept-flake-config develop -c cargo test
       - name: Push to cachix
-        if: github.ref == 'refs/heads/pinfix'
+        if: github.ref == 'refs/heads/main'
         run: nix --option system "${{ matrix.system }}" run .#cachix-push
