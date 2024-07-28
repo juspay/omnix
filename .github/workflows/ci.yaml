@@ -55,3 +55,5 @@ jobs:
           nix --accept-flake-config develop -c cargo test
       - name: Pin on cachix
         run: nix run .#cachix-pin
+        # Because `cachix pin` randomly fails server status code 500
+        continue-on-error: true
