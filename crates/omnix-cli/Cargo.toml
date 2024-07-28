@@ -3,6 +3,7 @@ name = "omnix-cli"
 version = "0.1.0"
 edition = "2021"
 default-run = "om"
+description = "omnix CLI, supplementing the Nix CLI"
 
 [[bin]]
 name = "om"
