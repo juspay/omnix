@@ -18,10 +18,10 @@ in
       };
 
       config = {
-        apps.cachix-pin.program = pkgs.writeShellApplication {
-          name = "cachix-pin";
+        apps.cachix-push.program = pkgs.writeShellApplication {
+          name = "cachix-push";
           meta.description = ''
-            Run `cachix pin` for each path in `cache-pins.pathsToCache`
+            Run `cachix push` & `cachix pin` for each path in `cache-pins.pathsToCache`
           '';
           runtimeInputs = [ pkgs.cachix ];
           text = ''

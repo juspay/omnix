@@ -53,6 +53,6 @@ jobs:
           # We disable some tests (e.g.: omnix-cli tests) on Nix due to
           # sandboxing issues.
           nix --accept-flake-config develop -c cargo test
-      - name: Pin on cachix
+      - name: Push to cachix
         if: github.ref == 'refs/heads/pinfix'
-        run: nix run .#cachix-pin
+        run: nix run .#cachix-push
