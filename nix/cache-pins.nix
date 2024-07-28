@@ -28,7 +28,7 @@ in
             set -x
             ${lib.concatStringsSep "\n" (lib.mapAttrsToList (name: path: ''
               cachix push ${cacheName} ${path}
-              cachix pin ${cacheName} main-${name} ${path}
+              cachix pin ${cacheName} ${name}-${system} ${path}
               '') config.cache-pins.pathsToCache)
               }
           '';
