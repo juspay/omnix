@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, io::IsTerminal};
 
 use anyhow::Context;
 use clap::Parser;
@@ -9,10 +9,7 @@ use nix_rs::{
     flake::{outputs::Val, url::FlakeUrl, Flake},
 };
 use tabled::{
-    settings::{
-        style::{HorizontalLine, VerticalLine},
-        Style,
-    },
+    settings::{location::ByColumnName, Color, Modify, Style},
     Table, Tabled,
 };
 
@@ -38,25 +35,20 @@ impl FlakeOutputTable {
     /// Convert the table to a [Table] struct
     fn to_tabled(&self) -> Table {
         let mut table = Table::new(&self.rows);
-        table.with(
-            Style::modern()
-                .horizontals([(1, HorizontalLine::inherit(Style::modern()).horizontal('═'))])
-                .verticals([(1, VerticalLine::inherit(Style::modern()))])
-                .remove_horizontal()
-                .remove_vertical()
-                .remove_left()
-                .remove_right(),
-        );
+        table.with(Style::rounded());
+        if std::io::stdout().is_terminal() {
+            table.with(Modify::new(ByColumnName::new("name")).with(Color::BOLD));
+        };
         table
     }
+
     /// Print the table to stdout
     pub fn print(&self) {
         if self.rows.is_empty() {
             return;
         }
-        println!("{}", self.title.blue().bold());
-        println!();
-        println!("Run: {}", self.command.green().bold());
+        print!("{}", self.title.blue().bold());
+        println!(" ({})", self.command.green().bold());
 
         println!("{}", self.to_tabled());
         println!();
