@@ -20,8 +20,12 @@ in
       config = {
         apps.cachix-pin.program = pkgs.writeShellApplication {
           name = "cachix-pin";
+          meta.description = ''
+            Run `cachix pin` for each path in `cache-pins.pathsToCache`
+          '';
           runtimeInputs = [ pkgs.cachix ];
           text = ''
+            set -x
             ${lib.concatStringsSep "\n" (lib.mapAttrsToList (name: path: ''
               cachix pin ${cacheName} main-${name} ${path}
               '') config.cache-pins.pathsToCache)
