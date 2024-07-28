@@ -53,7 +53,7 @@ jobs:
         run: |
           # We disable some tests (e.g.: omnix-cli tests) on Nix due to
           # sandboxing issues.
-          nix --accept-flake-config develop -c cargo test
+          nix --option system "${{ matrix.system }}" --accept-flake-config develop -c cargo test
       - name: Push to cachix
         if: github.ref == 'refs/heads/main'
         run: nix --option system "${{ matrix.system }}" run .#cachix-push
