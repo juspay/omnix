@@ -12,7 +12,7 @@ in
         cache-pins.pathsToCache = lib.mkOption {
           type = lib.types.attrsOf lib.types.path;
           description = ''
-            Store paths to push to a Nix cache (such as cachix)
+            Store paths to push to/pin in a Nix cache (such as cachix)
           '';
         };
       };
