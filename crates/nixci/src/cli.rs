@@ -89,7 +89,7 @@ impl CliArgs {
     }
 }
 
-#[derive(Debug, Subcommand)]
+#[derive(Debug, Subcommand, Clone)]
 pub enum Command {
     /// Build all outputs of a flake
     Build(BuildConfig),
@@ -120,14 +120,14 @@ impl Command {
     /// Get the nixci [config::Config] associated with this subcommand
     pub async fn get_config(cmd: &NixCmd, flake_ref: &FlakeRef) -> anyhow::Result<config::Config> {
         let url = flake_ref.to_flake_url().await?;
-        tracing::info!("{}", format!("🍏 {}", url.0).bold());
+        tracing::info!("{}", format!("🍏 Building {}", url.0).bold());
         let cfg = config::Config::from_flake_url(cmd, &url).await?;
         tracing::debug!("Config: {cfg:?}");
         Ok(cfg)
     }
 }
 
-#[derive(Parser, Debug)]
+#[derive(Parser, Debug, Clone)]
 pub struct BuildConfig {
     /// The systems list to build for. If empty, build for current system.
     ///
