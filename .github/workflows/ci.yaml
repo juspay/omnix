@@ -37,6 +37,8 @@ jobs:
       - name: Check static binary size
         if: matrix.system == 'x86_64-linux'
         run: nix run .#check-closure-size
+      - name: nix run
+        run: nix run . -- --help
       # In lieu of https://github.com/srid/nixci/issues/88
       - name: Registry flake check
         run: |
