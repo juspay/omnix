@@ -39,11 +39,6 @@ jobs:
         run: nix run .#check-closure-size
       - name: nix run
         run: nix run . -- --help
-      # In lieu of https://github.com/srid/nixci/issues/88
-      - name: Registry flake check
-        run: |
-          cd ./crates/flakreate/registry
-          nix --accept-flake-config flake check
       # First, build the repos used in the test to cache them locally, so as
       # to avoid GitHub rate limits during the integration test (which
       # doesn't use the token)
@@ -58,7 +53,11 @@ jobs:
         run: |
           # We disable some tests (e.g.: omnix-cli tests) on Nix due to
           # sandboxing issues.
-          nix --option system "${{ matrix.system }}" --accept-flake-config develop -c cargo test
+          nix \
+            --option system "${{ matrix.system }}" \
+            --extra-access-tokens "github.com=${{ secrets.GITHUB_TOKEN }}" \
+            --accept-flake-config \
+            develop -c cargo test
       - name: Push to cachix
         if: github.ref == 'refs/heads/main'
         run: nix --option system "${{ matrix.system }}" run .#cachix-push

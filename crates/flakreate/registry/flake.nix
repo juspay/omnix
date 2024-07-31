@@ -13,6 +13,9 @@
   outputs = inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       systems = import inputs.systems;
+      imports = [
+        ./nix/flake-output-cache.nix
+      ];
       flake = {
         templates = {
           nix-dev-home = inputs.nix-dev-home.templates.default;
@@ -27,7 +30,7 @@
             params = [
               {
                 name = "Username";
-                help = "Your username as shown by by $USER";
+                help = "Your username as shown by $USER";
                 default = "runner";
                 required = true;
                 files = [
