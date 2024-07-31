@@ -1771,7 +1771,9 @@ dependencies = [
  "nix_rs",
  "serde",
  "serde_json",
+ "thiserror",
  "tokio",
+ "tracing",
 ]
 
 [[package]]
