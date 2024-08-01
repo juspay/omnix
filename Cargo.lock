@@ -3357,6 +3357,7 @@ dependencies = [
  "predicates",
  "regex",
  "rexpect",
+ "serde_json",
  "tabled",
  "tokio",
  "tracing",

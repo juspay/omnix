@@ -11,7 +11,7 @@ use std::{
 /// This structure is currently produced by `nix flake show`, thus to parse it we must toggle serde untagged.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum FlakeOutputs {
-    Val(Val),
+    Leaf(Leaf),
     Attrset(BTreeMap<String, FlakeOutputs>),
 }
 
@@ -25,10 +25,10 @@ impl FlakeOutputs {
         Ok(v.into_flake_outputs())
     }
 
-    /// Get the non-attrset value
-    pub fn as_leaf(&self) -> Option<&Val> {
+    /// Get the non-attrset leaf
+    pub fn as_leaf(&self) -> Option<&Leaf> {
         match self {
-            Self::Val(v) => Some(v),
+            Self::Leaf(v) => Some(v),
             _ => None,
         }
     }
@@ -68,25 +68,86 @@ impl FlakeOutputs {
     }
 }
 
+/// Represents a leaf value of a flake output
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum Leaf {
+    Val(Val),
+    Unknown(Unknown),
+    Filtered(Filtered),
+    Skipped(Skipped),
+    Doc(String),
+}
+
+impl Leaf {
+    /// Get the value as a [Val]
+    pub fn as_val(&self) -> Option<&Val> {
+        match self {
+            Self::Val(v) => Some(v),
+            _ => None,
+        }
+    }
+}
+
 /// The metadata of a flake output value which is of non-attrset [Type]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Val {
-    #[serde(rename = "type")]
+    #[serde(rename = "what")]
     pub type_: Type,
-    pub name: Option<String>,
-    pub description: Option<String>,
+    pub derivation_name: Option<String>,
+    pub short_description: Option<String>,
+}
+
+impl Default for Val {
+    fn default() -> Self {
+        Self {
+            type_: Type::Unknown,
+            derivation_name: None,
+            short_description: None,
+        }
+    }
+}
+
+/// Boolean flags at the leaf of a flake output
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Unknown {
+    pub unknown: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename = "camelCase")]
+pub struct Filtered {
+    pub filtered: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Skipped {
+    pub skipped: bool,
 }
 
 /// The type of a flake output [Val]
 ///
 /// [Nix source ref](https://github.com/NixOS/nix/blob/2.14.1/src/nix/flake.cc#L1105)
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub enum Type {
+    #[serde(rename = "NixOS module")]
     NixosModule,
-    Derivation,
+    #[serde(rename = "NixOS configuration")]
+    NixosConfiguration,
+    #[serde(rename = "nix-darwin configuration")]
+    DarwinConfiguration,
+    #[serde(rename = "package")]
+    Package,
+    #[serde(rename = "development environment")]
+    DevShell,
+    #[serde(rename = "CI test")]
+    Check,
+    #[serde(rename = "app")]
     App,
+    #[serde(rename = "template")]
     Template,
     #[serde(other)]
     Unknown,
@@ -97,7 +158,11 @@ impl Type {
     pub fn to_icon(&self) -> &'static str {
         match self {
             Self::NixosModule => "❄️",
-            Self::Derivation => "📦",
+            Self::NixosConfiguration => "🔧",
+            Self::DarwinConfiguration => "🍎",
+            Self::Package => "📦",
+            Self::DevShell => "🐚",
+            Self::Check => "🧪",
             Self::App => "📱",
             Self::Template => "🏗️",
             Self::Unknown => "❓",
@@ -117,7 +182,7 @@ impl Display for Type {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
 enum FlakeOutputsUntagged {
-    UVal(Val),
+    ULeaf(Leaf),
     UAttrset(BTreeMap<String, FlakeOutputsUntagged>),
 }
 
@@ -135,6 +200,8 @@ impl FlakeOutputsUntagged {
                 "--legacy", // for showing nixpkgs legacyPackages
                 "--allow-import-from-derivation",
                 "--json",
+                "--default-flake-schemas",
+                env!("DEFAULT_FLAKE_SCHEMAS"),
                 &flake_url.to_string(),
             ])
             .await?;
@@ -144,7 +211,7 @@ impl FlakeOutputsUntagged {
     /// Convert to [FlakeOutputs]
     fn into_flake_outputs(self) -> FlakeOutputs {
         match self {
-            Self::UVal(v) => FlakeOutputs::Val(v),
+            Self::ULeaf(v) => FlakeOutputs::Leaf(v),
             Self::UAttrset(v) => FlakeOutputs::Attrset(
                 v.into_iter()
                     .map(|(k, v)| (k, v.into_flake_outputs()))
