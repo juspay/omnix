@@ -39,7 +39,7 @@
                   Security
                   SystemConfiguration
                 ] ++ [
-                  libiconv
+                  pkgsStatic.libiconv
                   pkg-config
                 ];
                 buildInputs = lib.optionals pkgs.stdenv.isDarwin
@@ -60,9 +60,9 @@
                   description = "Command-line interface for Omnix";
                   mainProgram = "om";
                 };
+                CARGO_BUILD_RUSTFLAGS = "-C target-feature=+crt-static";
               } //
               lib.optionalAttrs pkgs.stdenv.isLinux {
-                CARGO_BUILD_RUSTFLAGS = "-C target-feature=+crt-static";
                 CARGO_BUILD_TARGET = "x86_64-unknown-linux-musl";
               };
             };
