@@ -84,6 +84,16 @@
             tags = [ "haskell" "haskell-flake" "relude" "just" ];
             params = [
               {
+                name = "Author";
+                help = "Author name";
+                default = "Sridhar Ratnakumar";
+                required = false;
+                files = [
+                  "haskell-template.cabal"
+                  "LICENSE"
+                ];
+              }
+              {
                 name = "Package Name";
                 help = "Name of the Haskell package";
                 default = "haskell-template";
@@ -92,16 +102,6 @@
                   "haskell-template.cabal"
                   "nix/modules/haskell.nix"
                   "justfile"
-                ];
-              }
-              {
-                name = "Author";
-                help = "Author name";
-                default = "Sridhar Ratnakumar";
-                required = false;
-                files = [
-                  "haskell-template.cabal"
-                  "LICENSE"
                 ];
               }
               {
