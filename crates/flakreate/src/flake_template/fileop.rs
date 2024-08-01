@@ -43,22 +43,21 @@ impl FileOp {
     }
 
     pub async fn apply(ops: &[Self]) -> anyhow::Result<()> {
-        // TODO: Refactor the LLM generated code below
         // TODO: Append these paths to base dir
         for op in ops {
             match op {
                 FileOp::ContentReplace(file, from, to) => {
                     let content = tokio::fs::read_to_string(file).await?;
                     let content = content.replace(from, to);
-                    println!("replace: {} : {} -> {}", file.display(), from, to);
+                    tracing::info!("replace: {} : {} -> {}", file.display(), from, to);
                     tokio::fs::write(file, content).await?;
                 }
                 FileOp::FileRename(file, new_name) => {
-                    println!("rename: {} -> {}", file.display(), new_name);
+                    tracing::info!("rename: {} -> {}", file.display(), new_name);
                     tokio::fs::rename(file, new_name).await?;
                 }
                 FileOp::PathDelete(path) => {
-                    println!("delete: {}", path.display());
+                    tracing::info!("delete: {}", path.display());
                     if path.is_file() {
                         tokio::fs::remove_file(path).await?;
                     } else {
