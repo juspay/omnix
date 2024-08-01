@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **DeterminateSystems/flake-schemas**
+  - Allow overriding the `nix` CLI command.
 - **`flake::schema::FlakeSchema`**
   - Add `nixos_configurations`
 - **`flake::url`**

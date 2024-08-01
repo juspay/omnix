@@ -38,7 +38,10 @@ impl Flake {
         nix_config: &NixConfig,
         url: FlakeUrl,
     ) -> Result<Flake, NixCmdError> {
-        let output = FlakeOutputs::from_nix(nix_cmd, &url).await?;
+        let mut nix_flake_schemas_cmd = nix_cmd.clone();
+        nix_flake_schemas_cmd.command = Some(env!("NIX_FLAKE_SCHEMAS_BIN").to_string());
+
+        let output = FlakeOutputs::from_nix(&nix_flake_schemas_cmd, &url).await?;
         let schema = FlakeSchema::from(&output, &nix_config.system.value);
         Ok(Flake {
             url,
