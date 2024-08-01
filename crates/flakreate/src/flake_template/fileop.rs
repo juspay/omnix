@@ -47,9 +47,9 @@ impl FileOp {
         for op in ops {
             match op {
                 FileOp::ContentReplace(file, from, to) => {
+                    tracing::info!("replace: {} : {} -> {}", file.display(), from, to);
                     let content = tokio::fs::read_to_string(file).await?;
                     let content = content.replace(from, to);
-                    tracing::info!("replace: {} : {} -> {}", file.display(), from, to);
                     tokio::fs::write(file, content).await?;
                 }
                 FileOp::FileRename(file, new_name) => {
