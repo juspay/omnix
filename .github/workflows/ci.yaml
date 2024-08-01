@@ -61,3 +61,23 @@ jobs:
       - name: Push to cachix
         if: github.ref == 'refs/heads/main'
         run: nix --option system "${{ matrix.system }}" run .#cachix-push
+      - name: Build om static binary
+        run: nix build
+      - name: Upload om static binary
+        uses: actions/upload-artifact
+        with:
+          name: om-${{ matrix.system }}
+          path: ./result/bin/om
+  static-binary-check:
+    needs: checks
+    runs-on: ${{ matrix.system }}
+    strategy:
+      matrix:
+        system: [ ubuntu-latest, macos-latest ]
+    steps:
+      - name: Donwload om static binary
+        uses: actions/download-artifact@v2
+        with:
+          name: om-${{ matrix.system == 'ubuntu-latest' && 'x86_64-linux' || matrix.system == 'macos-latest' && 'aarch64-darwin' || matrix.system }}
+      - name: Run om static binary
+        run: ./om --help
