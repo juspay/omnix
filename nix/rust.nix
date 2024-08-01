@@ -39,7 +39,8 @@
                   Security
                   SystemConfiguration
                 ] ++ [
-                  pkgsStatic.libiconv
+                  # error: don't yet have a `targetPackages.darwin.LibsystemCross for x86_64-apple-darwin`
+                  (if (stdenv.isDarwin && stdenv.isAarch64) then pkgsStatic.libiconv else libiconv)
                   pkg-config
                 ];
                 buildInputs = lib.optionals pkgs.stdenv.isDarwin
