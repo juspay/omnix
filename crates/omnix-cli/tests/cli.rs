@@ -71,9 +71,17 @@ fn om_init() -> anyhow::Result<()> {
     p.send_line("")?;
     p.exp_string("GitHub Actions")?;
     p.send_line("")?;
+    p.exp_eof()?;
 
-    // TODO: Run the generated template, and compare output.
+    // Run the generated template, and compare output.
     // Is there a better way of doing these checks? Property tests + ?
+    // TODO: github token?
+    Command::new("nix")
+        .arg("run")
+        .arg(format!("path:{}#foo", &temp_dir.path().display()))
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Hello"));
 
     temp_dir.close().unwrap();
     Ok(())
