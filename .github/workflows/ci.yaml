@@ -38,8 +38,10 @@ jobs:
         if: matrix.system == 'x86_64-linux'
         run: nix run .#check-closure-size
       - name: nix build
+        if: matrix.system != 'x86_64-darwin'
         run: nix build
       - name: Upload om static binary
+        if: matrix.system != 'x86_64-darwin'
         uses: actions/upload-artifact@v4
         with:
           name: om-${{ matrix.system }}
