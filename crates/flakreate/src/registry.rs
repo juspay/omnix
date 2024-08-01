@@ -23,11 +23,8 @@ impl FlakeTemplateRegistry {
     }
 
     pub async fn load_and_select_template(&self) -> anyhow::Result<FlakeTemplate> {
-        let term = console::Term::stdout();
-        term.write_line(format!("Loading registry {}...", self.flake_url).as_str())?;
-        let templates = flake_template::template::fetch(&self.flake_url).await?;
-        term.clear_last_lines(1)?;
-        println!("Loaded registry: {}", self.flake_url);
+        tracing::info!("Loading registry {}...", self.flake_url);
+        let templates = self.load_registry().await?;
         // TODO: avoid duplicates (aliases)
         let filtered_templates = templates
             .iter()
@@ -44,7 +41,12 @@ impl FlakeTemplateRegistry {
                 .with_help_message("Choose a flake template to use")
                 .prompt()?
         };
-        println!("Selected template: {}", template);
+        tracing::info!("Selected template: {}", template);
         Ok(template.clone())
+    }
+
+    async fn load_registry(&self) -> anyhow::Result<Vec<FlakeTemplate>> {
+        let res = flake_template::template::fetch(&self.flake_url).await?;
+        Ok(res)
     }
 }
