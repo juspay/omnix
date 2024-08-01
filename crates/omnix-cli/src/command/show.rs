@@ -18,6 +18,7 @@ use tabled::{
 pub struct ShowConfig {
     /// The flake to show outputs for
     #[arg(name = "FLAKE")]
+    #[arg(value_hint = clap::ValueHint::AnyPath)]
     pub flake_url: FlakeUrl,
 }
 
