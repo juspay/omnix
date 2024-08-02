@@ -8,14 +8,14 @@ use std::path::PathBuf;
 use nix_rs::command::NixCmd;
 use nix_rs::flake::url::FlakeUrl;
 
-use crate::{flake_template::fileop::FileOp, registry::FlakeTemplateRegistry};
+use crate::{flake_template::fileop::FileOp, registry::TemplateRegistryRef};
 
 pub async fn flakreate(registry: FlakeUrl, path: PathBuf) -> anyhow::Result<()> {
-    println!(
+    tracing::info!(
         "Welcome to flakreate! Let's create your flake template at {:?}:",
         path
     );
-    let template = FlakeTemplateRegistry::from_url(registry.clone())?
+    let template = TemplateRegistryRef::from_url(registry.clone())?
         .load_and_select_template()
         .await?;
 
@@ -26,7 +26,6 @@ pub async fn flakreate(registry: FlakeUrl, path: PathBuf) -> anyhow::Result<()> 
 
     // Create the flake templatge
     let template_url = registry.with_attr(&template.name);
-    println!("$ nix flake new {} -t {}", path, template_url);
     NixCmd::get()
         .await
         .run_with_args(&["flake", "new", &path, "-t", &template_url.0])
