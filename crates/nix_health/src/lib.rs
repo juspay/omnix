@@ -64,15 +64,16 @@ impl NixHealth {
     /// override it.
     pub async fn from_flake(url: &FlakeUrl) -> Result<Self, nix_rs::command::NixCmdError> {
         let cmd = NixCmd::get().await;
-        let v = nix_eval_attr_json(cmd, &url.with_fully_qualified_root_attr("om.health")).await?;
-        match v {
-            Some(v) => Ok(v),
-            None => {
-                let v = nix_eval_attr_json(cmd, &url.with_fully_qualified_root_attr("nix-health"))
-                    .await?;
-                Ok(v.unwrap_or_default())
+        let attrs = ["om.health", "nix-health"];
+
+        for attr in attrs {
+            if let Some(v) =
+                nix_eval_attr_json(cmd, &url.with_fully_qualified_root_attr(attr)).await?
+            {
+                return Ok(v);
             }
         }
+        Ok(Default::default())
     }
 
     /// Run all checks and collect the results
