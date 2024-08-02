@@ -54,7 +54,7 @@
                 DEVOUR_FLAKE = inputs.devour-flake;
                 OM_INIT_REGISTRY = config.rust-project.src + /crates/flakreate/registry;
                 NIX_FLAKE_SCHEMAS_BIN = lib.getExe (if pkgs.stdenv.isLinux then inputs'.nix.packages.nix-static else inputs'.nix.packages.default);
-                DEFAULT_FLAKE_SCHEMAS = "github:DeterminateSystems/flake-schemas";
+                DEFAULT_FLAKE_SCHEMAS = inputs.flake-schemas;
                 # Disable tests due to sandboxing issues; we run them on CI
                 # instead.
                 doCheck = false;
@@ -96,7 +96,7 @@
                   pkgs.nix # cargo tests need nix
                 ];
                 NIX_FLAKE_SCHEMAS_BIN = lib.getExe (if pkgs.stdenv.isLinux then inputs'.nix.packages.nix-static else inputs'.nix.packages.default);
-                DEFAULT_FLAKE_SCHEMAS = "github:DeterminateSystems/flake-schemas";
+                DEFAULT_FLAKE_SCHEMAS = inputs.flake-schemas;
                 meta.description = "Graphical user interface for Omnix";
               };
             };
@@ -114,7 +114,7 @@
                   nix # Tests need nix cli
                 ];
                 NIX_FLAKE_SCHEMAS_BIN = lib.getExe (if pkgs.stdenv.isLinux then inputs'.nix.packages.nix-static else inputs'.nix.packages.default);
-                DEFAULT_FLAKE_SCHEMAS = "github:DeterminateSystems/flake-schemas";
+                DEFAULT_FLAKE_SCHEMAS = inputs.flake-schemas;
               };
             };
           };
@@ -129,7 +129,7 @@
                   ]
                 );
                 NIX_FLAKE_SCHEMAS_BIN = lib.getExe (if pkgs.stdenv.isLinux then inputs'.nix.packages.nix-static else inputs'.nix.packages.default);
-                DEFAULT_FLAKE_SCHEMAS = "github:DeterminateSystems/flake-schemas";
+                DEFAULT_FLAKE_SCHEMAS = inputs.flake-schemas;
                 nativeBuildInputs = with pkgs; [
                   nix # Tests need nix cli
                 ];

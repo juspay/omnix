@@ -108,6 +108,22 @@
       }
     },
     "flake-schemas": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1721999734,
+        "narHash": "sha256-G5CxYeJVm4lcEtaO87LKzOsVnWeTcHGKbKxNamNWgOw=",
+        "owner": "DeterminateSystems",
+        "repo": "flake-schemas",
+        "rev": "0a5c42297d870156d9c57d8f99e476b738dcd982",
+        "type": "github"
+      },
+      "original": {
+        "owner": "DeterminateSystems",
+        "repo": "flake-schemas",
+        "type": "github"
+      }
+    },
+    "flake-schemas_2": {
       "locked": {
         "lastModified": 1719857163,
         "narHash": "sha256-wM+8JtoKBkahHiKn+EM1ikurMnitwRQrZ91hipJIJK8=",
@@ -175,7 +191,7 @@
       "inputs": {
         "flake-compat": "flake-compat",
         "flake-parts": "flake-parts_2",
-        "flake-schemas": "flake-schemas",
+        "flake-schemas": "flake-schemas_2",
         "libgit2": "libgit2",
         "nixpkgs": "nixpkgs",
         "nixpkgs-23-11": "nixpkgs-23-11",
@@ -325,6 +341,7 @@
         "cargo-doc-live": "cargo-doc-live",
         "devour-flake": "devour-flake",
         "flake-parts": "flake-parts",
+        "flake-schemas": "flake-schemas",
         "nix": "nix",
         "nixpkgs": "nixpkgs_2",
         "process-compose-flake": "process-compose-flake",
