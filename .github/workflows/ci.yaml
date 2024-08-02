@@ -47,7 +47,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: om-${{ matrix.system }}
-          path: $om_static_binary_path/bin/om
+          path: ${{ env.om_static_binary_path }}/bin/om
       - name: nix run
         run: nix run . -- --help
       # First, build the repos used in the test to cache them locally, so as
