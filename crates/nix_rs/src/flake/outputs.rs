@@ -199,7 +199,10 @@ impl FlakeOutputsUntagged {
         nix_cmd: &crate::command::NixCmd,
         flake_url: &super::url::FlakeUrl,
     ) -> Result<Self, crate::command::NixCmdError> {
-        let v = nix_cmd
+        let mut nix_flake_schemas_cmd = nix_cmd.clone();
+        nix_flake_schemas_cmd.command = Some(env!("NIX_FLAKE_SCHEMAS_BIN").to_string());
+
+        let v = nix_flake_schemas_cmd
             .run_with_args_expecting_json(&[
                 "flake",
                 "show",
