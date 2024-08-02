@@ -39,7 +39,11 @@
                   Security
                   SystemConfiguration
                 ] ++ [
-                  # error: don't yet have a `targetPackages.darwin.LibsystemCross for x86_64-apple-darwin`
+                  # Packages from `pkgsStatic` require cross-compilation support for the target platform,
+                  # which is not yet available for `x86_64-apple-darwin` in nixpkgs. Upon trying to evaluate
+                  # a static package for `x86_64-apple-darwin`, you may see an error like:
+                  #
+                  # > error: don't yet have a `targetPackages.darwin.LibsystemCross for x86_64-apple-darwin`
                   (if (stdenv.isDarwin && stdenv.isAarch64) then pkgsStatic.libiconv else libiconv)
                   pkg-config
                 ];
