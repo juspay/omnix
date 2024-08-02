@@ -23,7 +23,7 @@
     devour-flake.url = "github:srid/devour-flake";
     devour-flake.flake = false;
 
-    flake-schemas.url = "github:DeterminateSystems/flake-schemas";
+    flake-schemas.url = "github:DeterminateSystems/flake-schemas/0a5c42297d870156d9c57d8f99e476b738dcd982";
     flake-schemas.flake = false;
   };
 
