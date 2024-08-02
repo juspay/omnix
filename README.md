@@ -21,10 +21,10 @@ nix --accept-flake-config profile install github:juspay/omnix
     - [ ] Advanced `om show`
 - [x] `om health` (nix-health ng)
 - [x] `om ci` (nixci ng)
-- [ ] `om init` (Initialize flake templates)
+- [x] `om init` (Initialize flake templates)
 - [ ] ...
 
-## Developping
+## Developing
 
 1. [Install Nix](https://nixos.asia/en/install)
 1. [Setup `direnv`](https://nixos.asia/en/direnv)
