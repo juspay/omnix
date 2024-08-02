@@ -55,7 +55,7 @@ impl Default for NixCmd {
             extra_experimental_features: vec![],
             extra_access_tokens: vec![],
             refresh: false,
-            command: Some("nix".to_string()),
+            command: None,
         }
     }
 }
