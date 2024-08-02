@@ -9,7 +9,7 @@ use anyhow::Context;
 use colored::Colorize;
 
 use check::direnv::Direnv;
-use nix_rs::flake::eval::nix_eval_attr_json;
+use nix_rs::flake::eval::{nix_eval_qualified_attr, QualifiedAttrError};
 use nix_rs::flake::url::FlakeUrl;
 use nix_rs::{command::NixCmd, info::NixInfo};
 use serde::{Deserialize, Serialize};
@@ -62,18 +62,17 @@ impl NixHealth {
     ///
     /// Fallback to using the default health check config if the flake doesn't
     /// override it.
-    pub async fn from_flake(url: &FlakeUrl) -> Result<Self, nix_rs::command::NixCmdError> {
+    pub async fn from_flake(url: &FlakeUrl) -> Result<Self, QualifiedAttrError> {
         let cmd = NixCmd::get().await;
-        let attrs = ["om.health", "nix-health"];
-
-        for attr in attrs {
-            if let Some(v) =
-                nix_eval_attr_json(cmd, &url.with_fully_qualified_root_attr(attr)).await?
-            {
-                return Ok(v);
-            }
+        let (v, _, rest_attrs) =
+            nix_eval_qualified_attr(cmd, url, &["om.health", "nix-health"]).await?;
+        if rest_attrs.is_empty() {
+            Ok(v)
+        } else {
+            Err(QualifiedAttrError::UnexpectedNestedAttribute(
+                rest_attrs.join("."),
+            ))
         }
-        Ok(Default::default())
     }
 
     /// Run all checks and collect the results

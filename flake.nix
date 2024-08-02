@@ -45,8 +45,7 @@
 
       # omnix configuration
       flake = {
-        # TODO: Rename to `om.ci`
-        nixci.default = {
+        om.ci.default = {
           omnix.dir = ./.;
           flakreate-registry.dir = ./crates/flakreate/registry;
         };

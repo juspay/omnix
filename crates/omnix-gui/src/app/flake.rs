@@ -123,7 +123,7 @@ pub fn FlakeSchemaView(schema: FlakeSchema) -> Element {
                     Some(l) => {
                         let v = l.as_val().cloned().unwrap_or_default();
                         let k = v.derivation_name.as_deref().unwrap_or("formatter");
-                        rsx! { FlakeValView { k: k.clone(), v: v.clone() } }
+                        rsx! { FlakeValView { k: k, v: v.clone() } }
                     },
                     None => rsx! { "" }
                 },
