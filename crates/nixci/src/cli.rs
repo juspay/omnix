@@ -18,6 +18,7 @@ use crate::{
     },
 };
 
+
 /// A reference to some flake living somewhere
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FlakeRef {
@@ -25,6 +26,10 @@ pub enum FlakeRef {
     GithubPR(PullRequestRef),
     /// A flake URL supported by Nix commands
     Flake(FlakeUrl),
+}
+
+fn parse_flake_ref(s: &str) -> Result<FlakeRef, String> {
+    FlakeRef::from_str(s).map_err(|e| e.to_string())
 }
 
 impl FromStr for FlakeRef {
@@ -141,7 +146,7 @@ pub struct BuildConfig {
     ///
     /// A specific nixci` configuration can be specified
     /// using '#': e.g. `nixci .#extra-tests`
-    #[arg(default_value = ".")]
+    #[arg(default_value = ".", value_parser = parse_flake_ref, value_hint = clap::ValueHint::AnyPath)]
     pub flake_ref: FlakeRef,
 
     /// Additional arguments to pass through to `nix build`

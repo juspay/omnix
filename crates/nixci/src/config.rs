@@ -8,6 +8,7 @@ use nix_rs::{
 use serde::Deserialize;
 
 use crate::cli::BuildConfig;
+use clap::Parser;
 
 /// The `nixci` configuration encoded in flake.nix
 ///
@@ -21,12 +22,14 @@ use crate::cli::BuildConfig;
 /// }
 // NB: we use BTreeMap instead of HashMap here so that we always iterate
 // configs in a determinitstic (i.e. asciibetical) order
-#[derive(Debug)]
+#[derive(Debug, Parser)]
 pub struct Config {
     /// The flake.nix configuration
+    #[clap(skip)]
     pub subflakes: Subflakes,
 
     /// The URL to the flake containing this configuration
+    #[arg(value_hint = clap::ValueHint::AnyPath)]
     pub flake_url: FlakeUrl,
 
     /// Configuration name (`nixci.<name>`)
