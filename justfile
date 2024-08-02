@@ -42,7 +42,7 @@ doc:
 
 # Run CI locally
 ci:
-    nixci
+    nix run . ci
 
 clippy:
     cargo clippy --release --locked --all-targets --all-features -- --deny warnings

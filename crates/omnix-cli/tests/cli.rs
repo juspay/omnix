@@ -61,10 +61,10 @@ fn om_init() -> anyhow::Result<()> {
     )?;
     p.exp_string("Select a template")?;
     p.send_line("haskell-template")?;
-    p.exp_string("Package Name")?;
-    p.send_line("foo")?;
     p.exp_string("Author")?;
     p.send_line("")?;
+    p.exp_string("Package Name")?;
+    p.send_line("foo")?;
     p.exp_string("VSCode support")?;
     p.send_line("")?;
     p.exp_string("Nix Template")?;
