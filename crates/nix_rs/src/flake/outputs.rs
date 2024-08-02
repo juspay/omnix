@@ -6,6 +6,16 @@ use std::{
     fmt::Display,
 };
 
+/// Absolute path to the `nix` binary compiled with flake schemas support
+///
+/// We expect this environment to be set in Nix build and shell.
+pub const NIX_FLAKE_SCHEMAS_BIN: &str = env!("NIX_FLAKE_SCHEMAS_BIN");
+
+/// Flake URL of the default flake schemas
+///
+/// We expect this environment to be set in Nix build and shell.
+pub const DEFAULT_FLAKE_SCHEMAS: &str = env!("DEFAULT_FLAKE_SCHEMAS");
+
 /// Represents the "outputs" of a flake
 ///
 /// This structure is currently produced by `nix flake show`, thus to parse it we must toggle serde untagged.
