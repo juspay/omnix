@@ -39,7 +39,12 @@
                   Security
                   SystemConfiguration
                 ] ++ [
-                  libiconv
+                  # Packages from `pkgsStatic` require cross-compilation support for the target platform,
+                  # which is not yet available for `x86_64-apple-darwin` in nixpkgs. Upon trying to evaluate
+                  # a static package for `x86_64-apple-darwin`, you may see an error like:
+                  #
+                  # > error: don't yet have a `targetPackages.darwin.LibsystemCross for x86_64-apple-darwin`
+                  (if (stdenv.isDarwin && stdenv.isAarch64) then pkgsStatic.libiconv else libiconv)
                   pkg-config
                 ];
                 buildInputs = lib.optionals pkgs.stdenv.isDarwin
@@ -62,9 +67,9 @@
                   description = "Command-line interface for Omnix";
                   mainProgram = "om";
                 };
+                CARGO_BUILD_RUSTFLAGS = "-C target-feature=+crt-static";
               } //
               lib.optionalAttrs pkgs.stdenv.isLinux {
-                CARGO_BUILD_RUSTFLAGS = "-C target-feature=+crt-static";
                 CARGO_BUILD_TARGET = "x86_64-unknown-linux-musl";
               };
             };
