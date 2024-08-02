@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **DeterminateSystems/flake-schemas**
+  - Allow overriding the `nix` CLI command.
+  - Switch to flake schema given by <https://github.com/DeterminateSystems/flake-schemas>
 - **`flake::schema::FlakeSchema`**
   - Add `nixos_configurations`
 - **`flake::url`**

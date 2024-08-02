@@ -5,7 +5,7 @@ use std::{collections::BTreeMap, path::PathBuf};
 use dioxus::prelude::*;
 use dioxus_router::components::Link;
 use nix_rs::flake::{
-    outputs::{FlakeOutputs, Type, Val},
+    outputs::{FlakeOutputs, Leaf, Type, Val},
     schema::FlakeSchema,
     url::FlakeUrl,
     Flake,
@@ -43,7 +43,6 @@ pub fn FlakeInput() -> Element {
                 value: state.get_flake_url_string(),
                 disabled: busy,
                 onchange: move |ev| {
-                    // TODO: Handle URL parsing errors, and show in GUI
                     let url: FlakeUrl = str::parse(&ev.value()).unwrap();
                     Route::go_to_flake(url);
                 }
@@ -116,11 +115,14 @@ pub fn FlakeSchemaView(schema: FlakeSchema) -> Element {
                 BtreeMapView { title: "Dev Shells", tree: schema.devshells }
                 BtreeMapView { title: "Checks", tree: schema.checks }
                 BtreeMapView { title: "Apps", tree: schema.apps }
-                BtreeMapView { title: "NixOS Configurations", tree: schema.nixos_configurations }
+                BtreeMapView { title: "NixOS configurations", tree: schema.nixos_configurations }
+                BtreeMapView { title: "Darwin configurations", tree: schema.darwin_configurations }
+                BtreeMapView { title: "NixOS modules", tree: schema.nixos_modules }
                 SectionHeading { title: "Formatter" }
                 match schema.formatter.as_ref() {
-                    Some(v) => {
-                        let k = v.name.clone().unwrap_or("formatter".to_string());
+                    Some(l) => {
+                        let v = l.as_val().cloned().unwrap_or_default();
+                        let k = v.derivation_name.as_deref().unwrap_or("formatter");
                         rsx! { FlakeValView { k: k.clone(), v: v.clone() } }
                     },
                     None => rsx! { "" }
@@ -136,7 +138,7 @@ pub fn FlakeSchemaView(schema: FlakeSchema) -> Element {
 }
 
 #[component]
-pub fn BtreeMapView(title: &'static str, tree: BTreeMap<String, Val>) -> Element {
+pub fn BtreeMapView(title: &'static str, tree: BTreeMap<String, Leaf>) -> Element {
     rsx! {
         div {
             SectionHeading { title: title, extra: tree.len().to_string() }
@@ -146,11 +148,11 @@ pub fn BtreeMapView(title: &'static str, tree: BTreeMap<String, Val>) -> Element
 }
 
 #[component]
-pub fn BtreeMapBodyView(tree: BTreeMap<String, Val>) -> Element {
+pub fn BtreeMapBodyView(tree: BTreeMap<String, Leaf>) -> Element {
     rsx! {
         div { class: "flex flex-wrap justify-start",
-            for (k , v) in tree.iter() {
-                FlakeValView { k: k.clone(), v: v.clone() }
+            for (k , l) in tree.iter() {
+                FlakeValView { k: k.clone(), v: l.as_val().cloned().unwrap_or_default() }
             }
         }
     }
@@ -166,11 +168,11 @@ pub fn FlakeValView(k: String, v: Val) -> Element {
                 div { { v.type_.to_icon() } }
                 div { "{k}" }
             }
-            match &v.name {
+            match &v.derivation_name {
                 Some(name_val) => rsx! { div { class: "font-mono text-xs text-gray-500", "{name_val}" } },
                 None => rsx! { "" } // No-op for None
             },
-            match &v.description {
+            match &v.short_description {
                 Some(desc_val) => rsx! { div { class: "font-light", "{desc_val}" } },
                 None => rsx! { "" } // No-op for None
             }
@@ -188,11 +190,11 @@ pub fn FlakeOutputsRawView(outs: FlakeOutputs) -> Element {
     fn ValView(val: Val) -> Element {
         rsx! {
             span {
-                b { { val.name.clone()  } }
+                b { { val.derivation_name.clone()  } }
                 " ("
                 TypeView { type_: val.type_ }
                 ") "
-                em { { val.description.clone() } }
+                em { { val.short_description.clone() } }
             }
         }
     }
@@ -203,7 +205,11 @@ pub fn FlakeOutputsRawView(outs: FlakeOutputs) -> Element {
             span {
                 match type_ {
                     Type::NixosModule => "nixosModule ❄️",
-                    Type::Derivation => "derivation 📦",
+                    Type::NixosConfiguration => "nixosConfiguration 🧩",
+                    Type::DarwinConfiguration => "darwinConfiguration 🍏",
+                    Type::Package => "package 📦",
+                    Type::DevShell => "devShell 🐚",
+                    Type::Check => "check 🧪",
                     Type::App => "app 📱",
                     Type::Template => "template 🏗️",
                     Type::Unknown => "unknown ❓",
@@ -213,7 +219,7 @@ pub fn FlakeOutputsRawView(outs: FlakeOutputs) -> Element {
     }
 
     match outs {
-        FlakeOutputs::Val(v) => rsx! { ValView { val: v } },
+        FlakeOutputs::Leaf(l) => rsx! { ValView { val: l.as_val().cloned().unwrap_or_default() } },
         FlakeOutputs::Attrset(v) => rsx! {
             ul { class: "list-disc",
                 for (k , v) in v.iter() {

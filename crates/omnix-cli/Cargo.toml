@@ -24,6 +24,7 @@ tabled = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
 clap_complete = { workspace = true }
+serde_json = { workspace = true }
 
 [dev-dependencies]
 anyhow = { workspace = true }
