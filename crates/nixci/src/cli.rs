@@ -18,7 +18,6 @@ use crate::{
     },
 };
 
-
 /// A reference to some flake living somewhere
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FlakeRef {
