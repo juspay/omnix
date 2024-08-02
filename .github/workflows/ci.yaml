@@ -39,13 +39,13 @@ jobs:
         run: nix run .#check-closure-size
       - name: nix build
         if: matrix.system != 'x86_64-darwin'
-        run: nix build
+        run: echo "om_static_binary_path=$(nix build --no-link --print-out-paths)" >> "$GITHUB_ENV"
       - name: Upload om static binary
         if: matrix.system != 'x86_64-darwin'
         uses: actions/upload-artifact@v4
         with:
           name: om-${{ matrix.system }}
-          path: ./result/bin/om
+          path: $om_static_binary_path/bin/om
       - name: nix run
         run: nix run . -- --help
       # First, build the repos used in the test to cache them locally, so as
