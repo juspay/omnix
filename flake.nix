@@ -92,7 +92,7 @@
           ];
           OM_INIT_REGISTRY = inputs.self + /crates/flakreate/registry;
           NIX_FLAKE_SCHEMAS_BIN = lib.getExe (if pkgs.stdenv.isLinux then inputs'.nix.packages.nix-static else inputs'.nix.packages.default);
-          DEFAULT_FLAKE_SCHEMAS = "github:DeterminateSystems/flake-schemas";
+          DEFAULT_FLAKE_SCHEMAS = inputs.flake-schemas;
           packages = with pkgs; [
             just
             cargo-watch
