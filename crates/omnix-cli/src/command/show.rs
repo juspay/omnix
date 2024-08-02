@@ -28,7 +28,7 @@ pub struct FlakeOutputTable {
     /// Title of the table
     pub title: String,
     /// Command to run the outputs in the `name` column
-    pub command: String,
+    pub command: Option<String>,
 }
 
 impl FlakeOutputTable {
@@ -48,7 +48,13 @@ impl FlakeOutputTable {
             return;
         }
         print!("{}", self.title.blue().bold());
-        println!(" ({})", self.command.green().bold());
+
+        if let Some(command) = &self.command {
+            println!(" ({})", command.green().bold());
+        } else {
+            // To ensure the table name and the table are on separate lines
+            println!();
+        }
 
         println!("{}", self.to_tabled());
         println!();
@@ -91,42 +97,48 @@ impl ShowConfig {
         FlakeOutputTable {
             rows: Row::vec_from_btreemap(flake.schema.packages),
             title: "📦 Packages".to_string(),
-            command: format!("nix build {}#<name>", self.flake_url),
+            command: Some(format!("nix build {}#<name>", self.flake_url)),
         }
         .print();
 
         FlakeOutputTable {
             rows: Row::vec_from_btreemap(flake.schema.devshells),
             title: "🐚 Devshells".to_string(),
-            command: format!("nix develop {}#<name>", self.flake_url),
+            command: Some(format!("nix develop {}#<name>", self.flake_url)),
         }
         .print();
 
         FlakeOutputTable {
             rows: Row::vec_from_btreemap(flake.schema.apps),
             title: "🚀 Apps".to_string(),
-            command: format!("nix run {}#<name>", self.flake_url),
+            command: Some(format!("nix run {}#<name>", self.flake_url)),
         }
         .print();
 
         FlakeOutputTable {
             rows: Row::vec_from_btreemap(flake.schema.checks),
             title: "🔍 Checks".to_string(),
-            command: "nix flake check".to_string(),
+            command: Some("nix flake check".to_string()),
         }
         .print();
 
         FlakeOutputTable {
             rows: Row::vec_from_btreemap(flake.schema.nixos_configurations),
             title: "🐧 NixOS Configurations".to_string(),
-            command: format!("nixos-rebuild switch --flake {}#<name>", self.flake_url),
+            command: Some(format!(
+                "nixos-rebuild switch --flake {}#<name>",
+                self.flake_url
+            )),
         }
         .print();
 
         FlakeOutputTable {
             rows: Row::vec_from_btreemap(flake.schema.darwin_configurations),
             title: "🍏 Darwin Configurations".to_string(),
-            command: format!("darwin-rebuild switch --flake {}#<name>", self.flake_url),
+            command: Some(format!(
+                "darwin-rebuild switch --flake {}#<name>",
+                self.flake_url
+            )),
         }
         .print();
 
@@ -134,7 +146,7 @@ impl ShowConfig {
             rows: Row::vec_from_btreemap(flake.schema.nixos_modules),
             title: "🔧 NixOS Modules".to_string(),
             // TODO: Command should be optional
-            command: "".to_string(),
+            command: None,
         }
         .print();
 
@@ -142,28 +154,28 @@ impl ShowConfig {
             rows: Row::vec_from_btreemap(flake.schema.docker_images),
             title: "🐳 Docker Images".to_string(),
             // TODO: Try if the below command works
-            command: format!("nix build {}#dockerImages.<name>", self.flake_url),
+            command: Some(format!("nix build {}#dockerImages.<name>", self.flake_url)),
         }
         .print();
 
         FlakeOutputTable {
             rows: Row::vec_from_btreemap(flake.schema.overlays),
             title: "🎨 Overlays".to_string(),
-            command: "".to_string(),
+            command: None,
         }
         .print();
 
         FlakeOutputTable {
             rows: Row::vec_from_btreemap(flake.schema.templates),
             title: "📝 Templates".to_string(),
-            command: format!("nix flake init -t {}#<name>", self.flake_url),
+            command: Some(format!("nix flake init -t {}#<name>", self.flake_url)),
         }
         .print();
 
         FlakeOutputTable {
             rows: Row::vec_from_btreemap(flake.schema.schemas),
             title: "📜 Schemas".to_string(),
-            command: "".to_string(),
+            command: None,
         }
         .print();
 
