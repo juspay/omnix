@@ -4,7 +4,7 @@ use glob::{Pattern, PatternError};
 use inquire::Select;
 use nix_rs::{
     command::{NixCmd, NixCmdError},
-    flake::{eval::nix_eval_attr_json, url::FlakeUrl},
+    flake::{eval::nix_eval_attr, url::FlakeUrl},
 };
 use thiserror::Error;
 
@@ -81,13 +81,11 @@ impl TemplateRegistry {
 
     async fn fetch_via_flake(url: &FlakeUrl) -> Result<Self, NixCmdError> {
         let nixcmd = NixCmd::get().await;
-        let mut templates = nix_eval_attr_json::<BTreeMap<String, FlakeTemplate>>(
-            nixcmd,
-            &url.with_attr("templates"),
-        )
-        .await?
-        .unwrap_or_default();
-        let templates_config = nix_eval_attr_json::<BTreeMap<String, FlakeTemplateConfig>>(
+        let mut templates =
+            nix_eval_attr::<BTreeMap<String, FlakeTemplate>>(nixcmd, &url.with_attr("templates"))
+                .await?
+                .unwrap_or_default();
+        let templates_config = nix_eval_attr::<BTreeMap<String, FlakeTemplateConfig>>(
             nixcmd,
             &url.with_attr("om.templates"),
         )

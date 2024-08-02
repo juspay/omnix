@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use anyhow::Result;
 use nix_rs::{
     command::NixCmd,
-    flake::{eval::nix_eval_attr_json, system::System, url::FlakeUrl},
+    flake::{eval::nix_eval_qualified_attr, system::System, url::FlakeUrl},
 };
 use serde::Deserialize;
 
@@ -48,30 +48,22 @@ impl Config {
     /// ```
     /// along with the config.
     pub async fn from_flake_url(cmd: &NixCmd, url: &FlakeUrl) -> Result<Config> {
-        let (flake_url, attr) = url.split_attr();
-        let nested_attr = attr.as_list();
-        let (name, selected_subflake) = match nested_attr.as_slice() {
-            [] => ("default".to_string(), None),
-            [name] => (name.clone(), None),
-            [name, sub_flake] => (name.clone(), Some(sub_flake.to_string())),
-            _ => anyhow::bail!("Invalid flake URL (too many nested attr): {}", flake_url.0),
-        };
-        let nixci_url = FlakeUrl(format!("{}#nixci.{}", flake_url.0, name));
-        let subflakes =
-            (nix_eval_attr_json::<Subflakes>(cmd, &nixci_url).await?).unwrap_or_default();
+        let (subflakes, flake_url, rest_attrs) =
+            nix_eval_qualified_attr::<Subflakes>(cmd, url, &["om.ci", "nixci"]).await?;
+        let selected_subflake = rest_attrs.first().cloned();
         if let Some(sub_flake_name) = selected_subflake.clone() {
             if !subflakes.0.contains_key(&sub_flake_name) {
                 anyhow::bail!(
-                    "Sub-flake '{}' not found in nixci configuration '{}'",
+                    "Sub-flake '{}' not found in om.ci configuration '{}'",
                     sub_flake_name,
-                    nixci_url
+                    url
                 )
             }
         }
         let cfg = Config {
             subflakes,
-            flake_url,
-            name,
+            flake_url: flake_url.clone(),
+            name: flake_url.split_attr().1.get_name().to_string(),
             selected_subflake,
         };
         Ok(cfg)

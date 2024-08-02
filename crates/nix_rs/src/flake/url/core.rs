@@ -9,6 +9,8 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 
+use super::attr::FlakeAttr;
+
 /// A flake URL
 ///
 /// See [syntax here](https://nixos.org/manual/nix/stable/command-ref/new-cli/nix3-flake.html#url-like-syntax).
@@ -58,7 +60,7 @@ impl FlakeUrl {
         FlakeUrl(format!("{}#{}.{}", url.0, root_attr, name))
     }
 
-    /// Split the [FlakeAttr] out of the [FlakeUrl]
+    /// Split the [super::attr::FlakeAttr] out of the [FlakeUrl]
     pub fn split_attr(&self) -> (Self, FlakeAttr) {
         match self.0.split_once('#') {
             Some((url, attr)) => (FlakeUrl(url.to_string()), FlakeAttr(Some(attr.to_string()))),
@@ -116,34 +118,6 @@ impl FromStr for FlakeUrl {
 impl Display for FlakeUrl {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
-    }
-}
-
-/// The attribute output part of a [FlakeUrl]
-///
-/// Example: `foo` in `.#foo`.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub struct FlakeAttr(Option<String>);
-
-impl FlakeAttr {
-    /// Get the attribute name.
-    ///
-    /// If attribute exists, then return "default".
-    pub fn get_name(&self) -> String {
-        self.0.clone().unwrap_or_else(|| "default".to_string())
-    }
-
-    /// Whether an explicit attribute is set
-    pub fn is_none(&self) -> bool {
-        self.0.is_none()
-    }
-
-    /// Return nested attrs if the user specified one is separated by '.'
-    pub fn as_list(&self) -> Vec<String> {
-        self.0
-            .clone()
-            .map(|s| s.split('.').map(|s| s.to_string()).collect())
-            .unwrap_or_default()
     }
 }
 

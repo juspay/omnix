@@ -70,7 +70,7 @@ nix run .#gui
 >[!TIP]
 > Run `just fmt` to autoformat the source tree.
 
-- Run `nix run github:srid/nixci` to **run CI locally**.
+- Run `just ci` to **run CI locally**.
 - Add **documentation** wherever useful. To preview Rust API docs, run `just doc`.
 - Changes to library crates must accompany a corresponding `CHANGELOG.md` entry.[^cc]
 

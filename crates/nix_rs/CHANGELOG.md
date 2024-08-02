@@ -10,8 +10,11 @@
 - **`flake::url`**
   - `Flake::from_nix` explicitly takes `NixConfig` as argument, rather than implicitly running nix to get it.
   - Remove string convertion implementations; use `std::parse` instead, and handle errors explicitly.
+  - Split attr code to its own module, `flake::url::attr`
 - **`eval`**
-  - `nix_eval_attr_json`: No longer takes `default_if_missing`; instead (always) returns `None` if attribute is missing.
+  - `nix_eval_attr_json`
+    - No longer takes `default_if_missing`; instead (always) returns `None` if attribute is missing.
+    - Rename to `nix_eval_attr` (as there is no non-JSON variant)
 - **`env::NixEnv`**
   - Clarify error message when `$USER` is not set
 - **``command`**
