@@ -3,8 +3,11 @@ use inquire::Select;
 use nix_rs::flake::url::FlakeUrl;
 
 use crate::flake_template::{self, template::FlakeTemplate};
+use clap::Parser;
 
+#[derive(Parser)]
 pub struct FlakeTemplateRegistry {
+    #[arg(value_hint = clap::ValueHint::AnyPath)]
     pub flake_url: FlakeUrl,
     pub filter: Option<Pattern>,
 }
