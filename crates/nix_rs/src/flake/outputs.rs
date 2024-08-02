@@ -74,8 +74,14 @@ impl FlakeOutputs {
 pub enum Leaf {
     Val(Val),
     Unknown(Unknown),
+    /// Represents flake outputs that cannot be evaluated on current platform
+    /// (e.g. `nixosConfigurations` on darwin System)
     Filtered(Filtered),
+    /// Represents flake outputs that are skipped unless explicitly requested
+    /// (e.g. `legacyPackages`)
     Skipped(Skipped),
+    /// Represents description for a flake output
+    /// (e.g. `Doc` for `formatter` will be "The `formatter` output specifies the package to use to format the project.")
     Doc(String),
 }
 
