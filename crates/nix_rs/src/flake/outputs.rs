@@ -74,11 +74,7 @@ impl FlakeOutputs {
 pub enum Leaf {
     Val(Val),
     Unknown(Unknown),
-    /// Represents flake outputs that cannot be evaluated on current platform
-    /// (e.g. `nixosConfigurations` on darwin System)
     Filtered(Filtered),
-    /// Represents flake outputs that are skipped unless explicitly requested
-    /// (e.g. `legacyPackages`)
     Skipped(Skipped),
     /// Represents description for a flake output
     /// (e.g. `Doc` for `formatter` will be "The `formatter` output specifies the package to use to format the project.")
@@ -122,12 +118,16 @@ pub struct Unknown {
     pub unknown: bool,
 }
 
+/// Represents flake outputs that cannot be evaluated on current platform
+/// (e.g. `nixosConfigurations` on darwin System)
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename = "camelCase")]
 pub struct Filtered {
     pub filtered: bool,
 }
 
+/// Represents flake outputs that are skipped unless explicitly requested
+/// (e.g. `legacyPackages`)
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Skipped {
