@@ -40,6 +40,8 @@ jobs:
       - name: nix build
         if: matrix.system != 'x86_64-darwin'
         run: echo "om_static_binary_path=$(nix build --no-link --print-out-paths)" >> "$GITHUB_ENV"
+      - name: Debug
+        run: echo $om_static_binary_path
       - name: Upload om static binary
         if: matrix.system != 'x86_64-darwin'
         uses: actions/upload-artifact@v4
