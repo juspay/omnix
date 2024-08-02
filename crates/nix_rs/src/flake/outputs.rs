@@ -146,7 +146,9 @@ pub struct Skipped {
 
 /// The type of a flake output [Val]
 ///
-/// [Nix source ref](https://github.com/NixOS/nix/blob/2.14.1/src/nix/flake.cc#L1105)
+/// These types can differ based on [DEFAULT_FLAKE_SCHEMAS].
+/// The types here are based on https://github.com/DeterminateSystems/flake-schemas
+/// For example, see [NixosModule type](https://github.com/DeterminateSystems/flake-schemas/blob/0a5c42297d870156d9c57d8f99e476b738dcd982/flake.nix#L268)
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Type {
     #[serde(rename = "NixOS module")]
