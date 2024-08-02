@@ -99,7 +99,7 @@ impl NixCmd {
 
     /// Return a [Command] for this [NixCmd] configuration
     pub fn command(&self) -> Command {
-        let mut cmd = Command::new(self.command.as_ref().unwrap_or(&"nix".to_string()));
+        let mut cmd = Command::new(self.command.as_deref().unwrap_or("nix"));
         cmd.kill_on_drop(true);
         cmd.args(self.args());
         cmd
