@@ -51,15 +51,6 @@ impl FlakeUrl {
         }
     }
 
-    /// Return `<url>#<root-attr>.default` if `<url>` is passed
-    ///
-    /// If `<url>#foo` is passed, return `<url>#<root-attr>.foo`.
-    pub fn with_fully_qualified_root_attr(&self, root_attr: &str) -> Self {
-        let (url, attr) = self.split_attr();
-        let name = attr.get_name();
-        FlakeUrl(format!("{}#{}.{}", url.0, root_attr, name))
-    }
-
     /// Split the [super::attr::FlakeAttr] out of the [FlakeUrl]
     pub fn split_attr(&self) -> (Self, FlakeAttr) {
         match self.0.split_once('#') {
