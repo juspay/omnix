@@ -3,7 +3,10 @@ use std::collections::BTreeMap;
 use anyhow::Result;
 use nix_rs::{
     command::NixCmd,
-    flake::{eval::nix_eval_qualified_attr, system::System, url::FlakeUrl},
+    flake::{
+        system::System,
+        url::{qualified_attr::RootQualifiedAttr, FlakeUrl},
+    },
 };
 use serde::Deserialize;
 
@@ -48,8 +51,9 @@ impl Config {
     /// ```
     /// along with the config.
     pub async fn from_flake_url(cmd: &NixCmd, url: &FlakeUrl) -> Result<Config> {
+        let flake_attr = RootQualifiedAttr::new(&["om.ci", "nixci"]);
         let (subflakes, flake_url, rest_attrs) =
-            nix_eval_qualified_attr::<Subflakes>(cmd, url, &["om.ci", "nixci"]).await?;
+            flake_attr.eval_flake::<Subflakes>(cmd, url).await?;
         let selected_subflake = rest_attrs.first().cloned();
         if let Some(sub_flake_name) = selected_subflake.clone() {
             if !subflakes.0.contains_key(&sub_flake_name) {
