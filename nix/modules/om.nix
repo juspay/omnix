@@ -3,11 +3,11 @@
 {
   # omnix configuration
   flake = {
-    om.ci.default = {
-      omnix.dir = inputs.self;
-      flakreate-registry.dir = inputs.self + /crates/flakreate/registry;
-    };
     om = {
+      ci.default = {
+        omnix.dir = inputs.self;
+        flakreate-registry.dir = inputs.self + /crates/flakreate/registry;
+      };
       health.default = {
         nix-version.min-required = "2.16.0";
         caches.required = [ "https://om.cachix.org" ];
