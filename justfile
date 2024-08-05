@@ -37,8 +37,12 @@ test-cli:
     cd ./crates/omnix-cli && cargo watch -x test
 
 # Run docs server (live reloading)
-doc:
+doc-cargo:
     cargo-doc-live
+
+# Run mdbook live server
+doc:
+    cd ./doc && mdbook serve
 
 # Run CI locally
 ci:

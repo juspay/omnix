@@ -29,6 +29,7 @@ in
         # For when we start using Tauri
         cargo-tauri
         trunk
+        mdbook
       ];
       shellHook =
         ''
