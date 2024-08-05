@@ -36,4 +36,15 @@ in
       };
     });
   };
+
+  config = {
+    perSystem = { self', ... }: {
+      # https://om.cachix.org will ensure that these paths are always
+      # available. The rest may be be GC'ed.
+      cache-pins.pathsToCache = {
+        cli = self'.packages.default;
+        nix-health = self'.packages.nix-health;
+      };
+    };
+  };
 }
