@@ -31,88 +31,10 @@
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       systems = import inputs.systems;
 
-      imports = [
-        inputs.treefmt-nix.flakeModule
-        inputs.process-compose-flake.flakeModule
-        inputs.cargo-doc-live.flakeModule
-        inputs.rust-flake.flakeModules.default
-        inputs.rust-flake.flakeModules.nixpkgs
-        ./nix/rust.nix
-        ./nix/closure-size.nix
-        ./nix/cache-pins.nix
-        ./crates/nix_health/module/flake-module.nix
-      ];
-
-      # omnix configuration
-      flake = {
-        om.ci.default = {
-          omnix.dir = ./.;
-          flakreate-registry.dir = ./crates/flakreate/registry;
-        };
-        om = {
-          health.default = {
-            nix-version.min-required = "2.16.0";
-            caches.required = [ "https://om.cachix.org" ];
-            direnv.required = true;
-            system = {
-              # required = true;
-              min_ram = "16G";
-              # min_disk_space = "2T";
-            };
-          };
-        };
-      };
-
-      perSystem = { inputs', config, self', pkgs, lib, system, ... }: {
-        # Add your auto-formatters here.
-        # cf. https://nixos.asia/en/treefmt
-        treefmt.config = {
-          projectRootFile = "flake.nix";
-          programs = {
-            nixpkgs-fmt.enable = true;
-            rustfmt.enable = true;
-          };
-        };
-
-        # https://om.cachix.org will ensure that these paths are always
-        # available. The rest may be be GC'ed.
-        cache-pins.pathsToCache = {
-          cli = self'.packages.default;
-          nix-health = self'.packages.nix-health;
-        };
-
-        devShells.default = pkgs.mkShell {
-          name = "omnix";
-          meta.description = "Omnix development environment";
-          inputsFrom = [
-            config.treefmt.build.devShell
-            config.nix-health.outputs.devShell
-            self'.devShells.rust
-          ];
-          OM_INIT_REGISTRY = inputs.self + /crates/flakreate/registry;
-          NIX_FLAKE_SCHEMAS_BIN = lib.getExe (if pkgs.stdenv.isLinux then inputs'.nix.packages.nix-static else inputs'.nix.packages.default);
-          DEFAULT_FLAKE_SCHEMAS = inputs.flake-schemas;
-          packages = with pkgs; [
-            just
-            cargo-watch
-            cargo-expand
-            cargo-nextest
-            config.process-compose.cargo-doc-live.outputs.package
-            # For when we start using Tauri
-            cargo-tauri
-            trunk
-          ];
-          shellHook =
-            ''
-              # For nixci
-              export DEVOUR_FLAKE=${inputs.devour-flake}
-            '' +
-            ''
-              echo
-              echo "🍎🍎 Run 'just <recipe>' to get started"
-              just
-            '';
-        };
-      };
+      # See ./nix/modules/*.nix for the modules that are imported here.
+      imports = with builtins;
+        map
+          (fn: ./nix/modules/${fn})
+          (attrNames (readDir ./nix/modules));
     };
 }
