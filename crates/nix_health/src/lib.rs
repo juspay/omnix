@@ -102,7 +102,7 @@ impl NixHealth {
                 traits::CheckResult::Red { msg, suggestion } => {
                     res.register_failure(check.required);
                     if check.required {
-                        tracing::error!(
+                        tracing::info!(
                             "❌ {}\n    {}\n   {}\n   {}",
                             check.title.red().bold(),
                             check.info.blue(),
@@ -110,7 +110,7 @@ impl NixHealth {
                             suggestion
                         );
                     } else {
-                        tracing::warn!(
+                        tracing::info!(
                             "🟧 {}\n   {}\n   {}\n   {}",
                             check.title.yellow().bold(),
                             check.info.blue(),
@@ -189,7 +189,7 @@ impl AllChecksResult {
                 0
             }
             AllChecksResult::Fail => {
-                tracing::error!("{}", "❌ Some required checks failed".red().bold());
+                tracing::info!("{}", "❌ Some required checks failed".red().bold());
                 1
             }
         }
