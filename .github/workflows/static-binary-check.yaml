@@ -7,7 +7,6 @@ on:
 
 jobs:
   check:
-    needs: main
     runs-on: ${{ matrix.system }}
     strategy:
       matrix:
