@@ -1,9 +1,10 @@
 name: "Static binary"
 on:
   workflow_call:
-    secrets:
-      GITHUB_TOKEN:
+    inputs:
+      token:
         required: true
+        type: string
 
 jobs:
   check:

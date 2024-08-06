@@ -74,5 +74,4 @@ jobs:
         if: success()
         uses: ./.github/workflows/static-binary-check.yaml
         with:
-          secrets:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
