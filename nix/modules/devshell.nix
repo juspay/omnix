@@ -30,6 +30,7 @@ in
         cargo-tauri
         trunk
         mdbook
+        mdbook-alerts
       ];
       shellHook =
         ''
