@@ -73,5 +73,6 @@ jobs:
       - name: Run static binary workflow
         if: success()
         uses: ./.github/workflows/static-binary-check.yaml
-        secrets:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          secrets:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
