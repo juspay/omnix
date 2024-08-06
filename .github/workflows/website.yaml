@@ -33,7 +33,7 @@ jobs:
       group: "pages"
       cancel-in-progress: false
     runs-on: x86_64-linux
-    needs: website-build
+    needs: build
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
