@@ -72,6 +72,4 @@ jobs:
         run: nix --option system "${{ matrix.system }}" run .#cachix-push
       - name: Run static binary workflow
         if: success()
-        uses: ./.github/workflows/static-binary-check.yaml
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+        uses: juspay/omnix/.github/workflows/static-binary-check.yaml

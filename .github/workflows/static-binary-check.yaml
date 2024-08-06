@@ -1,10 +1,6 @@
 name: "Static binary"
 on:
   workflow_call:
-    inputs:
-      token:
-        required: true
-        type: string
 
 jobs:
   check:
