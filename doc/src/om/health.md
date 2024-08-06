@@ -81,28 +81,27 @@ $ nix eval --impure --expr 'builtins.fromJSON (builtins.readFile ./schema.json)'
 }
 ```
 
-### Adding devShell check {#devShell}
+### Adding devShell check {#devshell}
 
 > [!WARNING]
-> This section needs to rewritten for omnix.
+> This section needs to finalized for omnix. See [here](https://github.com/srid/haskell-template/pull/139/files) for the up-to-date proof of concept.
 
 You can automatically run `om health` whenever your Nix dev shell starts. To do this, import the flake module in your flake and use it in your devShell:
 
 ```nix
 {
   inputs = {
-    # NOTE: refers to ./module flake.
-    nix-health.url = "github:juspay/nix-health?dir=module";
+    omnix-flake.url = "github:juspay/omnix?dir=nix/om";
   };
   outputs = inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [
-        inputs.nix-health.flakeModule
+        inputs.omnix-flake.flakeModules.default
       ];
       perSystem = { config, pkgs, ... }: {
         devShells.default = pkgs.mkShell {
           inputsFrom = [
-            config.nix-health.outputs.devShell
+            config.om.health.outputs.devShell
           ]
         };
       };
@@ -113,7 +112,7 @@ You can automatically run `om health` whenever your Nix dev shell starts. To do 
 Now suppose you have Nix 2.18 installed, but your project requires 2.19 or above due to the following config in its `flake.nix`:
 
 ```nix
-flake.nix-health.default = {
+flake.om.health.default = {
   nix-version.min-required = "2.19.0";
 };
 ```
