@@ -1,9 +1,10 @@
-{ stdenv, mdbook, mdbook-alerts, ... }:
+{ stdenv, mdbook, mdbook-alerts, imagemagick, ... }:
 
 stdenv.mkDerivation {
   name = "omnix-mdbook-site";
   src = ./.;
 
+  buildInputs = [ imagemagick ];
   nativeBuildInputs = [ mdbook mdbook-alerts ];
 
   buildPhase = ''
@@ -14,8 +15,9 @@ stdenv.mkDerivation {
     mkdir -p $out
     cp -r book/* $out/
 
-    # Remove the default, since we don't have our own
-    # We will use favicon.svg
-    rm $out/favicon.png
+    # Override mdbook's favicon.png with our own, generated from favicon.svg
+    convert -size 256x -background none \
+      $out/favicon.svg  \
+      $out/favicon.png
   '';
 }
