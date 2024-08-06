@@ -44,6 +44,10 @@ doc-cargo:
 doc:
     cd ./doc && mdbook serve
 
+# Do link checks on docs
+doc-check:
+    nix run .#doc-linkCheck
+
 # Run CI locally
 ci:
     nix run . ci
