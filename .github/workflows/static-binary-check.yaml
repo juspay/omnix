@@ -1,22 +1,12 @@
 name: "Static binary"
 on:
-  workflow_run:
-    workflows: [CI]
-    types: [completed]
+  workflow_call:
+    secrets:
+      GITHUB_TOKEN:
+        required: true
 
 jobs:
-  on-success:
-    runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    steps:
-      - run: echo 'The triggering workflow passed'
-  on-failure:
-    runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
-    steps:
-      - run: echo 'The triggering workflow failed'
   check:
-    needs: on-success
     runs-on: ${{ matrix.system }}
     strategy:
       matrix:

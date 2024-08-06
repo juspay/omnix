@@ -70,3 +70,8 @@ jobs:
       - name: Push to cachix
         if: github.ref == 'refs/heads/main'
         run: nix --option system "${{ matrix.system }}" run .#cachix-push
+      - name: Run static binary workflow
+        if: success()
+        uses: ./.github/workflows/static-binary-check.yaml
+        secrets:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
