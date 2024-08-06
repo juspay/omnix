@@ -1,9 +1,9 @@
 name: "Static binary"
 on:
-  push:
-    branches:
-      - 'main'
-  pull_request:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
 
 jobs:
   check:
