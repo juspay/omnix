@@ -1,4 +1,4 @@
-name: "Static binary check"
+name: "Static binary"
 on:
   push:
     branches:
@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  static-binary-check:
+  check:
     needs: main
     runs-on: ${{ matrix.system }}
     strategy:

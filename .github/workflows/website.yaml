@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  website-build:
+  build:
     if: github.ref == 'refs/heads/main'
     # needs: static-binary-check
     runs-on: x86_64-linux
@@ -17,7 +17,7 @@ jobs:
           nix build .#doc -o ./_site
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
-  website-deploy:
+  deploy:
     if: github.ref == 'refs/heads/main'
     environment:
       name: github-pages
