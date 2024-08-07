@@ -26,4 +26,8 @@ om --help
 
 Checkout the [CLI](om/index.md) commands available.
 
+## Discussion
+
+For discussing Omnix, use [Github Discussions](https://github.com/juspay/omnix/discussions) or [Zulip](https://nixos.zulipchat.com/#narrow/stream/415454-omnix).
+
 [^static]: We also plan to provide a static binary. See [#207](https://github.com/juspay/omnix/issues/207)
