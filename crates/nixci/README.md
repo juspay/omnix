@@ -1,4 +1,4 @@
-# nixci
+# `nixci`
 
 [![Crates.io](https://img.shields.io/crates/v/nixci.svg)](https://crates.io/crates/nixci)
 

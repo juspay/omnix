@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Remove executable (use `omnix` instead)
 * **api**:
   * Expose `run_checks_with`
 * **minor**:

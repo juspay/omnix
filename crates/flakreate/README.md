@@ -1,4 +1,4 @@
 # flakreate
 
-A better `nix flake new`, that powers `om init`.
+The Rust crate responsible for [`om init`](https://omnix.page/om/init.html).
 
