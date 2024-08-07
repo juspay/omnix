@@ -35,7 +35,11 @@ in
         pkgsStatic.openssl
       ];
       DEVOUR_FLAKE = inputs.devour-flake;
-      OM_INIT_REGISTRY = rust-project.src + /crates/flakreate/registry;
+      OM_INIT_REGISTRY =
+        lib.cleanSourceWith {
+          name = "flakreate-registry";
+          src = rust-project.src + /crates/flakreate/registry;
+        };
       NIX_FLAKE_SCHEMAS_BIN = lib.getExe pkgs.nix-flake-schemas;
       DEFAULT_FLAKE_SCHEMAS = inputs.flake-schemas;
       # Disable tests due to sandboxing issues; we run them on CI
