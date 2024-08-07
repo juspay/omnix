@@ -2,7 +2,7 @@ name: "CI"
 on:
   push:
     branches:
-      - 'main'
+      - "main"
   pull_request:
 
 jobs:
@@ -12,7 +12,7 @@ jobs:
       contents: read
     strategy:
       matrix:
-        system: [ x86_64-linux, aarch64-darwin, x86_64-darwin ]
+        system: [x86_64-linux, aarch64-darwin, x86_64-darwin]
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
@@ -20,7 +20,7 @@ jobs:
         if: github.ref == 'refs/heads/main'
         with:
           name: om
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
           skipPush: true
       - name: Build
         run: |
@@ -76,7 +76,7 @@ jobs:
     runs-on: ${{ matrix.system }}
     strategy:
       matrix:
-        system: [ ubuntu-latest, macos-latest ]
+        system: [ubuntu-latest, macos-latest]
     steps:
       - name: Donwload om static binary
         uses: actions/download-artifact@v4
