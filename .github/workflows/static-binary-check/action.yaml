@@ -9,10 +9,12 @@ on:
 jobs:
   check:
     steps:
-      - name: Donwload om static binary
-        uses: actions/download-artifact@v4
-        with:
-          name: om-${{ inputs.system == 'ubuntu-latest' && 'x86_64-linux' || inputs.system == 'macos-latest' && 'aarch64-darwin' || inputs.system }}
+      - name: Test inputs context
+        run: echo "Running in ${{ inputs.system }}"
+      # - name: Donwload om static binary
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: om-${{ inputs.system == 'ubuntu-latest' && 'x86_64-linux' || inputs.system == 'macos-latest' && 'aarch64-darwin' || inputs.system }}
       - name: Check nix installation
         run: |
           if which nix; then
