@@ -73,7 +73,9 @@ nix run .#gui
 > Run `just fmt` to autoformat the source tree.
 
 - Run `just ci` to **run CI locally**.
-- Add **documentation** wherever useful. To preview Rust API docs, run `just doc`.
+- Add **documentation** wherever useful. 
+    - Run `just doc` to preview website docs; edit, and run `just doc-check`
+    - To preview Rust API docs, run `just doc-cargo`.
 - Changes to library crates must accompany a corresponding `CHANGELOG.md` entry.[^cc]
 
 [^cc]: We don't use any automatic changelog generator for this repo.
