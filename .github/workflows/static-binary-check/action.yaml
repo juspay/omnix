@@ -1,18 +1,18 @@
 name: "Static binary"
 on:
   workflow_call:
+    inputs:
+      system:
+        required: true
+        type: string
 
 jobs:
   check:
-    runs-on: ${{ matrix.system }}
-    strategy:
-      matrix:
-        system: [ ubuntu-latest, macos-latest ]
     steps:
       - name: Donwload om static binary
         uses: actions/download-artifact@v4
         with:
-          name: om-${{ matrix.system == 'ubuntu-latest' && 'x86_64-linux' || matrix.system == 'macos-latest' && 'aarch64-darwin' || matrix.system }}
+          name: om-${{ inputs.system == 'ubuntu-latest' && 'x86_64-linux' || inputs.system == 'macos-latest' && 'aarch64-darwin' || inputs.system }}
       - name: Check nix installation
         run: |
           if which nix; then
