@@ -1,5 +1,8 @@
 # `om init`
 
+> [!WARNING]
+> `om init` is not yet ready for wider use.
+
 The `om init` command provides a better `nix flake init`. It provides:
 
 1. a registry of flake templates that you can choose from

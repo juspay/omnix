@@ -84,7 +84,7 @@ $ nix eval --impure --expr 'builtins.fromJSON (builtins.readFile ./schema.json)'
 ### Adding devShell check {#devshell}
 
 > [!WARNING]
-> This section needs to finalized for omnix. See [here](https://github.com/srid/haskell-template/pull/139/files) for the up-to-date proof of concept.
+> This section needs to be finalized for omnix. See [here](https://github.com/srid/haskell-template/pull/139/files) for the up-to-date proof of concept.
 
 You can automatically run `om health` whenever your Nix dev shell starts. To do this, import the flake module in your flake and use it in your devShell:
 
