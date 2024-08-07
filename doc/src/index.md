@@ -15,7 +15,7 @@
 To install Omnix, you first need [Nix installed](https://nixos.asia/en/install),[^static] before running the following:
 
 ```sh
-# Install omnix
+# Install omnix (using om.cachix.org Nix cache)
 nix --accept-flake-config profile install github:juspay/omnix
 
 # Make sure that the `om` command works

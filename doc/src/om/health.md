@@ -57,7 +57,13 @@ To see all available configuration options, run `om health --dump-schema`. This 
 
 ```sh-session
 $ om health --dump-schema > schema.json
-$ nix eval --impure --expr 'builtins.fromJSON (builtins.readFile ./schema.json)' | nix run nixpkgs#alejandra -- --quiet
+$ nix eval --impure --expr 'builtins.fromJSON (builtins.readFile ./schema.json)' \
+  | nix run nixpkgs#alejandra -- --quiet
+```
+
+This will output:
+
+```nix
 {
   caches = {required = ["https://cache.nixos.org/"];};
   direnv = {
