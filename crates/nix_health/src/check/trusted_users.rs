@@ -46,7 +46,7 @@ impl Checkable for TrustedUsers {
     }
 }
 
-/// Check that [crate::nix::config::NixConfig::trusted_users] is set to a good
+/// Check that [nix_rs::config::NixConfig::trusted_users] is set to a good
 /// value such that the current user is trusted.
 fn is_current_user_trusted(nix_info: &nix_rs::info::NixInfo) -> bool {
     let current_user = &nix_info.nix_env.current_user;

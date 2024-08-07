@@ -45,7 +45,7 @@ impl SystemsList {
         Ok(SystemsList(systems))
     }
 
-    /// Handle known repos of https://github.com/nix-systems thereby avoiding
+    /// Handle known repos of <https://github.com/nix-systems> thereby avoiding
     /// network calls.
     fn from_known_flake(url: &SystemsListFlakeRef) -> Option<Self> {
         match url.0 .0.as_str() {
