@@ -17,9 +17,11 @@ in
         config.nix-health.outputs.devShell
         self'.devShells.rust
       ];
-      OM_INIT_REGISTRY = inputs.self + /crates/flakreate/registry;
-      NIX_FLAKE_SCHEMAS_BIN = lib.getExe (if pkgs.stdenv.isLinux then inputs'.nix.packages.nix-static else inputs'.nix.packages.default);
-      DEFAULT_FLAKE_SCHEMAS = inputs.flake-schemas;
+      inherit (config.rust-project.crates."omnix-cli".crane.args)
+        OM_INIT_REGISTRY
+        NIX_FLAKE_SCHEMAS_BIN
+        DEFAULT_FLAKE_SCHEMAS
+        ;
       packages = with pkgs; [
         just
         cargo-watch
