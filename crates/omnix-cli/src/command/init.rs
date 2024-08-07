@@ -23,6 +23,7 @@ pub struct InitConfig {
 
 impl InitConfig {
     pub async fn run(&self) -> anyhow::Result<()> {
+        tracing::warn!("\n  !! WARNING: `om init` is still under development !!\n");
         flakreate::flakreate(self.registry.clone(), self.path.clone()).await
     }
 }
