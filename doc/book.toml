@@ -7,5 +7,10 @@ title = "Omnix"
 
 [output.html]
 default-theme = "rust"
+smart-punctuation = true
+mathjax-support = false
+git-repository-url = "https://github.com/juspay/omnix"
+edit-url-template = "https://github.com/juspay/omnix/edit/main/doc/{path}"
+cname = "omnix.page"
 
 [preprocessor.alerts]
