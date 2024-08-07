@@ -1,6 +1,7 @@
 
-## Unreleased
+## 1.1.0
 
+- Remove executable (use `omnix` instead)
 - Port to newer `nix_rs`
 - Use `om.ci` as configuration key
 - tests: Removed, and moved to omnix-cli crate.
