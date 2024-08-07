@@ -3,11 +3,11 @@ default:
 
 # Run mdbook live server
 run:
-  mdbook serve
+  nix run .#serve
 
 # Do link checks on docs
 check:
-    nix run .#doc-linkCheck
+    nix run .#linkCheck
 
 # Run cargo docs server (live reloading)
 [no-cd]

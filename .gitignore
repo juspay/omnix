@@ -1,6 +1,6 @@
 /target
-/result
-/result-lib
+result
+result-lib
 dist
 .direnv
 

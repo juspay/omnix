@@ -1,12 +1,16 @@
 { inputs, ... }:
 
+let
+  root = inputs.self;
+in
 {
   # omnix configuration
   flake = {
     om = {
       ci.default = {
-        omnix.dir = inputs.self;
-        flakreate-registry.dir = inputs.self + /crates/flakreate/registry;
+        omnix.dir = root;
+        flakreate-registry.dir = root + /crates/flakreate/registry;
+        doc.dir = root + /doc;
       };
       health.default = {
         nix-version.min-required = "2.16.0";
