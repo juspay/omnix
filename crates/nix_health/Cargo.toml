@@ -2,7 +2,7 @@
 name = "nix_health"
 version = "0.4.1"
 license = "Apache-2.0"
-repository = "https://github.com/juspay/nix-health"
+repository = "https://github.com/juspay/omnix"
 description = "Check the health of your Nix setup"
 edition = "2021"
 

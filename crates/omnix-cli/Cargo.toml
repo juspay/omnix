@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2021"
 default-run = "om"
 description = "omnix CLI, supplementing the Nix CLI"
+homepage = "https://omnix.page"
+repository = "https://github.com/juspay/omnix"
 
 [[bin]]
 name = "om"

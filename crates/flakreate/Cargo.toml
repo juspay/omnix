@@ -4,6 +4,7 @@ edition = "2021"
 # If you change the name here, you must also do it in flake.nix (and run `cargo generate-lockfile` afterwards)
 name = "flakreate"
 version = "0.1.0"
+repository = "https://github.com/juspay/omnix"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
