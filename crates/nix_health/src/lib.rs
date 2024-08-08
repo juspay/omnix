@@ -1,7 +1,6 @@
 //! Health checks for the user's Nix install
 
 pub mod check;
-pub mod logging;
 pub mod report;
 pub mod traits;
 

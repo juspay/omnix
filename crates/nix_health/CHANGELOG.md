@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Remove unused `logging` module
+
 ## 1.0.0
 
 - Remove executable (use `omnix` instead)
