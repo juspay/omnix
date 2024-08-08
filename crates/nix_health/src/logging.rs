@@ -1,4 +1,4 @@
-// TODO: Retire in favour of omnix::logging
+// TODO: Retire in favour of omnix_common::logging
 use std::fmt;
 use std::io;
 

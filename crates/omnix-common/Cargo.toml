@@ -1,5 +1,5 @@
 [package]
-name = "omnix"
+name = "omnix-common"
 version = "0.1.0"
 edition = "2021"
 repository = "https://github.com/juspay/omnix"

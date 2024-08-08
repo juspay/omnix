@@ -22,7 +22,7 @@ human-panic = { workspace = true }
 nixci = { workspace = true }
 nix_health = { workspace = true }
 nix_rs = { workspace = true }
-omnix = { workspace = true }
+omnix-common = { workspace = true }
 tabled = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }

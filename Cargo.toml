@@ -2,7 +2,7 @@
 resolver = "2"
 
 members = [
-  "crates/omnix",
+  "crates/omnix-common",
   "crates/omnix-cli",
   "crates/omnix-gui",
   "crates/nix_rs",
@@ -32,7 +32,7 @@ is_proc_translated = { version = "0.1.1" }
 nixci = { path = "./crates/nixci" }
 nix_health = { version = "1.0.0", path = "./crates/nix_health" }
 nix_rs = { version = "1.0.0", path = "./crates/nix_rs" }
-omnix = { path = "./crates/omnix" }
+omnix-common = { path = "./crates/omnix-common" }
 os_info = "3.7.0"
 reqwest = { version = "0.11", features = ["blocking", "json"] }
 regex = "1.9.3"
