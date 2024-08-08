@@ -2,13 +2,13 @@
 resolver = "2"
 
 members = [
-    "crates/omnix",
-    "crates/omnix-cli",
-    "crates/omnix-gui",
-    "crates/nix_rs",
-    "crates/nixci",
-    "crates/nix_health",
-    "crates/flakreate",
+  "crates/omnix",
+  "crates/omnix-cli",
+  "crates/omnix-gui",
+  "crates/nix_rs",
+  "crates/nixci",
+  "crates/nix_health",
+  "crates/flakreate",
 ]
 
 [workspace.dependencies]
@@ -30,8 +30,8 @@ human-panic = "1.1.5"
 inquire = "0.7.5"
 is_proc_translated = { version = "0.1.1" }
 nixci = { path = "./crates/nixci" }
-nix_health = { path = "./crates/nix_health" }
-nix_rs = { path = "./crates/nix_rs" }
+nix_health = { version = "1.0.0", path = "./crates/nix_health" }
+nix_rs = { version = "1.0.0", path = "./crates/nix_rs" }
 omnix = { path = "./crates/omnix" }
 os_info = "3.7.0"
 reqwest = { version = "0.11", features = ["blocking", "json"] }
