@@ -55,7 +55,7 @@ Add the following to your workflow file,
 #### Self-hosted Runners with Job Matrix {#ghci-self}
 
 > [!NOTE] 
-> This currently requires an explicit nixci configuration in your flake, viz.: `nixci.default.root.dir = ".";`.
+> This currently requires an explicit CI configuration in your flake, viz.: `om.ci.default.root.dir = ".";`.
 
 ```yaml
 jobs:
