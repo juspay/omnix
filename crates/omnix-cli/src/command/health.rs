@@ -18,7 +18,7 @@ pub struct HealthConfig {
 impl HealthConfig {
     pub async fn run(&self) -> anyhow::Result<()> {
         if self.dump_schema {
-            tracing::info!("{}", NixHealth::schema()?);
+            println!("{}", NixHealth::schema()?);
             return Ok(());
         }
         let checks = run_checks_with(self.flake_url.clone()).await?;

@@ -1,3 +1,6 @@
+# Documentation targets
+mod doc
+
 default:
     @just --list
 
@@ -36,22 +39,9 @@ test:
 test-cli:
     cd ./crates/omnix-cli && cargo watch -x test
 
-# Run docs server (live reloading)
-doc-cargo:
-    cargo-doc-live
-
-# Run mdbook live server
-doc:
-    cd ./doc && mdbook serve
-
 # Run CI locally
 ci:
     nix run . ci
 
 clippy:
     cargo clippy --release --locked --all-targets --all-features -- --deny warnings
-
-# Setup node_modules using Nix (invoked automatically by nix-shell)
-node_modules NODE_PATH:
-    rm -f ./e2e/node_modules
-    ln -sf ${NODE_PATH} ./e2e/node_modules

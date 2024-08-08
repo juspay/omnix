@@ -1,17 +1,13 @@
 [package]
 name = "nix_health"
-version = "0.4.1"
+version = "1.0.0"
 license = "Apache-2.0"
-repository = "https://github.com/juspay/nix-health"
+repository = "https://github.com/juspay/omnix"
 description = "Check the health of your Nix setup"
 edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
-
-[[bin]]
-name = "nix-health"
-path = "src/main.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

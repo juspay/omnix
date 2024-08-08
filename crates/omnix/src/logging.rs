@@ -86,10 +86,12 @@ where
         mut writer: format::Writer<'_>,
         event: &Event<'_>,
     ) -> fmt::Result {
+        /*
         let metadata = event.metadata();
         if metadata.level() != &tracing::Level::INFO {
             write!(&mut writer, "{} {}: ", metadata.level(), metadata.target())?;
         }
+        */
         ctx.field_format().format_fields(writer.by_ref(), event)?;
         writeln!(writer)
     }

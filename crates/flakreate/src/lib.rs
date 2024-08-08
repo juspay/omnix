@@ -11,10 +11,7 @@ use nix_rs::flake::url::FlakeUrl;
 use crate::{flake_template::fileop::FileOp, registry::TemplateRegistryRef};
 
 pub async fn flakreate(registry: FlakeUrl, path: PathBuf) -> anyhow::Result<()> {
-    tracing::info!(
-        "Welcome to flakreate! Let's create your flake template at {:?}:",
-        path
-    );
+    tracing::info!("Let's create your flake template at {:?}:", path);
     let template = TemplateRegistryRef::from_url(registry.clone())?
         .load_and_select_template()
         .await?;
@@ -24,7 +21,7 @@ pub async fn flakreate(registry: FlakeUrl, path: PathBuf) -> anyhow::Result<()> 
 
     let path = path.to_string_lossy();
 
-    // Create the flake templatge
+    // Create the flake template
     let template_url = registry.with_attr(&template.name);
     NixCmd::get()
         .await

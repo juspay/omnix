@@ -2,6 +2,7 @@
 name = "omnix"
 version = "0.1.0"
 edition = "2021"
+repository = "https://github.com/juspay/omnix"
 
 [lib]
 crate-type = ["cdylib", "rlib"]

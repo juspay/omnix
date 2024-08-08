@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.0.0
 
 - **DeterminateSystems/flake-schemas**
   - Allow overriding the `nix` CLI command.

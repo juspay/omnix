@@ -2,27 +2,16 @@
 
 # omnix
 
+<img width="10%" src="./doc/src/favicon.svg">
+
 *Pronounced [`/ɒmˈnɪks/`](http://ipa-reader.xyz/?text=%C9%92m%CB%88n%C9%AAks&voice=Geraint)*
 
-> [!NOTE] 
+> [!NOTE]
 > 🚧 omnix is in active development. It aims to supplement the [Nix](https://nixos.asia/en/nix) CLI to improve developer experience.
 
-## Status & Usage
+## Usage
 
-To install omnix,
-
-```sh
-nix --accept-flake-config profile install github:juspay/omnix
-# Then, run `om` command
-```
-
-- [ ] `om show`
-    - [x] Basic `om show`
-    - [ ] Advanced `om show`
-- [x] `om health` (nix-health ng)
-- [x] `om ci` (nixci ng)
-- [x] `om init` (Initialize flake templates)
-- [ ] ...
+See https://omnix.page/
 
 ## Developing
 
@@ -32,7 +21,7 @@ nix --accept-flake-config profile install github:juspay/omnix
 
 This will automatically activate the nix develop shell. Open VSCode and install recommended extensions, ensuring that direnv activates in VSCode as well.
 
-> [!NOTE] 
+> [!NOTE]
 > If you would like to **learn the tools & technology** involved in this project, follow along this README noting the places where the emoji 🎓 is used.
 
 ### Running locally
@@ -40,7 +29,7 @@ This will automatically activate the nix develop shell. Open VSCode and install 
 To run `omnix-cli`,
 
 ```sh
-just watch # Or `just w`; you can also pass args, e.g.: `just w show` 
+just watch # Or `just w`; you can also pass args, e.g.: `just w show`
 ```
 
 To run `omnix-gui`,
@@ -71,7 +60,9 @@ nix run .#gui
 > Run `just fmt` to autoformat the source tree.
 
 - Run `just ci` to **run CI locally**.
-- Add **documentation** wherever useful. To preview Rust API docs, run `just doc`.
+- Add **documentation** wherever useful.
+    - Run `just doc run` to preview website docs; edit, and run `just doc check`
+    - To preview Rust API docs, run `just doc cargo`.
 - Changes to library crates must accompany a corresponding `CHANGELOG.md` entry.[^cc]
 
 [^cc]: We don't use any automatic changelog generator for this repo.

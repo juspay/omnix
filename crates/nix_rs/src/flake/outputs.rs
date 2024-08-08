@@ -196,7 +196,7 @@ impl Display for Type {
 
 /// This type is identical to [FlakeOutputs] except for the serde untagged attribute, which enables parsing the JSON output of `nix flake show`.
 ///
-/// This separation exists to workaround https://github.com/DioxusLabs/dioxus-std/issues/20
+/// This separation exists to workaround <https://github.com/DioxusLabs/dioxus-std/issues/20>
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
 enum FlakeOutputsUntagged {

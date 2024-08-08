@@ -1,12 +1,13 @@
 # Changelog
 
-## Unreleased
+## 1.0.0
 
-* **api**:
+- Remove executable (use `omnix` instead)
+* **new**:
   * Expose `run_checks_with`
 * **minor**:
   * Remove redundant `NixEnv` detection
-- fixes:
+- **fixes**:
   - Error out when the user passes `.#foo` as flake URL argument, with `foo` missing in the flake.nix. Previously, this fell back to `.#default` configuration.
 
 ## [0.4.0](https://github.com/juspay/nix-health/compare/0.3.0...0.4.0) (2024-07-10)
