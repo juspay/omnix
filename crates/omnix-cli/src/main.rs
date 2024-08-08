@@ -4,6 +4,8 @@ use clap_verbosity_flag::{InfoLevel, Verbosity};
 
 mod command;
 
+/// Omnix <https://omnix.page/>
+//
 // NOTE: Should we put this in `omnix` crate, and share with `omnix-gui` (see
 // `omnix-gui/src/cli.rs`)?
 #[derive(Parser, Debug)]
