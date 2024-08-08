@@ -6,6 +6,7 @@ pub mod nix;
 use anyhow::Context;
 use clap::CommandFactory;
 use clap_complete::generate;
+use serde_json::Value;
 use std::collections::HashSet;
 use std::io;
 
@@ -33,10 +34,15 @@ pub async fn nixci(
             let nix_info = NixInfo::new(nix_config.clone())
                 .await
                 .with_context(|| "Unable to gather nix info")?;
-            // First, run the necessary health checks
-            check_nix_version(&cfg.flake_url, &nix_info).await?;
-            // Then, do the build
-            nixci_build(nixcmd, verbose, build_cfg, &cfg, &nix_info.nix_config).await
+            match &build_cfg.on {
+                Some(host) => remote_build(nixcmd, &build_cfg, &cfg, host).await,
+                None => {
+                    // First, run the necessary health checks
+                    check_nix_version(&cfg.flake_url, &nix_info).await?;
+                    // Then, do the build
+                    nixci_build(nixcmd, verbose, build_cfg, &cfg, &nix_info.nix_config).await
+                }
+            }
         }
         cli::Command::DumpGithubActionsMatrix {
             systems, flake_ref, ..
@@ -53,6 +59,35 @@ pub async fn nixci(
             Ok(vec![])
         }
     }
+}
+
+async fn remote_build(
+    cmd: &NixCmd,
+    build_cfg: &BuildConfig,
+    cfg: &config::Config,
+    host: &String,
+) -> anyhow::Result<Vec<StorePath>> {
+    let omnix_input = "github:juspay/omnix";
+
+    let json = cmd
+        .run_with_args_expecting_json::<Value>(&["flake", "metadata", "--json", &cfg.flake_url.0])
+        .await
+        .context("Failed to run nix flake metadata command")?;
+
+    let path = json["path"]
+        .as_str()
+        .with_context(|| "Failed to find 'path' in JSON output")?
+        .to_string();
+
+    let remote_address = format!("ssh://{}", host);
+
+    cmd.run_with_args(&["copy", "--to", &remote_address, omnix_input, &path])
+        .await
+        .context("Failed to execute nix copy command")?;
+
+    let result =
+        nix::ssh::ssh_run_omnix_ci(&build_cfg, &remote_address, omnix_input, &path).await?;
+    Ok(result)
 }
 
 async fn nixci_build(
