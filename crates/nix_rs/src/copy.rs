@@ -1,5 +1,6 @@
 use crate::command::{CommandError, NixCmd};
 
+/// Runs `nix copy` in Rust
 pub async fn run_nix_copy(
     cmd: &NixCmd,
     host: &str,

@@ -6,7 +6,9 @@ use tokio::process::Command;
 
 use cli::BuildConfig;
 
-pub async fn ssh_run_omnix_ci(
+/// Runs `nix run command through ssh on remote machine` in Rust
+///
+pub async fn nix_run_on_ssh(
     build_cfg: &BuildConfig,
     remote_address: &str,
     omnix_input: &str,

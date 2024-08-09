@@ -7,6 +7,7 @@ pub struct FlakeMetadata {
     pub path: String,
 }
 
+/// Runs `nix flake metadata json` in Rust
 pub async fn get_flake_metadata_json(
     cmd: &NixCmd,
     flake_url: &str,

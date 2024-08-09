@@ -77,8 +77,7 @@ async fn remote_build(
 
     nix_rs::copy::run_nix_copy(cmd, &host, &omnix_input, &metadata.path).await?;
 
-    let result =
-        nix::ssh::ssh_run_omnix_ci(&build_cfg, &host, &omnix_input, &metadata.path).await?;
+    let result = nix::ssh::nix_run_on_ssh(&build_cfg, &host, &omnix_input, &metadata.path).await?;
     Ok(result)
 }
 
