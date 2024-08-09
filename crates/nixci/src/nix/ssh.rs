@@ -31,11 +31,11 @@ pub async fn nix_run_on_ssh(
 
     // Add print-all-dependencies flag if necessary
     if build_cfg.print_all_dependencies {
-        nix_cmd.push(" --print-all-dependencies".to_string());
+        nix_cmd.push("--print-all-dependencies".to_string());
     }
 
     // Add extra nix build arguments
-    nix_cmd.push(" -- ".to_string());
+    nix_cmd.push("--".to_string());
     nix_cmd.extend(build_cfg.extra_nix_build_args.iter().cloned());
 
     // Join all arguments into a single string

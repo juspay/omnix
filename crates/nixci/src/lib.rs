@@ -16,12 +16,7 @@ use nix::{
     nix_store::{DrvOut, NixStoreCmd, StorePath},
 };
 use nix_health::{traits::Checkable, NixHealth};
-use nix_rs::{
-    command::NixCmd,
-    config::NixConfig,
-    flake::{metadata::FlakeMetadata, url::FlakeUrl},
-    info::NixInfo,
-};
+use nix_rs::{command::NixCmd, config::NixConfig, flake::url::FlakeUrl, info::NixInfo};
 use tracing::instrument;
 
 /// Run nixci on the given [CliArgs], returning the built outputs in sorted order.
@@ -75,7 +70,14 @@ async fn remote_build(
 
     let metadata = nix_rs::flake::metadata::get_flake_metadata_json(cmd, &cfg.flake_url.0).await?;
 
-    nix_rs::copy::run_nix_copy(cmd, &host, &omnix_input, &metadata.path).await?;
+    nix_rs::copy::run_nix_copy(
+        cmd,
+        &host,
+        &omnix_input,
+        &metadata.path,
+        &build_cfg.extra_nix_build_args,
+    )
+    .await?;
 
     let result = nix::ssh::nix_run_on_ssh(&build_cfg, &host, &omnix_input, &metadata.path).await?;
     Ok(result)
