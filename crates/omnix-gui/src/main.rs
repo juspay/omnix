@@ -8,7 +8,7 @@ mod cli;
 fn main() {
     use clap::Parser;
     let args = crate::cli::Args::parse();
-    omnix::logging::setup_logging(&args.verbosity, false);
+    omnix_common::logging::setup_logging(&args.verbosity, false);
 
     // Set data directory for persisting [Signal]s. On macOS, this is ~/Library/Application Support/omnix-gui.
     dioxus_sdk::storage::set_dir!();

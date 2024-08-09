@@ -3141,7 +3141,7 @@ dependencies = [
 
 [[package]]
 name = "nix_health"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "anyhow",
  "bytesize",
@@ -3329,16 +3329,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "omnix"
-version = "0.1.0"
-dependencies = [
- "clap",
- "clap-verbosity-flag",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
 name = "omnix-cli"
 version = "0.1.0"
 dependencies = [
@@ -3355,7 +3345,7 @@ dependencies = [
  "nix_health",
  "nix_rs",
  "nixci",
- "omnix",
+ "omnix-common",
  "predicates",
  "regex",
  "rexpect",
@@ -3363,6 +3353,16 @@ dependencies = [
  "tabled",
  "tokio",
  "tracing",
+]
+
+[[package]]
+name = "omnix-common"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "clap-verbosity-flag",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -3387,7 +3387,7 @@ dependencies = [
  "human-panic",
  "nix_health",
  "nix_rs",
- "omnix",
+ "omnix-common",
  "regex",
  "serde",
  "serde_json",

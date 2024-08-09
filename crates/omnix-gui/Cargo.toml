@@ -28,7 +28,7 @@ http = { workspace = true }
 human-panic = { workspace = true }
 nix_health = { workspace = true }
 nix_rs = { workspace = true }
-omnix = { workspace = true }
+omnix-common = { workspace = true }
 regex = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }

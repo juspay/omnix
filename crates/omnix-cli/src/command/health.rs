@@ -2,7 +2,7 @@ use clap::Parser;
 use nix_health::{run_checks_with, NixHealth};
 use nix_rs::flake::url::FlakeUrl;
 
-/// Display the health of your system environment as suited for Nix
+/// Display the health of your Nix dev environment
 #[derive(Parser, Debug)]
 pub struct HealthConfig {
     /// Use `om.health` configuration from the given flake

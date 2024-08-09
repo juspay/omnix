@@ -3,7 +3,7 @@ use clap_verbosity_flag::{InfoLevel, Level, Verbosity};
 use nix_rs::command::NixCmd;
 use nixci::cli::{BuildConfig, Command};
 
-/// Build all flake outputs (run CI locally)
+/// Build all outputs of the flake
 #[derive(Parser, Debug)]
 pub struct CIConfig {
     /// Nix command global options

@@ -5,6 +5,8 @@ edition = "2021"
 name = "flakreate"
 version = "0.1.0"
 repository = "https://github.com/juspay/omnix"
+description = "Enriched Nix flake templates"
+license = "Apache-2.0"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
