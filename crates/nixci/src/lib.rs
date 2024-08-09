@@ -67,7 +67,7 @@ async fn remote_build(
     cfg: &config::Config,
     host: &String,
 ) -> anyhow::Result<Vec<StorePath>> {
-    let omnix_input = "github:juspay/omnix";
+    let omnix_input = format!("{}", env!("OMNIX"));
 
     let json = cmd
         .run_with_args_expecting_json::<Value>(&["flake", "metadata", "--json", &cfg.flake_url.0])
