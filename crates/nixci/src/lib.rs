@@ -81,9 +81,7 @@ async fn remote_build(
 
     let remote_address = format!("ssh://{}", host);
 
-    cmd.run_with_args(&["copy", "--to", &remote_address, omnix_input, &path])
-        .await
-        .context("Failed to execute nix copy command")?;
+    nix_rs::copy::run_nix_copy(cmd, &host, &omnix_input, &metadata.path).await?;
 
     let result =
         nix::ssh::ssh_run_omnix_ci(&build_cfg, &remote_address, omnix_input, &path).await?;

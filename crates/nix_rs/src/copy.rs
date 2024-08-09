@@ -1,13 +1,13 @@
 use crate::command::{CommandError, NixCmd};
-use anyhow::Result;
 
-pub async fn nix_copy(
+pub async fn run_nix_copy(
     cmd: &NixCmd,
-    remote_address: &str,
+    host: &str,
     omnix_input: &str,
     path: &str,
 ) -> Result<(), CommandError> {
-    cmd.run_with_args(&["copy", "--to", &remote_address, omnix_input, &path])
-        .await;
+    let remote_address = format!("ssh://{}", host);
+    cmd.run_with_args(&["copy", "--to", &remote_address, omnix_input, path])
+        .await?;
     Ok(())
 }
