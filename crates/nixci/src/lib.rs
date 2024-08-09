@@ -6,7 +6,6 @@ pub mod nix;
 use anyhow::Context;
 use clap::CommandFactory;
 use clap_complete::generate;
-use serde_json::Value;
 use std::collections::HashSet;
 use std::io;
 
@@ -17,7 +16,12 @@ use nix::{
     nix_store::{DrvOut, NixStoreCmd, StorePath},
 };
 use nix_health::{traits::Checkable, NixHealth};
-use nix_rs::{command::NixCmd, config::NixConfig, flake::url::FlakeUrl, info::NixInfo};
+use nix_rs::{
+    command::NixCmd,
+    config::NixConfig,
+    flake::{metadata::FlakeMetadata, url::FlakeUrl},
+    info::NixInfo,
+};
 use tracing::instrument;
 
 /// Run nixci on the given [CliArgs], returning the built outputs in sorted order.
@@ -69,17 +73,7 @@ async fn remote_build(
 ) -> anyhow::Result<Vec<StorePath>> {
     let omnix_input = format!("{}", env!("OMNIX"));
 
-    let json = cmd
-        .run_with_args_expecting_json::<Value>(&["flake", "metadata", "--json", &cfg.flake_url.0])
-        .await
-        .context("Failed to run nix flake metadata command")?;
-
-    let path = json["path"]
-        .as_str()
-        .with_context(|| "Failed to find 'path' in JSON output")?
-        .to_string();
-
-    let remote_address = format!("ssh://{}", host);
+    let metadata = nix_rs::flake::metadata::get_flake_metadata_json(cmd, &cfg.flake_url.0).await?;
 
     nix_rs::copy::run_nix_copy(cmd, &host, &omnix_input, &metadata.path).await?;
 
