@@ -12,25 +12,35 @@ pub async fn ssh_run_omnix_ci(
     omnix_input: &str,
     flake_url: &str,
 ) -> anyhow::Result<Vec<StorePath>> {
-    // Construct the SSH command
     let mut cmd = Command::new("ssh");
-    // Add the remote address to ssh command
+
+    // Add the remote address
     cmd.arg(remote_address);
-    // Construct the remote command
-    let mut remote_cmd = format!("nix run {}#default -- ci build {}", omnix_input, flake_url);
 
+    // Construct the base nix run command
+    let mut nix_cmd = vec![
+        "nix run".to_string(),
+        format!("{}#default", omnix_input),
+        "--".to_string(),
+        "ci".to_string(),
+        "build".to_string(),
+        flake_url.to_string(),
+    ];
+
+    // Add print-all-dependencies flag if necessary
     if build_cfg.print_all_dependencies {
-        remote_cmd.push_str(" --print-all-dependencies");
+        nix_cmd.push(" --print-all-dependencies".to_string());
     }
 
-    // Does it need to used ?
-    remote_cmd.push_str(" -- ");
-    for arg in &build_cfg.extra_nix_build_args {
-        remote_cmd.push_str(arg);
-        remote_cmd.push_str(" ");
-    }
+    // Add extra nix build arguments
+    nix_cmd.push(" -- ".to_string());
+    nix_cmd.extend(build_cfg.extra_nix_build_args.iter().cloned());
 
-    cmd.arg(remote_cmd);
+    // Join all arguments into a single string
+    let args = nix_cmd.join(" ");
+
+    // Add the nix command arguments to the base ssh-command
+    cmd.arg(args);
 
     nix_rs::command::trace_cmd(&cmd);
 
