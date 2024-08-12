@@ -4,7 +4,7 @@ use nix_rs::{env::NixInstallerVersion, info};
 
 use crate::traits::*;
 
-/// Check that https://github.com/DeterminateSystems/nix-installer is used to install Nix on non-NixOS systems
+/// Check that <https://github.com/DeterminateSystems/nix-installer> is used to install Nix on non-NixOS systems
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct NixInstaller {
     pub enable: bool,

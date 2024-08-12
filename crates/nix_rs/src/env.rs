@@ -205,7 +205,7 @@ impl OS {
 /// The installer used to install Nix (applicable only for non-NixOS systems)
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub enum NixInstaller {
-    /// The installer from https://github.com/DeterminateSystems/nix-installer
+    /// The installer from <https://github.com/DeterminateSystems/nix-installer>
     DetSys { version: NixInstallerVersion },
     /// Either offical installer or from a different package manager
     Other,
