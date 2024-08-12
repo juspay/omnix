@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-/// The attribute output part of a [super::FlakeUrl]
+/// The (optional) attribute output part of a [super::FlakeUrl]
 ///
 /// Example: `foo` in `.#foo`.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -9,12 +9,12 @@ pub struct FlakeAttr(pub Option<String>);
 impl FlakeAttr {
     /// Get the attribute name.
     ///
-    /// If attribute exists, then return "default".
+    /// If no such attribute exists, return "default".
     pub fn get_name(&self) -> String {
         self.0.clone().unwrap_or_else(|| "default".to_string())
     }
 
-    /// Whether an explicit attribute is set
+    /// Whether an explicit attribute is not set
     pub fn is_none(&self) -> bool {
         self.0.is_none()
     }

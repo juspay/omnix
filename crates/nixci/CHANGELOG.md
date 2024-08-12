@@ -1,3 +1,6 @@
+## Unreleased
+
+- `config.rs`: Refactored to change API.
 
 ## 1.1.0
 

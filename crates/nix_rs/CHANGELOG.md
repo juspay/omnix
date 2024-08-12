@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- **`flake::url`**
+  - Add `without_attr`, `get_attr`
+  - Simplify the return type of `RootQualifiedAttr::eval_flake`
+
 ## 1.0.0
 
 - **DeterminateSystems/flake-schemas**

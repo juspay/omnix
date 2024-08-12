@@ -25,11 +25,13 @@ impl RootQualifiedAttr {
 
     /// Like [nix_eval_attr], but looks up the attribute in [FlakeUrl] under the
     /// current [RootQualifiedAttr]
+    ///
+    /// Returns the parsed value, first attribute ("default" if none) and the remaining attributes in the [FlakeUrl]
     pub async fn eval_flake<T>(
         &self,
         cmd: &NixCmd,
         url: &FlakeUrl,
-    ) -> Result<(T, FlakeUrl, Vec<String>), QualifiedAttrError>
+    ) -> Result<(T, String, Vec<String>), QualifiedAttrError>
     where
         T: Default + serde::de::DeserializeOwned,
     {
@@ -53,35 +55,34 @@ async fn nix_eval_qualified_attr<T>(
     cmd: &NixCmd,
     url: &FlakeUrl,
     root_attrs: &[String],
-) -> Result<(T, FlakeUrl, Vec<String>), QualifiedAttrError>
+) -> Result<(T, String, Vec<String>), QualifiedAttrError>
 where
     T: Default + serde::de::DeserializeOwned,
 {
     // Get 1st attr, retaining the rest
-    let (flake_url, url_attr) = url.split_attr();
-    let (flake_url, rest_attrs) = match url_attr.as_list().split_first() {
-        None => (flake_url, vec![]),
-        Some((name, rest)) => (flake_url.with_attr(name), rest.to_vec()),
+    let (first_attr, rest_attrs) = match url.get_attr().as_list().split_first() {
+        None => ("default".to_string(), vec![]),
+        Some((name, rest)) => (name.clone(), rest.to_vec()),
     };
 
-    // Try one of root_attrs
+    // Try one of root_attrs to see if it exists in flake
     for root_attr in root_attrs {
-        let (url, attr) = flake_url.split_attr();
-        let url = url.with_attr(format!("{}.{}", root_attr, attr.get_name()).as_str());
-        if let Some(v) = nix_eval_attr(cmd, &url).await? {
-            return Ok((v, flake_url, rest_attrs));
+        let qualified_url = url.with_attr(format!("{}.{}", root_attr, first_attr).as_str());
+        if let Some(v) = nix_eval_attr(cmd, &qualified_url).await? {
+            return Ok((v, first_attr, rest_attrs));
         }
     }
 
-    match url.split_attr().1.get_name().as_str() {
-        "default" => Ok((Default::default(), flake_url, rest_attrs)),
-        attr => {
+    // When none of root_attr matches, either return default (no attr in flake URL) or print an error (explicit attr was specified in flake URL)
+    match url.get_attr().0 {
+        None => Ok((Default::default(), first_attr, rest_attrs)),
+        Some(attr) => {
             tracing::error!(
                 "Qualified attr not found in flake ref '{}'. Expected one of: {}",
                 url,
                 root_attrs
                     .iter()
-                    .map(|s| format!("{}.{}", s, attr))
+                    .map(|root_attr| format!("{}.{}", root_attr, attr))
                     .collect::<Vec<_>>()
                     .join(", ")
             );

@@ -34,7 +34,7 @@ pub async fn nixci(
                 .await
                 .with_context(|| "Unable to gather nix info")?;
             // First, run the necessary health checks
-            check_nix_version(&cfg.flake_url, &nix_info).await?;
+            check_nix_version(&cfg.ref_.flake_url, &nix_info).await?;
             // Then, do the build
             nixci_build(nixcmd, verbose, build_cfg, &cfg, &nix_info.nix_config).await
         }
@@ -97,12 +97,8 @@ async fn nixci_subflakes(
     let systems = build_cfg.get_systems(cmd, nix_config).await?;
 
     for (subflake_name, subflake) in &cfg.subflakes.0 {
-        let name = format!("{}.{}", cfg.name, subflake_name).italic();
-        if cfg
-            .selected_subflake
-            .as_ref()
-            .is_some_and(|s| s != subflake_name)
-        {
+        let name = format!("{}.{}", cfg.ref_.selected_name, subflake_name).italic();
+        if subflake.skip {
             tracing::info!("🍊 {} {}", name, "skipped (deselected out)".dimmed());
             continue;
         }
@@ -112,7 +108,7 @@ async fn nixci_subflakes(
                 cmd,
                 verbose,
                 build_cfg,
-                &cfg.flake_url,
+                &cfg.ref_.flake_url,
                 subflake_name,
                 subflake,
             )
@@ -137,7 +133,7 @@ async fn nixci_subflake(
     build_cfg: &BuildConfig,
     url: &FlakeUrl,
     subflake_name: &str,
-    subflake: &config::SubFlakish,
+    subflake: &config::SubflakeConfig,
 ) -> anyhow::Result<DevourFlakeOutput> {
     if subflake.override_inputs.is_empty() {
         nix::lock::nix_flake_lock_check(cmd, &url.sub_flake_url(subflake.dir.clone())).await?;
