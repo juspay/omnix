@@ -26,12 +26,9 @@ impl CICommand {
     }
 
     pub async fn run(&self, verbosity: Verbosity<InfoLevel>) -> anyhow::Result<()> {
-        nixci::nixci(
-            &self.nixcmd,
-            &self.command(),
-            verbosity.log_level() > Some(Level::Info),
-        )
-        .await?;
+        self.command()
+            .run(&self.nixcmd, verbosity.log_level() > Some(Level::Info))
+            .await?;
         Ok(())
     }
 }

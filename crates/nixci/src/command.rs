@@ -1,15 +1,20 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
 use colored::Colorize;
-use nix_rs::{command::NixCmd, config::NixConfig, flake::system::System};
+use nix_rs::{
+    command::NixCmd, config::NixConfig, flake::system::System, info::NixInfo, store::StorePath,
+};
+use tracing::instrument;
 
 use crate::{
     config,
     flake_ref::FlakeRef,
+    github,
     nix::{
         devour_flake,
         system_list::{SystemsList, SystemsListFlakeRef},
     },
+    step,
 };
 
 #[derive(Debug, Subcommand, Clone)]
@@ -28,6 +33,30 @@ impl Command {
         // Adjust to devour_flake's expectations
         if let Command::Build(build_cfg) = self {
             devour_flake::transform_override_inputs(&mut build_cfg.extra_nix_build_args);
+        }
+    }
+
+    #[instrument(name = "run", skip(self))]
+    pub async fn run(self, nixcmd: &NixCmd, verbose: bool) -> anyhow::Result<Vec<StorePath>> {
+        match self {
+            Command::Build(cmd) => {
+                let cfg = Self::get_config(nixcmd, &cmd.flake_ref).await?;
+                let nix_config = NixConfig::get().await.as_ref()?;
+                let nix_info = NixInfo::new(nix_config.clone())
+                    .await
+                    .with_context(|| "Unable to gather nix info")?;
+                // First, run the necessary health checks
+                step::nix_version::check_nix_version(&cfg.ref_.flake_url, &nix_info).await?;
+                // Then, do the build
+                step::build::nixci_build(nixcmd, verbose, &cmd, &cfg, &nix_info.nix_config).await
+            }
+            Command::DumpGithubActionsMatrix(cmd) => {
+                let cfg = Self::get_config(nixcmd, &cmd.flake_ref).await?;
+                let matrix =
+                    github::matrix::GitHubMatrix::from(cmd.systems.clone(), &cfg.subflakes);
+                println!("{}", serde_json::to_string(&matrix)?);
+                Ok(vec![])
+            }
         }
     }
 
