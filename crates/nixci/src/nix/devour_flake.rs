@@ -5,7 +5,7 @@ use nix_rs::command::NixCmd;
 use std::{collections::HashSet, path::PathBuf, process::Stdio, str::FromStr};
 use tokio::io::{AsyncBufReadExt, BufReader};
 
-use super::nix_store::DrvOut;
+use nix_rs::store::DrvOut;
 
 /// Absolute path to the devour-flake executable
 ///

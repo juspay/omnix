@@ -1,10 +1,7 @@
 /// Run `nix-store` in Rust
-///
-/// TODO: Upstream this to nix-rs
 use std::{fmt, path::PathBuf};
 
-use anyhow::Result;
-use nix_rs::command::{CommandError, NixCmdError};
+use crate::command::{CommandError, NixCmdError};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use tokio::process::Command;
@@ -105,7 +102,7 @@ impl NixStoreCmd {
             "--valid-derivers",
             out_path.to_string_lossy().as_ref(),
         ]);
-        nix_rs::command::trace_cmd(&cmd);
+        crate::command::trace_cmd(&cmd);
         let out = cmd.output().await?;
         if out.status.success() {
             let drv_path = String::from_utf8(out.stdout)?.trim().to_string();
@@ -135,7 +132,7 @@ impl NixStoreCmd {
             "--include-outputs",
             drv_path.0.to_string_lossy().as_ref(),
         ]);
-        nix_rs::command::trace_cmd(&cmd);
+        crate::command::trace_cmd(&cmd);
         let out = cmd.output().await?;
         if out.status.success() {
             let out = String::from_utf8(out.stdout)?;

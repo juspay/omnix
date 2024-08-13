@@ -11,12 +11,15 @@ use std::io;
 
 use cli::{BuildConfig, CliArgs, Command};
 use colored::Colorize;
-use nix::{
-    devour_flake::DevourFlakeOutput,
-    nix_store::{DrvOut, NixStoreCmd, StorePath},
-};
+use nix::devour_flake::DevourFlakeOutput;
 use nix_health::{traits::Checkable, NixHealth};
-use nix_rs::{command::NixCmd, config::NixConfig, flake::url::FlakeUrl, info::NixInfo};
+use nix_rs::{
+    command::NixCmd,
+    config::NixConfig,
+    flake::url::FlakeUrl,
+    info::NixInfo,
+    store::{DrvOut, NixStoreCmd, StorePath},
+};
 use tracing::instrument;
 
 /// Run nixci on the given [CliArgs], returning the built outputs in sorted order.
