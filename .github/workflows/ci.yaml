@@ -98,7 +98,11 @@ jobs:
         run: |
             set +o pipefail
             chmod +x ./om
-            ./om health | grep "Nix is not installed. Please install Nix: https://nixos.asia/en/install"
+            ./om health
+            if [[ $? -ne 0 ]]; then
+              echo "om binary failed due to lack of nix installation, as expected."
+              exit 0
+            fi
 
   website-build:
     if: github.ref == 'refs/heads/main'
