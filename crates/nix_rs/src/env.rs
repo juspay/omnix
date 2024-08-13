@@ -215,7 +215,7 @@ impl Display for NixInstaller {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             NixInstaller::DetSys { version } => {
-                write!(f, "DeterminateSystems/nix-installer({})", version)
+                write!(f, "nix-installer ({})", version)
             }
             NixInstaller::Other => write!(f, "Unknown installer"),
         }

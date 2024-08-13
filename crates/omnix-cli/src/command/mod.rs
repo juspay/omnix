@@ -26,11 +26,33 @@ pub enum Command {
 
 impl Command {
     pub async fn run(&self, verbosity: Verbosity<InfoLevel>) -> anyhow::Result<()> {
+        let check_nix_installed_and_exit = || {
+            if omnix_common::check::nix_installed() {
+                return;
+            }
+            tracing::error!(
+                "Nix is not installed. Please install Nix: https://nixos.asia/en/install"
+            );
+            std::process::exit(1);
+        };
+
         match self {
-            Command::Show(config) => config.run().await,
-            Command::Init(config) => config.run().await,
-            Command::CI(config) => config.run(verbosity).await,
-            Command::Health(config) => config.run().await,
+            Command::Show(config) => {
+                check_nix_installed_and_exit();
+                config.run().await
+            }
+            Command::Init(config) => {
+                check_nix_installed_and_exit();
+                config.run().await
+            }
+            Command::CI(config) => {
+                check_nix_installed_and_exit();
+                config.run(verbosity).await
+            }
+            Command::Health(config) => {
+                check_nix_installed_and_exit();
+                config.run().await
+            }
             Command::Completion { shell } => completion::generate_completion(*shell),
         }
     }

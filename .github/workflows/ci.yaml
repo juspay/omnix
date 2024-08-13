@@ -95,8 +95,8 @@ jobs:
           fi
       - name: Run om static binary
         run: |
-          chmod +x ./om
-          ./om --help
+            chmod +x ./om
+            ./om health | grep "Nix is not installed. Please install Nix: https://nixos.asia/en/install"
 
   website-build:
     if: github.ref == 'refs/heads/main'

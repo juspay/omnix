@@ -5,10 +5,10 @@ pub mod report;
 pub mod traits;
 
 use anyhow::Context;
-use check::nix_installer::NixInstaller;
 use colored::Colorize;
 
 use check::direnv::Direnv;
+use nix_rs::env::NixInstaller;
 use nix_rs::flake::url::qualified_attr::{QualifiedAttrError, RootQualifiedAttr};
 use nix_rs::flake::url::FlakeUrl;
 use nix_rs::{command::NixCmd, info::NixInfo};
@@ -35,7 +35,6 @@ pub struct NixHealth {
     pub trusted_users: TrustedUsers,
     pub rosetta: Rosetta,
     pub direnv: Direnv,
-    pub nix_installer: NixInstaller,
 }
 
 impl<'a> IntoIterator for &'a NixHealth {
@@ -46,7 +45,6 @@ impl<'a> IntoIterator for &'a NixHealth {
     fn into_iter(self) -> Self::IntoIter {
         let items: Vec<Self::Item> = vec![
             &self.rosetta,
-            &self.nix_installer,
             &self.nix_version,
             &self.flake_enabled,
             &self.system,
@@ -137,17 +135,29 @@ pub async fn run_checks_with(flake_url: Option<FlakeUrl>) -> anyhow::Result<Vec<
         .await
         .as_ref()
         .with_context(|| "Unable to gather nix info")?;
-    let action_msg = format!(
-        "🩺️ Checking the health of your Nix setup ({} on {})",
-        &nix_info.nix_config.system.value, &nix_info.nix_env.os
+
+    let sys_info_msg = format!(
+        "\n  - System: {}\n  - OS: {}{}",
+        &nix_info.nix_config.system.value,
+        &nix_info.nix_env.os,
+        (if let NixInstaller::DetSys { .. } = &nix_info.nix_env.installer {
+            format!("\n  - Installer: {}\n", &nix_info.nix_env.installer)
+        } else {
+            "".to_string()
+        })
     );
+
     let health: NixHealth = match flake_url.as_ref() {
         Some(flake_url) => {
-            tracing::info!("{}, using config from flake '{}':", action_msg, flake_url);
+            tracing::info!(
+                "🩺️ Checking the health of your Nix setup, using config from flake '{}':{}",
+                flake_url,
+                sys_info_msg
+            );
             NixHealth::from_flake(flake_url).await
         }
         None => {
-            tracing::info!("{}:", action_msg);
+            tracing::info!("🩺️ Checking the health of your Nix setup:{}", sys_info_msg);
             Ok(NixHealth::default())
         }
     }?;
