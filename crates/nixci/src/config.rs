@@ -12,21 +12,22 @@ use serde::Deserialize;
 
 use crate::cli::BuildConfig;
 
-/// The `nixci` configuration encoded in flake.nix
+/// The nixci configuration encoded in flake.nix
 ///
 /// Example flake.nix:
 /// ```nix
 /// {
-///   nixci.test = {
+///   om.ci.test = {
 ///     dir = "./test";
 ///     overrideInputs = { "mymod" = "."; };
 ///   };
 /// }
 #[derive(Debug)]
 pub struct Config {
-    /// The flake.nix configuration
+    /// The flake.nix configuration for each subflakes
     pub subflakes: SubflakesConfig,
 
+    /// The reference used by the user to select the configuration
     pub ref_: ConfigRef,
 }
 
@@ -39,7 +40,7 @@ pub struct ConfigRef {
     /// The name of the nixci configuration (`omci.<name>`) selected
     pub selected_name: String,
 
-    /// The selected sub-flake if any.
+    /// The selected sub-flake name if any.
     pub selected_subflake: Option<String>,
 }
 
