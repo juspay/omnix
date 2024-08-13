@@ -94,8 +94,10 @@ jobs:
             echo "nix is not installed"
           fi
       - name: Run om static binary
-        # We need to disable pipefail because the om binary will return a non-zero
+        # By default, the shell will exit if any command fails. We want to
+        # ignore the failure of the om binary using `set +e`.
         run: |
+            set +e
             chmod +x ./om
             ./om health
             if [[ $? -ne 0 ]]; then
