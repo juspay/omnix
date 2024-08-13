@@ -96,18 +96,7 @@ pub enum Command {
 
     /// Print the Github Actions matrix configuration as JSON
     #[clap(name = "gh-matrix")]
-    DumpGithubActionsMatrix {
-        /// Flake URL or github URL
-        ///
-        /// A specific nixci configuration can be specified
-        /// using '#': e.g. `nixci .#extra-tests`
-        #[arg(default_value = ".")]
-        flake_ref: FlakeRef,
-
-        /// Systems to include in the matrix
-        #[arg(long, value_parser, value_delimiter = ',')]
-        systems: Vec<System>,
-    },
+    DumpGithubActionsMatrix(GHMatrixCommand),
 }
 
 impl Command {
@@ -164,6 +153,20 @@ impl BuildCommand {
             Ok(systems)
         }
     }
+}
+
+#[derive(Parser, Debug, Clone)]
+pub struct GHMatrixCommand {
+    /// Flake URL or github URL
+    ///
+    /// A specific nixci configuration can be specified
+    /// using '#': e.g. `nixci .#extra-tests`
+    #[arg(default_value = ".")]
+    pub flake_ref: FlakeRef,
+
+    /// Systems to include in the matrix
+    #[arg(long, value_parser, value_delimiter = ',')]
+    pub systems: Vec<System>,
 }
 
 #[cfg(test)]

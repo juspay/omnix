@@ -4,11 +4,9 @@ pub mod github;
 pub mod nix;
 
 use anyhow::Context;
-use clap::CommandFactory;
 use std::collections::HashSet;
-use std::io;
 
-use cli::{BuildCommand, CliArgs, Command};
+use cli::{BuildCommand, Command};
 use colored::Colorize;
 use nix::devour_flake::DevourFlakeOutput;
 use nix_health::{traits::Checkable, NixHealth};
@@ -29,8 +27,8 @@ pub async fn nixci(
     verbose: bool,
 ) -> anyhow::Result<Vec<StorePath>> {
     match command {
-        cli::Command::Build(build_cmd) => {
-            let cfg = cli::Command::get_config(nixcmd, &build_cmd.flake_ref).await?;
+        cli::Command::Build(cmd) => {
+            let cfg = cli::Command::get_config(nixcmd, &cmd.flake_ref).await?;
             let nix_config = NixConfig::get().await.as_ref()?;
             let nix_info = NixInfo::new(nix_config.clone())
                 .await
@@ -38,13 +36,11 @@ pub async fn nixci(
             // First, run the necessary health checks
             check_nix_version(&cfg.ref_.flake_url, &nix_info).await?;
             // Then, do the build
-            nixci_build(nixcmd, verbose, build_cmd, &cfg, &nix_info.nix_config).await
+            nixci_build(nixcmd, verbose, cmd, &cfg, &nix_info.nix_config).await
         }
-        cli::Command::DumpGithubActionsMatrix {
-            systems, flake_ref, ..
-        } => {
-            let cfg = cli::Command::get_config(nixcmd, flake_ref).await?;
-            let matrix = github::matrix::GitHubMatrix::from(systems.clone(), &cfg.subflakes);
+        cli::Command::DumpGithubActionsMatrix(cmd) => {
+            let cfg = cli::Command::get_config(nixcmd, &cmd.flake_ref).await?;
+            let matrix = github::matrix::GitHubMatrix::from(cmd.systems.clone(), &cfg.subflakes);
             println!("{}", serde_json::to_string(&matrix)?);
             Ok(vec![])
         }
