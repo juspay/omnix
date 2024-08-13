@@ -1,5 +1,6 @@
 pub mod cli;
 pub mod config;
+pub mod flake_ref;
 pub mod github;
 pub mod nix;
 

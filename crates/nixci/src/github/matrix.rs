@@ -1,4 +1,3 @@
-/// Enough types to get branch info from Pull Request URL
 use nix_rs::flake::system::System;
 use serde::{Deserialize, Serialize};
 
