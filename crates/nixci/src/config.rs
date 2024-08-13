@@ -10,7 +10,7 @@ use nix_rs::{
 };
 use serde::Deserialize;
 
-use crate::cli::BuildConfig;
+use crate::cli::BuildCommand;
 
 /// The nixci configuration encoded in flake.nix
 ///
@@ -146,7 +146,7 @@ impl SubflakeConfig {
     /// subflake configuration.
     pub fn nix_build_args_for_flake(
         &self,
-        build_cfg: &BuildConfig,
+        build_cfg: &BuildCommand,
         flake_url: &FlakeUrl,
     ) -> Vec<String> {
         std::iter::once(flake_url.sub_flake_url(self.dir.clone()).0)

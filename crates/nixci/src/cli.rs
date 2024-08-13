@@ -92,7 +92,7 @@ impl CliArgs {
 #[derive(Debug, Subcommand, Clone)]
 pub enum Command {
     /// Build all outputs of a flake
-    Build(BuildConfig),
+    Build(BuildCommand),
 
     /// Print the Github Actions matrix configuration as JSON
     #[clap(name = "gh-matrix")]
@@ -128,7 +128,7 @@ impl Command {
 }
 
 #[derive(Parser, Debug, Clone)]
-pub struct BuildConfig {
+pub struct BuildCommand {
     /// The systems list to build for. If empty, build for current system.
     ///
     /// Must be a flake reference which, when imported, must return a Nix list
@@ -160,7 +160,7 @@ pub struct BuildConfig {
     pub print_all_dependencies: bool,
 }
 
-impl BuildConfig {
+impl BuildCommand {
     pub async fn get_systems(&self, cmd: &NixCmd, nix_config: &NixConfig) -> Result<Vec<System>> {
         let systems = SystemsList::from_flake(cmd, &self.systems).await?.0;
         if systems.is_empty() {

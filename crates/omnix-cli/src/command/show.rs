@@ -15,7 +15,7 @@ use tabled::{
 
 /// Inspect the outputs of a flake
 #[derive(Parser, Debug)]
-pub struct ShowConfig {
+pub struct ShowCommand {
     /// The flake to show outputs for
     #[arg(name = "FLAKE")]
     pub flake_url: FlakeUrl,
@@ -86,7 +86,7 @@ impl Row {
     }
 }
 
-impl ShowConfig {
+impl ShowCommand {
     pub async fn run(&self) -> anyhow::Result<()> {
         let nix_cmd = NixCmd::get().await;
         let nix_config = NixConfig::get().await.as_ref()?;
