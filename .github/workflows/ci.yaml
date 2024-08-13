@@ -96,7 +96,6 @@ jobs:
       - name: Run om static binary
         # We need to disable pipefail because the om binary will return a non-zero
         run: |
-            set +o pipefail
             chmod +x ./om
             ./om health
             if [[ $? -ne 0 ]]; then
