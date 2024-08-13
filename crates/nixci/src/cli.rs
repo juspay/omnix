@@ -108,12 +108,6 @@ pub enum Command {
         #[arg(long, value_parser, value_delimiter = ',')]
         systems: Vec<System>,
     },
-
-    /// Generates shell completion scripts
-    Completion {
-        #[arg(value_enum)]
-        shell: clap_complete::Shell,
-    },
 }
 
 impl Command {

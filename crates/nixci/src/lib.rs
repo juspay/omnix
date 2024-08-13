@@ -5,7 +5,6 @@ pub mod nix;
 
 use anyhow::Context;
 use clap::CommandFactory;
-use clap_complete::generate;
 use std::collections::HashSet;
 use std::io;
 
@@ -47,12 +46,6 @@ pub async fn nixci(
             let cfg = cli::Command::get_config(nixcmd, flake_ref).await?;
             let matrix = github::matrix::GitHubMatrix::from(systems.clone(), &cfg.subflakes);
             println!("{}", serde_json::to_string(&matrix)?);
-            Ok(vec![])
-        }
-        cli::Command::Completion { shell } => {
-            let mut cli = CliArgs::command();
-            let name = cli.get_name().to_string();
-            generate(*shell, &mut cli, name, &mut io::stdout());
             Ok(vec![])
         }
     }
