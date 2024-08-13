@@ -51,44 +51,6 @@ impl FlakeRef {
     }
 }
 
-#[derive(Parser, Debug)]
-#[clap(author = "Sridhar Ratnakumar", version, about)]
-/// nixci - Define and build CI for Nix projects anywhere <https://github.com/srid/nixci>
-pub struct CliArgs {
-    /// Whether to be verbose
-    ///
-    /// If enabled, also the full nix command output is shown.
-    #[arg(short = 'v', long)]
-    pub verbose: bool,
-
-    /// Nix command global options
-    #[command(flatten)]
-    pub nixcmd: NixCmd,
-
-    #[clap(subcommand)]
-    pub command: Command,
-}
-
-impl CliArgs {
-    /// Parse `CliArgs` from command-line args
-    pub async fn parse() -> anyhow::Result<Self> {
-        let mut args = <Self as Parser>::parse();
-        args.preprocess().await?;
-        Ok(args)
-    }
-
-    // Pre-process `CliArgs`
-    pub async fn preprocess(&mut self) -> anyhow::Result<()> {
-        // Avoid using `--extra-experimental-features` if possible.
-        self.nixcmd.with_flakes();
-        // Adjust to devour_flake's expectations
-        if let Command::Build(build_cfg) = &mut self.command {
-            devour_flake::transform_override_inputs(&mut build_cfg.extra_nix_build_args);
-        }
-        Ok(())
-    }
-}
-
 #[derive(Debug, Subcommand, Clone)]
 pub enum Command {
     /// Build all outputs of a flake
@@ -100,6 +62,14 @@ pub enum Command {
 }
 
 impl Command {
+    // Pre-process `Command`
+    pub fn preprocess(&mut self) {
+        // Adjust to devour_flake's expectations
+        if let Command::Build(build_cfg) = self {
+            devour_flake::transform_override_inputs(&mut build_cfg.extra_nix_build_args);
+        }
+    }
+
     /// Get the nixci [config::Config] associated with this subcommand
     pub async fn get_config(cmd: &NixCmd, flake_ref: &FlakeRef) -> anyhow::Result<config::Config> {
         let url = flake_ref.to_flake_url().await?;

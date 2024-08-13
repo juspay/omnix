@@ -19,8 +19,10 @@ impl CICommand {
     ///
     /// If the user has not provided one, return the build command by default.
     pub fn command(&self) -> nixci::cli::Command {
-        let cfg = BuildCommand::parse_from::<[_; 0], &str>([]);
-        self.command.clone().unwrap_or(Command::Build(cfg))
+        let cmd = BuildCommand::parse_from::<[_; 0], &str>([]);
+        let mut cmd = self.command.clone().unwrap_or(Command::Build(cmd));
+        cmd.preprocess();
+        cmd
     }
 
     pub async fn run(&self, verbosity: Verbosity<InfoLevel>) -> anyhow::Result<()> {

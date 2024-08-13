@@ -19,7 +19,7 @@ use nix_rs::{
 };
 use tracing::instrument;
 
-/// Run nixci on the given [CliArgs], returning the built outputs in sorted order.
+/// Run nixci on the given [Command], returning the built outputs in sorted order.
 #[instrument(name = "nixci", skip(command))]
 pub async fn nixci(
     nixcmd: &NixCmd,
