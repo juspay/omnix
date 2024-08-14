@@ -60,26 +60,27 @@ async fn build_subflakes(
             continue;
         }
 
-        tracing::info!("🍎 {}", name);
-
-        if subflake.can_build_on(&systems) {
-            let outs = build_subflake(
-                cmd,
-                verbose,
-                build_cmd,
-                &cfg.ref_.flake_url,
-                subflake_name,
-                subflake,
-            )
-            .await?;
-            result.extend(outs.0);
-        } else {
+        let compatible_system = subflake.can_build_on(&systems);
+        if !compatible_system {
             tracing::info!(
                 "🍊 {} {}",
                 name,
                 "skipped (cannot build on this system)".dimmed()
             );
+            continue;
         }
+
+        tracing::info!("🍎 {}", name);
+        let outs = build_subflake(
+            cmd,
+            verbose,
+            build_cmd,
+            &cfg.ref_.flake_url,
+            subflake_name,
+            subflake,
+        )
+        .await?;
+        result.extend(outs.0);
     }
 
     Ok(result)
@@ -94,11 +95,13 @@ async fn build_subflake(
     subflake_name: &str,
     subflake: &SubflakeConfig,
 ) -> anyhow::Result<DevourFlakeOutput> {
+    // Check that `flake.lock` is not out of date.
     if subflake.override_inputs.is_empty() {
         let sub_flake_url = url.sub_flake_url(subflake.dir.clone());
         nix::lock::nix_flake_lock_check(cmd, &sub_flake_url).await?;
     }
 
+    // Run devour-flake to do the actual build.
     let nix_args = nix_build_args_for_subflake(subflake, build_cmd, url);
     nix::devour_flake::devour_flake(cmd, verbose, nix_args).await
 }
