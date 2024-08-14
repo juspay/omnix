@@ -45,6 +45,12 @@ pub struct BuildCommand {
     pub print_all_dependencies: bool,
 }
 
+impl Default for BuildCommand {
+    fn default() -> Self {
+        BuildCommand::parse_from::<[_; 0], &str>([])
+    }
+}
+
 impl BuildCommand {
     pub async fn run(
         &self,

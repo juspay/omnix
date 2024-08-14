@@ -17,6 +17,12 @@ pub enum Command {
     DumpGithubActionsMatrix(GHMatrixCommand),
 }
 
+impl Default for Command {
+    fn default() -> Self {
+        Self::Build(Default::default())
+    }
+}
+
 impl Command {
     // Pre-process `Command`
     pub fn preprocess(&mut self) {
