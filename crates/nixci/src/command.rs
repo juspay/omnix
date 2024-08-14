@@ -38,17 +38,20 @@ impl Command {
 
     #[instrument(name = "run", skip(self))]
     pub async fn run(self, nixcmd: &NixCmd, verbose: bool) -> anyhow::Result<Vec<StorePath>> {
+        tracing::info!("{}", format!("\n👟 Reading om.ci config from flake").bold());
         let cfg = self.get_config(nixcmd).await?;
         match self {
             Command::Build(cmd) => {
-                tracing::info!("{}", format!("🍏 Building {}", cmd.flake_ref).bold());
-                let nix_config = NixConfig::get().await.as_ref()?;
-                let nix_info = NixInfo::new(nix_config.clone())
+                tracing::info!("{}", format!("\n👟 Gathering NixInfo").bold());
+                let nix_info = NixInfo::get()
                     .await
+                    .as_ref()
                     .with_context(|| "Unable to gather nix info")?;
                 // First, run the necessary health checks
+                tracing::info!("{}", format!("\n🫀 Performing health check").bold());
                 step::nix_version::check_nix_version(&cfg.ref_.flake_url, &nix_info).await?;
                 // Then, do the build
+                tracing::info!("{}", format!("\n🍏 Building {}", cmd.flake_ref).bold());
                 step::build::nixci_build(nixcmd, verbose, &cmd, &cfg, &nix_info.nix_config).await
             }
             Command::DumpGithubActionsMatrix(cmd) => {
