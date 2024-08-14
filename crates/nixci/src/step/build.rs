@@ -5,7 +5,7 @@ use nix_rs::{
     command::NixCmd,
     config::NixConfig,
     flake::url::FlakeUrl,
-    store::{DrvOut, NixStoreCmd, StorePath},
+    store::{NixStoreCmd, StorePath},
 };
 use tracing::instrument;
 
@@ -23,23 +23,18 @@ pub async fn build_flake(
     cfg: &Config,
     nix_config: &NixConfig,
 ) -> anyhow::Result<Vec<StorePath>> {
-    let all_devour_flake_outs = build_subflakes(cmd, verbose, build_cmd, cfg, nix_config).await?;
+    // Build all subflakes using devour-flake
+    let devour_flake_outs = build_subflakes(cmd, verbose, build_cmd, cfg, nix_config)
+        .await?
+        .into_iter()
+        .collect();
 
-    // Handle --print-all-dependencies
-    let all_outs: HashSet<StorePath> = if build_cmd.print_all_dependencies {
-        NixStoreCmd
-            .fetch_all_deps(all_devour_flake_outs.into_iter().collect())
-            .await?
-            .into_iter()
-            .collect()
+    if build_cmd.print_all_dependencies {
+        // Handle --print-all-dependencies
+        Ok(NixStoreCmd.fetch_all_deps(devour_flake_outs).await?)
     } else {
-        all_devour_flake_outs
-            .into_iter()
-            .map(DrvOut::as_store_path)
-            .collect()
-    };
-
-    Ok(all_outs.into_iter().collect())
+        Ok(devour_flake_outs)
+    }
 }
 
 async fn build_subflakes(
@@ -48,7 +43,7 @@ async fn build_subflakes(
     build_cmd: &BuildCommand,
     cfg: &Config,
     nix_config: &NixConfig,
-) -> anyhow::Result<HashSet<DrvOut>> {
+) -> anyhow::Result<HashSet<StorePath>> {
     let mut result = HashSet::new();
     let systems = build_cmd.get_systems(cmd, nix_config).await?;
 

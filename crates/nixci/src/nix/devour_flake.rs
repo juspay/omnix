@@ -1,18 +1,16 @@
 //! Rust support for invoking <https://github.com/srid/devour-flake>
 
 use anyhow::{bail, Context, Result};
-use nix_rs::command::NixCmd;
+use nix_rs::{command::NixCmd, store::StorePath};
 use std::{collections::HashSet, path::PathBuf, process::Stdio, str::FromStr};
 use tokio::io::{AsyncBufReadExt, BufReader};
-
-use nix_rs::store::DrvOut;
 
 /// Absolute path to the devour-flake executable
 ///
 /// We expect this environment to be set in Nix build and shell.
 pub const DEVOUR_FLAKE: &str = env!("DEVOUR_FLAKE");
 
-pub struct DevourFlakeOutput(pub HashSet<DrvOut>);
+pub struct DevourFlakeOutput(pub HashSet<StorePath>);
 
 impl FromStr for DevourFlakeOutput {
     type Err = anyhow::Error;
@@ -21,7 +19,7 @@ impl FromStr for DevourFlakeOutput {
         // Read output_filename, as newline separated strings
         let raw_output = std::fs::read_to_string(output_filename)?;
         let outs = raw_output.split_ascii_whitespace();
-        let outs: HashSet<DrvOut> = outs.map(|s| DrvOut(PathBuf::from(s))).collect();
+        let outs: HashSet<StorePath> = outs.map(|s| StorePath::new(PathBuf::from(s))).collect();
         if outs.is_empty() {
             bail!(
                 "devour-flake produced an outpath ({}) with no outputs",

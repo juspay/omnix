@@ -6,16 +6,6 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use tokio::process::Command;
 
-/// Nix derivation output path
-#[derive(Debug, Ord, PartialOrd, Eq, PartialEq, Clone, Hash)]
-pub struct DrvOut(pub PathBuf);
-
-impl DrvOut {
-    pub fn as_store_path(self) -> StorePath {
-        StorePath::Other(self.0)
-    }
-}
-
 /// Represents a path in the Nix store, see: <https://zero-to-nix.com/concepts/nix-store#store-paths>
 #[derive(Debug, Ord, PartialOrd, Eq, PartialEq, Clone, Hash)]
 pub enum StorePath {
@@ -63,9 +53,9 @@ impl NixStoreCmd {
 }
 
 impl NixStoreCmd {
-    /// Fetch all build and runtime dependencies of given [DrvOut]s
+    /// Fetch all build and runtime dependencies of given derivation outputs.
     ///
-    /// This is done by querying the deriver of each output path from [DrvOut]
+    /// This is done by querying the deriver of each derivation output
     /// using [NixStoreCmd::nix_store_query_deriver] and then querying all
     /// dependencies of each deriver using
     /// [NixStoreCmd::nix_store_query_requisites_with_outputs].  Finally, all
@@ -73,19 +63,16 @@ impl NixStoreCmd {
     /// `Vec<StorePath>`.
     pub async fn fetch_all_deps(
         &self,
-        out_paths: Vec<DrvOut>,
+        out_paths: Vec<StorePath>,
     ) -> Result<Vec<StorePath>, NixStoreCmdError> {
         let mut all_drvs = Vec::new();
         for out in out_paths.iter() {
-            let DrvOut(out_path) = out;
-            let drv = self.nix_store_query_deriver(out_path.clone()).await?;
+            let drv = self.nix_store_query_deriver(out.clone()).await?;
             all_drvs.push(drv);
         }
         let mut all_outs = Vec::new();
         for drv in all_drvs {
-            let deps = self
-                .nix_store_query_requisites_with_outputs(drv.clone())
-                .await?;
+            let deps = self.nix_store_query_requisites_with_outputs(drv).await?;
             all_outs.extend(deps.into_iter());
         }
         Ok(all_outs)
@@ -94,13 +81,13 @@ impl NixStoreCmd {
     /// Return the derivation used to build the given build output.
     pub async fn nix_store_query_deriver(
         &self,
-        out_path: PathBuf,
-    ) -> Result<DrvOut, NixStoreCmdError> {
+        out_path: StorePath,
+    ) -> Result<PathBuf, NixStoreCmdError> {
         let mut cmd = self.command();
         cmd.args([
             "--query",
             "--valid-derivers",
-            out_path.to_string_lossy().as_ref(),
+            out_path.as_path().to_string_lossy().as_ref(),
         ]);
         crate::command::trace_cmd(&cmd);
         let out = cmd.output().await?;
@@ -109,7 +96,7 @@ impl NixStoreCmd {
             if drv_path == "unknown-deriver" {
                 return Err(NixStoreCmdError::UnknownDeriver);
             }
-            Ok(DrvOut(PathBuf::from(drv_path)))
+            Ok(PathBuf::from(drv_path))
         } else {
             // TODO(refactor): When upstreaming this module to nix-rs, create a
             // nicer and unified way to create `ProcessFailed`
@@ -119,18 +106,18 @@ impl NixStoreCmd {
         }
     }
 
-    /// Given a [StorePath::Drv], this function recursively queries and return all
+    /// Given a derivation path, this function recursively queries and return all
     /// of its dependencies in the Nix store.
     pub async fn nix_store_query_requisites_with_outputs(
         &self,
-        drv_path: DrvOut,
+        drv_path: PathBuf,
     ) -> Result<Vec<StorePath>, NixStoreCmdError> {
         let mut cmd = self.command();
         cmd.args([
             "--query",
             "--requisites",
             "--include-outputs",
-            drv_path.0.to_string_lossy().as_ref(),
+            drv_path.to_string_lossy().as_ref(),
         ]);
         crate::command::trace_cmd(&cmd);
         let out = cmd.output().await?;
