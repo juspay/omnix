@@ -56,7 +56,7 @@ impl BuildCommand {
         &self,
         nixcmd: &NixCmd,
         verbose: bool,
-        cfg: config::Config,
+        cfg: config::core::Config,
     ) -> anyhow::Result<Vec<StorePath>> {
         tracing::info!("{}", format!("\n👟 Gathering NixInfo").bold());
         let nix_info = NixInfo::get()

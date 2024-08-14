@@ -1,7 +1,7 @@
 use nix_rs::flake::system::System;
 use serde::{Deserialize, Serialize};
 
-use crate::config::SubflakesConfig;
+use crate::config::subflakes::SubflakesConfig;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct GitHubMatrixRow {

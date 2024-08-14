@@ -1,7 +1,5 @@
 use std::collections::HashSet;
 
-use crate::nix::devour_flake::DevourFlakeOutput;
-use crate::{command::build::BuildCommand, config::SubflakeConfig};
 use colored::Colorize;
 use nix_rs::{
     command::NixCmd,
@@ -11,13 +9,18 @@ use nix_rs::{
 };
 use tracing::instrument;
 
-use crate::{config, nix};
+use crate::{
+    command::build::BuildCommand,
+    config::{core::Config, subflake::SubflakeConfig},
+    nix,
+    nix::devour_flake::DevourFlakeOutput,
+};
 
 pub async fn nixci_build(
     cmd: &NixCmd,
     verbose: bool,
     build_cmd: &BuildCommand,
-    cfg: &config::Config,
+    cfg: &Config,
     nix_config: &NixConfig,
 ) -> anyhow::Result<Vec<StorePath>> {
     let mut all_outs = HashSet::new();
@@ -48,7 +51,7 @@ async fn nixci_subflakes(
     cmd: &NixCmd,
     verbose: bool,
     build_cmd: &BuildCommand,
-    cfg: &config::Config,
+    cfg: &Config,
     nix_config: &NixConfig,
 ) -> anyhow::Result<HashSet<DrvOut>> {
     let mut result = HashSet::new();
@@ -91,7 +94,7 @@ async fn nixci_subflake(
     build_cmd: &BuildCommand,
     url: &FlakeUrl,
     subflake_name: &str,
-    subflake: &config::SubflakeConfig,
+    subflake: &SubflakeConfig,
 ) -> anyhow::Result<DevourFlakeOutput> {
     if subflake.override_inputs.is_empty() {
         nix::lock::nix_flake_lock_check(cmd, &url.sub_flake_url(subflake.dir.clone())).await?;

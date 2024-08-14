@@ -1,14 +1,10 @@
-use std::collections::BTreeMap;
-
 use anyhow::Result;
 use nix_rs::{
     command::NixCmd,
-    flake::{
-        system::System,
-        url::{qualified_attr::RootQualifiedAttr, FlakeUrl},
-    },
+    flake::url::{qualified_attr::RootQualifiedAttr, FlakeUrl},
 };
-use serde::Deserialize;
+
+use super::{ref_::ConfigRef, subflakes::SubflakesConfig};
 
 /// The nixci configuration encoded in flake.nix
 ///
@@ -27,19 +23,6 @@ pub struct Config {
 
     /// The reference used by the user to select the configuration
     pub ref_: ConfigRef,
-}
-
-/// A reference into one or all [SubflakesConfig] of some [FlakeUrl]
-#[derive(Debug)]
-pub struct ConfigRef {
-    /// The flake itself
-    pub flake_url: FlakeUrl,
-
-    /// The name of the nixci configuration (`omci.<name>`) selected
-    pub selected_name: String,
-
-    /// The selected sub-flake name if any.
-    pub selected_subflake: Option<String>,
 }
 
 impl Config {
@@ -78,66 +61,6 @@ impl Config {
         };
         let cfg = Config { subflakes, ref_ };
         Ok(cfg)
-    }
-}
-
-#[derive(Debug, Deserialize)]
-pub struct SubflakesConfig(
-    // NB: we use BTreeMap instead of HashMap here so that we always iterate
-    // configs in a determinitstic (i.e. asciibetical) order
-    pub BTreeMap<String, SubflakeConfig>,
-);
-
-impl Default for SubflakesConfig {
-    /// Default value contains a single entry for the root flake.
-    fn default() -> Self {
-        let mut subflakes = BTreeMap::new();
-        subflakes.insert("<root>".to_string(), SubflakeConfig::default());
-        SubflakesConfig(subflakes)
-    }
-}
-
-/// Represents a sub-flake look-alike.
-///
-/// "Look-alike" because its inputs may be partial, thus requiring explicit
-/// --override-inputs when evaluating the flake.
-#[derive(Debug, Deserialize)]
-pub struct SubflakeConfig {
-    /// Whether to skip building this subflake
-    #[serde(default)]
-    pub skip: bool,
-
-    /// Subdirectory in which the flake lives
-    pub dir: String,
-
-    /// Inputs to override (via --override-input)
-    // NB: we use BTreeMap instead of HashMap here so that we always iterate
-    // inputs in a determinitstic (i.e. asciibetical) order
-    #[serde(rename = "overrideInputs", default)]
-    pub override_inputs: BTreeMap<String, FlakeUrl>,
-
-    /// An optional whitelist of systems to build on (others are ignored)
-    pub systems: Option<Vec<System>>,
-}
-
-impl Default for SubflakeConfig {
-    /// The default `SubflakeConfig` is the root flake.
-    fn default() -> Self {
-        SubflakeConfig {
-            skip: false,
-            dir: ".".to_string(),
-            override_inputs: BTreeMap::default(),
-            systems: None,
-        }
-    }
-}
-
-impl SubflakeConfig {
-    pub fn can_build_on(&self, systems: &[System]) -> bool {
-        match self.systems.as_ref() {
-            Some(systems_whitelist) => systems_whitelist.iter().any(|s| systems.contains(s)),
-            None => true,
-        }
     }
 }
 

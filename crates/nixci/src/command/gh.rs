@@ -1,7 +1,7 @@
 use clap::Parser;
 use nix_rs::flake::system::System;
 
-use crate::{config, flake_ref::FlakeRef, github};
+use crate::{config::core::Config, flake_ref::FlakeRef, github};
 
 #[derive(Parser, Debug, Clone)]
 pub struct GHMatrixCommand {
@@ -18,7 +18,7 @@ pub struct GHMatrixCommand {
 }
 
 impl GHMatrixCommand {
-    pub async fn run(&self, cfg: config::Config) -> anyhow::Result<()> {
+    pub async fn run(&self, cfg: Config) -> anyhow::Result<()> {
         let matrix = github::matrix::GitHubMatrix::from(self.systems.clone(), &cfg.subflakes);
         println!("{}", serde_json::to_string(&matrix)?);
         Ok(())
