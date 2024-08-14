@@ -119,7 +119,7 @@ fn nix_build_args_for_subflake(
     }
 
     // devour-flake already uses this, so no need to override.
-    if build_cmd.systems.0 .0 != "github-nix-systems/empty" {
+    if build_cmd.systems.0 .0 != "github:nix-systems/empty" {
         args.extend_from_slice(&[
             "--override-input".to_string(),
             "systems".to_string(),
