@@ -4,12 +4,16 @@ use colored::Colorize;
 use nix_rs::{command::NixCmd, config::NixConfig, flake::system::System, info::NixInfo};
 
 use crate::{
-    config,
+    config::core::Config,
     flake_ref::FlakeRef,
-    nix::system_list::{SystemsList, SystemsListFlakeRef},
+    nix::{
+        devour_flake,
+        system_list::{SystemsList, SystemsListFlakeRef},
+    },
     step,
 };
 
+/// Build all outputs of a flake
 #[derive(Parser, Debug, Clone)]
 pub struct BuildCommand {
     /// The systems list to build for. If empty, build for current system.
@@ -50,33 +54,43 @@ impl Default for BuildCommand {
 }
 
 impl BuildCommand {
-    pub async fn run(
-        &self,
-        nixcmd: &NixCmd,
-        verbose: bool,
-        cfg: config::core::Config,
-    ) -> anyhow::Result<()> {
+    pub fn preprocess(&mut self) {
+        // Adjust to devour_flake's expectations
+        devour_flake::transform_override_inputs(&mut self.extra_nix_build_args);
+    }
+
+    /// Run the build command
+    pub async fn run(&self, nixcmd: &NixCmd, verbose: bool, cfg: Config) -> anyhow::Result<()> {
+        // TODO: We'll refactor this function to use steps
+        // https://github.com/juspay/omnix/issues/216
+
         tracing::info!("{}", format!("\n👟 Gathering NixInfo").bold());
         let nix_info = NixInfo::get()
             .await
             .as_ref()
             .with_context(|| "Unable to gather nix info")?;
+
         // First, run the necessary health checks
         tracing::info!("{}", format!("\n🫀 Performing health check").bold());
         step::nix_version::check_nix_version(&cfg.ref_.flake_url, &nix_info).await?;
+
         // Then, do the build
         tracing::info!("{}", format!("\n🍏 Building {}", self.flake_ref).bold());
         let outs =
             step::build::build_flake(nixcmd, verbose, &self, &cfg, &nix_info.nix_config).await?;
+
+        // Print the outputs
         for out in &outs {
             println!("{}", out);
         }
         Ok(())
     }
 
+    /// Get the systems to build for
     pub async fn get_systems(&self, cmd: &NixCmd, nix_config: &NixConfig) -> Result<Vec<System>> {
         let systems = SystemsList::from_flake(cmd, &self.systems).await?.0;
         if systems.is_empty() {
+            // An empty systems list means build for the current system
             let current_system = &nix_config.system.value;
             Ok(vec![current_system.clone()])
         } else {

@@ -3,6 +3,7 @@ use nix_rs::flake::system::System;
 
 use crate::{config::core::Config, flake_ref::FlakeRef, github};
 
+/// Print the Github Actions matrix configuration as JSON
 #[derive(Parser, Debug, Clone)]
 pub struct GHMatrixCommand {
     /// Flake URL or github URL

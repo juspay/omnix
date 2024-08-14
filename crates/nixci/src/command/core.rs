@@ -3,16 +3,14 @@ use colored::Colorize;
 use nix_rs::command::NixCmd;
 use tracing::instrument;
 
-use crate::{config::core::Config, flake_ref::FlakeRef, github, nix::devour_flake};
+use crate::{config::core::Config, flake_ref::FlakeRef};
 
 use super::{build::BuildCommand, gh::GHMatrixCommand};
 
 #[derive(Debug, Subcommand, Clone)]
 pub enum Command {
-    /// Build all outputs of a flake
     Build(BuildCommand),
 
-    /// Print the Github Actions matrix configuration as JSON
     #[clap(name = "gh-matrix")]
     DumpGithubActionsMatrix(GHMatrixCommand),
 }
@@ -26,9 +24,8 @@ impl Default for Command {
 impl Command {
     // Pre-process `Command`
     pub fn preprocess(&mut self) {
-        // Adjust to devour_flake's expectations
-        if let Command::Build(build_cfg) = self {
-            devour_flake::transform_override_inputs(&mut build_cfg.extra_nix_build_args);
+        if let Command::Build(cmd) = self {
+            cmd.preprocess()
         }
     }
 
@@ -38,12 +35,7 @@ impl Command {
         let cfg = self.get_config(nixcmd).await?;
         match self {
             Command::Build(cmd) => cmd.run(nixcmd, verbose, cfg).await,
-            Command::DumpGithubActionsMatrix(cmd) => {
-                let matrix =
-                    github::matrix::GitHubMatrix::from(cmd.systems.clone(), &cfg.subflakes);
-                println!("{}", serde_json::to_string(&matrix)?);
-                Ok(())
-            }
+            Command::DumpGithubActionsMatrix(cmd) => cmd.run(cfg).await,
         }
     }
 
