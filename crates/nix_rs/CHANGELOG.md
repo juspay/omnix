@@ -6,6 +6,8 @@
   - Add `without_attr`, `get_attr`
   - Simplify the return type of `RootQualifiedAttr::eval_flake`
 - **`store`**: Add module (upstreamed from nixci)
+- **`env`**:
+  - `NixEnv::detect`'s logging uses DEBUG level now (formerly INFO)
 
 ## 1.0.0
 
