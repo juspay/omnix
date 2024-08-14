@@ -68,7 +68,7 @@ impl BuildCommand {
         step::nix_version::check_nix_version(&cfg.ref_.flake_url, &nix_info).await?;
         // Then, do the build
         tracing::info!("{}", format!("\n🍏 Building {}", self.flake_ref).bold());
-        step::build::nixci_build(nixcmd, verbose, &self, &cfg, &nix_info.nix_config).await
+        step::build::build_flake(nixcmd, verbose, &self, &cfg, &nix_info.nix_config).await
     }
 
     pub async fn get_systems(&self, cmd: &NixCmd, nix_config: &NixConfig) -> Result<Vec<System>> {
