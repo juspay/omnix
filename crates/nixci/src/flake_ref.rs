@@ -1,4 +1,7 @@
-use std::str::FromStr;
+use std::{
+    fmt::{Display, Formatter},
+    str::FromStr,
+};
 
 use anyhow::Result;
 use nix_rs::flake::url::FlakeUrl;
@@ -24,6 +27,15 @@ impl FromStr for FlakeRef {
             None => FlakeRef::Flake(FlakeUrl(s.to_string())),
         };
         Ok(flake_ref)
+    }
+}
+
+impl Display for FlakeRef {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            FlakeRef::GithubPR(pr) => write!(f, "{}", pr),
+            FlakeRef::Flake(url) => write!(f, "{}", url),
+        }
     }
 }
 

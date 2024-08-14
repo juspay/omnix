@@ -38,9 +38,10 @@ impl Command {
 
     #[instrument(name = "run", skip(self))]
     pub async fn run(self, nixcmd: &NixCmd, verbose: bool) -> anyhow::Result<Vec<StorePath>> {
+        let cfg = self.get_config(nixcmd).await?;
         match self {
             Command::Build(cmd) => {
-                let cfg = Self::get_config(nixcmd, &cmd.flake_ref).await?;
+                tracing::info!("{}", format!("🍏 Building {}", cmd.flake_ref).bold());
                 let nix_config = NixConfig::get().await.as_ref()?;
                 let nix_info = NixInfo::new(nix_config.clone())
                     .await
@@ -51,7 +52,6 @@ impl Command {
                 step::build::nixci_build(nixcmd, verbose, &cmd, &cfg, &nix_info.nix_config).await
             }
             Command::DumpGithubActionsMatrix(cmd) => {
-                let cfg = Self::get_config(nixcmd, &cmd.flake_ref).await?;
                 let matrix =
                     github::matrix::GitHubMatrix::from(cmd.systems.clone(), &cfg.subflakes);
                 println!("{}", serde_json::to_string(&matrix)?);
@@ -61,12 +61,19 @@ impl Command {
     }
 
     /// Get the nixci [config::Config] associated with this subcommand
-    pub async fn get_config(cmd: &NixCmd, flake_ref: &FlakeRef) -> anyhow::Result<config::Config> {
-        let url = flake_ref.to_flake_url().await?;
-        tracing::info!("{}", format!("🍏 Building {}", url.0).bold());
+    async fn get_config(&self, cmd: &NixCmd) -> anyhow::Result<config::Config> {
+        let url = self.get_flake_ref().to_flake_url().await?;
         let cfg = config::Config::from_flake_url(cmd, &url).await?;
         tracing::debug!("Config: {cfg:?}");
         Ok(cfg)
+    }
+
+    /// Get the flake ref associated with this subcommand
+    fn get_flake_ref(&self) -> FlakeRef {
+        match self {
+            Command::Build(cmd) => cmd.flake_ref.clone(),
+            Command::DumpGithubActionsMatrix(cmd) => cmd.flake_ref.clone(),
+        }
     }
 }
 
