@@ -25,6 +25,7 @@ pub async fn build_flake(
 ) -> anyhow::Result<Vec<StorePath>> {
     let all_devour_flake_outs = build_subflakes(cmd, verbose, build_cmd, cfg, nix_config).await?;
 
+    // Handle --print-all-dependencies
     let all_outs: HashSet<StorePath> = if build_cmd.print_all_dependencies {
         NixStoreCmd
             .fetch_all_deps(all_devour_flake_outs.into_iter().collect())
@@ -37,10 +38,6 @@ pub async fn build_flake(
             .map(DrvOut::as_store_path)
             .collect()
     };
-
-    for out in &all_outs {
-        println!("{}", out);
-    }
 
     Ok(all_outs.into_iter().collect())
 }

@@ -1,9 +1,7 @@
 use anyhow::{Context, Result};
 use clap::Parser;
 use colored::Colorize;
-use nix_rs::{
-    command::NixCmd, config::NixConfig, flake::system::System, info::NixInfo, store::StorePath,
-};
+use nix_rs::{command::NixCmd, config::NixConfig, flake::system::System, info::NixInfo};
 
 use crate::{
     config,
@@ -57,7 +55,7 @@ impl BuildCommand {
         nixcmd: &NixCmd,
         verbose: bool,
         cfg: config::core::Config,
-    ) -> anyhow::Result<Vec<StorePath>> {
+    ) -> anyhow::Result<()> {
         tracing::info!("{}", format!("\n👟 Gathering NixInfo").bold());
         let nix_info = NixInfo::get()
             .await
@@ -68,7 +66,12 @@ impl BuildCommand {
         step::nix_version::check_nix_version(&cfg.ref_.flake_url, &nix_info).await?;
         // Then, do the build
         tracing::info!("{}", format!("\n🍏 Building {}", self.flake_ref).bold());
-        step::build::build_flake(nixcmd, verbose, &self, &cfg, &nix_info.nix_config).await
+        let outs =
+            step::build::build_flake(nixcmd, verbose, &self, &cfg, &nix_info.nix_config).await?;
+        for out in &outs {
+            println!("{}", out);
+        }
+        Ok(())
     }
 
     pub async fn get_systems(&self, cmd: &NixCmd, nix_config: &NixConfig) -> Result<Vec<System>> {

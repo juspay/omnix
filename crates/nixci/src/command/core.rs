@@ -1,6 +1,6 @@
 use clap::Subcommand;
 use colored::Colorize;
-use nix_rs::{command::NixCmd, store::StorePath};
+use nix_rs::command::NixCmd;
 use tracing::instrument;
 
 use crate::{config::core::Config, flake_ref::FlakeRef, github, nix::devour_flake};
@@ -33,7 +33,7 @@ impl Command {
     }
 
     #[instrument(name = "run", skip(self))]
-    pub async fn run(self, nixcmd: &NixCmd, verbose: bool) -> anyhow::Result<Vec<StorePath>> {
+    pub async fn run(self, nixcmd: &NixCmd, verbose: bool) -> anyhow::Result<()> {
         tracing::info!("{}", format!("\n👟 Reading om.ci config from flake").bold());
         let cfg = self.get_config(nixcmd).await?;
         match self {
@@ -42,7 +42,7 @@ impl Command {
                 let matrix =
                     github::matrix::GitHubMatrix::from(cmd.systems.clone(), &cfg.subflakes);
                 println!("{}", serde_json::to_string(&matrix)?);
-                Ok(vec![])
+                Ok(())
             }
         }
     }
