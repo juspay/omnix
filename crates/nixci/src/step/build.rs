@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
-use crate::command::build::BuildCommand;
 use crate::nix::devour_flake::DevourFlakeOutput;
+use crate::{command::build::BuildCommand, config::SubflakeConfig};
 use colored::Colorize;
 use nix_rs::{
     command::NixCmd,
@@ -97,7 +97,42 @@ async fn nixci_subflake(
         nix::lock::nix_flake_lock_check(cmd, &url.sub_flake_url(subflake.dir.clone())).await?;
     }
 
-    let nix_args = subflake.nix_build_args_for_flake(build_cmd, url);
+    let nix_args = nix_build_args_for_subflake(subflake, build_cmd, url);
     let outs = nix::devour_flake::devour_flake(cmd, verbose, nix_args).await?;
     Ok(outs)
+}
+
+/// Return the devour-flake `nix build` arguments for building all the outputs in this
+/// subflake configuration.
+pub fn nix_build_args_for_subflake(
+    subflake: &SubflakeConfig,
+    build_cmd: &BuildCommand,
+    flake_url: &FlakeUrl,
+) -> Vec<String> {
+    let systems_flake_url = build_cmd.systems.0.clone();
+    std::iter::once(flake_url.sub_flake_url(subflake.dir.clone()).0)
+        .chain(subflake.override_inputs.iter().flat_map(|(k, v)| {
+            [
+                "--override-input".to_string(),
+                // We must prefix the input with "flake" because
+                // devour-flake uses that input name to refer to the user's
+                // flake.
+                format!("flake/{}", k),
+                v.0.to_string(),
+            ]
+        }))
+        .chain(
+            if systems_flake_url.0 == "github:nix-systems/empty".to_string() {
+                // devour-flake already uses this, so no need to override.
+                vec![]
+            } else {
+                vec![
+                    "--override-input".to_string(),
+                    "systems".to_string(),
+                    systems_flake_url.0,
+                ]
+            },
+        )
+        .chain(build_cmd.extra_nix_build_args.iter().cloned())
+        .collect()
 }

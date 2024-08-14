@@ -10,8 +10,6 @@ use nix_rs::{
 };
 use serde::Deserialize;
 
-use crate::command::build::BuildCommand;
-
 /// The nixci configuration encoded in flake.nix
 ///
 /// Example flake.nix:
@@ -140,41 +138,6 @@ impl SubflakeConfig {
             Some(systems_whitelist) => systems_whitelist.iter().any(|s| systems.contains(s)),
             None => true,
         }
-    }
-
-    /// Return the devour-flake `nix build` arguments for building all the outputs in this
-    /// subflake configuration.
-    pub fn nix_build_args_for_flake(
-        &self,
-        build_cfg: &BuildCommand,
-        flake_url: &FlakeUrl,
-    ) -> Vec<String> {
-        let systems_flake_url = build_cfg.systems.0.clone();
-        std::iter::once(flake_url.sub_flake_url(self.dir.clone()).0)
-            .chain(self.override_inputs.iter().flat_map(|(k, v)| {
-                [
-                    "--override-input".to_string(),
-                    // We must prefix the input with "flake" because
-                    // devour-flake uses that input name to refer to the user's
-                    // flake.
-                    format!("flake/{}", k),
-                    v.0.to_string(),
-                ]
-            }))
-            .chain(
-                if systems_flake_url.0 == "github:nix-systems/empty".to_string() {
-                    // devour-flake already uses this, so no need to override.
-                    vec![]
-                } else {
-                    vec![
-                        "--override-input".to_string(),
-                        "systems".to_string(),
-                        systems_flake_url.0,
-                    ]
-                },
-            )
-            .chain(build_cfg.extra_nix_build_args.iter().cloned())
-            .collect()
     }
 }
 
