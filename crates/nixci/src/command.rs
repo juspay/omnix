@@ -41,19 +41,7 @@ impl Command {
         tracing::info!("{}", format!("\n👟 Reading om.ci config from flake").bold());
         let cfg = self.get_config(nixcmd).await?;
         match self {
-            Command::Build(cmd) => {
-                tracing::info!("{}", format!("\n👟 Gathering NixInfo").bold());
-                let nix_info = NixInfo::get()
-                    .await
-                    .as_ref()
-                    .with_context(|| "Unable to gather nix info")?;
-                // First, run the necessary health checks
-                tracing::info!("{}", format!("\n🫀 Performing health check").bold());
-                step::nix_version::check_nix_version(&cfg.ref_.flake_url, &nix_info).await?;
-                // Then, do the build
-                tracing::info!("{}", format!("\n🍏 Building {}", cmd.flake_ref).bold());
-                step::build::nixci_build(nixcmd, verbose, &cmd, &cfg, &nix_info.nix_config).await
-            }
+            Command::Build(cmd) => cmd.run(nixcmd, verbose, cfg).await,
             Command::DumpGithubActionsMatrix(cmd) => {
                 let matrix =
                     github::matrix::GitHubMatrix::from(cmd.systems.clone(), &cfg.subflakes);
@@ -114,6 +102,25 @@ pub struct BuildCommand {
 }
 
 impl BuildCommand {
+    pub async fn run(
+        &self,
+        nixcmd: &NixCmd,
+        verbose: bool,
+        cfg: config::Config,
+    ) -> anyhow::Result<Vec<StorePath>> {
+        tracing::info!("{}", format!("\n👟 Gathering NixInfo").bold());
+        let nix_info = NixInfo::get()
+            .await
+            .as_ref()
+            .with_context(|| "Unable to gather nix info")?;
+        // First, run the necessary health checks
+        tracing::info!("{}", format!("\n🫀 Performing health check").bold());
+        step::nix_version::check_nix_version(&cfg.ref_.flake_url, &nix_info).await?;
+        // Then, do the build
+        tracing::info!("{}", format!("\n🍏 Building {}", self.flake_ref).bold());
+        step::build::nixci_build(nixcmd, verbose, &self, &cfg, &nix_info.nix_config).await
+    }
+
     pub async fn get_systems(&self, cmd: &NixCmd, nix_config: &NixConfig) -> Result<Vec<System>> {
         let systems = SystemsList::from_flake(cmd, &self.systems).await?.0;
         if systems.is_empty() {
@@ -137,4 +144,12 @@ pub struct GHMatrixCommand {
     /// Systems to include in the matrix
     #[arg(long, value_parser, value_delimiter = ',')]
     pub systems: Vec<System>,
+}
+
+impl GHMatrixCommand {
+    pub async fn run(&self, cfg: config::Config) -> anyhow::Result<()> {
+        let matrix = github::matrix::GitHubMatrix::from(self.systems.clone(), &cfg.subflakes);
+        println!("{}", serde_json::to_string(&matrix)?);
+        Ok(())
+    }
 }
