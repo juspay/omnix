@@ -1,7 +1,7 @@
 use clap::Parser;
 use clap_verbosity_flag::{InfoLevel, Level, Verbosity};
 use nix_rs::command::NixCmd;
-use nixci::command::{BuildCommand, Command};
+use nixci::command::{build::BuildCommand, core::Command};
 
 /// Build all outputs of the flake
 #[derive(Parser, Debug)]

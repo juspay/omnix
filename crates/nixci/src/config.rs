@@ -10,7 +10,7 @@ use nix_rs::{
 };
 use serde::Deserialize;
 
-use crate::command::BuildCommand;
+use crate::command::build::BuildCommand;
 
 /// The nixci configuration encoded in flake.nix
 ///

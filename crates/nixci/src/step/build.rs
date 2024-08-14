@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use crate::command::BuildCommand;
+use crate::command::build::BuildCommand;
 use crate::nix::devour_flake::DevourFlakeOutput;
 use colored::Colorize;
 use nix_rs::{
