@@ -1,3 +1,4 @@
+//! Dealing with system lists
 use std::str::FromStr;
 
 use anyhow::Result;
@@ -29,9 +30,11 @@ impl FromStr for SystemsListFlakeRef {
     }
 }
 
+/// A list of [System]s
 pub struct SystemsList(pub Vec<System>);
 
 impl SystemsList {
+    /// Load the list of systems defined in a flake
     pub async fn from_flake(cmd: &NixCmd, url: &SystemsListFlakeRef) -> Result<Self> {
         // Nix eval, and then return the systems
         match SystemsList::from_known_flake(url) {
@@ -67,6 +70,7 @@ impl SystemsList {
     }
 }
 
+/// Evaluate `import <flake-url>` and return the result JSON parsed.
 pub async fn nix_import_flake<T>(cmd: &NixCmd, url: &FlakeUrl) -> Result<T, NixCmdError>
 where
     T: Default + serde::de::DeserializeOwned,

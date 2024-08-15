@@ -56,7 +56,9 @@ impl PullRequestRef {
 /// Github Pull Request API Response
 #[derive(Debug, Deserialize)]
 pub struct PullRequest {
+    /// PR URL
     pub url: String,
+    /// [Head] info
     pub head: Head,
 }
 
@@ -64,7 +66,9 @@ pub struct PullRequest {
 #[derive(Debug, Deserialize)]
 pub struct Head {
     #[serde(rename = "ref")]
+    /// Head ref
     pub ref_: String,
+    /// Head [Repo]
     pub repo: Repo,
 }
 

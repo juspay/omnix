@@ -1,3 +1,4 @@
+//! The nixci commands
 use clap::Subcommand;
 use colored::Colorize;
 use nix_rs::command::NixCmd;
@@ -7,10 +8,13 @@ use crate::{config::core::Config, flake_ref::FlakeRef};
 
 use super::{gh_matrix::GHMatrixCommand, run::RunCommand};
 
+/// Top-level commands for `om ci`
 #[derive(Debug, Subcommand, Clone)]
 pub enum Command {
+    /// Run all CI steps for all or given subflakes
     Run(RunCommand),
 
+    /// Print the Github Actions matrix configuration as JSON
     #[clap(name = "gh-matrix")]
     DumpGithubActionsMatrix(GHMatrixCommand),
 }
@@ -22,16 +26,17 @@ impl Default for Command {
 }
 
 impl Command {
-    // Pre-process `Command`
+    /// Pre-process `Command`
     pub fn preprocess(&mut self) {
         if let Command::Run(cmd) = self {
             cmd.preprocess()
         }
     }
 
+    /// Run the command
     #[instrument(name = "run", skip(self))]
     pub async fn run(self, nixcmd: &NixCmd, verbose: bool) -> anyhow::Result<()> {
-        tracing::info!("{}", format!("\n👟 Reading om.ci config from flake").bold());
+        tracing::info!("{}", "\n👟 Reading om.ci config from flake".bold());
         let cfg = self.get_config(nixcmd).await?;
         match self {
             Command::Run(cmd) => match &cmd.steps_args.build_step_args.on {

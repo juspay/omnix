@@ -1,5 +1,4 @@
-use std::path::PathBuf;
-
+//! The run command
 use anyhow::{Context, Result};
 use clap::Parser;
 use colored::Colorize;
@@ -10,6 +9,7 @@ use nix_rs::{
     flake::{system::System, url::FlakeUrl},
     info::NixInfo,
 };
+use std::path::PathBuf;
 
 use crate::{
     config::core::Config,
@@ -24,6 +24,7 @@ use crate::{
 pub const OMNIX_SOURCE: &str = env!("OMNIX_SOURCE");
 
 /// Run all CI steps for all or given subflakes
+/// Command to run all CI steps
 #[derive(Parser, Debug, Clone)]
 pub struct RunCommand {
     /// The systems list to build for. If empty, build for current system.
@@ -41,6 +42,7 @@ pub struct RunCommand {
     #[arg(default_value = ".")]
     pub flake_ref: FlakeRef,
 
+    /// Arguments for all steps
     #[command(flatten)]
     pub steps_args: crate::step::core::StepsArgs,
 }
@@ -52,6 +54,7 @@ impl Default for RunCommand {
 }
 
 impl RunCommand {
+    /// Preprocess this command
     pub fn preprocess(&mut self) {
         self.steps_args.build_step_args.preprocess();
     }
@@ -61,27 +64,27 @@ impl RunCommand {
         // TODO: We'll refactor this function to use steps
         // https://github.com/juspay/omnix/issues/216
 
-        tracing::info!("{}", format!("\n👟 Gathering NixInfo").bold());
+        tracing::info!("{}", "\n👟 Gathering NixInfo".bold());
         let nix_info = NixInfo::get()
             .await
             .as_ref()
             .with_context(|| "Unable to gather nix info")?;
 
         // First, run the necessary health checks
-        tracing::info!("{}", format!("\n🫀 Performing health check").bold());
-        check_nix_version(&cfg.ref_.flake_url, &nix_info).await?;
+        tracing::info!("{}", "\n🫀 Performing health check".bold());
+        check_nix_version(&cfg.ref_.flake_url, nix_info).await?;
 
         // Then, do the CI steps
         tracing::info!(
             "{}",
             format!("\n🤖 Running CI for {}", self.flake_ref).bold()
         );
-        ci_run(nixcmd, verbose, &self, &cfg, &nix_info.nix_config).await?;
+        ci_run(nixcmd, verbose, self, &cfg, &nix_info.nix_config).await?;
 
         Ok(())
     }
 
-    /// Runs the ci build command on remote
+    /// Run the ci run command on remote
     pub async fn run_remote(
         &self,
         nixcmd: &NixCmd,
@@ -133,7 +136,7 @@ pub async fn check_nix_version(flake_url: &FlakeUrl, nix_info: &NixInfo) -> anyh
     Ok(())
 }
 
-// Run CI fo all subflakes
+/// Run CI fo all subflakes
 pub async fn ci_run(
     cmd: &NixCmd,
     verbose: bool,

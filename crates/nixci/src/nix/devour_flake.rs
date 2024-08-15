@@ -10,6 +10,7 @@ use tokio::io::{AsyncBufReadExt, BufReader};
 /// We expect this environment to be set in Nix build and shell.
 pub const DEVOUR_FLAKE: &str = env!("DEVOUR_FLAKE");
 
+/// Output of `devour-flake` command
 pub struct DevourFlakeOutput(pub HashSet<StorePath>);
 
 impl FromStr for DevourFlakeOutput {
@@ -31,6 +32,7 @@ impl FromStr for DevourFlakeOutput {
     }
 }
 
+/// Run `devour-flake` command
 pub async fn devour_flake(
     nixcmd: &NixCmd,
     verbose: bool,
