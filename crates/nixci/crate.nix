@@ -8,6 +8,7 @@ let
   inherit (flake) inputs;
 in
 {
+  autoWire = true;
   crane = {
     args = {
       nativeBuildInputs = with pkgs; with pkgs.apple_sdk_frameworks; lib.optionals stdenv.isDarwin [
@@ -27,6 +28,8 @@ in
         pkgs.openssl
       ];
       DEVOUR_FLAKE = inputs.devour-flake;
+      NIX_FLAKE_SCHEMAS_BIN = lib.getExe pkgs.nix-flake-schemas;
+      DEFAULT_FLAKE_SCHEMAS = inputs.flake-schemas;
     };
   };
 }
