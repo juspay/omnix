@@ -1,6 +1,6 @@
 use nix_rs::flake::url::FlakeUrl;
 
-/// A reference into one or all [SubflakesConfig] of some [FlakeUrl]
+/// A reference into one or all [crate::config::subflakes::SubflakesConfig] of some [FlakeUrl]
 #[derive(Debug)]
 pub struct ConfigRef {
     /// The flake itself

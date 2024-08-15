@@ -1,5 +1,7 @@
 ## Unreleased
 
+- New
+  - Introduced notion of 'steps'. Renamed 'build' to 'run'.
 - `config.rs`: Refactored to change API.
 
 ## 1.1.0

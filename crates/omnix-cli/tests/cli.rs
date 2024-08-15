@@ -94,15 +94,15 @@ mod om_ci_tests {
     use nix_rs::store::StorePath;
     use regex::Regex;
 
-    /// Run `om ci build` passing given arguments, returning its stdout (parsed).
-    async fn om_ci_build(args: &[&str]) -> anyhow::Result<Vec<StorePath>> {
+    /// Run `om ci run` passing given arguments, returning its stdout (parsed).
+    async fn om_ci_run(args: &[&str]) -> anyhow::Result<Vec<StorePath>> {
         let mut cmd = crate::om()?;
-        cmd.arg("ci").arg("build").args(args);
+        cmd.arg("ci").arg("run").args(args);
 
         let output = cmd.output()?;
         if !output.status.success() {
             bail!(
-                "Failed to run `om ci build`:\n{}",
+                "Failed to run `om ci run`:\n{}",
                 String::from_utf8_lossy(&output.stderr).to_string(),
             );
         }
@@ -117,10 +117,9 @@ mod om_ci_tests {
     #[tokio::test]
     /// Run `nixci build` and check if the stdout consists of only /nix/store/* paths
     async fn build_flake_output() -> anyhow::Result<()> {
-        let outs = om_ci_build(&[
-            "github:srid/haskell-multi-nix/c85563721c388629fa9e538a1d97274861bc8321",
-        ])
-        .await?;
+        let outs =
+            om_ci_run(&["github:srid/haskell-multi-nix/c85563721c388629fa9e538a1d97274861bc8321"])
+                .await?;
 
         for out in outs {
             assert!(
@@ -136,10 +135,9 @@ mod om_ci_tests {
     #[tokio::test]
     /// A simple test, without config
     async fn test_haskell_multi_nix() -> anyhow::Result<()> {
-        let outs = om_ci_build(&[
-            "github:srid/haskell-multi-nix/c85563721c388629fa9e538a1d97274861bc8321",
-        ])
-        .await?;
+        let outs =
+            om_ci_run(&["github:srid/haskell-multi-nix/c85563721c388629fa9e538a1d97274861bc8321"])
+                .await?;
         let drv_outs: Vec<PathBuf> = outs
             .into_iter()
             .filter_map(|drv_result| {
@@ -165,7 +163,7 @@ mod om_ci_tests {
 
     #[tokio::test]
     async fn test_haskell_multi_nix_all_dependencies() -> anyhow::Result<()> {
-        let outs = om_ci_build(&[
+        let outs = om_ci_run(&[
             "--print-all-dependencies",
             "github:srid/haskell-multi-nix/c85563721c388629fa9e538a1d97274861bc8321",
         ])
@@ -182,7 +180,7 @@ mod om_ci_tests {
     #[tokio::test]
     /// A test, with config
     async fn test_services_flake() -> anyhow::Result<()> {
-        let outs = om_ci_build(&[
+        let outs = om_ci_run(&[
             // TODO: Change after merging https://github.com/juspay/services-flake/pull/51
             "github:juspay/services-flake/3d764f19d0a121915447641fe49a9b8d02777ff8",
         ])
