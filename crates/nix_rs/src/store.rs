@@ -1,5 +1,5 @@
 /// Run `nix-store` in Rust
-use std::{fmt, path::PathBuf};
+use std::{collections::HashSet, fmt, path::PathBuf};
 
 use crate::command::{CommandError, NixCmdError};
 use serde::{Deserialize, Serialize};
@@ -63,14 +63,14 @@ impl NixStoreCmd {
     /// `Vec<StorePath>`.
     pub async fn fetch_all_deps(
         &self,
-        out_paths: Vec<StorePath>,
-    ) -> Result<Vec<StorePath>, NixStoreCmdError> {
-        let mut all_drvs = Vec::new();
+        out_paths: HashSet<StorePath>,
+    ) -> Result<HashSet<StorePath>, NixStoreCmdError> {
+        let mut all_drvs = HashSet::new();
         for out in out_paths.iter() {
             let drv = self.nix_store_query_deriver(out.clone()).await?;
-            all_drvs.push(drv);
+            all_drvs.insert(drv);
         }
-        let mut all_outs = Vec::new();
+        let mut all_outs = HashSet::new();
         for drv in all_drvs {
             let deps = self.nix_store_query_requisites_with_outputs(drv).await?;
             all_outs.extend(deps.into_iter());

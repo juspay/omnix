@@ -3,6 +3,8 @@ use std::collections::BTreeMap;
 use nix_rs::flake::{system::System, url::FlakeUrl};
 use serde::Deserialize;
 
+use crate::step::core::Steps;
+
 /// Represents a sub-flake look-alike.
 ///
 /// "Look-alike" because its inputs may be partial, thus requiring explicit
@@ -24,6 +26,10 @@ pub struct SubflakeConfig {
 
     /// An optional whitelist of systems to build on (others are ignored)
     pub systems: Option<Vec<System>>,
+
+    /// List of CI steps to run
+    #[serde(default)]
+    pub steps: Steps,
 }
 
 impl Default for SubflakeConfig {
@@ -34,6 +40,7 @@ impl Default for SubflakeConfig {
             dir: ".".to_string(),
             override_inputs: BTreeMap::default(),
             systems: None,
+            steps: Steps::default(),
         }
     }
 }

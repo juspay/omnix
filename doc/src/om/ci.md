@@ -1,6 +1,6 @@
 # `om ci`
 
-`om ci` builds all outputs in a flake, or optionally its [sub-flakes](https://github.com/hercules-ci/flake-parts/issues/119), which can in turn be used either in CI or locally. Using [devour-flake] it will automatically build the following outputs:
+`om ci` runs CI for your project. It builds all outputs in the flake, or optionally its [sub-flakes](https://github.com/hercules-ci/flake-parts/issues/119). You can run `om ci` locally or in an actual CI envirnoment, like GitHub Actions. Using [devour-flake] it will automatically build the following outputs:
 
 | Type                   | Output Key                                      |
 | ---------------------- | ----------------------------------------------- |
@@ -9,7 +9,7 @@
 | nix-darwin             | `darwinConfigurations.*`                        |
 | home-manager           | `legacyPackages.${system}.homeConfigurations.*` |
 
-The [stdout] of `nixci` will be a list of store paths built.
+The [stdout] of `om ci run` will be a list of store paths built.
 
 [stdout]: https://en.wikipedia.org/wiki/Standard_streams#Standard_output_(stdout)
 
@@ -18,24 +18,24 @@ The [stdout] of `nixci` will be a list of store paths built.
 
 ## Usage
 
-`om ci build` accepts any valid [flake URL](https://nixos.asia/en/flake-url) or a Github PR URL.
+`om ci run` accepts any valid [flake URL](https://nixos.asia/en/flake-url) or a Github PR URL.
 
 ```sh
 # Run CI on current directory flake
-$ om ci # Or `om ci build` or `om ci build .`
+$ om ci # Or `om ci run` or `om ci run .`
 
 # Run CI on a local flake (default is $PWD)
-$ om ci build ~/code/myproject
+$ om ci run ~/code/myproject
 
 # Run CI on a github repo
-$ om ci build github:hercules-ci/hercules-ci-agent
+$ om ci run github:hercules-ci/hercules-ci-agent
 
 # Run CI on a github PR
-$ om ci build https://github.com/srid/emanote/pull/451
+$ om ci run https://github.com/srid/emanote/pull/451
 
 # Run CI only the selected sub-flake
 $ git clone https://github.com/srid/haskell-flake && cd haskell-flake
-$ om ci build .#default.dev
+$ om ci run .#default.dev
 ```
 
 ### Using in Github Actions {#github-actions}
@@ -54,7 +54,7 @@ Add the following to your workflow file,
 
 #### Self-hosted Runners with Job Matrix {#ghci-self}
 
-> [!NOTE] 
+> [!NOTE]
 > This currently requires an explicit CI configuration in your flake, viz.: `om.ci.default.root.dir = ".";`.
 
 ```yaml
@@ -75,10 +75,10 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
-      - run: om ci build --systems "github:nix-systems/${{ matrix.system }}" ".#default.${{ matrix.subflake }}"
+      - run: om ci run --systems "github:nix-systems/${{ matrix.system }}" ".#default.${{ matrix.subflake }}"
 ```
 
-> [!TIP] 
+> [!TIP]
 > If your builds fail due to GitHub's rate limiting, consider passing `--extra-access-tokens` (see [an example PR](https://github.com/srid/nixos-flake/pull/55)). If you get rate limits when accessing `github:nix-systems`, use [this workaround](https://github.com/srid/nixci/issues/83#issuecomment-2225903229).
 
 ## Configuring {#config}
@@ -100,7 +100,7 @@ By default, `om ci` will build the top-level flake, but you can tell it to build
 }
 ```
 
-You can have more than one CI configuration. For eg., `om ci build .#foo` will run the configuration from `om.ci.foo` flake output.
+You can have more than one CI configuration. For eg., `om ci run .#foo` will run the configuration from `om.ci.foo` flake output.
 
 ### Examples
 

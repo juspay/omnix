@@ -1,3 +1,4 @@
+//! Github Pull Request API
 use std::fmt::Display;
 
 /// Enough types to get branch info from Pull Request URL
@@ -52,13 +53,14 @@ impl PullRequestRef {
     }
 }
 
-/// Github Pull Request API Response type
+/// Github Pull Request API Response
 #[derive(Debug, Deserialize)]
 pub struct PullRequest {
     pub url: String,
     pub head: Head,
 }
 
+/// Pull Request head info
 #[derive(Debug, Deserialize)]
 pub struct Head {
     #[serde(rename = "ref")]
@@ -66,6 +68,7 @@ pub struct Head {
     pub repo: Repo,
 }
 
+/// Pull Request repo info
 #[derive(Debug, Deserialize)]
 pub struct Repo {
     /// `<owner>/<repo>`

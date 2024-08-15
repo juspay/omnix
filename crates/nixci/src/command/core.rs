@@ -5,11 +5,11 @@ use tracing::instrument;
 
 use crate::{config::core::Config, flake_ref::FlakeRef};
 
-use super::{build::BuildCommand, gh::GHMatrixCommand};
+use super::{gh_matrix::GHMatrixCommand, run::RunCommand};
 
 #[derive(Debug, Subcommand, Clone)]
 pub enum Command {
-    Build(BuildCommand),
+    Run(RunCommand),
 
     #[clap(name = "gh-matrix")]
     DumpGithubActionsMatrix(GHMatrixCommand),
@@ -17,14 +17,14 @@ pub enum Command {
 
 impl Default for Command {
     fn default() -> Self {
-        Self::Build(Default::default())
+        Self::Run(Default::default())
     }
 }
 
 impl Command {
     // Pre-process `Command`
     pub fn preprocess(&mut self) {
-        if let Command::Build(cmd) = self {
+        if let Command::Run(cmd) = self {
             cmd.preprocess()
         }
     }
@@ -34,10 +34,7 @@ impl Command {
         tracing::info!("{}", format!("\n👟 Reading om.ci config from flake").bold());
         let cfg = self.get_config(nixcmd).await?;
         match self {
-            Command::Build(cmd) => match &cmd.on {
-                Some(host) => cmd.run_remote(nixcmd, cfg, host).await,
-                None => cmd.run(nixcmd, verbose, cfg).await,
-            },
+            Command::Run(cmd) => cmd.run(nixcmd, verbose, cfg).await,
             Command::DumpGithubActionsMatrix(cmd) => cmd.run(cfg).await,
         }
     }
@@ -53,7 +50,7 @@ impl Command {
     /// Get the flake ref associated with this subcommand
     fn get_flake_ref(&self) -> FlakeRef {
         match self {
-            Command::Build(cmd) => cmd.flake_ref.clone(),
+            Command::Run(cmd) => cmd.flake_ref.clone(),
             Command::DumpGithubActionsMatrix(cmd) => cmd.flake_ref.clone(),
         }
     }

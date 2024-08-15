@@ -1,3 +1,4 @@
+//! A reference to some flake living somewhere
 use std::{
     fmt::{Display, Formatter},
     str::FromStr,
