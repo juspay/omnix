@@ -1,20 +1,24 @@
+//! Github Actions matrix
 use nix_rs::flake::system::System;
 use serde::{Deserialize, Serialize};
 
 use crate::config::subflakes::SubflakesConfig;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+/// A row in the Github Actions matrix configuration
 pub struct GitHubMatrixRow {
     pub system: System,
     pub subflake: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+/// Github Actions matrix configuration
 pub struct GitHubMatrix {
     pub include: Vec<GitHubMatrixRow>,
 }
 
 impl GitHubMatrix {
+    /// Create a [GitHubMatrix] for the given subflakes and systems
     pub fn from(systems: Vec<System>, subflakes: &SubflakesConfig) -> Self {
         let include: Vec<GitHubMatrixRow> = systems
             .iter()
