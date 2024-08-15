@@ -1,3 +1,4 @@
+//! A reference to a nixci configuration
 use nix_rs::flake::url::FlakeUrl;
 
 /// A reference into one or all [crate::config::subflakes::SubflakesConfig] of some [FlakeUrl]

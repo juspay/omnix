@@ -1,3 +1,4 @@
+//! The lockfile step
 use colored::Colorize;
 use nix_rs::{command::NixCmd, flake::url::FlakeUrl};
 use serde::Deserialize;
@@ -7,6 +8,7 @@ use crate::{config::subflake::SubflakeConfig, nix};
 /// Check that `flake.lock` is not out of date.
 #[derive(Debug, Deserialize)]
 pub struct LockfileStep {
+    /// Whether to enable this step
     pub enable: bool,
 }
 
@@ -17,6 +19,7 @@ impl Default for LockfileStep {
 }
 
 impl LockfileStep {
+    /// Run this step
     pub async fn run(
         &self,
         nixcmd: &NixCmd,

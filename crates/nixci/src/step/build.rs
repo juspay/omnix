@@ -1,3 +1,4 @@
+//! The build step
 use clap::Parser;
 use colored::Colorize;
 use nix_rs::{command::NixCmd, flake::url::FlakeUrl, store::NixStoreCmd};
@@ -14,6 +15,7 @@ use crate::{
 /// It builds all flake outputs.
 #[derive(Debug, Deserialize)]
 pub struct BuildStep {
+    /// Whether to enable this step
     pub enable: bool,
 }
 
@@ -23,6 +25,7 @@ impl Default for BuildStep {
     }
 }
 
+/// CLI arguments for [BuildStep]
 #[derive(Parser, Debug, Clone)]
 pub struct BuildStepArgs {
     /// Additional arguments to pass through to `nix build`
@@ -42,6 +45,7 @@ pub struct BuildStepArgs {
 }
 
 impl BuildStepArgs {
+    /// Preprocess the arguments
     pub fn preprocess(&mut self) {
         // Adjust to devour_flake's expectations
         devour_flake::transform_override_inputs(&mut self.extra_nix_build_args);
@@ -49,6 +53,7 @@ impl BuildStepArgs {
 }
 
 impl BuildStep {
+    /// Run this step
     pub async fn run(
         &self,
         nixcmd: &NixCmd,

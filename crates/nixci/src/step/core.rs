@@ -1,3 +1,4 @@
+//! All CI steps available in nixci
 use clap::Parser;
 use nix_rs::{command::NixCmd, flake::url::FlakeUrl};
 use serde::Deserialize;
@@ -14,18 +15,23 @@ use crate::step::{
 /// Contains some builtin steps, as well as custom steps (defined by user)
 #[derive(Debug, Default, Deserialize)]
 pub struct Steps {
+    /// [LockfileStep]
     pub lockfile_step: LockfileStep,
+    /// [BuildStep]
     pub build_step: BuildStep,
     // TODO: custom steps
 }
 
+/// CLI arguments associated with [Steps]
 #[derive(Parser, Debug, Clone)]
 pub struct StepsArgs {
+    /// [BuildStepArgs]
     #[command(flatten)]
     pub build_step_args: BuildStepArgs,
 }
 
 impl Steps {
+    /// Run all CI steps
     pub async fn run(
         &self,
         cmd: &NixCmd,

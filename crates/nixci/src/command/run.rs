@@ -1,3 +1,4 @@
+//! The run command
 use anyhow::{Context, Result};
 use clap::Parser;
 use colored::Colorize;
@@ -15,7 +16,7 @@ use crate::{
     nix::system_list::{SystemsList, SystemsListFlakeRef},
 };
 
-/// Run all CI steps for all or given subflakes
+/// Command to run all CI steps
 #[derive(Parser, Debug, Clone)]
 pub struct RunCommand {
     /// The systems list to build for. If empty, build for current system.
@@ -33,6 +34,7 @@ pub struct RunCommand {
     #[arg(default_value = ".")]
     pub flake_ref: FlakeRef,
 
+    /// Arguments for all steps
     #[command(flatten)]
     pub steps_args: crate::step::core::StepsArgs,
 }
@@ -44,6 +46,7 @@ impl Default for RunCommand {
 }
 
 impl RunCommand {
+    /// Preprocess this command
     pub fn preprocess(&mut self) {
         self.steps_args.build_step_args.preprocess();
     }
@@ -98,7 +101,7 @@ pub async fn check_nix_version(flake_url: &FlakeUrl, nix_info: &NixInfo) -> anyh
     Ok(())
 }
 
-// Run CI fo all subflakes
+/// Run CI fo all subflakes
 pub async fn ci_run(
     cmd: &NixCmd,
     verbose: bool,

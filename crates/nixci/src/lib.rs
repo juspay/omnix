@@ -1,3 +1,4 @@
+//! nixci: CI for Nix projects
 #![warn(missing_docs)]
 pub mod command;
 pub mod config;
