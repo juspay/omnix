@@ -36,7 +36,7 @@ impl Command {
     /// Run the command
     #[instrument(name = "run", skip(self))]
     pub async fn run(self, nixcmd: &NixCmd, verbose: bool) -> anyhow::Result<()> {
-        tracing::info!("{}", format!("\n👟 Reading om.ci config from flake").bold());
+        tracing::info!("{}", "\n👟 Reading om.ci config from flake".bold());
         let cfg = self.get_config(nixcmd).await?;
         match self {
             Command::Run(cmd) => cmd.run(nixcmd, verbose, cfg).await,
