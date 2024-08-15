@@ -1,51 +1,48 @@
 use std::path::PathBuf;
 
-use crate::cli;
+use crate::{command::build::BuildCommand, config::ref_::ConfigRef};
 
-use super::nix_store::StorePath;
 use anyhow::Context;
 use tokio::process::Command;
 
-use cli::BuildConfig;
-
 /// Runs `nix run command through ssh on remote machine` in Rust
 ///
-pub async fn nix_run_on_ssh(
-    build_cfg: &BuildConfig,
+pub async fn on_ssh(
+    build_cmd: &BuildCommand,
     remote_address: &str,
     omnix_input: &PathBuf,
     flake_url: PathBuf,
-    selected_subflake: Option<String>,
-) -> anyhow::Result<Vec<StorePath>> {
+    cfg_ref: ConfigRef,
+) -> anyhow::Result<()> {
     let mut cmd = Command::new("ssh");
 
     // Add the remote address
     cmd.arg(remote_address);
 
-    let formatted = format!("{}", flake_url.to_string_lossy().as_ref());
-    let mut stripped = formatted.strip_suffix('/').unwrap_or(&formatted).to_owned();
-    if let Some(s) = selected_subflake {
-        stripped.push_str(&format!("#default.{}", s).to_string());
+    let mut flake_to_build = format!("{}", flake_url.to_string_lossy().as_ref());
+    // add sub-flake if selected to be built
+    if let Some(sub_flake) = cfg_ref.selected_subflake {
+        flake_to_build.push_str(&format!("#{}.{}", cfg_ref.selected_name, sub_flake).to_string());
     }
 
-    // Construct the base nix run command
+    // base nix command
     let mut nix_cmd = vec![
         "nix run".to_string(),
         format!("{}#default", omnix_input.to_string_lossy().as_ref()),
         "--".to_string(),
         "ci".to_string(),
         "build".to_string(),
-        stripped.to_string(),
+        flake_to_build.to_string(),
     ];
 
-    // Add print-all-dependencies flag if necessary
-    if build_cfg.print_all_dependencies {
+    // Add print-all-dependencies flag if passed
+    if build_cmd.print_all_dependencies {
         nix_cmd.push("--print-all-dependencies".to_string());
     }
 
     // Add extra nix build arguments
     nix_cmd.push("--".to_string());
-    nix_cmd.extend(build_cfg.extra_nix_build_args.iter().cloned());
+    nix_cmd.extend(build_cmd.extra_nix_build_args.iter().cloned());
 
     // Join all arguments into a single string
     let args = nix_cmd.join(" ");
@@ -60,7 +57,7 @@ pub async fn nix_run_on_ssh(
         .await
         .context("Failed to execute SSH command")?;
     if status.success() {
-        Ok(Vec::new())
+        Ok(())
     } else {
         let exit_code = status.code().unwrap_or(1);
         anyhow::bail!("SSH command failed with exit code: {}", exit_code)

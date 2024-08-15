@@ -34,7 +34,10 @@ impl Command {
         tracing::info!("{}", format!("\n👟 Reading om.ci config from flake").bold());
         let cfg = self.get_config(nixcmd).await?;
         match self {
-            Command::Build(cmd) => cmd.run(nixcmd, verbose, cfg).await,
+            Command::Build(cmd) => match &cmd.on {
+                Some(host) => cmd.run_remote(nixcmd, cfg, host).await,
+                None => cmd.run(nixcmd, verbose, cfg).await,
+            },
             Command::DumpGithubActionsMatrix(cmd) => cmd.run(cfg).await,
         }
     }

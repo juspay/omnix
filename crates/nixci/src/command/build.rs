@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use anyhow::{Context, Result};
 use clap::Parser;
 use colored::Colorize;
@@ -7,11 +9,14 @@ use crate::{
     config::core::Config,
     flake_ref::FlakeRef,
     nix::{
-        devour_flake,
+        devour_flake, ssh,
         system_list::{SystemsList, SystemsListFlakeRef},
     },
     step,
 };
+
+/// We expect this environment to be set in Nix build and shell.
+pub const OMNIX_SOURCE: &str = env!("OMNIX_SOURCE");
 
 /// Build all outputs of a flake
 #[derive(Parser, Debug, Clone)]
@@ -45,6 +50,10 @@ pub struct BuildCommand {
     /// useful to explicitly push all dependencies to a cache.
     #[clap(long, short = 'd')]
     pub print_all_dependencies: bool,
+
+    /// Run om ci build remotely
+    #[clap(long)]
+    pub on: Option<String>,
 }
 
 impl Default for BuildCommand {
@@ -83,6 +92,26 @@ impl BuildCommand {
         for out in &outs {
             println!("{}", out);
         }
+        Ok(())
+    }
+
+    /// Run the build command on remote
+    pub async fn run_remote(
+        &self,
+        nixcmd: &NixCmd,
+        cfg: Config,
+        host: &String,
+    ) -> anyhow::Result<()> {
+        let metadata = nix_rs::flake::metadata::from_nix(nixcmd, &cfg.ref_.flake_url).await?;
+
+        let omnix_source = PathBuf::from(OMNIX_SOURCE);
+
+        let args = vec![&omnix_source, &metadata.path];
+
+        nix_rs::copy::from_nix(nixcmd, &host, args).await?;
+
+        let _ = ssh::on_ssh(&self, &host, &omnix_source, metadata.path, cfg.ref_).await?;
+
         Ok(())
     }
 
