@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use crate::{command::build::BuildCommand, config::ref_::ConfigRef};
+use crate::{config::ref_::ConfigRef, step::build::BuildStepArgs};
 
 use anyhow::Context;
 use tokio::process::Command;
@@ -8,7 +8,7 @@ use tokio::process::Command;
 /// Runs `nix run command through ssh on remote machine` in Rust
 ///
 pub async fn on_ssh(
-    build_cmd: &BuildCommand,
+    build_step_args: &BuildStepArgs,
     remote_address: &str,
     omnix_input: &PathBuf,
     flake_url: PathBuf,
@@ -31,18 +31,18 @@ pub async fn on_ssh(
         format!("{}#default", omnix_input.to_string_lossy().as_ref()),
         "--".to_string(),
         "ci".to_string(),
-        "build".to_string(),
+        "run".to_string(),
         flake_to_build.to_string(),
     ];
 
     // Add print-all-dependencies flag if passed
-    if build_cmd.print_all_dependencies {
+    if build_step_args.print_all_dependencies {
         nix_cmd.push("--print-all-dependencies".to_string());
     }
 
     // Add extra nix build arguments
     nix_cmd.push("--".to_string());
-    nix_cmd.extend(build_cmd.extra_nix_build_args.iter().cloned());
+    nix_cmd.extend(build_step_args.extra_nix_build_args.iter().cloned());
 
     // Join all arguments into a single string
     let args = nix_cmd.join(" ");

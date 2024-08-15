@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use anyhow::{Context, Result};
 use clap::Parser;
 use colored::Colorize;
@@ -12,8 +14,14 @@ use nix_rs::{
 use crate::{
     config::core::Config,
     flake_ref::FlakeRef,
-    nix::system_list::{SystemsList, SystemsListFlakeRef},
+    nix::{
+        ssh,
+        system_list::{SystemsList, SystemsListFlakeRef},
+    },
 };
+
+/// We expect this environment to be set in Nix build and shell.
+pub const OMNIX_SOURCE: &str = env!("OMNIX_SOURCE");
 
 /// Run all CI steps for all or given subflakes
 #[derive(Parser, Debug, Clone)]
@@ -69,6 +77,33 @@ impl RunCommand {
             format!("\n🤖 Running CI for {}", self.flake_ref).bold()
         );
         ci_run(nixcmd, verbose, &self, &cfg, &nix_info.nix_config).await?;
+
+        Ok(())
+    }
+
+    /// Runs the ci build command on remote
+    pub async fn run_remote(
+        &self,
+        nixcmd: &NixCmd,
+        cfg: Config,
+        host: &String,
+    ) -> anyhow::Result<()> {
+        let metadata = nix_rs::flake::metadata::from_nix(nixcmd, &cfg.ref_.flake_url).await?;
+
+        let omnix_source = PathBuf::from(OMNIX_SOURCE);
+
+        let args = vec![&omnix_source, &metadata.path];
+
+        nix_rs::copy::from_nix(nixcmd, &host, args).await?;
+
+        let _ = ssh::on_ssh(
+            &self.steps_args.build_step_args,
+            &host,
+            &omnix_source,
+            metadata.path,
+            cfg.ref_,
+        )
+        .await?;
 
         Ok(())
     }

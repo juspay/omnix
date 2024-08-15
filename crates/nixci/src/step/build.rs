@@ -39,6 +39,10 @@ pub struct BuildStepArgs {
     /// useful to explicitly push all dependencies to a cache.
     #[clap(long, short = 'd')]
     pub print_all_dependencies: bool,
+
+    /// Run om ci run remotely
+    #[clap(long)]
+    pub on: Option<String>,
 }
 
 impl BuildStepArgs {
