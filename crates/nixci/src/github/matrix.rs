@@ -7,13 +7,16 @@ use crate::config::subflakes::SubflakesConfig;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 /// A row in the Github Actions matrix configuration
 pub struct GitHubMatrixRow {
+    /// System to build on
     pub system: System,
+    /// Subflake to build
     pub subflake: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 /// Github Actions matrix configuration
 pub struct GitHubMatrix {
+    /// The includes
     pub include: Vec<GitHubMatrixRow>,
 }
 

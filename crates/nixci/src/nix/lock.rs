@@ -1,3 +1,4 @@
+//! Functions for working with `nix flake lock`.
 use std::process::Stdio;
 
 use anyhow::{bail, Result};

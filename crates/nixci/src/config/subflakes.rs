@@ -1,9 +1,11 @@
+//! Subflakes configuration group.
 use std::collections::BTreeMap;
 
 use serde::Deserialize;
 
 use super::subflake::SubflakeConfig;
 
+/// CI configuration for a subflake
 #[derive(Debug, Deserialize)]
 pub struct SubflakesConfig(
     // NB: we use BTreeMap instead of HashMap here so that we always iterate

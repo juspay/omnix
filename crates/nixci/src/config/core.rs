@@ -1,3 +1,4 @@
+//! The top-level configuration of nixci, as defined in flake.nix
 use anyhow::Result;
 use nix_rs::{
     command::NixCmd,
