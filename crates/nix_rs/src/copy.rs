@@ -1,36 +1,28 @@
 use crate::command::{CommandError, NixCmd};
+use std::path::PathBuf;
 
 /// Runs `nix copy` in Rust
-pub async fn run_nix_copy(
+pub async fn from_nix(
     cmd: &NixCmd,
     host: &str,
-    omnix_input: &str,
-    path: &str,
-    extra_args: &[String],
+    extra_args: Vec<&PathBuf>,
 ) -> Result<(), CommandError> {
     let remote_address = format!("ssh://{}", host);
+    let mut args = vec!["copy", "--to", &remote_address];
 
-    // base arguments for nix copy command
-    let mut args = vec!["copy", "--to", &remote_address, omnix_input, path];
-
-    // Filter and add only the --override-input flags and their values
-    let override_inputs: Vec<&str> = extra_args
+    // Convert PathBuf to String, then collect into a Vec<String>
+    let extra_args_strings: Vec<String> = extra_args
         .iter()
-        .enumerate()
-        .filter_map(|(i, arg)| {
-            if arg == "--override-input" && i + 2 < extra_args.len() {
-                Some(&extra_args[i..i + 3])
-            } else {
-                None
-            }
-        })
-        .flatten()
-        .map(AsRef::as_ref)
+        .map(|path| path.to_string_lossy().into_owned())
         .collect();
 
-    args.extend(override_inputs);
+    // Create a Vec<&str> from the String references
+    let extra_args_str: Vec<&str> = extra_args_strings.iter().map(|s| s.as_str()).collect();
 
-    // Run the command with all arguments
+    // Now extend args with these &str slices
+    args.extend(&extra_args_str);
+
+    // Run the command with all arguments and capture the stdout
     cmd.run_with_args(&args).await?;
 
     Ok(())

@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use crate::cli;
 
 use super::nix_store::StorePath;
@@ -11,22 +13,29 @@ use cli::BuildConfig;
 pub async fn nix_run_on_ssh(
     build_cfg: &BuildConfig,
     remote_address: &str,
-    omnix_input: &str,
-    flake_url: &str,
+    omnix_input: &PathBuf,
+    flake_url: PathBuf,
+    selected_subflake: Option<String>,
 ) -> anyhow::Result<Vec<StorePath>> {
     let mut cmd = Command::new("ssh");
 
     // Add the remote address
     cmd.arg(remote_address);
 
+    let formatted = format!("{}", flake_url.to_string_lossy().as_ref());
+    let mut stripped = formatted.strip_suffix('/').unwrap_or(&formatted).to_owned();
+    if let Some(s) = selected_subflake {
+        stripped.push_str(&format!("#default.{}", s).to_string());
+    }
+
     // Construct the base nix run command
     let mut nix_cmd = vec![
         "nix run".to_string(),
-        format!("{}#default", omnix_input),
+        format!("{}#default", omnix_input.to_string_lossy().as_ref()),
         "--".to_string(),
         "ci".to_string(),
         "build".to_string(),
-        flake_url.to_string(),
+        stripped.to_string(),
     ];
 
     // Add print-all-dependencies flag if necessary

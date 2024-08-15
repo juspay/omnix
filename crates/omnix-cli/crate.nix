@@ -35,7 +35,7 @@ in
         pkgsStatic.openssl
       ];
       DEVOUR_FLAKE = inputs.devour-flake;
-      OMNIX = inputs.omnix;
+      OMNIX_SOURCE = inputs.self;
       OM_INIT_REGISTRY =
         lib.cleanSourceWith {
           name = "flakreate-registry";

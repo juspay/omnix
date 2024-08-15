@@ -6,8 +6,8 @@ pub mod nix;
 use anyhow::Context;
 use clap::CommandFactory;
 use clap_complete::generate;
-use std::collections::HashSet;
 use std::io;
+use std::{collections::HashSet, path::PathBuf};
 
 use cli::{BuildConfig, CliArgs, Command};
 use colored::Colorize;
@@ -18,6 +18,9 @@ use nix::{
 use nix_health::{traits::Checkable, NixHealth};
 use nix_rs::{command::NixCmd, config::NixConfig, flake::url::FlakeUrl, info::NixInfo};
 use tracing::instrument;
+
+/// We expect this environment to be set in Nix build and shell.
+pub const OMNIX_SOURCE: &str = env!("OMNIX_SOURCE");
 
 /// Run nixci on the given [CliArgs], returning the built outputs in sorted order.
 #[instrument(name = "nixci", skip(command))]
@@ -34,7 +37,7 @@ pub async fn nixci(
                 .await
                 .with_context(|| "Unable to gather nix info")?;
             match &build_cfg.on {
-                Some(host) => remote_build(nixcmd, &build_cfg, &cfg, host).await,
+                Some(host) => remote_build(nixcmd, verbose, &build_cfg, &cfg, host).await,
                 None => {
                     // First, run the necessary health checks
                     check_nix_version(&cfg.flake_url, &nix_info).await?;
@@ -62,24 +65,41 @@ pub async fn nixci(
 
 async fn remote_build(
     cmd: &NixCmd,
+    _verbose: bool,
     build_cfg: &BuildConfig,
     cfg: &config::Config,
     host: &String,
 ) -> anyhow::Result<Vec<StorePath>> {
-    let omnix_input = format!("{}", env!("OMNIX"));
+    let flake_url = match cfg.flake_url.0.as_str() {
+        "." => {
+            let metadata = nix_rs::flake::metadata::from_nix(cmd, &cfg.flake_url.0).await?;
+            metadata.path
+        }
+        ".#default" => {
+            let metadata = nix_rs::flake::metadata::from_nix(cmd, &".").await?;
+            metadata.path
+        }
+        _ => {
+            let metadata = nix_rs::flake::metadata::from_nix(cmd, &cfg.flake_url.0).await?;
+            metadata.path
+        }
+    };
 
-    let metadata = nix_rs::flake::metadata::get_flake_metadata_json(cmd, &cfg.flake_url.0).await?;
+    let omnix_source = PathBuf::from(OMNIX_SOURCE);
 
-    nix_rs::copy::run_nix_copy(
-        cmd,
+    let args = vec![&omnix_source, &flake_url];
+
+    nix_rs::copy::from_nix(cmd, &host, args).await?;
+
+    let result = nix::ssh::nix_run_on_ssh(
+        &build_cfg,
         &host,
-        &omnix_input,
-        &metadata.path,
-        &build_cfg.extra_nix_build_args,
+        &omnix_source,
+        flake_url,
+        cfg.selected_subflake.clone(),
     )
     .await?;
 
-    let result = nix::ssh::nix_run_on_ssh(&build_cfg, &host, &omnix_input, &metadata.path).await?;
     Ok(result)
 }
 
