@@ -8,7 +8,7 @@ static REGISTRY: LazyLock<FlakeUrl> =
 
 /// Initialize a new flake project
 #[derive(Parser, Debug)]
-pub struct InitConfig {
+pub struct InitCommand {
     /// Flake template registry to use
     ///
     /// The flake attribute is treated as a glob pattern to select the
@@ -21,7 +21,7 @@ pub struct InitConfig {
     path: PathBuf,
 }
 
-impl InitConfig {
+impl InitCommand {
     pub async fn run(&self) -> anyhow::Result<()> {
         tracing::warn!("\n  !! WARNING: `om init` is still under development !!\n");
         flakreate::flakreate(self.registry.clone(), self.path.clone()).await

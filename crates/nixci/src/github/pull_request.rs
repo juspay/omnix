@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 /// Enough types to get branch info from Pull Request URL
 use anyhow::{bail, Context};
 use nix_rs::flake::url::FlakeUrl;
@@ -12,6 +14,16 @@ pub struct PullRequestRef {
     pub(crate) owner: String,
     pub(crate) repo: String,
     pub(crate) pr: u64,
+}
+
+impl Display for PullRequestRef {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "https://github.com/{}/{}/pull/{}",
+            self.owner, self.repo, self.pr
+        )
+    }
 }
 
 impl PullRequestRef {

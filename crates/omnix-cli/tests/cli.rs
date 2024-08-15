@@ -91,7 +91,7 @@ mod om_ci_tests {
     use std::path::{Path, PathBuf};
 
     use anyhow::bail;
-    use nixci::{self, nix::nix_store::StorePath};
+    use nix_rs::store::StorePath;
     use regex::Regex;
 
     /// Run `om ci build` passing given arguments, returning its stdout (parsed).
@@ -116,7 +116,7 @@ mod om_ci_tests {
 
     #[tokio::test]
     /// Run `nixci build` and check if the stdout consists of only /nix/store/* paths
-    async fn nixci_build_output() -> anyhow::Result<()> {
+    async fn build_flake_output() -> anyhow::Result<()> {
         let outs = om_ci_build(&[
             "github:srid/haskell-multi-nix/c85563721c388629fa9e538a1d97274861bc8321",
         ])

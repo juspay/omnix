@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - "main"
+      - "ci/**"
   pull_request:
 
 jobs:
@@ -48,14 +49,6 @@ jobs:
           path: ${{ env.om_static_binary_path }}/bin/om
       - name: nix run
         run: nix run . -- --help
-      # First, build the repos used in the test to cache them locally, so as
-      # to avoid GitHub rate limits during the integration test (which
-      # doesn't use the token)
-      - name: Tests (preparation)
-        if: matrix.system != 'x86_64-darwin'
-        run: |
-          nixci --extra-access-tokens "github.com=${{ secrets.GITHUB_TOKEN }}" build "github:srid/haskell-multi-nix/c85563721c388629fa9e538a1d97274861bc8321" -- --no-link
-          nixci --extra-access-tokens "github.com=${{ secrets.GITHUB_TOKEN }}" build "github:juspay/services-flake/3d764f19d0a121915447641fe49a9b8d02777ff8" -- --no-link
       - name: Tests
         # Too slow on rosetta
         if: matrix.system != 'x86_64-darwin'
@@ -65,7 +58,6 @@ jobs:
           nix \
             --option system "${{ matrix.system }}" \
             --extra-access-tokens "github.com=${{ secrets.GITHUB_TOKEN }}" \
-            --accept-flake-config \
             develop -c cargo test
       - name: Push to cachix
         if: github.ref == 'refs/heads/main'

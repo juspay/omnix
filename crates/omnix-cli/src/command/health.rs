@@ -4,7 +4,7 @@ use nix_rs::flake::url::FlakeUrl;
 
 /// Display the health of your Nix dev environment
 #[derive(Parser, Debug)]
-pub struct HealthConfig {
+pub struct HealthCommand {
     /// Use `om.health` configuration from the given flake
     #[arg(name = "FLAKE")]
     pub flake_url: Option<FlakeUrl>,
@@ -15,7 +15,7 @@ pub struct HealthConfig {
     pub dump_schema: bool,
 }
 
-impl HealthConfig {
+impl HealthCommand {
     pub async fn run(&self) -> anyhow::Result<()> {
         if self.dump_schema {
             println!("{}", NixHealth::schema()?);

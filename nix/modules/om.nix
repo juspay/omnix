@@ -8,9 +8,14 @@ in
   flake = {
     om = {
       ci.default = {
-        omnix.dir = root;
-        flakreate-registry.dir = root + /crates/flakreate/registry;
-        doc.dir = root + /doc;
+        omnix.dir = ".";
+        flakreate-registry.dir = "crates/flakreate/registry";
+        doc.dir = "doc";
+
+        # Because the cargo tests invoking Nix doesn't pass github access tokens..
+        # To avoid GitHub rate limits during the integration test (which
+        # doesn't use the token)
+        cli-test-dep-cache.dir = "crates/omnix-cli/tests";
       };
       health.default = {
         nix-version.min-required = "2.16.0";

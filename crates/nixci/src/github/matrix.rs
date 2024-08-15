@@ -1,8 +1,7 @@
-/// Enough types to get branch info from Pull Request URL
 use nix_rs::flake::system::System;
 use serde::{Deserialize, Serialize};
 
-use crate::config::Subflakes;
+use crate::config::subflakes::SubflakesConfig;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct GitHubMatrixRow {
@@ -16,7 +15,7 @@ pub struct GitHubMatrix {
 }
 
 impl GitHubMatrix {
-    pub fn from(systems: Vec<System>, subflakes: &Subflakes) -> Self {
+    pub fn from(systems: Vec<System>, subflakes: &SubflakesConfig) -> Self {
         let include: Vec<GitHubMatrixRow> = systems
             .iter()
             .flat_map(|system| {

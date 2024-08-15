@@ -9,4 +9,5 @@ pub mod env;
 pub mod flake;
 pub mod info;
 pub mod refs;
+pub mod store;
 pub mod version;
