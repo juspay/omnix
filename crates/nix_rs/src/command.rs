@@ -8,12 +8,15 @@
 //! cmd.run_with_args_returning_stdout(&["--version"]);
 //! ```
 
-use std::fmt::{self, Display};
+use std::{
+    fmt::{self, Display},
+    process::Stdio,
+};
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use tokio::{process::Command, sync::OnceCell};
+use tokio::{io::AsyncReadExt, process::Command, sync::OnceCell};
 
 use tracing::instrument;
 
@@ -110,7 +113,13 @@ impl NixCmd {
     where
         T: serde::de::DeserializeOwned,
     {
-        let stdout = self.run_with_args_returning_stdout(args).await?;
+        let mut stdout_stream = self.run_with_args_returning_stdout_stream(args).await?;
+        let mut stdout = Vec::new();
+
+        stdout_stream
+            .read_to_end(&mut stdout)
+            .await
+            .map_err(CommandError::ChildProcessError)?;
         let v = serde_json::from_slice::<T>(&stdout)?;
         Ok(v)
     }
@@ -121,30 +130,35 @@ impl NixCmd {
         T: std::str::FromStr,
         <T as std::str::FromStr>::Err: std::fmt::Display,
     {
-        let stdout = self.run_with_args_returning_stdout(args).await?;
+        let mut stdout_stream = self.run_with_args_returning_stdout_stream(args).await?;
+        let mut stdout = Vec::new();
+        stdout_stream
+            .read_to_end(&mut stdout)
+            .await
+            .map_err(CommandError::ChildProcessError)?;
         let v = &String::from_utf8_lossy(&stdout);
         let v = T::from_str(v.trim()).map_err(|e| FromStrError(e.to_string()))?;
         Ok(v)
     }
 
     /// Run nix with given args, returning stdout.
-    pub async fn run_with_args_returning_stdout(
+    pub async fn run_with_args_returning_stdout_stream(
         &self,
         args: &[&str],
-    ) -> Result<Vec<u8>, CommandError> {
+    ) -> Result<tokio::process::ChildStdout, CommandError> {
         let mut cmd = self.command();
         cmd.args(args);
+        cmd.stdout(Stdio::piped());
         trace_cmd(&cmd);
-        let out = cmd.output().await?;
-        if out.status.success() {
-            Ok(out.stdout)
-        } else {
-            let stderr = String::from_utf8(out.stderr)?;
-            Err(CommandError::ProcessFailed {
-                stderr: Some(stderr),
-                exit_code: out.status.code(),
-            })
-        }
+
+        let mut child = cmd.spawn()?;
+        let exit_status = child.wait().await?; // Wait for the child to finish
+
+        let stdout = child.stdout.take().ok_or(CommandError::ProcessFailed {
+            stderr: None,
+            exit_code: exit_status.code(),
+        })?;
+        Ok(stdout)
     }
 
     /// Run nix with given args, letting stdout and stderr be that of parent process
