@@ -8,6 +8,7 @@
 - **`store`**: Add module (upstreamed from nixci)
 - **`env`**:
   - `NixEnv::detect`'s logging uses DEBUG level now (formerly INFO)
+  - Add Nix installer to `NixEnv`
 
 ## 1.0.0
 
