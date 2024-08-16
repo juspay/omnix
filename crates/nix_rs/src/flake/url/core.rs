@@ -3,6 +3,7 @@
 //! See <https://nixos.org/manual/nix/stable/command-ref/new-cli/nix3-flake.html#url-like-syntax>
 use std::{
     fmt::{Display, Formatter},
+    ops::Deref,
     path::{Path, PathBuf},
     str::FromStr,
 };
@@ -19,6 +20,20 @@ use super::attr::FlakeAttr;
 /// you know the URL is valid.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct FlakeUrl(pub String);
+
+impl AsRef<str> for FlakeUrl {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}
+
+impl Deref for FlakeUrl {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
 
 impl FlakeUrl {
     /// Provide real-world examples of flake URLs
