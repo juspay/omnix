@@ -5,6 +5,7 @@
 - **`flake::url`**
   - Add `without_attr`, `get_attr`
   - Simplify the return type of `RootQualifiedAttr::eval_flake`
+  - Add `AsRef` and `Deref` instances for `FlakeUrl`
 - **`store`**: Add module (upstreamed from nixci)
 - **`env`**:
   - `NixEnv::detect`'s logging uses DEBUG level now (formerly INFO)
