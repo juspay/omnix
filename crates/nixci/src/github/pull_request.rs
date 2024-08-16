@@ -1,3 +1,6 @@
+//! Github Pull Request API
+use std::fmt::Display;
+
 /// Enough types to get branch info from Pull Request URL
 use anyhow::{bail, Context};
 use nix_rs::flake::url::FlakeUrl;
@@ -12,6 +15,16 @@ pub struct PullRequestRef {
     pub(crate) owner: String,
     pub(crate) repo: String,
     pub(crate) pr: u64,
+}
+
+impl Display for PullRequestRef {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "https://github.com/{}/{}/pull/{}",
+            self.owner, self.repo, self.pr
+        )
+    }
 }
 
 impl PullRequestRef {
@@ -40,20 +53,26 @@ impl PullRequestRef {
     }
 }
 
-/// Github Pull Request API Response type
+/// Github Pull Request API Response
 #[derive(Debug, Deserialize)]
 pub struct PullRequest {
+    /// PR URL
     pub url: String,
+    /// [Head] info
     pub head: Head,
 }
 
+/// Pull Request head info
 #[derive(Debug, Deserialize)]
 pub struct Head {
     #[serde(rename = "ref")]
+    /// Head ref
     pub ref_: String,
+    /// Head [Repo]
     pub repo: Repo,
 }
 
+/// Pull Request repo info
 #[derive(Debug, Deserialize)]
 pub struct Repo {
     /// `<owner>/<repo>`

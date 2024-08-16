@@ -1,7 +1,13 @@
+## Unreleased
+
+- New
+  - Introduced notion of 'steps'. Renamed 'build' to 'run'.
+- `config.rs`: Refactored to change API.
 
 ## 1.1.0
 
-- Remove executable (use `omnix` instead)
+- Remove executable
+  - `nixci` executable will no longer be updated past 1.0.0; use `omnix` (`om ci`) instead.
 - Port to newer `nix_rs`
 - Use `om.ci` as configuration key
 - tests: Removed, and moved to omnix-cli crate.

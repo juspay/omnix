@@ -19,7 +19,6 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 anyhow = { workspace = true }
 clap = { workspace = true }
-clap_complete = { workspace = true }
 colored = { workspace = true }
 nix_health = { workspace = true }
 nix_rs = { workspace = true, features = ["clap"] }

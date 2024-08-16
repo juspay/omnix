@@ -59,6 +59,17 @@ impl FlakeUrl {
         }
     }
 
+    /// Return the [super::attr::FlakeAttr] of the [FlakeUrl]
+    pub fn get_attr(&self) -> FlakeAttr {
+        self.split_attr().1
+    }
+
+    /// Return the flake URL without the attribute
+    pub fn without_attr(&self) -> Self {
+        let (url, _) = self.split_attr();
+        url
+    }
+
     /// Return the flake URL with the given attribute
     pub fn with_attr(&self, attr: &str) -> Self {
         let (url, _) = self.split_attr();

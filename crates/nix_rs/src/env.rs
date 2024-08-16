@@ -33,7 +33,7 @@ impl NixEnv {
     #[instrument]
     pub async fn detect() -> Result<NixEnv, NixEnvError> {
         use sysinfo::{DiskExt, SystemExt};
-        tracing::info!("Detecting Nix environment");
+        tracing::debug!("Detecting Nix environment");
         let os = OS::detect().await;
         tokio::task::spawn_blocking(|| {
             let current_user = std::env::var("USER")?;

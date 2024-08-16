@@ -3193,7 +3193,6 @@ version = "1.1.0"
 dependencies = [
  "anyhow",
  "clap",
- "clap_complete",
  "colored",
  "nix_health",
  "nix_rs",

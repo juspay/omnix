@@ -9,3 +9,7 @@
     - [Health](om/health.md)
     - [CI](om/ci.md)
     - [Init](om/init.md)
+
+# Meta
+
+- [Release history](history.md)
