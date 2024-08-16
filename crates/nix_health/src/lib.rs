@@ -140,7 +140,7 @@ pub async fn run_checks_with(flake_url: Option<FlakeUrl>) -> anyhow::Result<Vec<
         &nix_info.nix_config.system.value,
         &nix_info.nix_env.os,
         (if nix_info.nix_env.os != OS::NixOS {
-            format!("\n  - Installer: {}\n", &nix_info.nix_env.installer)
+            format!("\n  - Installer: {}", &nix_info.nix_env.installer)
         } else {
             "".to_string()
         })
