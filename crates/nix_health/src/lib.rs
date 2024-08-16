@@ -8,7 +8,7 @@ use anyhow::Context;
 use colored::Colorize;
 
 use check::direnv::Direnv;
-use nix_rs::env::NixInstaller;
+use nix_rs::env::OS;
 use nix_rs::flake::url::qualified_attr::{QualifiedAttrError, RootQualifiedAttr};
 use nix_rs::flake::url::FlakeUrl;
 use nix_rs::{command::NixCmd, info::NixInfo};
@@ -140,7 +140,7 @@ pub async fn run_checks_with(flake_url: Option<FlakeUrl>) -> anyhow::Result<Vec<
         "\n  - System: {}\n  - OS: {}{}",
         &nix_info.nix_config.system.value,
         &nix_info.nix_env.os,
-        (if let NixInstaller::DetSys { .. } = &nix_info.nix_env.installer {
+        (if nix_info.nix_env.os != OS::NixOS {
             format!("\n  - Installer: {}\n", &nix_info.nix_env.installer)
         } else {
             "".to_string()
