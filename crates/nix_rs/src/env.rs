@@ -6,7 +6,7 @@ use os_info;
 use serde::{Deserialize, Serialize};
 use std::process::Command;
 use tracing::instrument;
-use crate::detsys_installer::{ NixInstallerVersion, BadInstallerVersion };
+use crate::detsys_installer::{ DetSysNixInstallerVersion, BadInstallerVersion };
 
 /// The environment in which Nix operates
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -205,7 +205,7 @@ impl OS {
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub enum NixInstaller {
     /// The installer from <https://github.com/DeterminateSystems/nix-installer>
-    DetSys { version: NixInstallerVersion },
+    DetSys { version: DetSysNixInstallerVersion },
     /// Either offical installer or from a different package manager
     Other,
 }
@@ -226,7 +226,7 @@ impl NixInstaller {
         let nix_installer_path = Path::new("/nix/nix-installer");
         if nix_installer_path.exists() {
             Ok(NixInstaller::DetSys {
-                version: NixInstallerVersion::get_version(nix_installer_path)?,
+                version: DetSysNixInstallerVersion::get_version(nix_installer_path)?,
             })
         } else {
             Ok(NixInstaller::Other)

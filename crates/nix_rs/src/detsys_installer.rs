@@ -7,13 +7,13 @@ use thiserror::Error;
 
 // The version of Detsys/nix-installer
 #[derive(Debug, Serialize, Deserialize, PartialEq, PartialOrd, Eq, Clone)]
-pub struct NixInstallerVersion {
+pub struct DetSysNixInstallerVersion {
     pub major: u32,
     pub minor: u32,
     pub patch: u32,
 }
 
-impl Display for NixInstallerVersion {
+impl Display for DetSysNixInstallerVersion {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}.{}.{}", self.major, self.minor, self.patch)
     }
@@ -31,7 +31,7 @@ pub enum BadInstallerVersion {
     Command,
 }
 
-impl NixInstallerVersion {
+impl DetSysNixInstallerVersion {
     pub fn get_version(executable_path: &Path) -> Result<Self, BadInstallerVersion> {
         let output = std::process::Command::new(executable_path)
             .arg("--version")
@@ -45,7 +45,7 @@ impl NixInstallerVersion {
         let minor = captures[2].parse::<u32>()?;
         let patch = captures[3].parse::<u32>()?;
 
-        Ok(NixInstallerVersion {
+        Ok(DetSysNixInstallerVersion {
             major,
             minor,
             patch,
