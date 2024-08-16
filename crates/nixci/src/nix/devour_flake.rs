@@ -1,12 +1,22 @@
 //! Rust support for invoking <https://github.com/srid/devour-flake>
 
+// TODO: Create a more general version of this module, where a function body is defined in Nix, but FFI invoked (as it were) from Rust.
+
 use anyhow::{bail, Context, Result};
-use nix_rs::{command::NixCmd, store::StorePath};
+use nix_rs::{command::NixCmd, flake::url::FlakeUrl, store::StorePath};
 use std::{collections::HashSet, path::PathBuf, process::Stdio};
 use tokio::io::{AsyncBufReadExt, BufReader};
 
 /// Absolute path to the devour-flake flake source
 pub const DEVOUR_FLAKE: &str = env!("DEVOUR_FLAKE");
+
+/// Input arguments to devour-flake
+pub struct DevourFlakeInput {
+    /// The flake devour-flake will build
+    pub flake: FlakeUrl,
+    /// The systems it will build for. An empty list means all allowed systems.
+    pub systems: FlakeUrl,
+}
 
 /// Output of `devour-flake`
 pub struct DevourFlakeOutput(pub HashSet<StorePath>);
@@ -27,17 +37,19 @@ impl DevourFlakeOutput {
     }
 }
 
-/// Run `devour-flake` command
+/// Run `devour-flake`
 pub async fn devour_flake(
     nixcmd: &NixCmd,
     verbose: bool,
-    args: Vec<String>,
+    input: DevourFlakeInput,
+    extra_args: Vec<String>,
 ) -> Result<DevourFlakeOutput> {
     // TODO: Use nix_rs here as well
     // In the context of doing https://github.com/srid/nixci/issues/15
     let devour_flake_url = format!("{}#default", env!("DEVOUR_FLAKE"));
     let mut cmd = nixcmd.command();
-    cmd.args([
+
+    let mut args = vec![
         "build",
         &devour_flake_url,
         "-L",
@@ -45,8 +57,15 @@ pub async fn devour_flake(
         "--print-out-paths",
         "--override-input",
         "flake",
-    ])
-    .args(args);
+        &input.flake,
+    ];
+    // Specify only if the systems is not the default
+    if input.systems.0 != "github:nix-systems/empty" {
+        args.extend_from_slice(&["--override-input", "systems", &input.systems]);
+    }
+    args.extend(extra_args.iter().map(|s| s.as_str()));
+    cmd.args(args);
+
     nix_rs::command::trace_cmd(&cmd);
     let mut output_fut = cmd.stdout(Stdio::piped()).stderr(Stdio::piped()).spawn()?;
     let stderr_handle = output_fut.stderr.take().unwrap();
