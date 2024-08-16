@@ -1,4 +1,5 @@
 //! Information about the environment in which Nix will run
+// TODO: Make this a package, and split (alongn with detsys_installer.rs)
 use std::{fmt::Display, path::Path};
 
 use bytesize::ByteSize;
