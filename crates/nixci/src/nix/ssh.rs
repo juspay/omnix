@@ -1,4 +1,5 @@
-use std::path::PathBuf;
+//! Function for working with `nix run on ssh`.
+use std::path::{Path, PathBuf};
 
 use crate::{config::ref_::ConfigRef, step::build::BuildStepArgs};
 
@@ -10,7 +11,7 @@ use tokio::process::Command;
 pub async fn on_ssh(
     build_step_args: &BuildStepArgs,
     remote_address: &str,
-    omnix_input: &PathBuf,
+    omnix_input: &Path,
     flake_url: PathBuf,
     cfg_ref: ConfigRef,
 ) -> anyhow::Result<()> {
@@ -19,7 +20,8 @@ pub async fn on_ssh(
     // Add the remote address
     cmd.arg(remote_address);
 
-    let mut flake_to_build = format!("{}", flake_url.to_string_lossy().as_ref());
+    let mut flake_to_build = flake_url.to_string_lossy().as_ref().to_string();
+
     // add sub-flake if selected to be built
     if let Some(sub_flake) = cfg_ref.selected_subflake {
         flake_to_build.push_str(&format!("#{}.{}", cfg_ref.selected_name, sub_flake).to_string());

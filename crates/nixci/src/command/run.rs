@@ -85,23 +85,18 @@ impl RunCommand {
     }
 
     /// Run the ci run command on remote
-    pub async fn run_remote(
-        &self,
-        nixcmd: &NixCmd,
-        cfg: Config,
-        host: &String,
-    ) -> anyhow::Result<()> {
+    pub async fn run_remote(&self, nixcmd: &NixCmd, cfg: Config, host: &str) -> anyhow::Result<()> {
         let metadata = nix_rs::flake::metadata::from_nix(nixcmd, &cfg.ref_.flake_url).await?;
 
         let omnix_source = PathBuf::from(OMNIX_SOURCE);
 
         let args = vec![&omnix_source, &metadata.path];
 
-        nix_rs::copy::from_nix(nixcmd, &host, args).await?;
+        nix_rs::copy::from_nix(nixcmd, host, args).await?;
 
-        let _ = ssh::on_ssh(
+        ssh::on_ssh(
             &self.steps_args.build_step_args,
-            &host,
+            host,
             &omnix_source,
             metadata.path,
             cfg.ref_,
