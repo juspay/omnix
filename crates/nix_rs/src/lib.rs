@@ -5,6 +5,7 @@
 pub mod command;
 pub mod config;
 pub mod copy;
+pub mod detsys_installer;
 pub mod env;
 pub mod flake;
 pub mod info;

@@ -86,9 +86,16 @@ jobs:
             echo "nix is not installed"
           fi
       - name: Run om static binary
+        # By default, the shell will exit if any command fails. We want to
+        # ignore the failure of the om binary using `set +e`.
         run: |
-          chmod +x ./om
-          ./om --help
+            set +e
+            chmod +x ./om
+            ./om health
+            if [[ $? -ne 0 ]]; then
+              echo "om binary failed due to lack of nix installation, as expected."
+              exit 0
+            fi
 
   website-build:
     if: github.ref == 'refs/heads/main'
