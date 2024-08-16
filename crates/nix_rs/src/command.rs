@@ -154,6 +154,8 @@ impl NixCmd {
         let mut child = cmd.spawn()?;
         let exit_status = child.wait().await?; // Wait for the child to finish
 
+        // FIXME: capture stderr. When I tried to do this, it would fail to
+        // stream stdout and block until the process finished.
         let stdout = child.stdout.take().ok_or(CommandError::ProcessFailed {
             stderr: None,
             exit_code: exit_status.code(),
