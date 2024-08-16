@@ -1,7 +1,7 @@
 //! Information about the environment in which Nix will run
 use std::{fmt::Display, path::Path};
 
-use crate::detsys_installer::{BadInstallerVersion, DetSysNixInstallerVersion};
+use crate::detsys_installer::{BadInstallerVersion, DetSysNixInstaller};
 use bytesize::ByteSize;
 use os_info;
 use serde::{Deserialize, Serialize};
@@ -204,8 +204,8 @@ impl OS {
 /// The installer used to install Nix (applicable only for non-NixOS systems)
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub enum NixInstaller {
-    /// The installer from <https://github.com/DeterminateSystems/nix-installer>
-    DetSys { version: DetSysNixInstallerVersion },
+    /// The Determinate Systems installer
+    DetSys(DetSysNixInstaller),
     /// Either offical installer or from a different package manager
     Other,
 }
@@ -213,9 +213,7 @@ pub enum NixInstaller {
 impl Display for NixInstaller {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            NixInstaller::DetSys { version } => {
-                write!(f, "DetSys nix-installer ({})", version)
-            }
+            NixInstaller::DetSys(installer) => write!(f, "{}", installer),
             NixInstaller::Other => write!(f, "Unknown installer"),
         }
     }
@@ -223,13 +221,9 @@ impl Display for NixInstaller {
 
 impl NixInstaller {
     pub fn detect() -> Result<Self, NixEnvError> {
-        let nix_installer_path = Path::new("/nix/nix-installer");
-        if nix_installer_path.exists() {
-            Ok(NixInstaller::DetSys {
-                version: DetSysNixInstallerVersion::get_version(nix_installer_path)?,
-            })
-        } else {
-            Ok(NixInstaller::Other)
+        match DetSysNixInstaller::detect()? {
+            Some(installer) => Ok(NixInstaller::DetSys(installer)),
+            None => Ok(NixInstaller::Other),
         }
     }
 }

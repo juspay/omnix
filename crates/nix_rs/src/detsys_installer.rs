@@ -1,3 +1,5 @@
+//! DetSys installer detection
+// TODO: Move this under 'env' module.
 use serde::{Deserialize, Serialize};
 
 use std::{fmt::Display, io::ErrorKind, path::Path, str::FromStr};
@@ -5,12 +7,37 @@ use std::{fmt::Display, io::ErrorKind, path::Path, str::FromStr};
 use regex::Regex;
 use thiserror::Error;
 
+/// The installer from <https://github.com/DeterminateSystems/nix-installer>
+#[derive(Debug, Serialize, Deserialize, PartialEq, PartialOrd, Eq, Clone)]
+pub struct DetSysNixInstaller {
+    version: DetSysNixInstallerVersion,
+}
+
+impl DetSysNixInstaller {
+    pub fn detect() -> Result<Option<Self>, BadInstallerVersion> {
+        let nix_installer_path = Path::new("/nix/nix-installer");
+        if nix_installer_path.exists() {
+            Ok(Some(DetSysNixInstaller {
+                version: DetSysNixInstallerVersion::get_version(nix_installer_path)?,
+            }))
+        } else {
+            Ok(None)
+        }
+    }
+}
+
+impl Display for DetSysNixInstaller {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "DetSys nix-installer ({})", self.version)
+    }
+}
+
 // The version of Detsys/nix-installer
 #[derive(Debug, Serialize, Deserialize, PartialEq, PartialOrd, Eq, Clone)]
-pub struct DetSysNixInstallerVersion {
-    pub major: u32,
-    pub minor: u32,
-    pub patch: u32,
+struct DetSysNixInstallerVersion {
+    major: u32,
+    minor: u32,
+    patch: u32,
 }
 
 impl Display for DetSysNixInstallerVersion {
