@@ -135,6 +135,8 @@ pub async fn run_checks_with(flake_url: Option<FlakeUrl>) -> anyhow::Result<Vec<
         .as_ref()
         .with_context(|| "Unable to gather nix info")?;
 
+    // TODO: Use the same tabular output as `om show`
+    // For UX consistency.
     let sys_info_msg = format!(
         "\n   - System: {}\n   - OS: {}{}",
         &nix_info.nix_config.system.value,
