@@ -4,7 +4,8 @@
 
 ### Enhancements
 
-- ...
+- `om health`
+  - Display Nix installer used (supports DetSys installer)
 
 ### Fixes
 
