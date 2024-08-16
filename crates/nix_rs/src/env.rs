@@ -248,7 +248,7 @@ pub enum NixEnvError {
     NoDisk,
 
     #[error("Failed to detect Nix installer: {0}")]
-    InstallerVersion(#[from] BadInstallerVersion),
+    InstallerError(#[from] BadInstallerVersion),
 }
 
 /// Convert bytes to a closest [ByteSize]
