@@ -1,12 +1,12 @@
 //! Information about the environment in which Nix will run
 use std::{fmt::Display, path::Path};
 
+use crate::detsys_installer::{BadInstallerVersion, DetSysNixInstallerVersion};
 use bytesize::ByteSize;
 use os_info;
 use serde::{Deserialize, Serialize};
 use std::process::Command;
 use tracing::instrument;
-use crate::detsys_installer::{ DetSysNixInstallerVersion, BadInstallerVersion };
 
 /// The environment in which Nix operates
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

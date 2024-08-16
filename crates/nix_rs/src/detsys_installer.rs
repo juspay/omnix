@@ -37,7 +37,12 @@ impl FromStr for DetSysNixInstallerVersion {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let re = Regex::new(r"(\d+)\.(\d+)\.(\d+)")?;
 
-        let captures = re.captures(s).ok_or(BadInstallerVersion::Command(std::io::Error::new(ErrorKind::InvalidData, "Failed to capture regex")))?;
+        let captures = re
+            .captures(s)
+            .ok_or(BadInstallerVersion::Command(std::io::Error::new(
+                ErrorKind::InvalidData,
+                "Failed to capture regex",
+            )))?;
         let major = captures[1].parse::<u32>()?;
         let minor = captures[2].parse::<u32>()?;
         let patch = captures[3].parse::<u32>()?;
