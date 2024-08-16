@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use std::{fmt::Display, io::ErrorKind, path::Path};
+use std::{fmt::Display, io::ErrorKind, path::Path, str::FromStr};
 
 use regex::Regex;
 use thiserror::Error;
@@ -31,16 +31,13 @@ pub enum BadInstallerVersion {
     Command(std::io::Error),
 }
 
-impl DetSysNixInstallerVersion {
-    pub fn get_version(executable_path: &Path) -> Result<Self, BadInstallerVersion> {
-        let output = std::process::Command::new(executable_path)
-            .arg("--version")
-            .output()
-            .map_err(BadInstallerVersion::Command)?;
-        let output = String::from_utf8(output.stdout)?;
-        let re = Regex::new(r"(?:nix-installer )?(\d+)\.(\d+)\.(\d+)")?;
+impl FromStr for DetSysNixInstallerVersion {
+    type Err = BadInstallerVersion;
 
-        let captures = re.captures(&output).ok_or(BadInstallerVersion::Command(std::io::Error::new(ErrorKind::InvalidData, "Failed to capture regex")))?;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let re = Regex::new(r"(\d+)\.(\d+)\.(\d+)")?;
+
+        let captures = re.captures(s).ok_or(BadInstallerVersion::Command(std::io::Error::new(ErrorKind::InvalidData, "Failed to capture regex")))?;
         let major = captures[1].parse::<u32>()?;
         let minor = captures[2].parse::<u32>()?;
         let patch = captures[3].parse::<u32>()?;
@@ -50,5 +47,16 @@ impl DetSysNixInstallerVersion {
             minor,
             patch,
         })
+    }
+}
+
+impl DetSysNixInstallerVersion {
+    pub fn get_version(executable_path: &Path) -> Result<Self, BadInstallerVersion> {
+        let output = std::process::Command::new(executable_path)
+            .arg("--version")
+            .output()
+            .map_err(BadInstallerVersion::Command)?;
+        let version_str = String::from_utf8(output.stdout)?;
+        version_str.parse()
     }
 }
