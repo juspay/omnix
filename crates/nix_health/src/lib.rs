@@ -135,33 +135,24 @@ pub async fn run_checks_with(flake_url: Option<FlakeUrl>) -> anyhow::Result<Vec<
         .as_ref()
         .with_context(|| "Unable to gather nix info")?;
 
-    // TODO: Use the same tabular output as `om show`
-    // For UX consistency.
-    let sys_info_msg = format!(
-        "\n   - System: {}\n   - OS: {}{}",
-        &nix_info.nix_config.system.value,
-        &nix_info.nix_env.os,
-        (if nix_info.nix_env.os != OS::NixOS {
-            format!("\n   - Installer: {}", &nix_info.nix_env.installer)
-        } else {
-            "".to_string()
-        })
-    );
-
     let health: NixHealth = match flake_url.as_ref() {
-        Some(flake_url) => {
-            tracing::info!(
-                "🩺️ Checking the health of your Nix setup, using config from flake '{}':{}",
-                flake_url,
-                sys_info_msg
-            );
-            NixHealth::from_flake(flake_url).await
-        }
-        None => {
-            tracing::info!("🩺️ Checking the health of your Nix setup:{}", sys_info_msg);
-            Ok(NixHealth::default())
-        }
+        Some(flake_url) => NixHealth::from_flake(flake_url).await,
+        None => Ok(NixHealth::default()),
     }?;
+
+    tracing::info!(
+        "🩺️ Checking the health of your Nix setup{}",
+        match flake_url.as_ref() {
+            Some(flake_url) => format!(" using config from flake '{}'", flake_url),
+            None => "".to_string(),
+        },
+    );
+    tracing::info!("   - System: {}", nix_info.nix_config.system.value);
+    tracing::info!("   - OS: {}", nix_info.nix_env.os);
+    if nix_info.nix_env.os != OS::NixOS {
+        tracing::info!("   - Nix installer: {}", nix_info.nix_env.installer);
+    }
+
     let checks = health.run_checks(nix_info, flake_url.clone());
     Ok(checks)
 }
