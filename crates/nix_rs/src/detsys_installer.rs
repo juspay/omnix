@@ -10,7 +10,7 @@ use thiserror::Error;
 /// The installer from <https://github.com/DeterminateSystems/nix-installer>
 #[derive(Debug, Serialize, Deserialize, PartialEq, PartialOrd, Eq, Clone)]
 pub struct DetSysNixInstaller {
-    version: DetSysNixInstallerVersion,
+    version: InstallerVersion,
 }
 
 impl DetSysNixInstaller {
@@ -18,7 +18,7 @@ impl DetSysNixInstaller {
         let nix_installer_path = Path::new("/nix/nix-installer");
         if nix_installer_path.exists() {
             Ok(Some(DetSysNixInstaller {
-                version: DetSysNixInstallerVersion::get_version(nix_installer_path)?,
+                version: InstallerVersion::get_version(nix_installer_path)?,
             }))
         } else {
             Ok(None)
@@ -34,13 +34,13 @@ impl Display for DetSysNixInstaller {
 
 // The version of Detsys/nix-installer
 #[derive(Debug, Serialize, Deserialize, PartialEq, PartialOrd, Eq, Clone)]
-struct DetSysNixInstallerVersion {
+struct InstallerVersion {
     major: u32,
     minor: u32,
     patch: u32,
 }
 
-impl Display for DetSysNixInstallerVersion {
+impl Display for InstallerVersion {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}.{}.{}", self.major, self.minor, self.patch)
     }
@@ -58,7 +58,7 @@ pub enum BadInstallerVersion {
     Command(std::io::Error),
 }
 
-impl FromStr for DetSysNixInstallerVersion {
+impl FromStr for InstallerVersion {
     type Err = BadInstallerVersion;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -74,7 +74,7 @@ impl FromStr for DetSysNixInstallerVersion {
         let minor = captures[2].parse::<u32>()?;
         let patch = captures[3].parse::<u32>()?;
 
-        Ok(DetSysNixInstallerVersion {
+        Ok(InstallerVersion {
             major,
             minor,
             patch,
@@ -82,7 +82,7 @@ impl FromStr for DetSysNixInstallerVersion {
     }
 }
 
-impl DetSysNixInstallerVersion {
+impl InstallerVersion {
     pub fn get_version(executable_path: &Path) -> Result<Self, BadInstallerVersion> {
         let output = std::process::Command::new(executable_path)
             .arg("--version")

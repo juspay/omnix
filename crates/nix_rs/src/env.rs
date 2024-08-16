@@ -1,7 +1,6 @@
 //! Information about the environment in which Nix will run
 use std::{fmt::Display, path::Path};
 
-use crate::detsys_installer::{BadInstallerVersion, DetSysNixInstaller};
 use bytesize::ByteSize;
 use os_info;
 use serde::{Deserialize, Serialize};
@@ -205,7 +204,7 @@ impl OS {
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub enum NixInstaller {
     /// The Determinate Systems installer
-    DetSys(DetSysNixInstaller),
+    DetSys(super::detsys_installer::DetSysNixInstaller),
     /// Either offical installer or from a different package manager
     Other,
 }
@@ -221,7 +220,7 @@ impl Display for NixInstaller {
 
 impl NixInstaller {
     pub fn detect() -> Result<Self, NixEnvError> {
-        match DetSysNixInstaller::detect()? {
+        match super::detsys_installer::DetSysNixInstaller::detect()? {
             Some(installer) => Ok(NixInstaller::DetSys(installer)),
             None => Ok(NixInstaller::Other),
         }
@@ -242,7 +241,7 @@ pub enum NixEnvError {
     NoDisk,
 
     #[error("Failed to detect Nix installer: {0}")]
-    InstallerError(#[from] BadInstallerVersion),
+    InstallerError(#[from] super::detsys_installer::BadInstallerVersion),
 }
 
 /// Convert bytes to a closest [ByteSize]
