@@ -1,8 +1,10 @@
 use crate::command::{CommandError, NixCmd};
 use std::path::PathBuf;
 
+/// This facilitates the transfer of Nix derivations and their dependencies
+/// between different Nix store locations.
 /// Runs `nix copy` in Rust
-pub async fn from_nix(cmd: &NixCmd, host: &str, paths: Vec<&PathBuf>) -> Result<(), CommandError> {
+pub async fn nix_copy(cmd: &NixCmd, host: &str, paths: &[PathBuf]) -> Result<(), CommandError> {
     let remote_address = format!("ssh://{}", host);
     let mut args = vec!["copy", "--to", &remote_address];
 
