@@ -7,7 +7,10 @@ use serde::Deserialize;
 use crate::{
     command::run::RunCommand,
     config::subflake::SubflakeConfig,
-    nix::{self, devour_flake},
+    nix::{
+        self,
+        devour_flake::{self, DevourFlakeInput},
+    },
 };
 
 /// Represents a build step in the CI pipeline
@@ -71,8 +74,13 @@ impl BuildStep {
             "{}",
             format!("⚒️  Building subflake: {}", subflake.dir).bold()
         );
-        let nix_args = nix_build_args_for_subflake(subflake, run_cmd, url);
-        let output = nix::devour_flake::devour_flake(nixcmd, verbose, nix_args).await?;
+        let nix_args = subflake_extra_args(subflake, &run_cmd.steps_args.build_step_args);
+        let devour_input = DevourFlakeInput {
+            flake: url.sub_flake_url(subflake.dir.clone()),
+            systems: run_cmd.systems.0.clone(),
+        };
+        let output =
+            nix::devour_flake::devour_flake(nixcmd, verbose, devour_input, nix_args).await?;
 
         let outs = if run_cmd.steps_args.build_step_args.print_all_dependencies {
             // Handle --print-all-dependencies
@@ -88,14 +96,9 @@ impl BuildStep {
     }
 }
 
-/// Return the devour-flake `nix build` arguments for building all the outputs in this
-/// subflake configuration.
-fn nix_build_args_for_subflake(
-    subflake: &SubflakeConfig,
-    run_cmd: &RunCommand,
-    flake_url: &FlakeUrl,
-) -> Vec<String> {
-    let mut args = vec![flake_url.sub_flake_url(subflake.dir.clone()).0];
+/// Extra args to pass to devour-flake
+fn subflake_extra_args(subflake: &SubflakeConfig, build_step_args: &BuildStepArgs) -> Vec<String> {
+    let mut args = vec![];
 
     for (k, v) in &subflake.override_inputs {
         args.extend_from_slice(&[
@@ -105,23 +108,7 @@ fn nix_build_args_for_subflake(
         ])
     }
 
-    // devour-flake already uses this, so no need to override.
-    if run_cmd.systems.0 .0 != "github:nix-systems/empty" {
-        args.extend_from_slice(&[
-            "--override-input".to_string(),
-            "systems".to_string(),
-            run_cmd.systems.0 .0.clone(),
-        ])
-    }
-
-    args.extend(
-        run_cmd
-            .steps_args
-            .build_step_args
-            .extra_nix_build_args
-            .iter()
-            .cloned(),
-    );
+    args.extend(build_step_args.extra_nix_build_args.iter().cloned());
 
     args
 }

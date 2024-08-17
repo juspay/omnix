@@ -43,7 +43,6 @@ in
       # available. The rest may be be GC'ed.
       cache-pins.pathsToCache = {
         cli = self'.packages.default;
-        nix-health = self'.packages.nix-health;
       };
     };
   };

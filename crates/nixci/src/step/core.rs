@@ -16,8 +16,11 @@ use crate::step::{
 #[derive(Debug, Default, Deserialize)]
 pub struct Steps {
     /// [LockfileStep]
+    #[serde(default, rename = "lockfile")]
     pub lockfile_step: LockfileStep,
+
     /// [BuildStep]
+    #[serde(default, rename = "build")]
     pub build_step: BuildStep,
     // TODO: custom steps
 }
