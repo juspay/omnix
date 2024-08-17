@@ -30,6 +30,7 @@
               --fish <($out/bin/om completion fish)
           '';
         });
+
         gui = crates."omnix-gui".crane.outputs.drv.crate.overrideAttrs (oa: {
           # Copy over assets for the desktop app to access
           installPhase =
@@ -47,7 +48,7 @@
                 --chdir $out/bin
             '';
         });
-        nix-health = self'.packages.nix_health;
+
       };
   };
 }
