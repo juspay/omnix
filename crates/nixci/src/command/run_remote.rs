@@ -1,7 +1,11 @@
 //! Functions for running `ci run` on remote machine.
 
 use anyhow::{Context, Result};
-use nix_rs::{command::NixCmd, flake::metadata::FlakeMetadata};
+use nix_rs::{
+    command::NixCmd,
+    flake::metadata::FlakeMetadata,
+    store::{SSHStoreURI, StoreURI},
+};
 use std::path::PathBuf;
 
 use crate::{config::ref_::ConfigRef, step::build::BuildStepArgs};
@@ -15,7 +19,7 @@ pub async fn run(
     build_step_args: BuildStepArgs,
     nixcmd: &NixCmd,
     cfg_ref: ConfigRef,
-    store_uri: &str,
+    store_uri: &StoreURI,
 ) -> anyhow::Result<()> {
     let metadata = FlakeMetadata::from_nix(nixcmd, &cfg_ref.flake_url).await?;
 
@@ -31,13 +35,8 @@ pub async fn run(
     let nix_run_args = get_nix_run_args(build_step_args, metadata.path, cfg_ref)?;
 
     // call ci run on remote machine through ssh
-    // TODO: This validation should happen at clap level?
-    let (scheme, host) = store_uri
-        .split_once("://")
-        .context("Invalid store URI format")?;
-    match scheme {
-        "ssh" => on_ssh(host, &nix_run_args).await,
-        _ => unimplemented!("Only ssh store URIs are supported for now"),
+    match store_uri {
+        StoreURI::SSH(ssh_uri) => on_ssh(&ssh_uri, &nix_run_args).await,
     }
 }
 
@@ -93,11 +92,11 @@ fn get_ci_run_args_for_remote(
 }
 
 /// Runs `commands through ssh on remote machine` in Rust
-pub async fn on_ssh(remote_address: &str, args: &[String]) -> anyhow::Result<()> {
+pub async fn on_ssh(remote_address: &SSHStoreURI, args: &[String]) -> anyhow::Result<()> {
     let mut cmd = Command::new("ssh");
 
     // Add the remote address
-    cmd.arg(remote_address);
+    cmd.arg(remote_address.to_string());
 
     // Join all arguments in a string and add to ssh command.
     cmd.arg(args.join(" "));

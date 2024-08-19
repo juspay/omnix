@@ -1,7 +1,11 @@
 //! The build step
 use clap::Parser;
 use colored::Colorize;
-use nix_rs::{command::NixCmd, flake::url::FlakeUrl, store::NixStoreCmd};
+use nix_rs::{
+    command::NixCmd,
+    flake::url::FlakeUrl,
+    store::{NixStoreCmd, StoreURI},
+};
 use serde::Deserialize;
 
 use crate::{
@@ -48,7 +52,7 @@ pub struct BuildStepArgs {
 
     /// Run `om ci run` remotely on the given store URI
     #[clap(long)]
-    pub on: Option<String>,
+    pub on: Option<StoreURI>,
 }
 
 impl BuildStepArgs {
