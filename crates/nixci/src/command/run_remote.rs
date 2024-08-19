@@ -1,10 +1,7 @@
 //! Functions for running `ci run` on remote machine.
 
 use anyhow::{Context, Result};
-use nix_rs::{
-    command::NixCmd,
-    flake::{metadata::FlakeMetadata, url::FlakeUrl},
-};
+use nix_rs::{command::NixCmd, flake::metadata::FlakeMetadata};
 use std::path::PathBuf;
 
 use crate::{config::ref_::ConfigRef, step::build::BuildStepArgs};
@@ -48,7 +45,7 @@ fn get_nix_run_args(
         "--".to_string(),
     ]
     .into_iter()
-    .chain(ci_run_args.into_iter())
+    .chain(ci_run_args)
     .collect();
 
     Ok(nix_run_args)
@@ -128,7 +125,7 @@ fn nix_run_args() -> anyhow::Result<()> {
     };
 
     let cfg_ref = ConfigRef {
-        flake_url: FlakeUrl(
+        flake_url: nix_rs::flake::url::FlakeUrl(
             "github:srid/haskell-multi-nix/c85563721c388629fa9e538a1d97274861bc8321".to_string(),
         ),
         selected_name: "default".to_string(),
