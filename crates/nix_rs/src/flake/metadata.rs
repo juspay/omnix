@@ -11,7 +11,7 @@ pub struct FlakeMetadata {
 }
 
 impl FlakeMetadata {
-    /// Runs `nix flake metadata json for a given flake url` in Rust
+    /// Runs `nix flake metadata --json` for a given flake url in Rust
     pub async fn from_nix(
         cmd: &NixCmd,
         flake_url: &FlakeUrl,
