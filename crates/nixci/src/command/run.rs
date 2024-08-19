@@ -62,12 +62,14 @@ impl RunCommand {
     /// Run the build command which decides whether to do ci run on current machine or a remote machine
     pub async fn run(&self, nixcmd: &NixCmd, verbose: bool, cfg: Config) -> anyhow::Result<()> {
         match &self.on {
-            Some(store_uri) => run_remote::run(nixcmd, self, &cfg.ref_, store_uri).await,
+            Some(store_uri) => {
+                run_remote::run_on_remote_store(nixcmd, self, &cfg.ref_, store_uri).await
+            }
             None => self.run_local(nixcmd, verbose, cfg).await,
         }
     }
 
-    /// Runs the ci run steps on current machine
+    /// Run [RunCommand] on local Nix store.
     async fn run_local(&self, nixcmd: &NixCmd, verbose: bool, cfg: Config) -> anyhow::Result<()> {
         // TODO: We'll refactor this function to use steps
         // https://github.com/juspay/omnix/issues/216
