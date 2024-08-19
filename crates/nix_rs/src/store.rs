@@ -111,13 +111,8 @@ impl NixStoreCmd {
         drv_paths: &[PathBuf],
     ) -> Result<HashSet<StorePath>, NixStoreCmdError> {
         let mut cmd = self.command();
-        let mut args = vec!["--query", "--requisites", "--include-outputs"];
-        let paths: Vec<&str> = drv_paths
-            .iter()
-            .map(|path| path.as_path().to_str().unwrap_or_default())
-            .collect();
-        args.extend(paths);
-        cmd.args(args);
+        cmd.args(["--query", "--requisites", "--include-outputs"])
+            .args(drv_paths);
         crate::command::trace_cmd(&cmd);
         let out = cmd.output().await?;
         if out.status.success() {
