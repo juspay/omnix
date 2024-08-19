@@ -14,3 +14,4 @@ clap = { workspace = true }
 clap-verbosity-flag = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
+which = { workspace = true }

@@ -1,4 +1,5 @@
 //! Information about the environment in which Nix will run
+// TODO: Make this a package, and split (alongn with detsys_installer.rs)
 use std::{fmt::Display, path::Path};
 
 use bytesize::ByteSize;
@@ -22,6 +23,8 @@ pub struct NixEnv {
     pub total_disk_space: ByteSize,
     /// Total memory
     pub total_memory: ByteSize,
+    /// The installer used to install Nix
+    pub installer: NixInstaller,
 }
 
 impl NixEnv {
@@ -40,12 +43,14 @@ impl NixEnv {
             let total_disk_space = to_bytesize(get_nix_disk(&sys)?.total_space());
             let total_memory = to_bytesize(sys.total_memory());
             let current_user_groups = get_current_user_groups()?;
+            let installer = NixInstaller::detect()?;
             Ok(NixEnv {
                 current_user,
                 current_user_groups,
                 os,
                 total_disk_space,
                 total_memory,
+                installer,
             })
         })
         .await
@@ -196,6 +201,33 @@ impl OS {
     }
 }
 
+/// The installer used to install Nix (applicable only for non-NixOS systems)
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
+pub enum NixInstaller {
+    /// The Determinate Systems installer
+    DetSys(super::detsys_installer::DetSysNixInstaller),
+    /// Either offical installer or from a different package manager
+    Other,
+}
+
+impl Display for NixInstaller {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            NixInstaller::DetSys(installer) => write!(f, "{}", installer),
+            NixInstaller::Other => write!(f, "Unknown installer"),
+        }
+    }
+}
+
+impl NixInstaller {
+    pub fn detect() -> Result<Self, NixEnvError> {
+        match super::detsys_installer::DetSysNixInstaller::detect()? {
+            Some(installer) => Ok(NixInstaller::DetSys(installer)),
+            None => Ok(NixInstaller::Other),
+        }
+    }
+}
+
 /// Errors while trying to fetch [NixEnv]
 
 #[derive(thiserror::Error, Debug)]
@@ -208,6 +240,9 @@ pub enum NixEnvError {
 
     #[error("Unable to find root disk or /nix volume")]
     NoDisk,
+
+    #[error("Failed to detect Nix installer: {0}")]
+    InstallerError(#[from] super::detsys_installer::BadInstallerVersion),
 }
 
 /// Convert bytes to a closest [ByteSize]

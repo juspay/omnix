@@ -30,6 +30,11 @@
               --fish <($out/bin/om completion fish)
           '';
         });
+
+        # As autoWire is disabled for omnix-cli, let's check clippy and doc here
+        omnix-cli-clippy = crates."omnix-cli".crane.outputs.drv.clippy;
+        omnix-cli-doc = crates."omnix-cli".crane.outputs.drv.doc;
+
         gui = crates."omnix-gui".crane.outputs.drv.crate.overrideAttrs (oa: {
           # Copy over assets for the desktop app to access
           installPhase =
@@ -47,7 +52,7 @@
                 --chdir $out/bin
             '';
         });
-        nix-health = self'.packages.nix_health;
+
       };
   };
 }

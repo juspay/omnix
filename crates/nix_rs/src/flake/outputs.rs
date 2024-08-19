@@ -223,7 +223,7 @@ impl FlakeOutputsUntagged {
                 "--json",
                 "--default-flake-schemas",
                 env!("DEFAULT_FLAKE_SCHEMAS"),
-                &flake_url.to_string(),
+                flake_url,
             ])
             .await?;
         Ok(v)

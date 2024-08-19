@@ -22,6 +22,11 @@ pub enum Command {
 
 impl Command {
     pub async fn run(&self, verbosity: Verbosity<InfoLevel>) -> anyhow::Result<()> {
+        if !matches!(self, Command::Completion(_)) && !omnix_common::check::nix_installed() {
+            tracing::error!("Nix is not installed: https://nixos.asia/en/install");
+            std::process::exit(1);
+        }
+
         match self {
             Command::Show(cmd) => cmd.run().await,
             Command::Init(cmd) => cmd.run().await,
