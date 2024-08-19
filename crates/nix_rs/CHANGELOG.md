@@ -6,6 +6,8 @@
   - Add `without_attr`, `get_attr`
   - Simplify the return type of `RootQualifiedAttr::eval_flake`
   - Add `AsRef` and `Deref` instances for `FlakeUrl`
+  - **`attr`**:
+    - Add `FlakeAttr::new` and `FlakeAttr::none` constructors
 - **`store`**:
   - Add module (upstreamed from nixci)
   - Add `StoreURI`

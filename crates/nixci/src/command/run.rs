@@ -61,7 +61,7 @@ impl RunCommand {
                 run_remote::run(
                     &self.steps_args.build_step_args,
                     nixcmd,
-                    cfg.ref_,
+                    &cfg.ref_,
                     store_uri,
                 )
                 .await

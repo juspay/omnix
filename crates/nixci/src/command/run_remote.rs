@@ -18,20 +18,16 @@ const OMNIX_SOURCE: &str = env!("OMNIX_SOURCE");
 pub async fn run(
     build_step_args: &BuildStepArgs,
     nixcmd: &NixCmd,
-    cfg_ref: ConfigRef,
+    cfg_ref: &ConfigRef,
     store_uri: &StoreURI,
 ) -> anyhow::Result<()> {
-    let metadata = FlakeMetadata::from_nix(nixcmd, &cfg_ref.flake_url).await?;
-
+    let (local_flake_path, local_flake_url) =
+        cache_flake(nixcmd, &cfg_ref.flake_url, &cfg_ref).await?;
     let omnix_source = PathBuf::from(OMNIX_SOURCE);
 
-    nix_rs::copy::nix_copy(nixcmd, store_uri, &[&omnix_source, &metadata.path]).await?;
+    nix_rs::copy::nix_copy(nixcmd, store_uri, &[&omnix_source, &local_flake_path]).await?;
 
-    let nix_run_args = nix_run_om_ci_run_args(
-        build_step_args,
-        FlakeUrl(metadata.path.to_string_lossy().into_owned()),
-        cfg_ref,
-    )?;
+    let nix_run_args = nix_run_om_ci_run_args(build_step_args, local_flake_url)?;
 
     // call ci run on remote machine through ssh
     match store_uri {
@@ -39,23 +35,32 @@ pub async fn run(
     }
 }
 
+/// Return the locally cached [FlakeUrl] for the given flake url that points to same selected [ConfigRef].
+async fn cache_flake(
+    nixcmd: &NixCmd,
+    flake_url: &FlakeUrl,
+    cfg_ref: &ConfigRef,
+) -> anyhow::Result<(PathBuf, FlakeUrl)> {
+    let metadata = FlakeMetadata::from_nix(nixcmd, flake_url).await?;
+    let path = metadata.path.to_string_lossy().into_owned();
+    let local_flake_url = if let Some(attr) = cfg_ref.get_attr().0 {
+        FlakeUrl(path).with_attr(&attr)
+    } else {
+        FlakeUrl(path)
+    };
+    Ok((metadata.path, local_flake_url))
+}
+
 /// Returns `nix run` args for running `om ci run` on remote machine.
 fn nix_run_om_ci_run_args(
     build_step_args: &BuildStepArgs,
     flake_url: FlakeUrl,
-    cfg_ref: ConfigRef,
 ) -> Result<Vec<String>> {
     let mut args: Vec<&str> = vec![];
 
     let omnix_flake = format!("{}#default", OMNIX_SOURCE);
     args.extend(&["nix run", &omnix_flake, "--"]);
-
-    let flake_arg = if let Some(subflake) = cfg_ref.selected_subflake {
-        flake_url.with_attr(&format!("{}.{}", cfg_ref.selected_name, subflake))
-    } else {
-        flake_url
-    };
-    args.extend(&["ci", "run", &flake_arg]);
+    args.extend(&["ci", "run", &flake_url]);
 
     if build_step_args.print_all_dependencies {
         args.push("--print-all-dependencies");
