@@ -27,8 +27,8 @@ pub struct RunCommand {
     /// Must be a flake reference which, when imported, must return a Nix list
     /// of systems. You may use one of the lists from
     /// <https://github.com/nix-systems>.
-    #[arg(long, default_value = "github:nix-systems/empty")]
-    pub systems: SystemsListFlakeRef,
+    #[arg(long)]
+    pub systems: Option<SystemsListFlakeRef>,
 
     /// Flake URL or github URL
     ///
@@ -57,15 +57,7 @@ impl RunCommand {
     /// Run the build command which decides whether to do ci run on current machine or a remote machine
     pub async fn run(&self, nixcmd: &NixCmd, verbose: bool, cfg: Config) -> anyhow::Result<()> {
         match &self.steps_args.build_step_args.on {
-            Some(store_uri) => {
-                run_remote::run(
-                    &self.steps_args.build_step_args,
-                    nixcmd,
-                    &cfg.ref_,
-                    store_uri,
-                )
-                .await
-            }
+            Some(store_uri) => run_remote::run(nixcmd, self, &cfg.ref_, store_uri).await,
             None => self.run_local(nixcmd, verbose, cfg).await,
         }
     }
@@ -97,14 +89,33 @@ impl RunCommand {
 
     /// Get the systems to build for
     pub async fn get_systems(&self, cmd: &NixCmd, nix_config: &NixConfig) -> Result<Vec<System>> {
-        let systems = SystemsList::from_flake(cmd, &self.systems).await?.0;
-        if systems.is_empty() {
-            // An empty systems list means build for the current system
-            let current_system = &nix_config.system.value;
-            Ok(vec![current_system.clone()])
-        } else {
-            Ok(systems)
+        match &self.systems {
+            None => {
+                // An empty systems list means build for the current system
+                let current_system = &nix_config.system.value;
+                Ok(vec![current_system.clone()])
+            }
+            Some(systems) => {
+                let systems = SystemsList::from_flake(cmd, systems).await?.0;
+                Ok(systems)
+            }
         }
+    }
+
+    /// Convert this type back to the user-facing command line arguments
+    pub fn to_cli_args(&self) -> Vec<String> {
+        let mut args = vec![];
+
+        if let Some(systems) = self.systems.as_ref() {
+            args.push("--systems".to_string());
+            args.push(systems.0 .0.clone());
+        }
+
+        args.push(self.flake_ref.to_string());
+
+        args.extend(self.steps_args.to_cli_args());
+
+        args
     }
 }
 

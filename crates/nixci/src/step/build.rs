@@ -35,14 +35,6 @@ impl Default for BuildStep {
 /// CLI arguments for [BuildStep]
 #[derive(Parser, Debug, Clone)]
 pub struct BuildStepArgs {
-    /// Additional arguments to pass through to `nix build`
-    #[arg(last = true, default_values_t = vec![
-    "--refresh".to_string(),
-    "-j".to_string(),
-    "auto".to_string(),
-    ])]
-    pub extra_nix_build_args: Vec<String>,
-
     /// Print build and runtime dependencies along with out paths
     ///
     /// By default, `nixci build` prints only the out paths. This option is
@@ -53,6 +45,14 @@ pub struct BuildStepArgs {
     /// Run `om ci run` remotely on the given store URI
     #[clap(long)]
     pub on: Option<StoreURI>,
+
+    /// Additional arguments to pass through to `nix build`
+    #[arg(last = true, default_values_t = vec![
+    "--refresh".to_string(),
+    "-j".to_string(),
+    "auto".to_string(),
+    ])]
+    pub extra_nix_build_args: Vec<String>,
 }
 
 impl BuildStepArgs {
@@ -60,6 +60,29 @@ impl BuildStepArgs {
     pub fn preprocess(&mut self) {
         // Adjust to devour_flake's expectations
         devour_flake::transform_override_inputs(&mut self.extra_nix_build_args);
+    }
+
+    /// Convert this type back to the user-facing command line arguments
+    pub fn to_cli_args(&self) -> Vec<String> {
+        let mut args = vec![];
+
+        if self.print_all_dependencies {
+            args.push("--print-all-dependencies".to_owned());
+        }
+
+        if let Some(uri) = self.on.as_ref() {
+            args.push("--on".to_owned());
+            args.push(uri.to_string());
+        }
+
+        if !self.extra_nix_build_args.is_empty() {
+            args.push("--".to_owned());
+            for arg in &self.extra_nix_build_args {
+                args.push(arg.clone());
+            }
+        }
+
+        args
     }
 }
 
@@ -81,7 +104,7 @@ impl BuildStep {
         let nix_args = subflake_extra_args(subflake, &run_cmd.steps_args.build_step_args);
         let devour_input = DevourFlakeInput {
             flake: url.sub_flake_url(subflake.dir.clone()),
-            systems: run_cmd.systems.0.clone(),
+            systems: run_cmd.systems.clone().map(|l| l.0),
         };
         let output =
             nix::devour_flake::devour_flake(nixcmd, verbose, devour_input, nix_args).await?;
