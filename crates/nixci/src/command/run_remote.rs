@@ -28,7 +28,7 @@ pub async fn run(
     );
 
     let (local_flake_path, local_flake_url) =
-        cache_flake(nixcmd, &cfg_ref.flake_url, &cfg_ref).await?;
+        cache_flake(nixcmd, &cfg_ref.flake_url, cfg_ref).await?;
     let omnix_source = PathBuf::from(OMNIX_SOURCE);
 
     nix_rs::copy::nix_copy(nixcmd, store_uri, &[&omnix_source, &local_flake_path]).await?;
@@ -75,7 +75,7 @@ fn nix_run_om_ci_run_args(
     if !build_step_args.extra_nix_build_args.is_empty() {
         args.push("--");
         for arg in &build_step_args.extra_nix_build_args {
-            args.push(&arg);
+            args.push(arg);
         }
     }
 
