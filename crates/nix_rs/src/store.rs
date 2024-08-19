@@ -70,11 +70,9 @@ impl NixStoreCmd {
             let drv = self.nix_store_query_deriver(out.clone()).await?;
             all_drvs.insert(drv);
         }
-        let mut all_outs = HashSet::new();
-        for drv in all_drvs {
-            let deps = self.nix_store_query_requisites_with_outputs(drv).await?;
-            all_outs.extend(deps.into_iter());
-        }
+        let all_outs = self
+            .nix_store_query_requisites_with_outputs(all_drvs)
+            .await?;
         Ok(all_outs)
     }
 
@@ -106,19 +104,20 @@ impl NixStoreCmd {
         }
     }
 
-    /// Given a derivation path, this function recursively queries and return all
+    /// Given the derivation paths, this function recursively queries and return all
     /// of its dependencies in the Nix store.
     pub async fn nix_store_query_requisites_with_outputs(
         &self,
-        drv_path: PathBuf,
-    ) -> Result<Vec<StorePath>, NixStoreCmdError> {
+        drv_paths: HashSet<PathBuf>,
+    ) -> Result<HashSet<StorePath>, NixStoreCmdError> {
         let mut cmd = self.command();
-        cmd.args([
-            "--query",
-            "--requisites",
-            "--include-outputs",
-            drv_path.to_string_lossy().as_ref(),
-        ]);
+        let mut args = vec!["--query", "--requisites", "--include-outputs"];
+        let paths: Vec<&str> = drv_paths
+            .iter()
+            .map(|path| path.as_path().to_str().unwrap_or_default())
+            .collect();
+        args.extend(paths);
+        cmd.args(args);
         crate::command::trace_cmd(&cmd);
         let out = cmd.output().await?;
         if out.status.success() {
