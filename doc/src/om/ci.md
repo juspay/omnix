@@ -36,6 +36,9 @@ $ om ci run https://github.com/srid/emanote/pull/451
 # Run CI only the selected sub-flake
 $ git clone https://github.com/srid/haskell-flake && cd haskell-flake
 $ om ci run .#default.dev
+
+# Run CI remotely over SSH
+$ om ci run --on ssh://myname@myserver ~/code/myproject
 ```
 
 ### Using in Github Actions {#github-actions}
