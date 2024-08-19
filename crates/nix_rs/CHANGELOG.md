@@ -10,6 +10,8 @@
 - **`env`**:
   - `NixEnv::detect`'s logging uses DEBUG level now (formerly INFO)
   - Add Nix installer to `NixEnv`
+- **`command`
+  - `run_with_args` now takes an iterator of string references, much like `Command::args`.
 
 ## 1.0.0
 
