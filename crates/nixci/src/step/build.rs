@@ -1,11 +1,7 @@
 //! The build step
 use clap::Parser;
 use colored::Colorize;
-use nix_rs::{
-    command::NixCmd,
-    flake::url::FlakeUrl,
-    store::{NixStoreCmd, StoreURI},
-};
+use nix_rs::{command::NixCmd, flake::url::FlakeUrl, store::NixStoreCmd};
 use serde::Deserialize;
 
 use crate::{
@@ -42,10 +38,6 @@ pub struct BuildStepArgs {
     #[clap(long, short = 'd')]
     pub print_all_dependencies: bool,
 
-    /// Run `om ci run` remotely on the given store URI
-    #[clap(long)]
-    pub on: Option<StoreURI>,
-
     /// Additional arguments to pass through to `nix build`
     #[arg(last = true, default_values_t = vec![
     "--refresh".to_string(),
@@ -68,11 +60,6 @@ impl BuildStepArgs {
 
         if self.print_all_dependencies {
             args.push("--print-all-dependencies".to_owned());
-        }
-
-        if let Some(uri) = self.on.as_ref() {
-            args.push("--on".to_owned());
-            args.push(uri.to_string());
         }
 
         if !self.extra_nix_build_args.is_empty() {

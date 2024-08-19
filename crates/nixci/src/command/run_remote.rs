@@ -75,11 +75,10 @@ fn om_cli_with(run_cmd: &RunCommand, flake_url: &FlakeUrl) -> Result<Vec<String>
         "run".to_owned(),
     ]);
 
-    // The same CLI, but without --on and using locally cached flake path.
+    // The same CLI but using locally cached flake path.
     // NOTE(limitation): We are not passing global options from `om ci` itself.
     let mut run_cmd = run_cmd.clone();
     run_cmd.flake_ref = FlakeRef::Flake(flake_url.clone());
-    run_cmd.steps_args.build_step_args.on = None;
     args.extend(run_cmd.to_cli_args());
 
     Ok(args)

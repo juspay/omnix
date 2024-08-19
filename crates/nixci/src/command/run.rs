@@ -8,6 +8,7 @@ use nix_rs::{
     config::NixConfig,
     flake::{system::System, url::FlakeUrl},
     info::NixInfo,
+    store::StoreURI,
 };
 
 use crate::{
@@ -22,6 +23,10 @@ use super::run_remote;
 /// Command to run all CI steps
 #[derive(Parser, Debug, Clone)]
 pub struct RunCommand {
+    /// Run `om ci run` remotely on the given store URI
+    #[clap(long)]
+    pub on: Option<StoreURI>,
+
     /// The systems list to build for. If empty, build for current system.
     ///
     /// Must be a flake reference which, when imported, must return a Nix list
@@ -56,7 +61,7 @@ impl RunCommand {
 
     /// Run the build command which decides whether to do ci run on current machine or a remote machine
     pub async fn run(&self, nixcmd: &NixCmd, verbose: bool, cfg: Config) -> anyhow::Result<()> {
-        match &self.steps_args.build_step_args.on {
+        match &self.on {
             Some(store_uri) => run_remote::run(nixcmd, self, &cfg.ref_, store_uri).await,
             None => self.run_local(nixcmd, verbose, cfg).await,
         }
@@ -105,6 +110,11 @@ impl RunCommand {
     /// Convert this type back to the user-facing command line arguments
     pub fn to_cli_args(&self) -> Vec<String> {
         let mut args = vec![];
+
+        if let Some(uri) = self.on.as_ref() {
+            args.push("--on".to_owned());
+            args.push(uri.to_string());
+        }
 
         if let Some(systems) = self.systems.as_ref() {
             args.push("--systems".to_string());
