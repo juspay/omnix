@@ -5,7 +5,7 @@ use colored::Colorize;
 use nix_rs::{
     command::NixCmd,
     flake::{metadata::FlakeMetadata, url::FlakeUrl},
-    store::{SSHStoreURI, StoreURI},
+    store::StoreURI,
 };
 use std::path::PathBuf;
 use tokio::process::Command;
@@ -36,7 +36,7 @@ pub async fn run(
     let nix_run_args = nix_run_om_ci_run_args(build_step_args, local_flake_url)?;
 
     match store_uri {
-        StoreURI::SSH(ssh_uri) => on_ssh(ssh_uri, &nix_run_args).await,
+        StoreURI::SSH(ssh_uri) => run_ssh(&ssh_uri.to_string(), &nix_run_args).await,
     }
 }
 
@@ -82,17 +82,17 @@ fn nix_run_om_ci_run_args(
     Ok(args.iter().map(|s| s.to_string()).collect())
 }
 
-/// Runs `commands through ssh on remote machine` in Rust
-async fn on_ssh(remote_address: &SSHStoreURI, args: &[String]) -> anyhow::Result<()> {
+/// Run SSH command with given arguments.
+async fn run_ssh(host: &str, args: &[String]) -> anyhow::Result<()> {
     let mut cmd = Command::new("ssh");
 
-    // Add the remote address
-    cmd.arg(remote_address.to_string());
+    cmd.args(&[
+        host,
+        // FIXME: This may require escaping of whitespace in args.
+        &args.join(" "),
+    ]);
 
-    // Join all arguments in a string and add to ssh command.
-    cmd.arg(args.join(" "));
-
-    nix_rs::command::trace_cmd(&cmd);
+    nix_rs::command::trace_cmd_with("🐌", &cmd);
 
     let status = cmd
         .status()

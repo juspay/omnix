@@ -16,6 +16,7 @@
   - Add Nix installer to `NixEnv`
 - **`command`
   - `run_with_args` now takes an iterator of string references, much like `Command::args`.
+  - Add `trace_cmd_with`
 
 ## 1.0.0
 
