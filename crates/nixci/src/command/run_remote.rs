@@ -3,7 +3,7 @@
 use anyhow::{Context, Result};
 use nix_rs::{
     command::NixCmd,
-    flake::metadata::FlakeMetadata,
+    flake::{metadata::FlakeMetadata, url::FlakeUrl},
     store::{SSHStoreURI, StoreURI},
 };
 use std::path::PathBuf;
@@ -27,7 +27,11 @@ pub async fn run(
 
     nix_rs::copy::nix_copy(nixcmd, store_uri, &[&omnix_source, &metadata.path]).await?;
 
-    let nix_run_args = get_nix_run_args(build_step_args, metadata.path, cfg_ref)?;
+    let nix_run_args = nix_run_om_ci_run_args(
+        build_step_args,
+        FlakeUrl(metadata.path.to_string_lossy().into_owned()),
+        cfg_ref,
+    )?;
 
     // call ci run on remote machine through ssh
     match store_uri {
@@ -35,55 +39,37 @@ pub async fn run(
     }
 }
 
-/// Returns `nix run` args for running `ci run` on remote machine.
-fn get_nix_run_args(
+/// Returns `nix run` args for running `om ci run` on remote machine.
+fn nix_run_om_ci_run_args(
     build_step_args: &BuildStepArgs,
-    flake_url: PathBuf,
+    flake_url: FlakeUrl,
     cfg_ref: ConfigRef,
 ) -> Result<Vec<String>> {
-    let ci_run_args = get_ci_run_args_for_remote(build_step_args, flake_url, cfg_ref)?;
+    let mut args: Vec<&str> = vec![];
 
-    let nix_run_args: Vec<String> = vec![
-        "nix run".to_string(),
-        format!("{}#default", OMNIX_SOURCE),
-        "--".to_string(),
-    ]
-    .into_iter()
-    .chain(ci_run_args)
-    .collect();
+    let omnix_flake = format!("{}#default", OMNIX_SOURCE);
+    args.extend(&["nix run", &omnix_flake, "--"]);
 
-    Ok(nix_run_args)
-}
+    let flake_arg = if let Some(subflake) = cfg_ref.selected_subflake {
+        flake_url.with_attr(&format!("{}.{}", cfg_ref.selected_name, subflake))
+    } else {
+        flake_url
+    };
+    args.extend(&["ci", "run", &flake_arg]);
 
-/// Returns ci run args along with build_step_args
-fn get_ci_run_args_for_remote(
-    build_step_args: &BuildStepArgs,
-    flake_url: PathBuf,
-    cfg_ref: ConfigRef,
-) -> Result<Vec<String>> {
-    let mut flake_to_build = flake_url.to_string_lossy().as_ref().to_string();
-
-    // add sub-flake if selected to be built
-    if let Some(sub_flake) = cfg_ref.selected_subflake {
-        flake_to_build.push_str(&format!("#{}.{}", cfg_ref.selected_name, sub_flake).to_string());
-    }
-
-    let mut nix_run_args = vec![
-        "ci".to_string(),
-        "run".to_string(),
-        flake_to_build.to_string(),
-    ];
-
-    // Add print-all-dependencies flag if passed
     if build_step_args.print_all_dependencies {
-        nix_run_args.push("--print-all-dependencies".to_string());
+        args.push("--print-all-dependencies");
     }
 
     // Add extra nix build arguments
-    nix_run_args.push("--".to_string());
-    nix_run_args.extend(build_step_args.extra_nix_build_args.iter().cloned());
+    if !build_step_args.extra_nix_build_args.is_empty() {
+        args.push("--");
+        for arg in &build_step_args.extra_nix_build_args {
+            args.push(&arg);
+        }
+    }
 
-    Ok(nix_run_args)
+    Ok(args.iter().map(|s| s.to_string()).collect())
 }
 
 /// Runs `commands through ssh on remote machine` in Rust
