@@ -59,7 +59,7 @@ impl RunCommand {
         match &self.steps_args.build_step_args.on {
             Some(store_uri) => {
                 run_remote::run(
-                    self.steps_args.build_step_args.clone(),
+                    &self.steps_args.build_step_args,
                     nixcmd,
                     cfg.ref_,
                     store_uri,

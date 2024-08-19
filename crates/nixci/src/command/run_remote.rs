@@ -16,7 +16,7 @@ pub const OMNIX_SOURCE: &str = env!("OMNIX_SOURCE");
 
 /// Run the ci run steps on remote
 pub async fn run(
-    build_step_args: BuildStepArgs,
+    build_step_args: &BuildStepArgs,
     nixcmd: &NixCmd,
     cfg_ref: ConfigRef,
     store_uri: &StoreURI,
@@ -42,7 +42,7 @@ pub async fn run(
 
 /// Returns `nix run` args for running `ci run` on remote machine.
 fn get_nix_run_args(
-    build_step_args: BuildStepArgs,
+    build_step_args: &BuildStepArgs,
     flake_url: PathBuf,
     cfg_ref: ConfigRef,
 ) -> Result<Vec<String>> {
@@ -62,7 +62,7 @@ fn get_nix_run_args(
 
 /// Returns ci run args along with build_step_args
 fn get_ci_run_args_for_remote(
-    build_step_args: BuildStepArgs,
+    build_step_args: &BuildStepArgs,
     flake_url: PathBuf,
     cfg_ref: ConfigRef,
 ) -> Result<Vec<String>> {
