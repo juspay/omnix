@@ -109,3 +109,38 @@ pub async fn on_ssh(remote_address: &str, args: &[String]) -> anyhow::Result<()>
         anyhow::bail!("SSH command failed with exit code: {}", exit_code)
     }
 }
+
+#[test]
+/// A simple test to check if `nix run ` is constructed properly.
+fn nix_run_args() -> anyhow::Result<()> {
+    let metadata = FlakeMetadata {
+        path: PathBuf::from("/nix/store/q1nj7xvwm4rvfj2rjy16jlh5k1ihh2zv-source"),
+    };
+
+    let build_step_args = BuildStepArgs {
+        extra_nix_build_args: vec![
+            "--refresh".to_string(),
+            "-j".to_string(),
+            "auto".to_string(),
+        ],
+        print_all_dependencies: false,
+        on: None,
+    };
+
+    let cfg_ref = ConfigRef {
+        flake_url: FlakeUrl(
+            "github:srid/haskell-multi-nix/c85563721c388629fa9e538a1d97274861bc8321".to_string(),
+        ),
+        selected_name: "default".to_string(),
+        selected_subflake: None,
+    };
+
+    let nix_run_args = get_nix_run_args(build_step_args, metadata.path, cfg_ref)?;
+
+    let actual_args = nix_run_args.join(" ");
+
+    let expected_args = format!("nix run {}#default -- ci run /nix/store/q1nj7xvwm4rvfj2rjy16jlh5k1ihh2zv-source -- --refresh -j auto", OMNIX_SOURCE);
+
+    assert_eq!(actual_args, expected_args);
+    Ok(())
+}
