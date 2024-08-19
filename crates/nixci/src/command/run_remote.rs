@@ -1,15 +1,16 @@
 //! Functions for running `ci run` on remote machine.
 
 use anyhow::{Context, Result};
+use colored::Colorize;
 use nix_rs::{
     command::NixCmd,
     flake::{metadata::FlakeMetadata, url::FlakeUrl},
     store::{SSHStoreURI, StoreURI},
 };
 use std::path::PathBuf;
+use tokio::process::Command;
 
 use crate::{config::ref_::ConfigRef, step::build::BuildStepArgs};
-use tokio::process::Command;
 
 /// Path to Rust source corresponding to this (running) instance of Omnix
 const OMNIX_SOURCE: &str = env!("OMNIX_SOURCE");
@@ -21,6 +22,11 @@ pub async fn run(
     cfg_ref: &ConfigRef,
     store_uri: &StoreURI,
 ) -> anyhow::Result<()> {
+    tracing::info!(
+        "{}",
+        format!("\n🛜 Running CI remotely on {}", store_uri).bold()
+    );
+
     let (local_flake_path, local_flake_url) =
         cache_flake(nixcmd, &cfg_ref.flake_url, &cfg_ref).await?;
     let omnix_source = PathBuf::from(OMNIX_SOURCE);
@@ -29,7 +35,6 @@ pub async fn run(
 
     let nix_run_args = nix_run_om_ci_run_args(build_step_args, local_flake_url)?;
 
-    // call ci run on remote machine through ssh
     match store_uri {
         StoreURI::SSH(ssh_uri) => on_ssh(ssh_uri, &nix_run_args).await,
     }
