@@ -27,8 +27,8 @@ pub struct RunCommand {
     /// Must be a flake reference which, when imported, must return a Nix list
     /// of systems. You may use one of the lists from
     /// <https://github.com/nix-systems>.
-    #[arg(long, default_value = "github:nix-systems/empty")]
-    pub systems: SystemsListFlakeRef,
+    #[arg(long)]
+    pub systems: Option<SystemsListFlakeRef>,
 
     /// Flake URL or github URL
     ///
@@ -97,13 +97,16 @@ impl RunCommand {
 
     /// Get the systems to build for
     pub async fn get_systems(&self, cmd: &NixCmd, nix_config: &NixConfig) -> Result<Vec<System>> {
-        let systems = SystemsList::from_flake(cmd, &self.systems).await?.0;
-        if systems.is_empty() {
-            // An empty systems list means build for the current system
-            let current_system = &nix_config.system.value;
-            Ok(vec![current_system.clone()])
-        } else {
-            Ok(systems)
+        match &self.systems {
+            None => {
+                // An empty systems list means build for the current system
+                let current_system = &nix_config.system.value;
+                Ok(vec![current_system.clone()])
+            }
+            Some(systems) => {
+                let systems = SystemsList::from_flake(cmd, systems).await?.0;
+                Ok(systems)
+            }
         }
     }
 }

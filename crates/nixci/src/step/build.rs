@@ -81,7 +81,7 @@ impl BuildStep {
         let nix_args = subflake_extra_args(subflake, &run_cmd.steps_args.build_step_args);
         let devour_input = DevourFlakeInput {
             flake: url.sub_flake_url(subflake.dir.clone()),
-            systems: run_cmd.systems.0.clone(),
+            systems: run_cmd.systems.clone().map(|l| l.0),
         };
         let output =
             nix::devour_flake::devour_flake(nixcmd, verbose, devour_input, nix_args).await?;
