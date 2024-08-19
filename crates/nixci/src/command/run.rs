@@ -57,12 +57,12 @@ impl RunCommand {
     /// Run the build command which decides whether to do ci run on current machine or a remote machine
     pub async fn run(&self, nixcmd: &NixCmd, verbose: bool, cfg: Config) -> anyhow::Result<()> {
         match &self.steps_args.build_step_args.on {
-            Some(host) => {
+            Some(store_uri) => {
                 run_remote::run(
-                    self.steps_args.build_step_args.clone(),
+                    &self.steps_args.build_step_args,
                     nixcmd,
-                    cfg.ref_,
-                    host,
+                    &cfg.ref_,
+                    store_uri,
                 )
                 .await
             }
