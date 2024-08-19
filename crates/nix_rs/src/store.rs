@@ -71,7 +71,7 @@ impl NixStoreCmd {
             all_drvs.insert(drv);
         }
         let all_outs = self
-            .nix_store_query_requisites_with_outputs(all_drvs)
+            .nix_store_query_requisites_with_outputs(&all_drvs.iter().cloned().collect::<Vec<_>>())
             .await?;
         Ok(all_outs)
     }
@@ -108,7 +108,7 @@ impl NixStoreCmd {
     /// of its dependencies in the Nix store.
     pub async fn nix_store_query_requisites_with_outputs(
         &self,
-        drv_paths: HashSet<PathBuf>,
+        drv_paths: &[PathBuf],
     ) -> Result<HashSet<StorePath>, NixStoreCmdError> {
         let mut cmd = self.command();
         let mut args = vec!["--query", "--requisites", "--include-outputs"];
