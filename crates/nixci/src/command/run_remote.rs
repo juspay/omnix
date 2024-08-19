@@ -68,6 +68,7 @@ fn om_cli_with(run_cmd: &RunCommand, flake_url: &FlakeUrl) -> Vec<String> {
     let omnix_flake = format!("{}#default", OMNIX_SOURCE);
     args.extend([
         "nix".to_owned(),
+        "--accept-flake-config".to_owned(), // To use om Nix cache
         "run".to_owned(),
         omnix_flake,
         "--".to_owned(),
