@@ -12,7 +12,7 @@ use crate::{config::ref_::ConfigRef, step::build::BuildStepArgs};
 use tokio::process::Command;
 
 /// Path to Rust source corresponding to this (running) instance of Omnix
-pub const OMNIX_SOURCE: &str = env!("OMNIX_SOURCE");
+const OMNIX_SOURCE: &str = env!("OMNIX_SOURCE");
 
 /// Run the ci run steps on remote
 pub async fn run(
@@ -92,7 +92,7 @@ fn get_ci_run_args_for_remote(
 }
 
 /// Runs `commands through ssh on remote machine` in Rust
-pub async fn on_ssh(remote_address: &SSHStoreURI, args: &[String]) -> anyhow::Result<()> {
+async fn on_ssh(remote_address: &SSHStoreURI, args: &[String]) -> anyhow::Result<()> {
     let mut cmd = Command::new("ssh");
 
     // Add the remote address
