@@ -36,7 +36,7 @@ pub async fn run(
 
     // call ci run on remote machine through ssh
     match store_uri {
-        StoreURI::SSH(ssh_uri) => on_ssh(&ssh_uri, &nix_run_args).await,
+        StoreURI::SSH(ssh_uri) => on_ssh(ssh_uri, &nix_run_args).await,
     }
 }
 
@@ -116,37 +116,47 @@ async fn on_ssh(remote_address: &SSHStoreURI, args: &[String]) -> anyhow::Result
     }
 }
 
-#[test]
-/// A simple test to check if `nix run ` is constructed properly.
-fn nix_run_args() -> anyhow::Result<()> {
-    let metadata = FlakeMetadata {
-        path: PathBuf::from("/nix/store/q1nj7xvwm4rvfj2rjy16jlh5k1ihh2zv-source"),
-    };
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-    let build_step_args = BuildStepArgs {
-        extra_nix_build_args: vec![
-            "--refresh".to_string(),
-            "-j".to_string(),
-            "auto".to_string(),
-        ],
-        print_all_dependencies: false,
-        on: None,
-    };
+    #[test]
+    /// A simple test to check if `nix run ` is constructed properly.
+    fn test_nix_run_args() -> anyhow::Result<()> {
+        let metadata = FlakeMetadata {
+            original_url: nix_rs::flake::url::FlakeUrl(
+                "github:srid/haskell-multi-nix/c85563721c388629fa9e538a1d97274861bc8321"
+                    .to_string(),
+            ),
+            path: PathBuf::from("/nix/store/q1nj7xvwm4rvfj2rjy16jlh5k1ihh2zv-source"),
+        };
 
-    let cfg_ref = ConfigRef {
-        flake_url: nix_rs::flake::url::FlakeUrl(
-            "github:srid/haskell-multi-nix/c85563721c388629fa9e538a1d97274861bc8321".to_string(),
-        ),
-        selected_name: "default".to_string(),
-        selected_subflake: None,
-    };
+        let build_step_args = BuildStepArgs {
+            extra_nix_build_args: vec![
+                "--refresh".to_string(),
+                "-j".to_string(),
+                "auto".to_string(),
+            ],
+            print_all_dependencies: false,
+            on: None,
+        };
 
-    let nix_run_args = get_nix_run_args(build_step_args, metadata.path, cfg_ref)?;
+        let cfg_ref = ConfigRef {
+            flake_url: nix_rs::flake::url::FlakeUrl(
+                "github:srid/haskell-multi-nix/c85563721c388629fa9e538a1d97274861bc8321"
+                    .to_string(),
+            ),
+            selected_name: "default".to_string(),
+            selected_subflake: None,
+        };
 
-    let actual_args = nix_run_args.join(" ");
+        let nix_run_args = get_nix_run_args(&build_step_args, metadata.path, cfg_ref)?;
 
-    let expected_args = format!("nix run {}#default -- ci run /nix/store/q1nj7xvwm4rvfj2rjy16jlh5k1ihh2zv-source -- --refresh -j auto", OMNIX_SOURCE);
+        let actual_args = nix_run_args.join(" ");
 
-    assert_eq!(actual_args, expected_args);
-    Ok(())
+        let expected_args = format!("nix run {}#default -- ci run /nix/store/q1nj7xvwm4rvfj2rjy16jlh5k1ihh2zv-source -- --refresh -j auto", OMNIX_SOURCE);
+
+        assert_eq!(actual_args, expected_args);
+        Ok(())
+    }
 }
