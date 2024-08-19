@@ -6,22 +6,17 @@ use nix_health::{traits::Checkable, NixHealth};
 use nix_rs::{
     command::NixCmd,
     config::NixConfig,
-    flake::{metadata::FlakeMetadata, system::System, url::FlakeUrl},
+    flake::{system::System, url::FlakeUrl},
     info::NixInfo,
 };
-use std::path::PathBuf;
 
 use crate::{
-    config::{core::Config, ref_::ConfigRef},
+    config::core::Config,
     flake_ref::FlakeRef,
-    nix::{
-        ssh,
-        system_list::{SystemsList, SystemsListFlakeRef},
-    },
+    nix::system_list::{SystemsList, SystemsListFlakeRef},
 };
 
-/// Path to Rust source corresponding to this (running) instance of Omnix
-pub const OMNIX_SOURCE: &str = env!("OMNIX_SOURCE");
+use super::run_remote;
 
 /// Run all CI steps for all or given subflakes
 /// Command to run all CI steps
@@ -62,7 +57,15 @@ impl RunCommand {
     /// Run the build command which decides whether to do ci run on current machine or a remote machine
     pub async fn run(&self, nixcmd: &NixCmd, verbose: bool, cfg: Config) -> anyhow::Result<()> {
         match &self.steps_args.build_step_args.on {
-            Some(host) => self.run_remote(nixcmd, cfg, host).await,
+            Some(host) => {
+                run_remote::run(
+                    self.steps_args.build_step_args.clone(),
+                    nixcmd,
+                    cfg.ref_,
+                    host,
+                )
+                .await
+            }
             None => self.run_local(nixcmd, verbose, cfg).await,
         }
     }
@@ -90,70 +93,6 @@ impl RunCommand {
         ci_run(nixcmd, verbose, self, &cfg, &nix_info.nix_config).await?;
 
         Ok(())
-    }
-
-    /// Run the ci run steps on remote
-    async fn run_remote(&self, nixcmd: &NixCmd, cfg: Config, host: &str) -> anyhow::Result<()> {
-        let metadata = FlakeMetadata::from_nix(nixcmd, &cfg.ref_.flake_url).await?;
-
-        let omnix_source = PathBuf::from(OMNIX_SOURCE);
-
-        nix_rs::copy::nix_copy(nixcmd, host, &[omnix_source.clone(), metadata.path.clone()])
-            .await?;
-
-        let ci_run_args = self.get_ci_run_args_for_remote(metadata.path, cfg.ref_)?;
-
-        let nix_run_args: Vec<String> = vec![
-            "nix run".to_string(),
-            format!("{}#default", OMNIX_SOURCE),
-            "--".to_string(),
-        ]
-        .into_iter()
-        .chain(ci_run_args.into_iter())
-        .collect();
-
-        // call ci run on remote machine through ssh
-        ssh::on_ssh(host, &nix_run_args).await?;
-
-        Ok(())
-    }
-
-    // Return ci run args along with build_step_args
-    fn get_ci_run_args_for_remote(
-        &self,
-        flake_url: PathBuf,
-        cfg_ref: ConfigRef,
-    ) -> Result<Vec<String>> {
-        let mut flake_to_build = flake_url.to_string_lossy().as_ref().to_string();
-
-        // add sub-flake if selected to be built
-        if let Some(sub_flake) = cfg_ref.selected_subflake {
-            flake_to_build
-                .push_str(&format!("#{}.{}", cfg_ref.selected_name, sub_flake).to_string());
-        }
-
-        let mut nix_run_args = vec![
-            "ci".to_string(),
-            "run".to_string(),
-            flake_to_build.to_string(),
-        ];
-
-        // Add print-all-dependencies flag if passed
-        if self.steps_args.build_step_args.print_all_dependencies {
-            nix_run_args.push("--print-all-dependencies".to_string());
-        }
-
-        // Add extra nix build arguments
-        nix_run_args.push("--".to_string());
-        nix_run_args.extend(
-            self.steps_args
-                .build_step_args
-                .extra_nix_build_args
-                .iter()
-                .cloned(),
-        );
-
-        Ok(nix_run_args)
     }
 
     /// Get the systems to build for
