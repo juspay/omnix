@@ -15,20 +15,30 @@ pub async fn run(
     build_step_args: BuildStepArgs,
     nixcmd: &NixCmd,
     cfg_ref: ConfigRef,
-    host: &str,
+    store_uri: &str,
 ) -> anyhow::Result<()> {
     let metadata = FlakeMetadata::from_nix(nixcmd, &cfg_ref.flake_url).await?;
 
     let omnix_source = PathBuf::from(OMNIX_SOURCE);
 
-    nix_rs::copy::nix_copy(nixcmd, host, &[omnix_source.clone(), metadata.path.clone()]).await?;
+    nix_rs::copy::nix_copy(
+        nixcmd,
+        store_uri,
+        &[omnix_source.clone(), metadata.path.clone()],
+    )
+    .await?;
 
     let nix_run_args = get_nix_run_args(build_step_args, metadata.path, cfg_ref)?;
 
     // call ci run on remote machine through ssh
-    on_ssh(host, &nix_run_args).await?;
-
-    Ok(())
+    // TODO: This validation should happen at clap level?
+    let (scheme, host) = store_uri
+        .split_once("://")
+        .context("Invalid store URI format")?;
+    match scheme {
+        "ssh" => on_ssh(host, &nix_run_args).await,
+        _ => unimplemented!("Only ssh store URIs are supported for now"),
+    }
 }
 
 /// Returns `nix run` args for running `ci run` on remote machine.

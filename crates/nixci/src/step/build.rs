@@ -46,7 +46,7 @@ pub struct BuildStepArgs {
     #[clap(long, short = 'd')]
     pub print_all_dependencies: bool,
 
-    /// Run om ci run remotely
+    /// Run `om ci run` remotely on the given store URI
     #[clap(long)]
     pub on: Option<String>,
 }
