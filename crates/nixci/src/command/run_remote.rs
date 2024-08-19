@@ -110,7 +110,6 @@ async fn run_ssh(host: &str, args: &[String]) -> anyhow::Result<()> {
     if status.success() {
         Ok(())
     } else {
-        let exit_code = status.code().unwrap_or(1);
-        anyhow::bail!("SSH command failed with exit code: {}", exit_code)
+        anyhow::bail!("SSH command failed with exit code: {:?}", status.code())
     }
 }
