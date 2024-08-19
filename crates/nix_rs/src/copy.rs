@@ -2,7 +2,7 @@ use crate::{
     command::{CommandError, NixCmd},
     store::StoreURI,
 };
-use std::path::PathBuf;
+use std::path::Path;
 
 /// Copy store paths to a remote Nix store using `nix copy`.
 ///
@@ -14,7 +14,7 @@ use std::path::PathBuf;
 pub async fn nix_copy(
     cmd: &NixCmd,
     store_uri: &StoreURI,
-    paths: &[PathBuf],
+    paths: &[&Path],
 ) -> Result<(), CommandError> {
     let mut args = vec![
         "copy".to_string(),

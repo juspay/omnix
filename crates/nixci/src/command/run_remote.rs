@@ -25,12 +25,7 @@ pub async fn run(
 
     let omnix_source = PathBuf::from(OMNIX_SOURCE);
 
-    nix_rs::copy::nix_copy(
-        nixcmd,
-        store_uri,
-        &[omnix_source.clone(), metadata.path.clone()],
-    )
-    .await?;
+    nix_rs::copy::nix_copy(nixcmd, store_uri, &[&omnix_source, &metadata.path]).await?;
 
     let nix_run_args = get_nix_run_args(build_step_args, metadata.path, cfg_ref)?;
 
