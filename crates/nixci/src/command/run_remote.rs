@@ -33,7 +33,7 @@ pub async fn run(
 
     nix_rs::copy::nix_copy(nixcmd, store_uri, &[&omnix_source, &local_flake_path]).await?;
 
-    let nix_run_args = nix_run_om_ci_run_args(build_step_args, local_flake_url)?;
+    let nix_run_args = nix_run_om_ci_run_args(build_step_args, &local_flake_url)?;
 
     match store_uri {
         StoreURI::SSH(ssh_uri) => run_ssh(&ssh_uri.to_string(), &nix_run_args).await,
@@ -59,27 +59,39 @@ async fn cache_flake(
 /// Returns `nix run` args for running `om ci run` on remote machine.
 fn nix_run_om_ci_run_args(
     build_step_args: &BuildStepArgs,
-    flake_url: FlakeUrl,
+    flake_url: &FlakeUrl,
 ) -> Result<Vec<String>> {
-    let mut args: Vec<&str> = vec![];
+    let mut args: Vec<String> = vec![];
 
     let omnix_flake = format!("{}#default", OMNIX_SOURCE);
-    args.extend(&["nix", "run", &omnix_flake, "--"]);
-    args.extend(&["ci", "run", &flake_url]);
+    args.extend([
+        "nix".to_owned(),
+        "run".to_owned(),
+        omnix_flake,
+        "--".to_owned(),
+    ]);
+    args.extend(om_args(build_step_args, flake_url));
+
+    Ok(args)
+}
+
+// FIXME: This doesn't fill in all arguments passed by the user!
+fn om_args(build_step_args: &BuildStepArgs, flake_url: &FlakeUrl) -> Vec<String> {
+    let mut args: Vec<String> = vec!["ci".to_owned(), "run".to_owned(), flake_url.to_string()];
 
     if build_step_args.print_all_dependencies {
-        args.push("--print-all-dependencies");
+        args.push("--print-all-dependencies".to_owned());
     }
 
     // Add extra nix build arguments
     if !build_step_args.extra_nix_build_args.is_empty() {
-        args.push("--");
+        args.push("--".to_owned());
         for arg in &build_step_args.extra_nix_build_args {
-            args.push(arg);
+            args.push(arg.clone());
         }
     }
 
-    Ok(args.iter().map(|s| s.to_string()).collect())
+    args
 }
 
 /// Run SSH command with given arguments.
