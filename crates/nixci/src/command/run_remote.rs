@@ -64,7 +64,7 @@ fn nix_run_om_ci_run_args(
     let mut args: Vec<&str> = vec![];
 
     let omnix_flake = format!("{}#default", OMNIX_SOURCE);
-    args.extend(&["nix run", &omnix_flake, "--"]);
+    args.extend(&["nix", "run", &omnix_flake, "--"]);
     args.extend(&["ci", "run", &flake_url]);
 
     if build_step_args.print_all_dependencies {
@@ -86,11 +86,7 @@ fn nix_run_om_ci_run_args(
 async fn run_ssh(host: &str, args: &[String]) -> anyhow::Result<()> {
     let mut cmd = Command::new("ssh");
 
-    cmd.args(&[
-        host,
-        // FIXME: This may require escaping of whitespace in args.
-        &args.join(" "),
-    ]);
+    cmd.args(&[host, &shell_words::join(args)]);
 
     nix_rs::command::trace_cmd_with("🐌", &cmd);
 
