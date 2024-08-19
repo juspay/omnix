@@ -31,12 +31,18 @@ pub async fn run(
         cache_flake(nixcmd, &cfg_ref.flake_url, cfg_ref).await?;
     let omnix_source = PathBuf::from(OMNIX_SOURCE);
 
+    // First, copy the flake and omnix source to the remote store, because we will be needing them when running over ssh.
     nix_rs::copy::nix_copy(nixcmd, store_uri, &[&omnix_source, &local_flake_path]).await?;
 
-    let nix_run_args = nix_run_om_ci_run_args(build_step_args, &local_flake_url)?;
-
+    // Then, SSH and run the same `om ci run` CLI but without the `--on` argument.
     match store_uri {
-        StoreURI::SSH(ssh_uri) => run_ssh(&ssh_uri.to_string(), &nix_run_args).await,
+        StoreURI::SSH(ssh_uri) => {
+            run_ssh(
+                &ssh_uri.to_string(),
+                &om_cli_with(build_step_args, &local_flake_url)?,
+            )
+            .await
+        }
     }
 }
 
@@ -56,11 +62,10 @@ async fn cache_flake(
     Ok((metadata.path, local_flake_url))
 }
 
-/// Returns `nix run` args for running `om ci run` on remote machine.
-fn nix_run_om_ci_run_args(
-    build_step_args: &BuildStepArgs,
-    flake_url: &FlakeUrl,
-) -> Result<Vec<String>> {
+/// Construct a `nix run ...` based CLI that runs Omnix using given arguments.
+///
+/// Omnix itself will be compiled from source ([OMNIX_SOURCE]) if necessary. Thus, this invocation is totally independent and can be run on remote machines, as long as the paths exista on the nix store.
+fn om_cli_with(build_step_args: &BuildStepArgs, flake_url: &FlakeUrl) -> Result<Vec<String>> {
     let mut args: Vec<String> = vec![];
 
     let omnix_flake = format!("{}#default", OMNIX_SOURCE);
@@ -98,7 +103,7 @@ fn om_args(build_step_args: &BuildStepArgs, flake_url: &FlakeUrl) -> Vec<String>
 async fn run_ssh(host: &str, args: &[String]) -> anyhow::Result<()> {
     let mut cmd = Command::new("ssh");
 
-    cmd.args(&[host, &shell_words::join(args)]);
+    cmd.args([host, &shell_words::join(args)]);
 
     nix_rs::command::trace_cmd_with("🐌", &cmd);
 
