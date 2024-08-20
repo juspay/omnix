@@ -147,36 +147,41 @@ impl NixStoreCmd {
         &self,
         out_paths: HashSet<StorePath>,
     ) -> Result<HashSet<StorePath>, NixStoreCmdError> {
-        let mut all_drvs = HashSet::new();
-        for out in out_paths.iter() {
-            let drv = self.nix_store_query_deriver(out.clone()).await?;
-            all_drvs.insert(drv);
-        }
+        let all_drvs = self
+            .nix_store_query_deriver(&out_paths.iter().cloned().collect::<Vec<_>>())
+            .await?;
         let all_outs = self
             .nix_store_query_requisites_with_outputs(&all_drvs.iter().cloned().collect::<Vec<_>>())
             .await?;
         Ok(all_outs)
     }
 
-    /// Return the derivation used to build the given build output.
+    /// Return the derivations used to build the given build output.
     pub async fn nix_store_query_deriver(
         &self,
-        out_path: StorePath,
-    ) -> Result<PathBuf, NixStoreCmdError> {
+        out_paths: &[StorePath],
+    ) -> Result<HashSet<PathBuf>, NixStoreCmdError> {
         let mut cmd = self.command();
-        cmd.args([
-            "--query",
-            "--valid-derivers",
-            out_path.as_path().to_string_lossy().as_ref(),
-        ]);
+        let mut paths = vec![];
+        for path in out_paths {
+            paths.push(path.as_path());
+        }
+        cmd.args(["--query", "--valid-derivers"]).args(paths);
+
         crate::command::trace_cmd(&cmd);
         let out = cmd.output().await?;
         if out.status.success() {
-            let drv_path = String::from_utf8(out.stdout)?.trim().to_string();
-            if drv_path == "unknown-deriver" {
+            let out = String::from_utf8(out.stdout)?.trim().to_string();
+            let drv_paths: HashSet<PathBuf> = out
+                .lines()
+                .map(|l| l.trim().to_string())
+                .filter(|l| !l.is_empty())
+                .map(PathBuf::from)
+                .collect();
+            if drv_paths.contains(&PathBuf::from("unknown-deriver")) {
                 return Err(NixStoreCmdError::UnknownDeriver);
             }
-            Ok(PathBuf::from(drv_path))
+            Ok(drv_paths)
         } else {
             // TODO(refactor): When upstreaming this module to nix-rs, create a
             // nicer and unified way to create `ProcessFailed`
