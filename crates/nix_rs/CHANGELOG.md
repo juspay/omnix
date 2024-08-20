@@ -11,6 +11,7 @@
 - **`store`**:
   - Add module (upstreamed from nixci)
   - Add `StoreURI`
+  - Avoid running `nix-store` multiple times.
 - **`env`**:
   - `NixEnv::detect`'s logging uses DEBUG level now (formerly INFO)
   - Add Nix installer to `NixEnv`
