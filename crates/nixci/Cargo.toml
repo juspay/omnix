@@ -25,6 +25,7 @@ nix_rs = { workspace = true, features = ["clap"] }
 reqwest = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
+shell-words = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }

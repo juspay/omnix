@@ -6,6 +6,8 @@
 
 - `om health`
   - Display Nix installer used (supports DetSys installer)
+- `om ci`
+  - Support for remote builds over SSH (via `--on` option)
 
 ### Fixes
 

@@ -6,10 +6,17 @@
   - Add `without_attr`, `get_attr`
   - Simplify the return type of `RootQualifiedAttr::eval_flake`
   - Add `AsRef` and `Deref` instances for `FlakeUrl`
-- **`store`**: Add module (upstreamed from nixci)
+  - **`attr`**:
+    - Add `FlakeAttr::new` and `FlakeAttr::none` constructors
+- **`store`**:
+  - Add module (upstreamed from nixci)
+  - Add `StoreURI`
 - **`env`**:
   - `NixEnv::detect`'s logging uses DEBUG level now (formerly INFO)
   - Add Nix installer to `NixEnv`
+- **`command`
+  - `run_with_args` now takes an iterator of string references, much like `Command::args`.
+  - Add `trace_cmd_with`
 
 ## 1.0.0
 
