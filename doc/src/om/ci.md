@@ -83,7 +83,7 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
-      - run: om ci run --systems "github:nix-systems/${{ matrix.system }}" ".#default.${{ matrix.subflake }}"
+      - run: om ci run --systems "${{ matrix.system }}" ".#default.${{ matrix.subflake }}"
 ```
 
 > [!TIP]
