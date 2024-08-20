@@ -15,7 +15,7 @@ pub struct DevourFlakeInput {
     /// The flake devour-flake will build
     pub flake: FlakeUrl,
     /// The systems it will build for. An empty list means all allowed systems.
-    pub systems: FlakeUrl,
+    pub systems: Option<FlakeUrl>,
 }
 
 /// Output of `devour-flake`
@@ -60,8 +60,8 @@ pub async fn devour_flake(
         &input.flake,
     ];
     // Specify only if the systems is not the default
-    if input.systems.0 != "github:nix-systems/empty" {
-        args.extend_from_slice(&["--override-input", "systems", &input.systems]);
+    if let Some(systems) = input.systems.as_ref() {
+        args.extend(&["--override-input", "systems", &systems.0]);
     }
     args.extend(extra_args.iter().map(|s| s.as_str()));
     cmd.args(args);

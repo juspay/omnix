@@ -8,7 +8,10 @@
 //! cmd.run_with_args_returning_stdout(&["--version"]);
 //! ```
 
-use std::fmt::{self, Display};
+use std::{
+    ffi::OsStr,
+    fmt::{self, Display},
+};
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -72,8 +75,13 @@ static NIXCMD: OnceCell<NixCmd> = OnceCell::const_new();
 
 #[instrument(name = "command")]
 pub fn trace_cmd(cmd: &tokio::process::Command) {
+    trace_cmd_with("🐚", cmd);
+}
+
+#[instrument(name = "command")]
+pub fn trace_cmd_with(icon: &str, cmd: &tokio::process::Command) {
     use colored::Colorize;
-    tracing::info!("🐚 {}️", to_cli(cmd).bright_blue());
+    tracing::info!("{} {}️", icon, to_cli(cmd).bright_blue());
 }
 
 impl NixCmd {
@@ -148,7 +156,11 @@ impl NixCmd {
     }
 
     /// Run nix with given args, letting stdout and stderr be that of parent process
-    pub async fn run_with_args(&self, args: &[&str]) -> Result<(), CommandError> {
+    pub async fn run_with_args<I, S>(&self, args: I) -> Result<(), CommandError>
+    where
+        I: IntoIterator<Item = S>,
+        S: AsRef<OsStr>,
+    {
         let mut cmd = self.command();
         cmd.args(args);
         trace_cmd(&cmd);

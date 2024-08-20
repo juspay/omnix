@@ -50,3 +50,10 @@ impl Steps {
         Ok(())
     }
 }
+
+impl StepsArgs {
+    /// Convert this type back to the user-facing command line arguments
+    pub fn to_cli_args(&self) -> Vec<String> {
+        self.build_step_args.to_cli_args()
+    }
+}

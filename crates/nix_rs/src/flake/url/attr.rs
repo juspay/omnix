@@ -7,6 +7,14 @@ use serde::{Deserialize, Serialize};
 pub struct FlakeAttr(pub Option<String>);
 
 impl FlakeAttr {
+    pub fn new(attr: &str) -> Self {
+        FlakeAttr(Some(attr.to_owned()))
+    }
+
+    pub fn none() -> Self {
+        FlakeAttr(None)
+    }
+
     /// Get the attribute name.
     ///
     /// If no such attribute exists, return "default".

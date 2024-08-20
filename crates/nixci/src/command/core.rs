@@ -59,4 +59,18 @@ impl Command {
             Command::DumpGithubActionsMatrix(cmd) => cmd.flake_ref.clone(),
         }
     }
+
+    /// Convert this type back to the user-facing command line arguments
+    pub fn to_cli_args(&self) -> Vec<String> {
+        let mut args = vec!["ci".to_string(), "run".to_string()];
+        match self {
+            Command::Run(cmd) => {
+                args.extend(cmd.to_cli_args());
+            }
+            Command::DumpGithubActionsMatrix(_cmd) => {
+                unimplemented!("Command::DumpGithubActionsMatrix::to_cli_args")
+            }
+        }
+        args
+    }
 }
