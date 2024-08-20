@@ -3,7 +3,7 @@
 // TODO: Create a more general version of this module, where a function body is defined in Nix, but FFI invoked (as it were) from Rust.
 
 use anyhow::{bail, Context, Result};
-use nix_rs::{command::NixCmd, flake::url::FlakeUrl, store::StorePath};
+use nix_rs::{command::NixCmd, flake::url::FlakeUrl, store::path::StorePath};
 use std::{collections::HashSet, path::PathBuf, process::Stdio};
 use tokio::io::{AsyncBufReadExt, BufReader};
 

@@ -91,7 +91,7 @@ mod om_ci_tests {
     use std::path::{Path, PathBuf};
 
     use anyhow::bail;
-    use nix_rs::store::StorePath;
+    use nix_rs::store::path::StorePath;
     use regex::Regex;
 
     /// Run `om ci run` passing given arguments, returning its stdout (parsed).

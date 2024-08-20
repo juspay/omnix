@@ -1,6 +1,6 @@
 use crate::{
     command::{CommandError, NixCmd},
-    store::StoreURI,
+    store::uri::StoreURI,
 };
 use std::path::Path;
 

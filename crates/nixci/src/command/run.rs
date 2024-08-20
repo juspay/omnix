@@ -8,7 +8,7 @@ use nix_rs::{
     config::NixConfig,
     flake::{system::System, url::FlakeUrl},
     info::NixInfo,
-    store::StoreURI,
+    store::uri::StoreURI,
 };
 
 use crate::{

@@ -4,7 +4,7 @@ use colored::Colorize;
 use nix_rs::{
     command::NixCmd,
     flake::{metadata::FlakeMetadata, url::FlakeUrl},
-    store::StoreURI,
+    store::uri::StoreURI,
 };
 use std::path::PathBuf;
 use tokio::process::Command;

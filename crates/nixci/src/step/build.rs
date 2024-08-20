@@ -1,7 +1,7 @@
 //! The build step
 use clap::Parser;
 use colored::Colorize;
-use nix_rs::{command::NixCmd, flake::url::FlakeUrl, store::NixStoreCmd};
+use nix_rs::{command::NixCmd, flake::url::FlakeUrl, store::command::NixStoreCmd};
 use serde::Deserialize;
 
 use crate::{
