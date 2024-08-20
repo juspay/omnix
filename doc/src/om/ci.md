@@ -41,11 +41,13 @@ $ om ci run .#default.dev
 $ om ci run --on ssh://myname@myserver ~/code/myproject
 ```
 
-### Using in Github Actions {#github-actions}
+## Using in Github Actions {#github-actions}
 
-#### Standard Runners {#ghci-standard}
+In addition to serving the purpose of being a "local CI", `om ci` can be used in Github Actions to enable CI for your GitHub repositories.
 
-Add the following to your workflow file,
+### Standard Runners {#ghci-standard}
+
+If you want to utilize GitHub provided runners, simply add the following to your workflow file,
 
 ```yaml
       - uses: actions/checkout@v4
@@ -55,12 +57,15 @@ Add the following to your workflow file,
       - run: om ci
 ```
 
-#### Self-hosted Runners with Job Matrix {#ghci-self}
+### Self-hosted Runners with Job Matrix {#ghci-self}
+
+The `om ci gh-matrix` command outputs the matrix JSON for creating [a matrix of job variations](https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/running-variations-of-jobs-in-a-workflow). An example configuration, using self-hosted runners, is shown below.
 
 > [!NOTE]
 > This currently requires an explicit CI configuration in your flake, viz.: `om.ci.default.root.dir = ".";`.
 
 ```yaml
+# Run on aarch64-linux and aarch64-darwin
 jobs:
   configure:
     runs-on: self-hosted
@@ -105,7 +110,7 @@ By default, `om ci` will build the top-level flake, but you can tell it to build
 
 You can have more than one CI configuration. For eg., `om ci run .#foo` will run the configuration from `om.ci.foo` flake output.
 
-### Examples
+## Examples
 
 Some real-world examples of how `om ci` is used with specific configurations:
 
