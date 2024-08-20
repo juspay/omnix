@@ -31,6 +31,12 @@ impl FromStr for FlakeRef {
     }
 }
 
+impl From<FlakeUrl> for FlakeRef {
+    fn from(url: FlakeUrl) -> Self {
+        FlakeRef::Flake(url)
+    }
+}
+
 impl Display for FlakeRef {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {

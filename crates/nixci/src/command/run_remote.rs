@@ -1,6 +1,5 @@
 //! Functions for running `ci run` on remote machine.
 
-use anyhow::Context;
 use colored::Colorize;
 use nix_rs::{
     command::NixCmd,
@@ -10,7 +9,7 @@ use nix_rs::{
 use std::path::PathBuf;
 use tokio::process::Command;
 
-use crate::{config::ref_::ConfigRef, flake_ref::FlakeRef};
+use crate::config::ref_::ConfigRef;
 
 use super::run::RunCommand;
 
@@ -66,42 +65,42 @@ fn om_cli_with(run_cmd: &RunCommand, flake_url: &FlakeUrl) -> Vec<String> {
     let mut args: Vec<String> = vec![];
 
     let omnix_flake = format!("{}#default", OMNIX_SOURCE);
-    args.extend([
-        "nix".to_owned(),
-        "--accept-flake-config".to_owned(), // To use om Nix cache
-        "run".to_owned(),
-        omnix_flake,
-        "--".to_owned(),
-        "ci".to_owned(),
-        "run".to_owned(),
-    ]);
+    args.extend(
+        [
+            "nix",
+            "--accept-flake-config",
+            "run",
+            &omnix_flake,
+            "--",
+            "ci",
+            "run",
+        ]
+        .map(&str::to_owned),
+    );
 
-    // The same CLI but using locally cached flake path.
-    // NOTE(limitation): We are not passing global options from `om ci` itself.
-    let mut run_cmd = run_cmd.clone();
-    run_cmd.on = None;
-    run_cmd.flake_ref = FlakeRef::Flake(flake_url.clone());
-    args.extend(run_cmd.to_cli_args());
-
+    // Re-add current CLI arguments, with a couple of tweaks:
+    args.extend(
+        RunCommand {
+            // Remove --on
+            on: None,
+            // Substitute with flake path from the nix store
+            flake_ref: flake_url.clone().into(),
+            ..run_cmd.clone()
+        }
+        .to_cli_args(),
+    );
     args
 }
 
 /// Run SSH command with given arguments.
 async fn run_ssh(host: &str, args: &[String]) -> anyhow::Result<()> {
     let mut cmd = Command::new("ssh");
-
     cmd.args([host, &shell_words::join(args)]);
 
     nix_rs::command::trace_cmd_with("🐌", &cmd);
 
-    let status = cmd
-        .status()
-        .await
-        .context("Failed to execute SSH command")?;
-
-    if status.success() {
-        Ok(())
-    } else {
-        anyhow::bail!("SSH command failed with exit code: {:?}", status.code())
-    }
+    cmd.status()
+        .await?
+        .exit_ok()
+        .map_err(|e| anyhow::anyhow!("SSH command failed: {}", e))
 }
