@@ -166,14 +166,17 @@ impl NixStoreCmd {
             .args(out_paths.iter().map(StorePath::as_path));
 
         crate::command::trace_cmd(&cmd);
+
         let out = cmd.output().await?;
         if out.status.success() {
-            let out = String::from_utf8(out.stdout)?.trim().to_string();
-            let drv_paths: HashSet<PathBuf> = out.lines().map(PathBuf::from).collect();
+            let drv_paths: Vec<PathBuf> = String::from_utf8(out.stdout)?
+                .lines()
+                .map(PathBuf::from)
+                .collect();
             if drv_paths.contains(&PathBuf::from("unknown-deriver")) {
                 return Err(NixStoreCmdError::UnknownDeriver);
             }
-            Ok(drv_paths.into_iter().collect())
+            Ok(drv_paths)
         } else {
             // TODO(refactor): When upstreaming this module to nix-rs, create a
             // nicer and unified way to create `ProcessFailed`
@@ -192,12 +195,15 @@ impl NixStoreCmd {
         let mut cmd = self.command();
         cmd.args(["--query", "--requisites", "--include-outputs"])
             .args(drv_paths);
+
         crate::command::trace_cmd(&cmd);
+
         let out = cmd.output().await?;
         if out.status.success() {
-            let out = String::from_utf8(out.stdout)?.trim().to_string();
-            let out = out.lines().map(PathBuf::from).map(StorePath::new).collect();
-            Ok(out)
+            Ok(String::from_utf8(out.stdout)?
+                .lines()
+                .map(|line| StorePath::new(PathBuf::from(line)))
+                .collect())
         } else {
             // TODO(refactor): see above
             let stderr = Some(String::from_utf8_lossy(&out.stderr).to_string());
