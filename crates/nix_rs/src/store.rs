@@ -151,37 +151,29 @@ impl NixStoreCmd {
             .nix_store_query_deriver(&out_paths.iter().cloned().collect::<Vec<_>>())
             .await?;
         let all_outs = self
-            .nix_store_query_requisites_with_outputs(&all_drvs.iter().cloned().collect::<Vec<_>>())
+            .nix_store_query_requisites_with_outputs(&all_drvs)
             .await?;
-        Ok(all_outs)
+        Ok(all_outs.into_iter().collect())
     }
 
     /// Return the derivations used to build the given build output.
     pub async fn nix_store_query_deriver(
         &self,
         out_paths: &[StorePath],
-    ) -> Result<HashSet<PathBuf>, NixStoreCmdError> {
+    ) -> Result<Vec<PathBuf>, NixStoreCmdError> {
         let mut cmd = self.command();
-        let mut paths = vec![];
-        for path in out_paths {
-            paths.push(path.as_path());
-        }
-        cmd.args(["--query", "--valid-derivers"]).args(paths);
+        cmd.args(["--query", "--valid-derivers"])
+            .args(out_paths.iter().map(StorePath::as_path));
 
         crate::command::trace_cmd(&cmd);
         let out = cmd.output().await?;
         if out.status.success() {
             let out = String::from_utf8(out.stdout)?.trim().to_string();
-            let drv_paths: HashSet<PathBuf> = out
-                .lines()
-                .map(|l| l.trim().to_string())
-                .filter(|l| !l.is_empty())
-                .map(PathBuf::from)
-                .collect();
+            let drv_paths: HashSet<PathBuf> = out.lines().map(PathBuf::from).collect();
             if drv_paths.contains(&PathBuf::from("unknown-deriver")) {
                 return Err(NixStoreCmdError::UnknownDeriver);
             }
-            Ok(drv_paths)
+            Ok(drv_paths.into_iter().collect())
         } else {
             // TODO(refactor): When upstreaming this module to nix-rs, create a
             // nicer and unified way to create `ProcessFailed`
@@ -196,21 +188,15 @@ impl NixStoreCmd {
     pub async fn nix_store_query_requisites_with_outputs(
         &self,
         drv_paths: &[PathBuf],
-    ) -> Result<HashSet<StorePath>, NixStoreCmdError> {
+    ) -> Result<Vec<StorePath>, NixStoreCmdError> {
         let mut cmd = self.command();
         cmd.args(["--query", "--requisites", "--include-outputs"])
             .args(drv_paths);
         crate::command::trace_cmd(&cmd);
         let out = cmd.output().await?;
         if out.status.success() {
-            let out = String::from_utf8(out.stdout)?;
-            let out = out
-                .lines()
-                .map(|l| l.trim().to_string())
-                .filter(|l| !l.is_empty())
-                .map(PathBuf::from)
-                .map(StorePath::new)
-                .collect();
+            let out = String::from_utf8(out.stdout)?.trim().to_string();
+            let out = out.lines().map(PathBuf::from).map(StorePath::new).collect();
             Ok(out)
         } else {
             // TODO(refactor): see above
