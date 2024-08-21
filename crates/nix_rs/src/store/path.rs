@@ -11,6 +11,12 @@ pub enum StorePath {
     Other(PathBuf),
 }
 
+impl From<&StorePath> for PathBuf {
+    fn from(sp: &StorePath) -> Self {
+        sp.as_path().clone()
+    }
+}
+
 impl StorePath {
     pub fn new(path: PathBuf) -> Self {
         if path.ends_with(".drv") {

@@ -49,10 +49,16 @@ impl Steps {
         subflake: &SubflakeConfig,
     ) -> anyhow::Result<()> {
         self.lockfile_step.run(cmd, url, subflake).await?;
-        self.build_step
+
+        let res = self
+            .build_step
             .run(cmd, verbose, run_cmd, url, subflake)
             .await?;
+        // TODO: Support --json for structured output grouped by steps
+        res.print();
+
         self.flake_check_step.run(cmd, url, subflake).await?;
+
         Ok(())
     }
 }
