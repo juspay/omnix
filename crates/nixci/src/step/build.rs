@@ -115,7 +115,7 @@ fn subflake_extra_args(subflake: &SubflakeConfig, build_step_args: &BuildStepArg
     let mut args = vec![];
 
     for (k, v) in &subflake.override_inputs {
-        args.extend_from_slice(&[
+        args.extend([
             "--override-input".to_string(),
             format!("flake/{}", k),
             v.0.to_string(),

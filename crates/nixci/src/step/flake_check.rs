@@ -31,15 +31,9 @@ impl FlakeCheckStep {
             format!("🩺 Running flake check on: {}", subflake.dir).bold()
         );
         let sub_flake_url = url.sub_flake_url(subflake.dir.clone());
-        let mut args: Vec<String> = vec![
-            "flake".to_owned(),
-            "check".to_owned(),
-            sub_flake_url.to_string(),
-        ];
-        for (name, url) in &subflake.override_inputs {
-            args.push("--override-input".to_owned());
-            args.push(name.to_owned());
-            args.push(url.to_string());
+        let mut args = vec!["flake", "check", &sub_flake_url];
+        for (k, v) in &subflake.override_inputs {
+            args.extend(["--override-input", k, v]);
         }
         nixcmd.run_with_args(args).await?;
         Ok(())
