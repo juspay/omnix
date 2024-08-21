@@ -10,7 +10,7 @@ in
 
   perSystem = { config, self', inputs', pkgs, lib, ... }: {
     devShells.default = pkgs.mkShell {
-      name = "omnix";
+      name = "omnix-devshell";
       meta.description = "Omnix development environment";
       inputsFrom = [
         config.treefmt.build.devShell
