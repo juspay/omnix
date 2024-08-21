@@ -28,51 +28,6 @@ impl Default for BuildStep {
     }
 }
 
-/// CLI arguments for [BuildStep]
-#[derive(Parser, Debug, Clone)]
-pub struct BuildStepArgs {
-    /// Print build and runtime dependencies along with out paths
-    ///
-    /// By default, `nixci build` prints only the out paths. This option is
-    /// useful to explicitly push all dependencies to a cache.
-    #[clap(long, short = 'd')]
-    pub print_all_dependencies: bool,
-
-    /// Additional arguments to pass through to `nix build`
-    #[arg(last = true, default_values_t = vec![
-    "--refresh".to_string(),
-    "-j".to_string(),
-    "auto".to_string(),
-    ])]
-    pub extra_nix_build_args: Vec<String>,
-}
-
-impl BuildStepArgs {
-    /// Preprocess the arguments
-    pub fn preprocess(&mut self) {
-        // Adjust to devour_flake's expectations
-        devour_flake::transform_override_inputs(&mut self.extra_nix_build_args);
-    }
-
-    /// Convert this type back to the user-facing command line arguments
-    pub fn to_cli_args(&self) -> Vec<String> {
-        let mut args = vec![];
-
-        if self.print_all_dependencies {
-            args.push("--print-all-dependencies".to_owned());
-        }
-
-        if !self.extra_nix_build_args.is_empty() {
-            args.push("--".to_owned());
-            for arg in &self.extra_nix_build_args {
-                args.push(arg.clone());
-            }
-        }
-
-        args
-    }
-}
-
 impl BuildStep {
     /// Run this step
     pub async fn run(
@@ -125,4 +80,49 @@ fn subflake_extra_args(subflake: &SubflakeConfig, build_step_args: &BuildStepArg
     args.extend(build_step_args.extra_nix_build_args.iter().cloned());
 
     args
+}
+
+/// CLI arguments for [BuildStep]
+#[derive(Parser, Debug, Clone)]
+pub struct BuildStepArgs {
+    /// Print build and runtime dependencies along with out paths
+    ///
+    /// By default, `nixci build` prints only the out paths. This option is
+    /// useful to explicitly push all dependencies to a cache.
+    #[clap(long, short = 'd')]
+    pub print_all_dependencies: bool,
+
+    /// Additional arguments to pass through to `nix build`
+    #[arg(last = true, default_values_t = vec![
+    "--refresh".to_string(),
+    "-j".to_string(),
+    "auto".to_string(),
+    ])]
+    pub extra_nix_build_args: Vec<String>,
+}
+
+impl BuildStepArgs {
+    /// Preprocess the arguments
+    pub fn preprocess(&mut self) {
+        // Adjust to devour_flake's expectations
+        devour_flake::transform_override_inputs(&mut self.extra_nix_build_args);
+    }
+
+    /// Convert this type back to the user-facing command line arguments
+    pub fn to_cli_args(&self) -> Vec<String> {
+        let mut args = vec![];
+
+        if self.print_all_dependencies {
+            args.push("--print-all-dependencies".to_owned());
+        }
+
+        if !self.extra_nix_build_args.is_empty() {
+            args.push("--".to_owned());
+            for arg in &self.extra_nix_build_args {
+                args.push(arg.clone());
+            }
+        }
+
+        args
+    }
 }
