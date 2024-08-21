@@ -124,12 +124,15 @@ Some real-world examples of how `om ci` is used with specific configurations:
 
 ## What it does {#mech}
 
-- Optionally, accept a flake config (`om.ci.default`) to indicate sub-flakes to build, along with their input overrides
-- Preliminary checks
-    - Check that `flake.lock` is in sync
-    - Check that the Nix version is not tool old (using [`om health`](health.md))
-- Use [devour-flake](https://github.com/srid/devour-flake) to build all flake outputs[^schema]
-- Print the built store paths to stdout
+- Check that the Nix version is not tool old (using [`om health`](health.md))
+- Determine the list of flakes in the repo to build
+  - By default, this is the root flake.
+  - The user can also explicitly specify multiple sub-flakes in `om.ci.default` output of their root flake.
+- For each (sub)flake identified, `om ci run` will run the following steps:
+    - Check that `flake.lock` is up to date, if applicable.
+    - Build all flake outputs, using [devour-flake](https://github.com/srid/devour-flake)[^schema]
+      - Then, print the built store paths to stdout
+    - Run `nix flake check`
 
 [^schema]: Support for [flake-schemas](https://github.com/srid/devour-flake/pull/11) is planned
 
