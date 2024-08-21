@@ -3,12 +3,13 @@ use clap::Parser;
 use nix_rs::{command::NixCmd, flake::url::FlakeUrl};
 use serde::Deserialize;
 
-use crate::command::run::RunCommand;
-use crate::config::subflake::SubflakeConfig;
-use crate::step::{
+use super::{
     build::{BuildStep, BuildStepArgs},
+    flake_check::FlakeCheckStep,
     lockfile::LockfileStep,
 };
+use crate::command::run::RunCommand;
+use crate::config::subflake::SubflakeConfig;
 
 /// CI steps to run
 ///
@@ -22,6 +23,10 @@ pub struct Steps {
     /// [BuildStep]
     #[serde(default, rename = "build")]
     pub build_step: BuildStep,
+
+    /// [FlakeCheckStep]
+    #[serde(default, rename = "flake-check")]
+    pub flake_check_step: FlakeCheckStep,
     // TODO: custom steps
 }
 
@@ -47,6 +52,7 @@ impl Steps {
         self.build_step
             .run(cmd, verbose, run_cmd, url, subflake)
             .await?;
+        self.flake_check_step.run(cmd, url, subflake).await?;
         Ok(())
     }
 }
