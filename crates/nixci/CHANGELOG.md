@@ -2,6 +2,7 @@
 
 - New
   - Introduced notion of 'steps'. Renamed 'build' to 'run'.
+    - Added a step to run `nix flake check`
 - `config.rs`: Refactored to change API.
 
 ## 1.1.0

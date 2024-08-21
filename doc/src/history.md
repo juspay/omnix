@@ -9,6 +9,7 @@
 - `om ci`
   - Support for remote builds over SSH (via `--on` option)
   - Avoid running `nix-store` command multiple times (#224)
+  - Run `nix flake check` on all subflakes (#200)
 
 ### Fixes
 
