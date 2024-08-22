@@ -1,47 +1,15 @@
-{ self, pkgs, lib, flake-parts-lib, ... }:
-
-let
-  inherit (flake-parts-lib)
-    mkPerSystemOption;
-  cacheName = "om";
-in
+{ inputs, ... }:
 {
-  options = {
-    perSystem = mkPerSystemOption ({ config, self', pkgs, system, ... }: {
-      options = {
-        cache-pins.pathsToCache = lib.mkOption {
-          type = lib.types.attrsOf lib.types.path;
-          description = ''
-            Store paths to push to/pin in a Nix cache (such as cachix)
-          '';
-        };
-      };
+  imports = [
+    inputs.cachix-push.flakeModule
+  ];
 
-      config = {
-        apps.cachix-push.program = pkgs.writeShellApplication {
-          name = "cachix-push";
-          meta.description = ''
-            Run `cachix push` & `cachix pin` for each path in `cache-pins.pathsToCache`
-          '';
-          runtimeInputs = [ pkgs.cachix ];
-          text = ''
-            set -x
-            ${lib.concatStringsSep "\n" (lib.mapAttrsToList (name: path: ''
-              cachix push ${cacheName} ${path}
-              cachix pin ${cacheName} ${name}-${system} ${path}
-              '') config.cache-pins.pathsToCache)
-              }
-          '';
-        };
-      };
-    });
-  };
-
-  config = {
-    perSystem = { self', ... }: {
+  perSystem = { self', ... }: {
+    cachix-push = {
+      cacheName = "om";
       # https://om.cachix.org will ensure that these paths are always
       # available. The rest may be be GC'ed.
-      cache-pins.pathsToCache = {
+      pathsToCache = {
         cli = self'.packages.default;
       };
     };

@@ -1,5 +1,20 @@
 {
   "nodes": {
+    "cachix-push": {
+      "locked": {
+        "lastModified": 1724348705,
+        "narHash": "sha256-ELtKEHF8ZYJ/owCwJoAQL0QuQzQtc9f9VWsTqgYk5Qk=",
+        "owner": "juspay",
+        "repo": "cachix-push",
+        "rev": "86ea2b393b2b4b2970c1aaecb0661accc4ab5e7f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "juspay",
+        "repo": "cachix-push",
+        "type": "github"
+      }
+    },
     "cargo-doc-live": {
       "locked": {
         "lastModified": 1717704203,
@@ -339,6 +354,7 @@
     },
     "root": {
       "inputs": {
+        "cachix-push": "cachix-push",
         "cargo-doc-live": "cargo-doc-live",
         "devour-flake": "devour-flake",
         "flake-parts": "flake-parts",
