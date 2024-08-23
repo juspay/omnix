@@ -10,6 +10,7 @@ in
       runtimeInputs = [ pkgs.jq pkgs.bc pkgs.nix ];
       meta.description = "Check that omnix's nix closure size remains reasonably small";
       text = ''
+        set -o pipefail
         MAX_CLOSURE_SIZE=$(echo "${builtins.toString maxSizeInMB} * 1000000" | bc)
         CLOSURE_SIZE=$(nix path-info --json -S .#default | jq '.[0]'.closureSize)
         echo "Omnix closure size: $CLOSURE_SIZE"
