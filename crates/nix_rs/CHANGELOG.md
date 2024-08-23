@@ -5,7 +5,8 @@
 - **`flake::url`**
   - Add `without_attr`, `get_attr`
   - Simplify the return type of `RootQualifiedAttr::eval_flake`
-  - Add `AsRef` and `Deref` instances for `FlakeUrl`
+  - Add `AsRef`, `Deref`, `From<&Path>` instances for `FlakeUrl`
+  - `Path` instances for `FlakeUrl` no longer use the `path:` prefix (to avoid store copying)
   - **`attr`**:
     - Add `FlakeAttr::new` and `FlakeAttr::none` constructors
 - **`store`**:

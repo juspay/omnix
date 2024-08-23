@@ -9,7 +9,9 @@
 - `om ci`
   - Support for remote builds over SSH (via `--on` option)
   - Avoid running `nix-store` command multiple times (#224)
-  - Run `nix flake check` on all subflakes (#200)
+  - Support for CI steps
+    - Run `nix flake check` on all subflakes (#200)
+    - Ability to add a custom CI step. For example, to run arbitrary commands.
 
 ### Fixes
 

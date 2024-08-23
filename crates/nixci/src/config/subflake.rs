@@ -47,8 +47,8 @@ impl Default for SubflakeConfig {
 }
 
 impl SubflakeConfig {
-    /// Whether this subflake can be built on any of the given systems
-    pub fn can_build_on(&self, systems: &[System]) -> bool {
+    /// Whether the CI for this subflake can be run on any of the given systems
+    pub fn can_run_on(&self, systems: &[System]) -> bool {
         match self.systems.as_ref() {
             Some(systems_whitelist) => systems_whitelist.iter().any(|s| systems.contains(s)),
             None => true,

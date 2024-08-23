@@ -157,26 +157,35 @@ pub async fn ci_run(
         let name = format!("{}.{}", cfg.ref_.selected_name, subflake_name).italic();
 
         if subflake.skip {
-            tracing::info!("🍊 {} {}", name, "skipped (deselected out)".dimmed());
+            tracing::info!("\n🍊 {} {}", name, "skipped (deselected out)".dimmed());
             continue;
         }
 
-        let compatible_system = subflake.can_build_on(&systems);
+        let compatible_system = subflake.can_run_on(&systems);
         if !compatible_system {
             tracing::info!(
-                "🍊 {} {}",
+                "\n🍊 {} {}",
                 name,
-                "skipped (cannot build on this system)".dimmed()
+                "skipped (cannot run on this system)".dimmed()
             );
             continue;
         }
 
-        tracing::info!("🍎 {}", name);
+        tracing::info!("\n🍎 {}", name);
         subflake
             .steps
-            .run(cmd, verbose, run_cmd, &cfg.ref_.flake_url, subflake)
+            .run(
+                cmd,
+                verbose,
+                run_cmd,
+                &systems,
+                &cfg.ref_.flake_url,
+                subflake,
+            )
             .await?;
     }
+
+    tracing::info!("\n🥳 Success!");
 
     Ok(())
 }

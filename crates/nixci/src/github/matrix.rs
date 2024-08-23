@@ -29,7 +29,7 @@ impl GitHubMatrix {
                 subflakes
                     .0
                     .iter()
-                    .filter(|&(_k, v)| v.can_build_on(&[system.clone()]))
+                    .filter(|&(_k, v)| v.can_run_on(&[system.clone()]))
                     .map(|(k, _v)| GitHubMatrixRow {
                         system: system.clone(),
                         subflake: k.clone(),

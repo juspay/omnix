@@ -19,6 +19,7 @@
     packages.cache = pkgs.writeShellApplication {
       name = "write-flake-cache";
       text = ''
+        set -x
         cp ${inputs.self.flakeEvalCache} ./flake.nix.json
       '';
     };
