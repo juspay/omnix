@@ -3184,6 +3184,7 @@ dependencies = [
  "clap",
  "colored",
  "is_proc_translated",
+ "nonempty",
  "os_info",
  "regex",
  "serde",

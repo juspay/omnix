@@ -25,7 +25,9 @@ pub async fn flakreate(registry: FlakeUrl, path: PathBuf) -> anyhow::Result<()> 
     let template_url = registry.with_attr(&template.name);
     NixCmd::get()
         .await
-        .run_with_args(&["flake", "new", &path, "-t", &template_url.0])
+        .run_with(|cmd| {
+            cmd.args(["flake", "new", &path, "-t", &template_url.0]);
+        })
         .await?;
 
     // Do the actual replacement
