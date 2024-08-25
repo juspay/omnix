@@ -74,19 +74,19 @@ impl RunCommand {
         // TODO: We'll refactor this function to use steps
         // https://github.com/juspay/omnix/issues/216
 
-        tracing::info!("::group::{}", "nixinfo");
+        println!("::group::{}", "nixinfo");
         tracing::info!("{}", "\n👟 Gathering NixInfo".bold());
         let nix_info = NixInfo::get()
             .await
             .as_ref()
             .with_context(|| "Unable to gather nix info")?;
-        tracing::info!("::endgroup::");
+        println!("::endgroup::");
 
         // First, run the necessary health checks
-        tracing::info!("::group::{}", "health");
+        println!("::group::{}", "health");
         tracing::info!("{}", "\n🫀 Performing health check".bold());
         check_nix_version(&cfg.ref_.flake_url, nix_info).await?;
-        tracing::info!("::endgroup::");
+        println!("::endgroup::");
 
         // Then, do the CI steps
         tracing::info!("::group::{}", "ci");
