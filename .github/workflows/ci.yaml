@@ -17,6 +17,12 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
+      - uses: cachix/cachix-action@v14
+        if: github.ref == 'refs/heads/main'
+        with:
+          name: om
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+          skipPush: true
 
       # Prep systems list
       # Workaround until https://github.com/juspay/omnix/issues/210
