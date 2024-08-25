@@ -17,8 +17,10 @@
   - `NixEnv::detect`'s logging uses DEBUG level now (formerly INFO)
   - Add Nix installer to `NixEnv`
 - **`command`
-  - `run_with_args` now takes an iterator of string references, much like `Command::args`.
+  - `run_with_args` is now `run_with`, and takes a function that mutates the `Command` at will.
   - Add `trace_cmd_with`
+- **`flake::command`**:
+  - Add module, for `nix run` and `nix develop`
 
 ## 1.0.0
 

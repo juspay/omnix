@@ -24,5 +24,8 @@ pub async fn nix_copy(
     for path in paths {
         args.push(path.to_string_lossy().into_owned());
     }
-    cmd.run_with_args(&args).await
+    cmd.run_with(|cmd| {
+        cmd.args(args);
+    })
+    .await
 }

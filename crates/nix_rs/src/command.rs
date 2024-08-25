@@ -8,10 +8,7 @@
 //! cmd.run_with_args_returning_stdout(&["--version"]);
 //! ```
 
-use std::{
-    ffi::OsStr,
-    fmt::{self, Display},
-};
+use std::fmt::{self, Display};
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -155,14 +152,13 @@ impl NixCmd {
         }
     }
 
-    /// Run nix with given args, letting stdout and stderr be that of parent process
-    pub async fn run_with_args<I, S>(&self, args: I) -> Result<(), CommandError>
+    /// Run Nix with given [Command] customizations, while also tracing the command being run.
+    pub async fn run_with<F>(&self, f: F) -> Result<(), CommandError>
     where
-        I: IntoIterator<Item = S>,
-        S: AsRef<OsStr>,
+        F: FnOnce(&mut Command),
     {
         let mut cmd = self.command();
-        cmd.args(args);
+        f(&mut cmd);
         trace_cmd(&cmd);
         let status = cmd.spawn()?.wait().await?;
         if status.success() {

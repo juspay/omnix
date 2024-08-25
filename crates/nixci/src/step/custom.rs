@@ -15,6 +15,7 @@ use tokio::fs;
 use nix_rs::{
     command::NixCmd,
     flake::{
+        self,
         metadata::FlakeMetadata,
         system::System,
         url::{attr::FlakeAttr, FlakeUrl},
@@ -79,38 +80,33 @@ impl CustomStep {
         let path = flake_path.join(&subflake.dir);
         tracing::info!("Running custom step under: {:}", &path.display());
 
-        // TODO: Refactor and upstream to nix_rs? We may want to add support for --override-inputs in nix_rs's `Command` though. Usae that throughout even when building through devour-flake.
-        let mut cmd = nixcmd.command();
-        cmd.args(
-            subflake
-                .override_inputs
-                .iter()
-                .flat_map(|(k, v)| vec!["--override-input", k, &v]),
-        );
-
-        cmd.current_dir(&path);
         let pwd_flake = FlakeUrl::from(PathBuf::from("."));
-
-        // Pass arguments specific `nix run` and `nix develop`
-        match self {
-            CustomStep::FlakeApp { name, args, .. } => {
-                cmd.arg("run")
-                    .arg(pwd_flake.with_attr(&name.get_name()).to_string())
-                    .arg("--")
-                    .args(args);
-            }
-            CustomStep::FlakeDevShellCommand { name, command, .. } => {
-                cmd.arg("develop")
-                    .arg(pwd_flake.with_attr(&name.get_name()).to_string())
-                    .arg("-c")
-                    .args(command);
-            }
+        let flake_opts = flake::command::FlakeOptions {
+            override_inputs: subflake.override_inputs.clone(),
+            current_dir: Some(path.clone()),
         };
 
-        // Run
-        nix_rs::command::trace_cmd(&cmd);
-        let status = cmd.spawn()?.wait().await?;
-        Ok(status.exit_ok()?)
+        match self {
+            CustomStep::FlakeApp { name, args, .. } => {
+                flake::command::run(
+                    nixcmd,
+                    &flake_opts,
+                    &pwd_flake.with_attr(&name.get_name()),
+                    args.clone(),
+                )
+                .await?;
+            }
+            CustomStep::FlakeDevShellCommand { name, command, .. } => {
+                flake::command::develop(
+                    nixcmd,
+                    &flake_opts,
+                    &pwd_flake.with_attr(&name.get_name()),
+                    command.clone(),
+                )
+                .await?;
+            }
+        }
+        Ok(())
     }
 
     fn can_run_on(&self, systems: &[System]) -> bool {

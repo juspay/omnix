@@ -37,7 +37,11 @@ impl FlakeCheckStep {
         for (k, v) in &subflake.override_inputs {
             args.extend(["--override-input", k, v]);
         }
-        nixcmd.run_with_args(args).await?;
+        nixcmd
+            .run_with(|cmd| {
+                cmd.args(args);
+            })
+            .await?;
         Ok(())
     }
 }
