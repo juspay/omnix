@@ -74,7 +74,7 @@ impl RunCommand {
         // TODO: We'll refactor this function to use steps
         // https://github.com/juspay/omnix/issues/216
 
-        println!("::group::{}", "nixinfo");
+        println!("::group::nixifo");
         tracing::info!("{}", "\n👟 Gathering NixInfo".bold());
         let nix_info = NixInfo::get()
             .await
@@ -83,7 +83,7 @@ impl RunCommand {
         println!("::endgroup::");
 
         // First, run the necessary health checks
-        println!("::group::{}", "health");
+        println!("::group::health");
         tracing::info!("{}", "\n🫀 Performing health check".bold());
         check_nix_version(&cfg.ref_.flake_url, nix_info).await?;
         println!("::endgroup::");
