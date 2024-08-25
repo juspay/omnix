@@ -138,6 +138,7 @@ impl CustomSteps {
         subflake: &SubflakeConfig,
     ) -> anyhow::Result<()> {
         for (name, step) in &self.0 {
+            tracing::info!("::group::{}", name);
             if step.can_run_on(systems) {
                 tracing::info!("{}", format!("🏗  Running custom step: {}", name).bold());
                 step.run(nixcmd, url, subflake).await?;
@@ -152,6 +153,7 @@ impl CustomSteps {
                   .yellow()
               );
             }
+            tracing::info!("::endgroup::");
         }
         Ok(())
     }
