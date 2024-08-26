@@ -1,12 +1,12 @@
 //! UI for /flake segment of the app
 
-use std::{collections::BTreeMap, path::PathBuf};
+use std::path::PathBuf;
 
 use dioxus::prelude::*;
 use dioxus_router::components::Link;
 use nix_rs::flake::{
     outputs::{FlakeOutputs, Leaf, Type, Val},
-    schema::FlakeSchema,
+    system::System,
     url::FlakeUrl,
     Flake,
 };
@@ -82,7 +82,7 @@ pub fn FlakeView(flake: Flake) -> Element {
             div { class: "text-sm italic text-gray-600",
                 Link { to: Route::FlakeRaw {}, "View raw output" }
             }
-            FlakeSchemaView { schema: flake.schema }
+            FlakeOutputsView { output: flake.output, system: flake.system.clone() }
         }
     }
 }
@@ -101,8 +101,7 @@ pub fn SectionHeading(title: &'static str, extra: Option<String>) -> Element {
 }
 
 #[component]
-pub fn FlakeSchemaView(schema: FlakeSchema) -> Element {
-    let system = schema.system.clone();
+pub fn FlakeOutputsView(output: FlakeOutputs, system: System) -> Element {
     rsx! {
         div {
             h2 { class: "my-2",
@@ -110,26 +109,64 @@ pub fn FlakeSchemaView(schema: FlakeSchema) -> Element {
                 span { class: "font-mono text-xs text-gray-500", "(", "{system }", ")" }
             }
             div { class: "text-left",
-                BtreeMapView { title: "Packages", tree: schema.packages }
-                BtreeMapView { title: "Legacy Packages", tree: schema.legacy_packages }
-                BtreeMapView { title: "Dev Shells", tree: schema.devshells }
-                BtreeMapView { title: "Checks", tree: schema.checks }
-                BtreeMapView { title: "Apps", tree: schema.apps }
-                BtreeMapView { title: "NixOS configurations", tree: schema.nixos_configurations }
-                BtreeMapView { title: "Darwin configurations", tree: schema.darwin_configurations }
-                BtreeMapView { title: "NixOS modules", tree: schema.nixos_modules }
+                VecView {
+                    title: "Packages",
+                    list: output
+                        .lookup_returning_qualified_attributes(&["packages", system.as_ref()])
+                        .unwrap_or_default()
+                }
+                VecView {
+                    title: "Legacy Packages",
+                    list: output
+                        .lookup_returning_qualified_attributes(&["legacyPackages", system.as_ref()])
+                        .unwrap_or_default()
+                }
+                VecView {
+                    title: "Dev Shells",
+                    list: output
+                        .lookup_returning_qualified_attributes(&["devShells", system.as_ref()])
+                        .unwrap_or_default()
+                }
+                VecView {
+                    title: "Checks",
+                    list: output
+                        .lookup_returning_qualified_attributes(&["checks", system.as_ref()])
+                        .unwrap_or_default()
+                }
+                VecView {
+                    title: "Apps",
+                    list: output
+                        .lookup_returning_qualified_attributes(&["apps", system.as_ref()])
+                        .unwrap_or_default()
+                }
+                VecView {
+                    title: "NixOS configurations",
+                    list: output
+                        .lookup_returning_qualified_attributes(&["nixosConfigurations"])
+                        .unwrap_or_default()
+                }
+                VecView {
+                    title: "Darwin configurations",
+                    list: output
+                        .lookup_returning_qualified_attributes(&["darwinConfigurations"])
+                        .unwrap_or_default()
+                }
+                VecView {
+                    title: "NixOS modules",
+                    list: output.lookup_returning_qualified_attributes(&["nixosModules"]).unwrap_or_default()
+                }
                 SectionHeading { title: "Formatter" }
-                match schema.formatter.as_ref() {
+                match output.lookup_returning_qualified_attributes(&["formatter", system.as_ref()]) {
                     Some(l) => {
-                        let v = l.as_val().cloned().unwrap_or_default();
-                        let k = v.derivation_name.as_deref().unwrap_or("formatter");
-                        rsx! { FlakeValView { k: k, v: v.clone() } }
+                        match l.first() {
+                            Some((_, leaf)) => {
+                                let v = leaf.as_val().cloned().unwrap_or_default();
+                                let k = v.derivation_name.as_deref().unwrap_or("formatter");
+                                rsx! { FlakeValView { k: k, v: v.clone() } }
+                            },
+                            None => rsx! { "" }
+                        }
                     },
-                    None => rsx! { "" }
-                },
-                SectionHeading { title: "Other" }
-                match &schema.other {
-                    Some(v) => rsx! { FlakeOutputsRawView { outs: FlakeOutputs::Attrset(v.clone()) } },
                     None => rsx! { "" }
                 }
             }
@@ -138,20 +175,20 @@ pub fn FlakeSchemaView(schema: FlakeSchema) -> Element {
 }
 
 #[component]
-pub fn BtreeMapView(title: &'static str, tree: BTreeMap<String, Leaf>) -> Element {
+pub fn VecView(title: &'static str, list: Vec<(String, Leaf)>) -> Element {
     rsx! {
         div {
-            SectionHeading { title: title, extra: tree.len().to_string() }
-            BtreeMapBodyView { tree: tree }
+            SectionHeading { title: title, extra: list.len().to_string() }
+            VecBodyView { list: list }
         }
     }
 }
 
 #[component]
-pub fn BtreeMapBodyView(tree: BTreeMap<String, Leaf>) -> Element {
+pub fn VecBodyView(list: Vec<(String, Leaf)>) -> Element {
     rsx! {
         div { class: "flex flex-wrap justify-start",
-            for (k , l) in tree.iter() {
+            for (k , l) in list.iter() {
                 FlakeValView { k: k.clone(), v: l.as_val().cloned().unwrap_or_default() }
             }
         }

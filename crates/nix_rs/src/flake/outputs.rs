@@ -51,6 +51,113 @@ impl FlakeOutputs {
         }
     }
 
+    /// Lookup the given output prefix, returning a list of ([String], [Leaf]) pairs.
+    ///
+    /// Given the following json output of `nix flake show`:
+    /// ```no_run
+    /// {
+    /// "packages": {
+    ///   "doc": "The `packages` flake output contains packages that can be added to a shell using `nix shell`.\n",
+    ///   "output": {
+    ///     "children": {
+    ///       "aarch64-darwin": {
+    ///         "children": {
+    ///           "cargo-doc-live": {
+    ///             "derivationName": "cargo-doc-live",
+    ///             "leaf": true,
+    ///             "what": "package"
+    ///           },
+    ///           "default": {
+    ///             "derivationName": "omnix-cli-0.1.0",
+    ///             "leaf": true,
+    ///             "shortDescription": "Improve developer experience of using Nix",
+    ///             "what": "package"
+    ///           },
+    ///           "gui": {
+    ///             "derivationName": "omnix-gui-0.1.0",
+    ///             "leaf": true,
+    ///             "shortDescription": "Graphical interface for Omnix",
+    ///             "what": "package"
+    ///           }
+    ///         }
+    ///       }
+    ///     }
+    ///   }
+    /// }
+    /// ```
+    /// And given the prefix `packages` we get:
+    /// ```no_run
+    /// Some([
+    ///   ("doc", Doc("The `packages` flake output contains packages that can be added to a shell using `nix shell`.\n")),
+    ///   ("aarch64-darwin.cargo-doc-live", Val(Val { type_: Package, derivation_name: Some("cargo-doc-live"), short_description: None, value: None })),
+    ///   ("aarch64-darwin.default", Val(Val { type_: Package, derivation_name: Some("omnix-cli-0.1.0"), short_description: Some("Improve developer experience of using Nix"), value: None })),
+    ///   ("aarch64-darwin.gui", Val(Val { type_: Package, derivation_name: Some("omnix-gui-0.1.0"), short_description: Some("Graphical interface for Omnix"), value: None })),
+    /// ])
+    /// ```
+    /// And similarly, for the prefix `packages.aarch64-darwin` we get:
+    /// ```no_run
+    /// Some([
+    ///   ("cargo-doc-live", Val(Val { type_: Package, derivation_name: Some("cargo-doc-live"), short_description: None, value: None })),
+    ///   ("default", Val(Val { type_: Package, derivation_name: Some("omnix-cli-0.1.0"), short_description: Some("Improve developer experience of using Nix"), value: None })),
+    ///   ("gui", Val(Val { type_: Package, derivation_name: Some("omnix-gui-0.1.0"), short_description: Some("Graphical interface for Omnix"), value: None })),
+    /// ])
+    /// ```
+    pub fn lookup_returning_qualified_attributes(
+        &self,
+        prefix: &[&str],
+    ) -> Option<Vec<(String, Leaf)>> {
+        if prefix.is_empty() {
+            match self {
+                Self::Attrset(_) => Some(self.to_qualified_attributes().into_iter().collect()),
+                Self::Leaf(Leaf::Doc(_)) => Some(vec![]),
+                Self::Leaf(v) => Some(vec![("".to_string(), v.clone())]),
+            }
+        } else {
+            match self {
+                Self::Attrset(v) => {
+                    if let Some(children) = v.get("children") {
+                        children.lookup_returning_qualified_attributes(prefix)
+                    } else if let Some(output) = v.get("output") {
+                        output.lookup_returning_qualified_attributes(prefix)
+                    } else if let Some(entry) = v.get(prefix[0]) {
+                        entry.lookup_returning_qualified_attributes(&prefix[1..])
+                    } else {
+                        None
+                    }
+                }
+                _ => None,
+            }
+        }
+    }
+
+    /// Convert a [FlakeOutputs] to qualified attribute names and their corresponding leaf values.
+    ///
+    fn to_qualified_attributes(&self) -> Vec<(String, Leaf)> {
+        match self {
+            Self::Leaf(Leaf::Doc(_)) => vec![],
+            Self::Leaf(v) => vec![(("".to_string()), v.clone())],
+            Self::Attrset(v) => {
+                // We want to skip "children" key in next recursive call
+                // Also, if it is the last key before the leaf, we don't want to add "." in the end
+                v.iter()
+                    .flat_map(|(k, v)| {
+                        v.to_qualified_attributes()
+                            .into_iter()
+                            .map(move |(k2, v2)| {
+                                if k2.is_empty() {
+                                    (k.to_string(), v2)
+                                } else if k == "children" || k == "output" {
+                                    (k2.to_string(), v2)
+                                } else {
+                                    (format!("{}.{}", k, &k2), v2)
+                                }
+                            })
+                    })
+                    .collect()
+            }
+        }
+    }
+
     /// Lookup the given path, returning the value, while removing it from the tree.
     ///
     /// # Example
@@ -107,6 +214,7 @@ impl Leaf {
 pub struct Val {
     #[serde(rename = "what")]
     pub type_: Type,
+    /// The name derived from the derivation in the flake output
     pub derivation_name: Option<String>,
     pub short_description: Option<String>,
 }
