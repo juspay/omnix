@@ -91,24 +91,63 @@ jobs:
 
 ## Configuring {#config}
 
-By default, `om ci` will build the top-level flake, but you can tell it to build sub-flakes by adding the following output to your top-level flake:
+By default, `om ci` will build the top-level flake, but you can tell it to build sub-flakes (here, `./dir1` and `./dir2`) by adding the following output to your top-level flake:
 
 ```nix
 # myproject/flake.nix
 {
   om.ci.default = {
     dir1 = {
-        dir = "dir1";
+      dir = "dir1";
     };
     dir2 = {
-        dir = "dir2";
-        overrideInputs.myproject = ./.;
+      dir = "dir2";
+      overrideInputs.myproject = ./.;
     };
   }
 }
 ```
 
 You can have more than one CI configuration. For eg., `om ci run .#foo` will run the configuration from `om.ci.foo` flake output.
+
+### Custom CI actions {#custom}
+
+You can define custom CI actions in your flake, which will be run as part of `om ci run`. For example, to run tests in the nix develop shell:
+
+```nix
+{
+  om.ci.default = {
+    root = {
+      dir = ".";
+      steps = {
+        # The build step is enabled by default. It builds all flake outputs.
+        build.enable = true
+        # Other steps include: lockfile & flake-check
+
+        # Users can define custom steps to run any arbitrary flake app or devShell command.
+        custom = {
+          # Here, we run cargo tests in the nix shell
+          # This equivalent to `nix develop .#default -c cargo test`
+          cargo-test = {
+            type = "devshell";
+            # name = "default"
+            command = "cargo test";
+          };
+
+          # We can also flake apps
+          # This is equivalent to `nix run .#check-closure-size`
+          closure-size = {
+            type = "app";
+            name = "check-closure-size";
+          };
+        };
+      };
+    };
+  }
+}
+```
+
+For a real-world example of custom steps, checkout [Omnix's configuration](https://github.com/juspay/omnix/blob/5322235ce4069e72fd5eb477353ee5d1f5100243/nix/modules/om.nix#L16-L33).
 
 ## Examples
 
@@ -117,6 +156,7 @@ Some real-world examples of how `om ci` is used with specific configurations:
 > [!WARNING]
 > These examples use the predecessor, `nixci`, so you want to replace `nixci` with `om ci` wherever applicable.
 
+- [omnix](https://github.com/juspay/omnix/blob/5322235ce4069e72fd5eb477353ee5d1f5100243/nix/modules/om.nix#L16-L33)
 - [services-flake](https://github.com/juspay/services-flake/blob/197fc1c4d07d09f4e01dd935450608c35393b102/flake.nix#L10-L24)
 - [nixos-flake](https://github.com/srid/nixos-flake/blob/4af32875e7cc6df440c5f5cf93c67af41902768b/flake.nix#L29-L45)
 - [haskell-flake](https://github.com/srid/haskell-flake/blob/d128c7329bfc73c3eeef90f6d215d0ccd7baf78c/flake.nix#L15-L67)
