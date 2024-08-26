@@ -54,7 +54,7 @@ impl FlakeOutputs {
     /// Lookup the given output prefix, returning a list of ([String], [Leaf]) pairs.
     ///
     /// Given the following json output of `nix flake show`:
-    /// ```no_run
+    /// ```json
     /// {
     /// "packages": {
     ///   "doc": "The `packages` flake output contains packages that can be added to a shell using `nix shell`.\n",
@@ -86,7 +86,7 @@ impl FlakeOutputs {
     /// }
     /// ```
     /// And given the prefix `packages` we get:
-    /// ```no_run
+    /// ```rust,ignore
     /// Some([
     ///   ("doc", Doc("The `packages` flake output contains packages that can be added to a shell using `nix shell`.\n")),
     ///   ("aarch64-darwin.cargo-doc-live", Val(Val { type_: Package, derivation_name: Some("cargo-doc-live"), short_description: None, value: None })),
@@ -95,7 +95,7 @@ impl FlakeOutputs {
     /// ])
     /// ```
     /// And similarly, for the prefix `packages.aarch64-darwin` we get:
-    /// ```no_run
+    /// ```rust,ignore
     /// Some([
     ///   ("cargo-doc-live", Val(Val { type_: Package, derivation_name: Some("cargo-doc-live"), short_description: None, value: None })),
     ///   ("default", Val(Val { type_: Package, derivation_name: Some("omnix-cli-0.1.0"), short_description: Some("Improve developer experience of using Nix"), value: None })),
