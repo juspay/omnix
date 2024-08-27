@@ -85,6 +85,7 @@ impl FlakeOutputs {
     ///   }
     /// }
     /// ```
+    ///
     /// And given the prefix `packages` we get:
     /// ```rust,ignore
     /// Some([
