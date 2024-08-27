@@ -1,11 +1,11 @@
-use clap::Subcommand;
-use clap_verbosity_flag::{InfoLevel, Verbosity};
-
 pub mod ci;
-mod completion;
+pub mod completion;
 pub mod health;
 pub mod init;
 pub mod show;
+
+use clap::Subcommand;
+use clap_verbosity_flag::{InfoLevel, Verbosity};
 
 #[derive(Subcommand, Debug)]
 pub enum Command {
