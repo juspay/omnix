@@ -1,7 +1,7 @@
 use clap::Parser;
 use clap_verbosity_flag::{InfoLevel, Verbosity};
 
-use crate::command::Command;
+use crate::command::core::Command;
 
 /// Omnix <https://omnix.page/>
 //
