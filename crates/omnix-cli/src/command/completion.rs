@@ -12,12 +12,16 @@ pub struct CompletionCommand {
 
 impl CompletionCommand {
     pub fn run(&self) -> anyhow::Result<()> {
-        generate_completion(self.shell)
+        generate_completion(self.shell);
+        Ok(())
     }
 }
 
-pub fn generate_completion(shell: Shell) -> anyhow::Result<()> {
-    let mut cli = crate::args::Args::command();
-    generate(shell, &mut cli, "om", &mut std::io::stdout());
-    Ok(())
+fn generate_completion(shell: Shell) {
+    generate(
+        shell,
+        &mut crate::args::Args::command(),
+        "om",
+        &mut std::io::stdout(),
+    )
 }
