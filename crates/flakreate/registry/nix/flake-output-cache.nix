@@ -6,7 +6,7 @@
     # jq < $(nix eval --raw .#registry)
     flakeEvalCache =
       let
-        attrsToInclude = [ "templates" "om" ];
+        attrsToInclude = [ "om" ];
       in
       builtins.toFile "flake.nix.json"
         (builtins.toJSON

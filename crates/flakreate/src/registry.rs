@@ -81,7 +81,6 @@ impl TemplateRegistry {
 
     async fn fetch_via_flake(url: &FlakeUrl) -> Result<Self, NixCmdError> {
         let nixcmd = NixCmd::get().await;
-        // TODO: Check `templates` attribute as well
         let mut templates = nix_eval_attr::<BTreeMap<String, FlakeTemplate>>(
             nixcmd,
             &url.with_attr("om.templates"),
