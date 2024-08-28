@@ -88,10 +88,16 @@ impl TemplateRegistry {
 
 async fn fetch_via_flake(url: &FlakeUrl) -> Result<BTreeMap<String, FlakeTemplate>, NixCmdError> {
     let nixcmd = NixCmd::get().await;
-    let templates =
-        nix_eval_attr::<BTreeMap<String, FlakeTemplate>>(nixcmd, &url.with_attr("om.templates"))
-            .await?
-            .unwrap_or_default();
+    let templates: BTreeMap<String, FlakeTemplate> =
+        match nix_eval_attr(nixcmd, &url.with_attr("om.templates")).await? {
+            Some(v) => v,
+            None => {
+                // Legacy nix templates
+                nix_eval_attr(nixcmd, &url.with_attr("templates"))
+                    .await?
+                    .unwrap_or_default()
+            }
+        };
     Ok(templates)
 }
 

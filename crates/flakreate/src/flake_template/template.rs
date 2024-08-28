@@ -21,6 +21,7 @@ pub struct FlakeTemplate {
     #[serde(rename = "welcomeText")]
     pub welcome_text: Option<String>,
 
+    /// Non-standard fields defined by Omnix itself.
     #[serde(flatten)]
     pub config: FlakeTemplateConfig,
 }
