@@ -17,15 +17,10 @@
         ./nix/flake-output-cache.nix
       ];
       flake = {
-        templates = {
-          nix-dev-home = inputs.nix-dev-home.templates.default;
-          haskell-flake = inputs.haskell-flake.templates.example;
-          haskell-template = inputs.haskell-template.templates.default;
-        };
         # TODO: Ideally, these params should be moved to upstream module.
         # But do that only as the spec stabilizes.
         om.templates = {
-          nix-dev-home = {
+          nix-dev-home = inputs.nix-dev-home.templates.default // {
             tags = [ "home-manager" "juspay" "development" ];
             params = [
               {
@@ -37,13 +32,14 @@
                   "flake.nix"
                 ];
               }
+              # Git
               {
                 name = "Full Name";
                 help = "Your full name for use in Git config";
                 default = "John Doe";
                 required = true;
                 files = [
-                  "home/default.nix"
+                  "nix/modules/home/git.nix"
                 ];
               }
               {
@@ -52,7 +48,16 @@
                 default = "johndoe@example.com";
                 required = true;
                 files = [
-                  "home/default.nix"
+                  "nix/modules/home/git.nix"
+                ];
+              }
+              # Neovim
+              {
+                name = "Neovim";
+                help = "Include Neovim configuration";
+                default = false;
+                files = [
+                  "nix/modules/home/neovim.nix"
                 ];
               }
               {
@@ -65,7 +70,7 @@
               }
             ];
           };
-          haskell-flake = {
+          haskell-flake = inputs.haskell-flake.templates.example // {
             tags = [ "haskell" "haskell-flake" ];
             params = [
               {
@@ -80,7 +85,7 @@
               }
             ];
           };
-          haskell-template = {
+          haskell-template = inputs.haskell-template.templates.default // {
             tags = [ "haskell" "haskell-flake" "relude" "just" ];
             params = [
               {

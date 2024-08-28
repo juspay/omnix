@@ -564,11 +564,11 @@
         "systems": "systems_5"
       },
       "locked": {
-        "lastModified": 1724689660,
-        "narHash": "sha256-TxWE+ATipQ3K/aAHvXzjJDIzArYwzO0cLfZ68aLmPxY=",
+        "lastModified": 1724864654,
+        "narHash": "sha256-h9UUMag5P3tLajhlyUEDDf/TYBLvm13ymlDGtgailg0=",
         "owner": "juspay",
         "repo": "nix-dev-home",
-        "rev": "eff49753f705dc41ad8afcb9ed140428523c0795",
+        "rev": "95d33c23cc0a9b875c8c63fb317bc5ddb6228935",
         "type": "github"
       },
       "original": {
