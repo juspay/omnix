@@ -8,7 +8,7 @@ use nix_rs::{
 };
 use thiserror::Error;
 
-use crate::flake_template::{config::FlakeTemplateConfig, template::FlakeTemplate};
+use crate::flake_template::template::FlakeTemplate;
 
 /// A [FlakeUrl] reference to a [TemplateRegistry]
 pub struct TemplateRegistryRef {
@@ -66,63 +66,54 @@ pub struct TemplateRegistry(pub Vec<FlakeTemplate>);
 impl TemplateRegistry {
     /// Fetch the templates defined in a flake
     pub async fn from(url: &FlakeUrl) -> Result<Self, TemplateError> {
-        let v = if let Some(path) = url.as_local_path()
+        let mut templates = if let Some(path) = url.as_local_path()
             && let cache_file = path.join("flake.nix.json")
             && cache_file.exists()
         {
             tracing::debug!("Fetching templates from cache: {}", cache_file.display());
-            Self::fetch_via_cache(cache_file).await?
+            fetch_via_cache(cache_file).await?
         } else {
             tracing::debug!("Fetching templates from flake: {}", url);
-            Self::fetch_via_flake(url).await?
+            fetch_via_flake(url).await?
         };
-        Ok(v)
-    }
 
-    async fn fetch_via_flake(url: &FlakeUrl) -> Result<Self, NixCmdError> {
-        let nixcmd = NixCmd::get().await;
-        let mut templates =
-            nix_eval_attr::<BTreeMap<String, FlakeTemplate>>(nixcmd, &url.with_attr("templates"))
-                .await?
-                .unwrap_or_default();
-        let templates_config = nix_eval_attr::<BTreeMap<String, FlakeTemplateConfig>>(
-            nixcmd,
-            &url.with_attr("om.templates"),
-        )
-        .await?
-        .unwrap_or_default();
-        Self::set_template_deserialized_fields(&mut templates, &templates_config);
-        Ok(TemplateRegistry(templates.values().cloned().collect()))
-    }
-
-    /// Load from `flake.nix.json`
-    async fn fetch_via_cache(cache_file: PathBuf) -> Result<Self, CacheError> {
-        let flake_nix_json: serde_json::Value =
-            serde_json::from_reader(std::fs::File::open(cache_file)?)?;
-        let mut templates = serde_json::from_value(
-            flake_nix_json
-                .pointer("/templates")
-                .cloned()
-                .unwrap_or_default(),
-        )?;
-        let templates_config = serde_json::from_value(
-            flake_nix_json
-                .pointer("/om/templates")
-                .cloned()
-                .unwrap_or_default(),
-        )?;
-        Self::set_template_deserialized_fields(&mut templates, &templates_config);
-        Ok(TemplateRegistry(templates.values().cloned().collect()))
-    }
-
-    fn set_template_deserialized_fields(
-        templates: &mut BTreeMap<String, FlakeTemplate>,
-        templates_config: &BTreeMap<String, FlakeTemplateConfig>,
-    ) {
+        // Polyfill
         for (name, template) in templates.iter_mut() {
-            template.polyfill(name.clone(), templates_config.get(name).cloned());
+            template.polyfill(name.clone());
         }
+
+        Ok(TemplateRegistry(templates.values().cloned().collect()))
     }
+}
+
+async fn fetch_via_flake(url: &FlakeUrl) -> Result<BTreeMap<String, FlakeTemplate>, NixCmdError> {
+    let nixcmd = NixCmd::get().await;
+    let templates: BTreeMap<String, FlakeTemplate> =
+        match nix_eval_attr(nixcmd, &url.with_attr("om.templates")).await? {
+            Some(v) => v,
+            None => {
+                // Legacy nix templates
+                nix_eval_attr(nixcmd, &url.with_attr("templates"))
+                    .await?
+                    .unwrap_or_default()
+            }
+        };
+    Ok(templates)
+}
+
+/// Load from `flake.nix.json`
+async fn fetch_via_cache(
+    cache_file: PathBuf,
+) -> Result<BTreeMap<String, FlakeTemplate>, CacheError> {
+    let flake_nix_json: serde_json::Value =
+        serde_json::from_reader(std::fs::File::open(cache_file)?)?;
+    let templates = serde_json::from_value(
+        flake_nix_json
+            .pointer("/om/templates")
+            .cloned()
+            .unwrap_or_default(),
+    )?;
+    Ok(templates)
 }
 
 #[derive(Error, Debug)]
