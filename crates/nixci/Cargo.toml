@@ -25,6 +25,7 @@ futures-lite = { workspace = true }
 nix_health = { workspace = true }
 nix_rs = { workspace = true, features = ["clap"] }
 nonempty = { workspace = true }
+omnix-common = { workspace = true }
 reqwest = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }

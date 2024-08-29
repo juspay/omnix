@@ -2,9 +2,10 @@
 use clap::Subcommand;
 use colored::Colorize;
 use nix_rs::command::NixCmd;
+use omnix_common::config::OmConfig;
 use tracing::instrument;
 
-use crate::{config::core::Config, flake_ref::FlakeRef};
+use crate::{config::subflakes::SubflakesConfig, flake_ref::FlakeRef};
 
 use super::{gh_matrix::GHMatrixCommand, run::RunCommand};
 
@@ -45,9 +46,9 @@ impl Command {
     }
 
     /// Get the nixci [config::Config] associated with this subcommand
-    async fn get_config(&self, cmd: &NixCmd) -> anyhow::Result<Config> {
+    async fn get_config(&self, cmd: &NixCmd) -> anyhow::Result<OmConfig<SubflakesConfig>> {
         let url = self.get_flake_ref().to_flake_url().await?;
-        let cfg = Config::from_flake_url(cmd, &url).await?;
+        let cfg = crate::config::core::ci_config_from_flake_url(cmd, &url).await?;
         tracing::debug!("Config: {cfg:?}");
         Ok(cfg)
     }
