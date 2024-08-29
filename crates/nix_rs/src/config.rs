@@ -8,7 +8,10 @@ use tokio::sync::OnceCell;
 use tracing::instrument;
 use url::Url;
 
-use crate::command::{NixCmd, NixCmdError};
+use crate::{
+    command::{NixCmd, NixCmdError},
+    version::NixVersion,
+};
 
 use super::flake::system::System;
 
@@ -59,9 +62,21 @@ impl NixConfig {
     pub async fn from_nix(
         nix_cmd: &super::command::NixCmd,
     ) -> Result<NixConfig, super::command::NixCmdError> {
-        let v = nix_cmd
-            .run_with_args_expecting_json(&["show-config", "--json"])
-            .await?;
+        let nix_version = NixVersion::from_nix().await?;
+        let threshold_version = NixVersion {
+            major: 2,
+            minor: 20,
+            patch: 0,
+        };
+        let v = if nix_version >= threshold_version {
+            nix_cmd
+                .run_with_args_expecting_json(&["config", "show", "--json"])
+                .await?
+        } else {
+            nix_cmd
+                .run_with_args_expecting_json(&["show-config", "--json"])
+                .await?
+        };
         Ok(v)
     }
 
