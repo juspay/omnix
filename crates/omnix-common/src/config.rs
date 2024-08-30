@@ -5,7 +5,7 @@ use std::collections::BTreeMap;
 use nix_rs::{
     command::NixCmd,
     flake::url::{
-        qualified_attr::{QualifiedAttrError, RootQualifiedAttr},
+        qualified_attr::{nix_eval_qualified_attr, QualifiedAttrError},
         FlakeUrl,
     },
 };
@@ -39,9 +39,8 @@ impl<T> OmConfig<T> {
         S: AsRef<str>,
         T: Default + DeserializeOwned,
     {
-        let (config, reference) = RootQualifiedAttr::new(k)
-            .eval_flake::<BTreeMap<String, T>>(cmd, url)
-            .await?;
+        let (config, reference) =
+            nix_eval_qualified_attr::<BTreeMap<String, T>, _>(cmd, url, k).await?;
         Ok(OmConfig {
             flake_url: url.without_attr(),
             reference,
