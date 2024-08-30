@@ -18,7 +18,7 @@ use crate::config::subflake::SubflakeConfig;
 /// CI steps to run
 ///
 /// Contains some builtin steps, as well as custom steps (defined by user)
-#[derive(Debug, Default, Deserialize)]
+#[derive(Debug, Default, Clone, Deserialize)]
 pub struct Steps {
     /// [LockfileStep]
     #[serde(default, rename = "lockfile")]

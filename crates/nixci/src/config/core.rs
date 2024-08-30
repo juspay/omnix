@@ -17,27 +17,13 @@ pub async fn ci_config_from_flake_url(
     cmd: &NixCmd,
     url: &FlakeUrl,
 ) -> Result<OmConfig<SubflakesConfig>> {
-    let mut om_config = omnix_common::config::OmConfig::<SubflakesConfig>::from_flake_url(
+    let v = omnix_common::config::OmConfig::<SubflakesConfig>::from_flake_url(
         cmd,
         url,
         &["om.ci", "nixci"],
     )
     .await?;
-    if let Some(sub_flake_name) = om_config.selected_subconfig.clone() {
-        if !om_config.selected_config.0.contains_key(&sub_flake_name) {
-            anyhow::bail!(
-                "Sub-flake '{}' not found in om.ci configuration '{}'",
-                sub_flake_name,
-                url
-            )
-        }
-        for (name, value) in om_config.selected_config.0.iter_mut() {
-            if name != &sub_flake_name {
-                value.skip = true;
-            }
-        }
-    }
-    Ok(om_config)
+    Ok(v)
 }
 
 #[cfg(test)]
@@ -55,8 +41,9 @@ mod tests {
         let cfg = ci_config_from_flake_url(&NixCmd::default(), url)
             .await
             .unwrap();
-        assert_eq!(cfg.selected_name, "default");
-        assert_eq!(cfg.selected_subconfig, Some("dev".to_string()));
-        assert_eq!(cfg.selected_config.0.len(), 7);
+        let (config, attrs) = cfg.get_referenced().unwrap();
+        assert_eq!(attrs, &["dev"]);
+        // assert_eq!(cfg.selected_subconfig, Some("dev".to_string()));
+        assert_eq!(config.0.len(), 7);
     }
 }

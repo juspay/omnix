@@ -162,10 +162,16 @@ pub async fn ci_run(
 ) -> anyhow::Result<()> {
     let systems = run_cmd.get_systems(cmd, nix_config).await?;
 
-    for (subflake_name, subflake) in &cfg.selected_config.0 {
-        let name = format!("{}.{}", cfg.selected_name, subflake_name).italic();
+    let (config, attrs) = cfg.get_referenced()?;
+    // User's filter by subflake name
+    let only_subflake = attrs.first();
 
-        if subflake.skip {
+    for (subflake_name, subflake) in &config.0 {
+        let name = subflake_name.italic();
+
+        if let Some(s) = only_subflake
+            && s != subflake_name
+        {
             tracing::info!("\n🍊 {} {}", name, "skipped (deselected out)".dimmed());
             continue;
         }

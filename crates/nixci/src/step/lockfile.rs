@@ -6,7 +6,7 @@ use serde::Deserialize;
 use crate::{config::subflake::SubflakeConfig, nix};
 
 /// Check that `flake.lock` is not out of date.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct LockfileStep {
     /// Whether to enable this step
     pub enable: bool,

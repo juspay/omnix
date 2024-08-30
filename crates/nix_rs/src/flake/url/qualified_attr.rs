@@ -31,7 +31,7 @@ impl RootQualifiedAttr {
         &self,
         cmd: &NixCmd,
         url: &FlakeUrl,
-    ) -> Result<(T, String, Vec<String>), QualifiedAttrError>
+    ) -> Result<(T, Vec<String>), QualifiedAttrError>
     where
         T: Default + serde::de::DeserializeOwned,
     {
@@ -41,11 +41,8 @@ impl RootQualifiedAttr {
 
 #[derive(thiserror::Error, Debug)]
 pub enum QualifiedAttrError {
-    #[error("Qualified attribute, {0}, not found in flake ref '{1}'")]
-    MissingAttribute(String, FlakeUrl),
-
-    #[error("Unexpected nested attribute: {0}")]
-    UnexpectedNestedAttribute(String),
+    #[error("Unexpected attribute, when config not present in flake: {0}")]
+    UnexpectedAttribute(String),
 
     #[error("Nix command error: {0}")]
     CommandError(#[from] NixCmdError),
@@ -55,41 +52,21 @@ async fn nix_eval_qualified_attr<T>(
     cmd: &NixCmd,
     url: &FlakeUrl,
     root_attrs: &[String],
-) -> Result<(T, String, Vec<String>), QualifiedAttrError>
+) -> Result<(T, Vec<String>), QualifiedAttrError>
 where
     T: Default + serde::de::DeserializeOwned,
 {
-    // Get 1st attr, retaining the rest
-    let (first_attr, rest_attrs) = match url.get_attr().as_list().split_first() {
-        None => ("default".to_string(), vec![]),
-        Some((name, rest)) => (name.clone(), rest.to_vec()),
-    };
-
     // Try one of root_attrs to see if it exists in flake
     for root_attr in root_attrs {
-        let qualified_url = url.with_attr(format!("{}.{}", root_attr, first_attr).as_str());
+        let qualified_url = url.with_attr(root_attr);
         if let Some(v) = nix_eval_attr(cmd, &qualified_url).await? {
-            return Ok((v, first_attr, rest_attrs));
+            return Ok((v, url.get_attr().as_list()));
         }
     }
 
-    // When none of root_attr matches, either return default (no attr in flake URL) or print an error (explicit attr was specified in flake URL)
+    // When none of root_attr matches, return default
     match url.get_attr().0 {
-        None => Ok((Default::default(), first_attr, rest_attrs)),
-        Some(attr) => {
-            tracing::error!(
-                "Qualified attr not found in flake ref '{}'. Expected one of: {}",
-                url,
-                root_attrs
-                    .iter()
-                    .map(|root_attr| format!("{}.{}", root_attr, attr))
-                    .collect::<Vec<_>>()
-                    .join(", ")
-            );
-            Err(QualifiedAttrError::MissingAttribute(
-                attr.to_string(),
-                url.clone(),
-            ))
-        }
+        None => Ok((Default::default(), vec![])),
+        Some(attr) => Err(QualifiedAttrError::UnexpectedAttribute(attr)),
     }
 }

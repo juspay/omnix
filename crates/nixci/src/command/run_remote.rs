@@ -54,7 +54,8 @@ async fn cache_flake(
 ) -> anyhow::Result<(PathBuf, FlakeUrl)> {
     let metadata = FlakeMetadata::from_nix(nixcmd, &cfg.flake_url).await?;
     let path = metadata.path.to_string_lossy().into_owned();
-    let local_flake_url = if let Some(attr) = cfg.get_attr().0 {
+    let attr = cfg.reference.join(".");
+    let local_flake_url = if !attr.is_empty() {
         FlakeUrl(path).with_attr(&attr)
     } else {
         FlakeUrl(path)
