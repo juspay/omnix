@@ -11,11 +11,9 @@ use nix_rs::{
 };
 use serde::de::DeserializeOwned;
 
-/// Reference to some Omnix configuration of type `T` in a flake
+/// Reference to some Omnix configuration of type `BTeeMap<String, T>` in a flake
 ///
 /// For example, CI configuration at `om.ci.default` is captured by the `T` type.
-///
-/// TODO: This type needs to support `om.templates` style configuration as well, where there is no key'ed config (such as "default").
 #[derive(Debug)]
 pub struct OmConfig<T> {
     /// The flake URL used to load this configuration
@@ -48,9 +46,9 @@ impl<T> OmConfig<T> {
         })
     }
 
-    /// Get the referenced config value `T`
+    /// Get the user-referenced config value `T`
     ///
-    /// If the user passes `.#foo.bar` this selects "foo" from the config tree, returnig ["bar"].
+    /// If the user passes `.#foo.bar` this selects "foo" from the config tree, along with returning  ["bar"].
     ///
     /// If nothing is specifically passed, a default value is returned, either from config tree (key "default") or `T::default()`.
     ///
