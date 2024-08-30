@@ -10,9 +10,10 @@ use nix_rs::{
     info::NixInfo,
     store::uri::StoreURI,
 };
+use omnix_common::config::OmConfig;
 
 use crate::{
-    config::core::Config,
+    config::subflakes::SubflakesConfig,
     flake_ref::FlakeRef,
     nix::system_list::{SystemsList, SystemsListFlakeRef},
 };
@@ -60,17 +61,25 @@ impl RunCommand {
     }
 
     /// Run the build command which decides whether to do ci run on current machine or a remote machine
-    pub async fn run(&self, nixcmd: &NixCmd, verbose: bool, cfg: Config) -> anyhow::Result<()> {
+    pub async fn run(
+        &self,
+        nixcmd: &NixCmd,
+        verbose: bool,
+        cfg: OmConfig<SubflakesConfig>,
+    ) -> anyhow::Result<()> {
         match &self.on {
-            Some(store_uri) => {
-                run_remote::run_on_remote_store(nixcmd, self, &cfg.ref_, store_uri).await
-            }
+            Some(store_uri) => run_remote::run_on_remote_store(nixcmd, self, &cfg, store_uri).await,
             None => self.run_local(nixcmd, verbose, cfg).await,
         }
     }
 
     /// Run [RunCommand] on local Nix store.
-    async fn run_local(&self, nixcmd: &NixCmd, verbose: bool, cfg: Config) -> anyhow::Result<()> {
+    async fn run_local(
+        &self,
+        nixcmd: &NixCmd,
+        verbose: bool,
+        cfg: OmConfig<SubflakesConfig>,
+    ) -> anyhow::Result<()> {
         // TODO: We'll refactor this function to use steps
         // https://github.com/juspay/omnix/issues/216
 
@@ -82,7 +91,7 @@ impl RunCommand {
 
         // First, run the necessary health checks
         tracing::info!("{}", "\n🫀 Performing health check".bold());
-        check_nix_version(&cfg.ref_.flake_url, nix_info).await?;
+        check_nix_version(&cfg.flake_url, nix_info).await?;
 
         // Then, do the CI steps
         tracing::info!(
@@ -148,15 +157,21 @@ pub async fn ci_run(
     cmd: &NixCmd,
     verbose: bool,
     run_cmd: &RunCommand,
-    cfg: &Config,
+    cfg: &OmConfig<SubflakesConfig>,
     nix_config: &NixConfig,
 ) -> anyhow::Result<()> {
     let systems = run_cmd.get_systems(cmd, nix_config).await?;
 
-    for (subflake_name, subflake) in &cfg.subflakes.0 {
-        let name = format!("{}.{}", cfg.ref_.selected_name, subflake_name).italic();
+    let (config, attrs) = cfg.get_referenced()?;
+    // User's filter by subflake name
+    let only_subflake = attrs.first();
 
-        if subflake.skip {
+    for (subflake_name, subflake) in &config.0 {
+        let name = subflake_name.italic();
+
+        if let Some(s) = only_subflake
+            && s != subflake_name
+        {
             tracing::info!("\n🍊 {} {}", name, "skipped (deselected out)".dimmed());
             continue;
         }
@@ -174,14 +189,7 @@ pub async fn ci_run(
         tracing::info!("\n🍎 {}", name);
         subflake
             .steps
-            .run(
-                cmd,
-                verbose,
-                run_cmd,
-                &systems,
-                &cfg.ref_.flake_url,
-                subflake,
-            )
+            .run(cmd, verbose, run_cmd, &systems, &cfg.flake_url, subflake)
             .await?;
     }
 

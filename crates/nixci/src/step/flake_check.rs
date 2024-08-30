@@ -8,7 +8,7 @@ use crate::config::subflake::SubflakeConfig;
 /// Run `nix flake check`
 ///
 /// Note: `nix build ...` does not evaluate all the checks that `nix flake check` does. So, enabling this steps allows `om ci` to run those evaluation checks.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct FlakeCheckStep {
     /// Whether to enable this step
     pub enable: bool,

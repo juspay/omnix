@@ -10,6 +10,7 @@ use tracing_subscriber::{
     EnvFilter,
 };
 
+/// Setup logging for whole application
 pub fn setup_logging(verbosity: &Verbosity<InfoLevel>, bare: bool) {
     let builder = tracing_subscriber::fmt()
         .with_writer(std::io::stderr)

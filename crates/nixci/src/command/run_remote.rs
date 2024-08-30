@@ -6,10 +6,11 @@ use nix_rs::{
     flake::{metadata::FlakeMetadata, url::FlakeUrl},
     store::uri::StoreURI,
 };
+use omnix_common::config::OmConfig;
 use std::path::PathBuf;
 use tokio::process::Command;
 
-use crate::config::ref_::ConfigRef;
+use crate::config::subflakes::SubflakesConfig;
 
 use super::run::RunCommand;
 
@@ -20,7 +21,7 @@ const OMNIX_SOURCE: &str = env!("OMNIX_SOURCE");
 pub async fn run_on_remote_store(
     nixcmd: &NixCmd,
     run_cmd: &RunCommand,
-    cfg_ref: &ConfigRef,
+    cfg: &OmConfig<SubflakesConfig>,
     store_uri: &StoreURI,
 ) -> anyhow::Result<()> {
     tracing::info!(
@@ -28,7 +29,7 @@ pub async fn run_on_remote_store(
         format!("\n🛜 Running CI remotely on {}", store_uri).bold()
     );
 
-    let (local_flake_path, local_flake_url) = cache_flake(nixcmd, cfg_ref).await?;
+    let (local_flake_path, local_flake_url) = cache_flake(nixcmd, cfg).await?;
     let omnix_source = PathBuf::from(OMNIX_SOURCE);
 
     // First, copy the flake and omnix source to the remote store, because we will be needing them when running over ssh.
@@ -47,10 +48,14 @@ pub async fn run_on_remote_store(
 }
 
 /// Return the locally cached [FlakeUrl] for the given flake url that points to same selected [ConfigRef].
-async fn cache_flake(nixcmd: &NixCmd, cfg_ref: &ConfigRef) -> anyhow::Result<(PathBuf, FlakeUrl)> {
-    let metadata = FlakeMetadata::from_nix(nixcmd, &cfg_ref.flake_url).await?;
+async fn cache_flake(
+    nixcmd: &NixCmd,
+    cfg: &OmConfig<SubflakesConfig>,
+) -> anyhow::Result<(PathBuf, FlakeUrl)> {
+    let metadata = FlakeMetadata::from_nix(nixcmd, &cfg.flake_url).await?;
     let path = metadata.path.to_string_lossy().into_owned();
-    let local_flake_url = if let Some(attr) = cfg_ref.get_attr().0 {
+    let attr = cfg.reference.join(".");
+    let local_flake_url = if !attr.is_empty() {
         FlakeUrl(path).with_attr(&attr)
     } else {
         FlakeUrl(path)

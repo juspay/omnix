@@ -10,7 +10,7 @@ use crate::step::core::Steps;
 ///
 /// "Look-alike" because its inputs may be partial, thus requiring explicit
 /// --override-inputs when evaluating the flake.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct SubflakeConfig {
     /// Whether to skip building this subflake
     #[serde(default)]
