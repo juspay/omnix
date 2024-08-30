@@ -9,6 +9,7 @@
   - `Path` instances for `FlakeUrl` no longer use the `path:` prefix (to avoid store copying)
   - **`attr`**:
     - Add `FlakeAttr::new` and `FlakeAttr::none` constructors
+  - `qualified_attr` - vastly simplify module
 - **`store`**:
   - Add module (upstreamed from nixci)
   - Add `StoreURI`
