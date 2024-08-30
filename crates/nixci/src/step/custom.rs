@@ -27,7 +27,7 @@ use crate::config::subflake::SubflakeConfig;
 /// Represents a custom step in the CI pipeline
 ///
 /// All these commands are run in the same directory as the subflake
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 #[serde(tag = "type")]
 pub enum CustomStep {
     /// A flake app to run
@@ -125,7 +125,7 @@ impl CustomStep {
 }
 
 /// A collection of custom steps
-#[derive(Debug, Default, Deserialize)]
+#[derive(Debug, Clone, Default, Deserialize)]
 pub struct CustomSteps(BTreeMap<String, CustomStep>);
 
 impl CustomSteps {

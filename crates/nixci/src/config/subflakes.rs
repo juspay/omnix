@@ -6,7 +6,7 @@ use serde::Deserialize;
 use super::subflake::SubflakeConfig;
 
 /// CI configuration for a subflake
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct SubflakesConfig(
     // NB: we use BTreeMap instead of HashMap here so that we always iterate
     // configs in a determinitstic (i.e. asciibetical) order

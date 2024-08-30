@@ -9,10 +9,9 @@ use colored::Colorize;
 
 use check::direnv::Direnv;
 use nix_rs::env::OS;
-use nix_rs::flake::url::qualified_attr::QualifiedAttrError;
 use nix_rs::flake::url::FlakeUrl;
 use nix_rs::{command::NixCmd, info::NixInfo};
-use omnix_common::config::OmConfig;
+use omnix_common::config::{OmConfig, OmConfigError};
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
 use traits::Check;
@@ -63,14 +62,12 @@ impl NixHealth {
     ///
     /// Fallback to using the default health check config if the flake doesn't
     /// override it.
-    pub async fn from_flake(url: &FlakeUrl) -> Result<Self, QualifiedAttrError> {
+    pub async fn from_flake(url: &FlakeUrl) -> Result<Self, OmConfigError> {
         let cmd = NixCmd::get().await;
         let cfg =
             OmConfig::<NixHealth>::from_flake_url(cmd, url, &["om.health", "nix-health"]).await?;
-        match cfg.selected_subconfig {
-            None => Ok(cfg.selected_config),
-            Some(s) => Err(QualifiedAttrError::UnexpectedNestedAttribute(s)),
-        }
+        let (cfg, _rest) = cfg.get_referenced()?;
+        Ok(cfg.clone())
     }
 
     /// Run all checks and collect the results

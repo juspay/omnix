@@ -18,7 +18,7 @@ use crate::{
 /// Represents a build step in the CI pipeline
 ///
 /// It builds all flake outputs.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct BuildStep {
     /// Whether to enable this step
     pub enable: bool,

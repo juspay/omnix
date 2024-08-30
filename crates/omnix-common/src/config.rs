@@ -1,9 +1,10 @@
 //! Manage omnix configuration in flake.nix
 
+use std::collections::BTreeMap;
+
 use nix_rs::{
     command::NixCmd,
     flake::url::{
-        attr::FlakeAttr,
         qualified_attr::{QualifiedAttrError, RootQualifiedAttr},
         FlakeUrl,
     },
@@ -20,14 +21,11 @@ pub struct OmConfig<T> {
     /// The flake URL used to load this configuration
     pub flake_url: FlakeUrl,
 
-    /// The name of the configuration (`om.??.<name>`) selected
-    pub selected_name: String,
+    /// The (nested) key reference into the flake config.
+    pub reference: Vec<String>,
 
-    /// The selected sub-config name if any (`om.??.<name>.<subconfig>`)
-    pub selected_subconfig: Option<String>,
-
-    /// The whole `om.??.<name>` configuration parsed as `T`
-    pub selected_config: T,
+    /// The whole `om.??` configuration parsed as `T`
+    pub config: BTreeMap<String, T>,
 }
 
 impl<T> OmConfig<T> {
@@ -36,30 +34,57 @@ impl<T> OmConfig<T> {
         cmd: &NixCmd,
         url: &FlakeUrl,
         k: &[S],
-    ) -> Result<OmConfig<T>, QualifiedAttrError>
+    ) -> Result<OmConfig<T>, OmConfigError>
     where
         S: AsRef<str>,
         T: Default + DeserializeOwned,
     {
-        let (selected_config, selected_name, rest_attrs) =
-            RootQualifiedAttr::new(k).eval_flake::<T>(cmd, url).await?;
-        let selected_subconfig = rest_attrs.first().cloned();
+        let (config, reference) = RootQualifiedAttr::new(k)
+            .eval_flake::<BTreeMap<String, T>>(cmd, url)
+            .await?;
         Ok(OmConfig {
             flake_url: url.without_attr(),
-            selected_name,
-            selected_subconfig,
-            selected_config,
+            reference,
+            config,
         })
     }
 
-    /// Return the non-default attribute that selected this sub-configuration.
-    pub fn get_attr(&self) -> FlakeAttr {
-        if let Some(subconfig) = &self.selected_subconfig {
-            FlakeAttr::new(&format!("{}.{}", self.selected_name, subconfig))
-        } else if self.selected_name == "default" {
-            FlakeAttr::none()
+    /// Get the referenced config value `T`
+    ///
+    /// If the user passes `.#foo.bar` this selects "foo" from the config tree, returnig ["bar"].
+    ///
+    /// If nothing is specifically passed, a default value is returned, either from config tree (key "default") or `T::default()`.
+    ///
+    /// TODO: This needs to be adjusted to support `om.templates` style configuration as well, where this default behaviour makes no sense.
+    pub fn get_referenced(&self) -> Result<(T, &[String]), OmConfigError>
+    where
+        T: Default + Clone,
+    {
+        if let Some((k, rest)) = self.reference.split_first() {
+            if let Some(v) = self.config.get(k) {
+                Ok((v.clone(), rest))
+            } else {
+                Err(OmConfigError::MissingConfigAttribute(k.to_string()))
+            }
         } else {
-            FlakeAttr::new(&self.selected_name)
+            // Use default
+            if let Some(v) = self.config.get("default") {
+                Ok((v.clone(), &[]))
+            } else {
+                Ok((T::default(), &[]))
+            }
         }
     }
+}
+
+/// Error type for OmConfig
+#[derive(thiserror::Error, Debug)]
+pub enum OmConfigError {
+    /// Qualified attribute error
+    #[error("Qualified attribute error: {0}")]
+    QualifiedAttrError(#[from] QualifiedAttrError),
+
+    /// Missing configuration attribute
+    #[error("Missing configuration attribute: {0}")]
+    MissingConfigAttribute(String),
 }
