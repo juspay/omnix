@@ -31,6 +31,7 @@ in
       # instead.
       doCheck = false;
       DEVOUR_FLAKE = inputs.devour-flake;
+      OMNIX_SOURCE = inputs.self;
       NIX_FLAKE_SCHEMAS_BIN = lib.getExe pkgs.nix-flake-schemas;
       DEFAULT_FLAKE_SCHEMAS = inputs.flake-schemas;
     };

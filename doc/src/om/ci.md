@@ -36,13 +36,18 @@ $ om ci run https://github.com/srid/emanote/pull/451
 # Run CI only the selected sub-flake
 $ git clone https://github.com/srid/haskell-flake && cd haskell-flake
 $ om ci run .#default.dev
+
+# Run CI remotely over SSH
+$ om ci run --on ssh://myname@myserver ~/code/myproject
 ```
 
-### Using in Github Actions {#github-actions}
+## Using in Github Actions {#github-actions}
 
-#### Standard Runners {#ghci-standard}
+In addition to serving the purpose of being a "local CI", `om ci` can be used in Github Actions to enable CI for your GitHub repositories.
 
-Add the following to your workflow file,
+### Standard Runners {#ghci-standard}
+
+If you want to utilize GitHub provided runners, simply add the following to your workflow file,
 
 ```yaml
       - uses: actions/checkout@v4
@@ -52,12 +57,15 @@ Add the following to your workflow file,
       - run: om ci
 ```
 
-#### Self-hosted Runners with Job Matrix {#ghci-self}
+### Self-hosted Runners with Job Matrix {#ghci-self}
+
+The `om ci gh-matrix` command outputs the matrix JSON for creating [a matrix of job variations](https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/running-variations-of-jobs-in-a-workflow). An example configuration, using self-hosted runners, is shown below.
 
 > [!NOTE]
 > This currently requires an explicit CI configuration in your flake, viz.: `om.ci.default.root.dir = ".";`.
 
 ```yaml
+# Run on aarch64-linux and aarch64-darwin
 jobs:
   configure:
     runs-on: self-hosted
@@ -75,7 +83,7 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
-      - run: om ci run --systems "github:nix-systems/${{ matrix.system }}" ".#default.${{ matrix.subflake }}"
+      - run: om ci run --systems "${{ matrix.system }}" ".#default.${{ matrix.subflake }}"
 ```
 
 > [!TIP]
@@ -83,18 +91,18 @@ jobs:
 
 ## Configuring {#config}
 
-By default, `om ci` will build the top-level flake, but you can tell it to build sub-flakes by adding the following output to your top-level flake:
+By default, `om ci` will build the top-level flake, but you can tell it to build sub-flakes (here, `./dir1` and `./dir2`) by adding the following output to your top-level flake:
 
 ```nix
 # myproject/flake.nix
 {
   om.ci.default = {
     dir1 = {
-        dir = "dir1";
+      dir = "dir1";
     };
     dir2 = {
-        dir = "dir2";
-        overrideInputs.myproject = ./.;
+      dir = "dir2";
+      overrideInputs.myproject = ./.;
     };
   }
 }
@@ -102,13 +110,53 @@ By default, `om ci` will build the top-level flake, but you can tell it to build
 
 You can have more than one CI configuration. For eg., `om ci run .#foo` will run the configuration from `om.ci.foo` flake output.
 
-### Examples
+### Custom CI actions {#custom}
+
+You can define custom CI actions in your flake, which will be run as part of `om ci run`. For example, to run tests in the nix develop shell:
+
+```nix
+{
+  om.ci.default = {
+    root = {
+      dir = ".";
+      steps = {
+        # The build step is enabled by default. It builds all flake outputs.
+        build.enable = true
+        # Other steps include: lockfile & flake-check
+
+        # Users can define custom steps to run any arbitrary flake app or devShell command.
+        custom = {
+          # Here, we run cargo tests in the nix shell
+          # This equivalent to `nix develop .#default -c cargo test`
+          cargo-test = {
+            type = "devshell";
+            # name = "default"
+            command = "cargo test";
+          };
+
+          # We can also flake apps
+          # This is equivalent to `nix run .#check-closure-size`
+          closure-size = {
+            type = "app";
+            name = "check-closure-size";
+          };
+        };
+      };
+    };
+  }
+}
+```
+
+For a real-world example of custom steps, checkout [Omnix's configuration](https://github.com/juspay/omnix/blob/5322235ce4069e72fd5eb477353ee5d1f5100243/nix/modules/om.nix#L16-L33).
+
+## Examples
 
 Some real-world examples of how `om ci` is used with specific configurations:
 
 > [!WARNING]
 > These examples use the predecessor, `nixci`, so you want to replace `nixci` with `om ci` wherever applicable.
 
+- [omnix](https://github.com/juspay/omnix/blob/5322235ce4069e72fd5eb477353ee5d1f5100243/nix/modules/om.nix#L16-L33)
 - [services-flake](https://github.com/juspay/services-flake/blob/197fc1c4d07d09f4e01dd935450608c35393b102/flake.nix#L10-L24)
 - [nixos-flake](https://github.com/srid/nixos-flake/blob/4af32875e7cc6df440c5f5cf93c67af41902768b/flake.nix#L29-L45)
 - [haskell-flake](https://github.com/srid/haskell-flake/blob/d128c7329bfc73c3eeef90f6d215d0ccd7baf78c/flake.nix#L15-L67)
@@ -116,12 +164,15 @@ Some real-world examples of how `om ci` is used with specific configurations:
 
 ## What it does {#mech}
 
-- Optionally, accept a flake config (`om.ci.default`) to indicate sub-flakes to build, along with their input overrides
-- Preliminary checks
-    - Check that `flake.lock` is in sync
-    - Check that the Nix version is not tool old (using [`om health`](health.md))
-- Use [devour-flake](https://github.com/srid/devour-flake) to build all flake outputs[^schema]
-- Print the built store paths to stdout
+- Check that the Nix version is not tool old (using [`om health`](health.md))
+- Determine the list of flakes in the repo to build
+  - By default, this is the root flake.
+  - The user can also explicitly specify multiple sub-flakes in `om.ci.default` output of their root flake.
+- For each (sub)flake identified, `om ci run` will run the following steps:
+    - Check that `flake.lock` is up to date, if applicable.
+    - Build all flake outputs, using [devour-flake](https://github.com/srid/devour-flake)[^schema]
+      - Then, print the built store paths to stdout
+    - Run `nix flake check`
 
 [^schema]: Support for [flake-schemas](https://github.com/srid/devour-flake/pull/11) is planned
 

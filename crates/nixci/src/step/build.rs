@@ -1,19 +1,24 @@
 //! The build step
+use std::path::PathBuf;
+
 use clap::Parser;
 use colored::Colorize;
-use nix_rs::{command::NixCmd, flake::url::FlakeUrl, store::NixStoreCmd};
+use nix_rs::{command::NixCmd, flake::url::FlakeUrl, store::command::NixStoreCmd};
 use serde::Deserialize;
 
 use crate::{
     command::run::RunCommand,
     config::subflake::SubflakeConfig,
-    nix::{self, devour_flake},
+    nix::{
+        self,
+        devour_flake::{self, DevourFlakeInput},
+    },
 };
 
 /// Represents a build step in the CI pipeline
 ///
 /// It builds all flake outputs.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct BuildStep {
     /// Whether to enable this step
     pub enable: bool,
@@ -22,33 +27,6 @@ pub struct BuildStep {
 impl Default for BuildStep {
     fn default() -> Self {
         BuildStep { enable: true }
-    }
-}
-
-/// CLI arguments for [BuildStep]
-#[derive(Parser, Debug, Clone)]
-pub struct BuildStepArgs {
-    /// Additional arguments to pass through to `nix build`
-    #[arg(last = true, default_values_t = vec![
-    "--refresh".to_string(),
-    "-j".to_string(),
-    "auto".to_string(),
-    ])]
-    pub extra_nix_build_args: Vec<String>,
-
-    /// Print build and runtime dependencies along with out paths
-    ///
-    /// By default, `nixci build` prints only the out paths. This option is
-    /// useful to explicitly push all dependencies to a cache.
-    #[clap(long, short = 'd')]
-    pub print_all_dependencies: bool,
-}
-
-impl BuildStepArgs {
-    /// Preprocess the arguments
-    pub fn preprocess(&mut self) {
-        // Adjust to devour_flake's expectations
-        devour_flake::transform_override_inputs(&mut self.extra_nix_build_args);
     }
 }
 
@@ -61,63 +39,110 @@ impl BuildStep {
         run_cmd: &RunCommand,
         url: &FlakeUrl,
         subflake: &SubflakeConfig,
-    ) -> anyhow::Result<()> {
+    ) -> anyhow::Result<BuildStepResult> {
         // Run devour-flake to do the actual build.
         tracing::info!(
             "{}",
             format!("⚒️  Building subflake: {}", subflake.dir).bold()
         );
-        let nix_args = nix_build_args_for_subflake(subflake, run_cmd, url);
-        let output = nix::devour_flake::devour_flake(nixcmd, verbose, nix_args).await?;
+        let nix_args = subflake_extra_args(subflake, &run_cmd.steps_args.build_step_args);
+        let devour_input = DevourFlakeInput {
+            flake: url.sub_flake_url(subflake.dir.clone()),
+            systems: run_cmd.systems.clone().map(|l| l.0),
+        };
+        let output = nix::devour_flake::devour_flake(nixcmd, verbose, devour_input, nix_args)
+            .await?
+            .0;
 
-        let outs = if run_cmd.steps_args.build_step_args.print_all_dependencies {
+        let paths = if run_cmd.steps_args.build_step_args.print_all_dependencies {
             // Handle --print-all-dependencies
-            NixStoreCmd.fetch_all_deps(output.0).await
+            NixStoreCmd.fetch_all_deps(output).await
         } else {
-            Ok(output.0)
+            Ok(output)
         }?;
 
-        for out in outs {
-            println!("{}", out);
-        }
-        Ok(())
+        Ok(BuildStepResult {
+            out_paths: paths.iter().map(Into::into).collect(),
+        })
     }
 }
 
-/// Return the devour-flake `nix build` arguments for building all the outputs in this
-/// subflake configuration.
-fn nix_build_args_for_subflake(
-    subflake: &SubflakeConfig,
-    run_cmd: &RunCommand,
-    flake_url: &FlakeUrl,
-) -> Vec<String> {
-    let mut args = vec![flake_url.sub_flake_url(subflake.dir.clone()).0];
+/// Extra args to pass to devour-flake
+fn subflake_extra_args(subflake: &SubflakeConfig, build_step_args: &BuildStepArgs) -> Vec<String> {
+    let mut args = vec![];
 
     for (k, v) in &subflake.override_inputs {
-        args.extend_from_slice(&[
+        args.extend([
             "--override-input".to_string(),
             format!("flake/{}", k),
             v.0.to_string(),
         ])
     }
 
-    // devour-flake already uses this, so no need to override.
-    if run_cmd.systems.0 .0 != "github:nix-systems/empty" {
-        args.extend_from_slice(&[
-            "--override-input".to_string(),
-            "systems".to_string(),
-            run_cmd.systems.0 .0.clone(),
-        ])
-    }
-
-    args.extend(
-        run_cmd
-            .steps_args
-            .build_step_args
-            .extra_nix_build_args
-            .iter()
-            .cloned(),
-    );
+    args.extend(build_step_args.extra_nix_build_args.iter().cloned());
 
     args
+}
+
+/// CLI arguments for [BuildStep]
+#[derive(Parser, Debug, Clone)]
+pub struct BuildStepArgs {
+    /// Print build and runtime dependencies along with out paths
+    ///
+    /// By default, `nixci build` prints only the out paths. This option is
+    /// useful to explicitly push all dependencies to a cache.
+    #[clap(long, short = 'd')]
+    pub print_all_dependencies: bool,
+
+    /// Additional arguments to pass through to `nix build`
+    #[arg(last = true, default_values_t = vec![
+    "--refresh".to_string(),
+    "-j".to_string(),
+    "auto".to_string(),
+    ])]
+    pub extra_nix_build_args: Vec<String>,
+}
+
+impl BuildStepArgs {
+    /// Preprocess the arguments
+    pub fn preprocess(&mut self) {
+        // Adjust to devour_flake's expectations
+        devour_flake::transform_override_inputs(&mut self.extra_nix_build_args);
+    }
+
+    /// Convert this type back to the user-facing command line arguments
+    pub fn to_cli_args(&self) -> Vec<String> {
+        let mut args = vec![];
+
+        if self.print_all_dependencies {
+            args.push("--print-all-dependencies".to_owned());
+        }
+
+        if !self.extra_nix_build_args.is_empty() {
+            args.push("--".to_owned());
+            for arg in &self.extra_nix_build_args {
+                args.push(arg.clone());
+            }
+        }
+
+        args
+    }
+}
+
+/// The result of the build step
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+pub struct BuildStepResult {
+    /// The built store paths
+    ///
+    /// This includes all dependencies if --print-all-dependencies was passed.
+    pub out_paths: Vec<PathBuf>,
+}
+
+impl BuildStepResult {
+    /// Print the result to stdout
+    pub fn print(&self) {
+        for path in &self.out_paths {
+            println!("{}", path.display());
+        }
+    }
 }

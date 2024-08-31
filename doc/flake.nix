@@ -34,7 +34,7 @@
         apps = {
           serve.program = pkgs.writeShellApplication {
             name = "serve";
-            runtimeInputs = [ pkgs.mdbook ];
+            runtimeInputs = [ pkgs.mdbook pkgs.mdbook-alerts ];
             text = ''
               set -x
               mdbook serve --open

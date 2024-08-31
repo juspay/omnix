@@ -6,7 +6,7 @@
     # jq < $(nix eval --raw .#registry)
     flakeEvalCache =
       let
-        attrsToInclude = [ "templates" "om" ];
+        attrsToInclude = [ "om" ];
       in
       builtins.toFile "flake.nix.json"
         (builtins.toJSON
@@ -19,6 +19,7 @@
     packages.cache = pkgs.writeShellApplication {
       name = "write-flake-cache";
       text = ''
+        set -x
         cp ${inputs.self.flakeEvalCache} ./flake.nix.json
       '';
     };

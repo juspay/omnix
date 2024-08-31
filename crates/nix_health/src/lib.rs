@@ -8,9 +8,10 @@ use anyhow::Context;
 use colored::Colorize;
 
 use check::direnv::Direnv;
-use nix_rs::flake::url::qualified_attr::{QualifiedAttrError, RootQualifiedAttr};
+use nix_rs::env::OS;
 use nix_rs::flake::url::FlakeUrl;
 use nix_rs::{command::NixCmd, info::NixInfo};
+use omnix_common::config::{OmConfig, OmConfigError};
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
 use traits::Check;
@@ -61,17 +62,12 @@ impl NixHealth {
     ///
     /// Fallback to using the default health check config if the flake doesn't
     /// override it.
-    pub async fn from_flake(url: &FlakeUrl) -> Result<Self, QualifiedAttrError> {
+    pub async fn from_flake(url: &FlakeUrl) -> Result<Self, OmConfigError> {
         let cmd = NixCmd::get().await;
-        let flake_attr = RootQualifiedAttr::new(&["om.health", "nix-health"]);
-        let (v, _, rest_attrs) = flake_attr.eval_flake(cmd, url).await?;
-        if rest_attrs.is_empty() {
-            Ok(v)
-        } else {
-            Err(QualifiedAttrError::UnexpectedNestedAttribute(
-                rest_attrs.join("."),
-            ))
-        }
+        let cfg =
+            OmConfig::<NixHealth>::from_flake_url(cmd, url, &["om.health", "nix-health"]).await?;
+        let (cfg, _rest) = cfg.get_referenced()?;
+        Ok(cfg.clone())
     }
 
     /// Run all checks and collect the results
@@ -81,7 +77,6 @@ impl NixHealth {
         nix_info: &nix_rs::info::NixInfo,
         flake_url: Option<FlakeUrl>,
     ) -> Vec<traits::Check> {
-        tracing::info!("🩺 Running health checks");
         self.into_iter()
             .flat_map(|c| c.check(nix_info, flake_url.as_ref()))
             .collect()
@@ -134,20 +129,25 @@ pub async fn run_checks_with(flake_url: Option<FlakeUrl>) -> anyhow::Result<Vec<
         .await
         .as_ref()
         .with_context(|| "Unable to gather nix info")?;
-    let action_msg = format!(
-        "🩺️ Checking the health of your Nix setup ({} on {})",
-        &nix_info.nix_config.system.value, &nix_info.nix_env.os
-    );
+
     let health: NixHealth = match flake_url.as_ref() {
-        Some(flake_url) => {
-            tracing::info!("{}, using config from flake '{}':", action_msg, flake_url);
-            NixHealth::from_flake(flake_url).await
-        }
-        None => {
-            tracing::info!("{}:", action_msg);
-            Ok(NixHealth::default())
-        }
+        Some(flake_url) => NixHealth::from_flake(flake_url).await,
+        None => Ok(NixHealth::default()),
     }?;
+
+    tracing::info!(
+        "🩺️ Checking the health of your Nix setup{}",
+        match flake_url.as_ref() {
+            Some(flake_url) => format!(" using config from flake '{}'", flake_url),
+            None => "".to_string(),
+        },
+    );
+    tracing::info!("   - System: {}", nix_info.nix_config.system.value);
+    tracing::info!("   - OS: {}", nix_info.nix_env.os);
+    if nix_info.nix_env.os != OS::NixOS {
+        tracing::info!("   - Nix installer: {}", nix_info.nix_env.installer);
+    }
+
     let checks = health.run_checks(nix_info, flake_url.clone());
     Ok(checks)
 }

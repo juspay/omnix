@@ -23,42 +23,34 @@ jobs:
           name: om
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
           skipPush: true
-      - name: Build
+
+      # Prep systems list
+      # Workaround until https://github.com/juspay/omnix/issues/210
+      - name: Systems to build
         run: |
-          # Prep systems list
-          # https://github.com/srid/nixci/issues/83
           mkdir ~/systems
           echo '{ outputs = _: {}; }' > ~/systems/flake.nix
           echo '[ "${{ matrix.system }}" ]' > ~/systems/default.nix
 
-          # Build all flake outputs
-          nixci \
+      # Run CI
+      - name: Omnix CI
+        run: |
+          om ci \
             --extra-access-tokens ${{ secrets.GITHUB_TOKEN }} \
-            build --systems "path:$HOME/systems"
-      - name: Check static binary size
-        if: matrix.system == 'x86_64-linux'
-        run: nix run .#check-closure-size
-      - name: nix build
+            run --systems "path:$HOME/systems"
+
+      # Upload static binary for the next job.
+      - name: "static-binary: Build"
         if: matrix.system != 'x86_64-darwin'
         run: echo "om_static_binary_path=$(nix build --no-link --print-out-paths)" >> "$GITHUB_ENV"
-      - name: Upload om static binary
+      - name: "static-binary: Upload"
         if: matrix.system != 'x86_64-darwin'
         uses: actions/upload-artifact@v4
         with:
           name: om-${{ matrix.system }}
           path: ${{ env.om_static_binary_path }}/bin/om
-      - name: nix run
-        run: nix run . -- --help
-      - name: Tests
-        # Too slow on rosetta
-        if: matrix.system != 'x86_64-darwin'
-        run: |
-          # We disable some tests (e.g.: omnix-cli tests) on Nix due to
-          # sandboxing issues.
-          nix \
-            --option system "${{ matrix.system }}" \
-            --extra-access-tokens "github.com=${{ secrets.GITHUB_TOKEN }}" \
-            develop -c cargo test
+
+      # Push the Nix cache
       - name: Push to cachix
         if: github.ref == 'refs/heads/main'
         run: nix --option system "${{ matrix.system }}" run .#cachix-push
@@ -86,9 +78,16 @@ jobs:
             echo "nix is not installed"
           fi
       - name: Run om static binary
+        # By default, the shell will exit if any command fails. We want to
+        # ignore the failure of the om binary using `set +e`.
         run: |
+          set +e
           chmod +x ./om
-          ./om --help
+          ./om health
+          if [[ $? -ne 0 ]]; then
+            echo "om binary failed due to lack of nix installation, as expected."
+            exit 0
+          fi
 
   website-build:
     if: github.ref == 'refs/heads/main'

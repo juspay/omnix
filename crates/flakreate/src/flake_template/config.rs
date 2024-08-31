@@ -8,9 +8,6 @@ use super::fileop::FileOp;
 /// Custom flake properties not supported by Nix itself.
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
 pub struct FlakeTemplateConfig {
-    #[serde(skip_deserializing)]
-    pub name: String,
-
     #[serde(default)]
     pub tags: Vec<String>,
 

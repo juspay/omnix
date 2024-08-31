@@ -1,30 +1,35 @@
 //! Rust support for invoking <https://github.com/srid/devour-flake>
 
+// TODO: Create a more general version of this module, where a function body is defined in Nix, but FFI invoked (as it were) from Rust.
+
 use anyhow::{bail, Context, Result};
-use nix_rs::{command::NixCmd, store::StorePath};
-use std::{collections::HashSet, path::PathBuf, process::Stdio, str::FromStr};
+use nix_rs::{command::NixCmd, flake::url::FlakeUrl, store::path::StorePath};
+use std::{collections::HashSet, path::PathBuf, process::Stdio};
 use tokio::io::{AsyncBufReadExt, BufReader};
 
-/// Absolute path to the devour-flake executable
-///
-/// We expect this environment to be set in Nix build and shell.
+/// Absolute path to the devour-flake flake source
 pub const DEVOUR_FLAKE: &str = env!("DEVOUR_FLAKE");
 
-/// Output of `devour-flake` command
+/// Input arguments to devour-flake
+pub struct DevourFlakeInput {
+    /// The flake devour-flake will build
+    pub flake: FlakeUrl,
+    /// The systems it will build for. An empty list means all allowed systems.
+    pub systems: Option<FlakeUrl>,
+}
+
+/// Output of `devour-flake`
 pub struct DevourFlakeOutput(pub HashSet<StorePath>);
 
-impl FromStr for DevourFlakeOutput {
-    type Err = anyhow::Error;
-
-    fn from_str(output_filename: &str) -> Result<Self, Self::Err> {
-        // Read output_filename, as newline separated strings
-        let raw_output = std::fs::read_to_string(output_filename)?;
+impl DevourFlakeOutput {
+    fn from_drv(drv_out: &str) -> anyhow::Result<Self> {
+        let raw_output = std::fs::read_to_string(drv_out)?;
         let outs = raw_output.split_ascii_whitespace();
         let outs: HashSet<StorePath> = outs.map(|s| StorePath::new(PathBuf::from(s))).collect();
         if outs.is_empty() {
             bail!(
                 "devour-flake produced an outpath ({}) with no outputs",
-                output_filename
+                drv_out
             );
         } else {
             Ok(DevourFlakeOutput(outs))
@@ -32,17 +37,19 @@ impl FromStr for DevourFlakeOutput {
     }
 }
 
-/// Run `devour-flake` command
+/// Run `devour-flake`
 pub async fn devour_flake(
     nixcmd: &NixCmd,
     verbose: bool,
-    args: Vec<String>,
+    input: DevourFlakeInput,
+    extra_args: Vec<String>,
 ) -> Result<DevourFlakeOutput> {
     // TODO: Use nix_rs here as well
     // In the context of doing https://github.com/srid/nixci/issues/15
     let devour_flake_url = format!("{}#default", env!("DEVOUR_FLAKE"));
     let mut cmd = nixcmd.command();
-    cmd.args([
+
+    let mut args = vec![
         "build",
         &devour_flake_url,
         "-L",
@@ -50,8 +57,15 @@ pub async fn devour_flake(
         "--print-out-paths",
         "--override-input",
         "flake",
-    ])
-    .args(args);
+        &input.flake,
+    ];
+    // Specify only if the systems is not the default
+    if let Some(systems) = input.systems.as_ref() {
+        args.extend(&["--override-input", "systems", &systems.0]);
+    }
+    args.extend(extra_args.iter().map(|s| s.as_str()));
+    cmd.args(args);
+
     nix_rs::command::trace_cmd(&cmd);
     let mut output_fut = cmd.stdout(Stdio::piped()).stderr(Stdio::piped()).spawn()?;
     let stderr_handle = output_fut.stderr.take().unwrap();
@@ -75,8 +89,8 @@ pub async fn devour_flake(
         .await
         .context("Unable to spawn devour-flake process")?;
     if output.status.success() {
-        let stdout = String::from_utf8(output.stdout)?;
-        let v = DevourFlakeOutput::from_str(stdout.trim())?;
+        let drv_out = String::from_utf8(output.stdout)?;
+        let v = DevourFlakeOutput::from_drv(drv_out.trim())?;
         Ok(v)
     } else {
         let exit_code = output.status.code().unwrap_or(1);

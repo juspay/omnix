@@ -1,6 +1,8 @@
 //! Rust module for Nix flakes
 
+pub mod command;
 pub mod eval;
+pub mod metadata;
 pub mod outputs;
 pub mod schema;
 pub mod system;

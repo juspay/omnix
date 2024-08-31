@@ -22,10 +22,12 @@ pub async fn flakreate(registry: FlakeUrl, path: PathBuf) -> anyhow::Result<()> 
     let path = path.to_string_lossy();
 
     // Create the flake template
-    let template_url = registry.with_attr(&template.name);
+    let template_url = registry.with_attr(&format!("om.templates.{}", template.name));
     NixCmd::get()
         .await
-        .run_with_args(&["flake", "new", &path, "-t", &template_url.0])
+        .run_with(|cmd| {
+            cmd.args(["flake", "new", &path, "-t", &template_url.0]);
+        })
         .await?;
 
     // Do the actual replacement

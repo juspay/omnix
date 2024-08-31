@@ -8,6 +8,9 @@ homepage = "https://omnix.page"
 repository = "https://github.com/juspay/omnix"
 license = "AGPL-3.0-only"
 
+[lib]
+crate-type = ["cdylib", "rlib"]
+
 [[bin]]
 name = "om"
 path = "src/main.rs"

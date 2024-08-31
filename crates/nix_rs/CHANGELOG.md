@@ -5,9 +5,23 @@
 - **`flake::url`**
   - Add `without_attr`, `get_attr`
   - Simplify the return type of `RootQualifiedAttr::eval_flake`
-- **`store`**: Add module (upstreamed from nixci)
+  - Add `AsRef`, `Deref`, `From<&Path>` instances for `FlakeUrl`
+  - `Path` instances for `FlakeUrl` no longer use the `path:` prefix (to avoid store copying)
+  - **`attr`**:
+    - Add `FlakeAttr::new` and `FlakeAttr::none` constructors
+  - `qualified_attr` - vastly simplify module
+- **`store`**:
+  - Add module (upstreamed from nixci)
+  - Add `StoreURI`
+  - Avoid running `nix-store` multiple times.
 - **`env`**:
   - `NixEnv::detect`'s logging uses DEBUG level now (formerly INFO)
+  - Add Nix installer to `NixEnv`
+- **`command`
+  - `run_with_args` is now `run_with`, and takes a function that mutates the `Command` at will.
+  - Add `trace_cmd_with`
+- **`flake::command`**:
+  - Add module, for `nix run` and `nix develop`
 
 ## 1.0.0
 

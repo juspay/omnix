@@ -14,6 +14,7 @@
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
     process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
     cargo-doc-live.url = "github:srid/cargo-doc-live";
+    cachix-push.url = "github:juspay/cachix-push";
 
     devour-flake.url = "github:srid/devour-flake";
     devour-flake.flake = false;

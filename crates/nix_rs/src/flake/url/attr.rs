@@ -3,10 +3,18 @@ use serde::{Deserialize, Serialize};
 /// The (optional) attribute output part of a [super::FlakeUrl]
 ///
 /// Example: `foo` in `.#foo`.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct FlakeAttr(pub Option<String>);
 
 impl FlakeAttr {
+    pub fn new(attr: &str) -> Self {
+        FlakeAttr(Some(attr.to_owned()))
+    }
+
+    pub fn none() -> Self {
+        FlakeAttr(None)
+    }
+
     /// Get the attribute name.
     ///
     /// If no such attribute exists, return "default".

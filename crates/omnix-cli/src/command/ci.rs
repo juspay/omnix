@@ -15,19 +15,20 @@ pub struct CICommand {
 }
 
 impl CICommand {
-    /// Get the command to run
-    ///
-    /// If the user has not provided one, return the build command by default.
-    pub fn command(&self) -> Command {
-        let mut cmd = self.command.clone().unwrap_or_default();
-        cmd.preprocess();
-        cmd
-    }
-
+    /// Run this sub-command
     pub async fn run(&self, verbosity: Verbosity<InfoLevel>) -> anyhow::Result<()> {
         self.command()
             .run(&self.nixcmd, verbosity.log_level() > Some(Level::Info))
             .await?;
         Ok(())
+    }
+
+    /// Get the command to run
+    ///
+    /// If the user has not provided one, return the build command by default.
+    fn command(&self) -> Command {
+        let mut cmd = self.command.clone().unwrap_or_default();
+        cmd.preprocess();
+        cmd
     }
 }

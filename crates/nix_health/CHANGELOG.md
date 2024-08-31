@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Remove unused `logging` module
+- Display Nix installer used
 
 ## 1.0.0
 

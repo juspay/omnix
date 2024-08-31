@@ -75,8 +75,13 @@ static NIXCMD: OnceCell<NixCmd> = OnceCell::const_new();
 
 #[instrument(name = "command")]
 pub fn trace_cmd(cmd: &tokio::process::Command) {
+    trace_cmd_with("🐚", cmd);
+}
+
+#[instrument(name = "command")]
+pub fn trace_cmd_with(icon: &str, cmd: &tokio::process::Command) {
     use colored::Colorize;
-    tracing::info!("🐚 {}️", to_cli(cmd).bright_blue());
+    tracing::info!("{} {}️", icon, to_cli(cmd).bright_blue());
 }
 
 impl NixCmd {
@@ -163,10 +168,13 @@ impl NixCmd {
         Ok(stdout)
     }
 
-    /// Run nix with given args, letting stdout and stderr be that of parent process
-    pub async fn run_with_args(&self, args: &[&str]) -> Result<(), CommandError> {
+    /// Run Nix with given [Command] customizations, while also tracing the command being run.
+    pub async fn run_with<F>(&self, f: F) -> Result<(), CommandError>
+    where
+        F: FnOnce(&mut Command),
+    {
         let mut cmd = self.command();
-        cmd.args(args);
+        f(&mut cmd);
         trace_cmd(&cmd);
         let status = cmd.spawn()?.wait().await?;
         if status.success() {

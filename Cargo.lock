@@ -328,6 +328,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "async-walkdir"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "20235b6899dd1cb74a9afac0abf5b4a20c0e500dd6537280f4096e1b9f14da20"
+dependencies = [
+ "async-fs",
+ "futures-lite",
+ "thiserror",
+]
+
+[[package]]
 name = "atk"
 version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1912,14 +1923,13 @@ checksum = "8bf34a163b5c4c52d0478a4d757da8fb65cabef42ba90515efee0f6f9fa45aaa"
 
 [[package]]
 name = "futures-lite"
-version = "2.0.1"
+version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d3831c2651acb5177cbd83943f3d9c8912c5ad03c76afcc0e9511ba568ec5ebb"
+checksum = "52527eb5074e35e9339c6b4e8d12600c7128b68fb25dcb9fa9dec18f7c25f3a5"
 dependencies = [
  "fastrand",
  "futures-core",
  "futures-io",
- "memchr",
  "parking",
  "pin-project-lite",
 ]
@@ -3151,6 +3161,7 @@ dependencies = [
  "direnv",
  "human-panic",
  "nix_rs",
+ "omnix-common",
  "regex",
  "semver",
  "serde",
@@ -3174,6 +3185,7 @@ dependencies = [
  "clap",
  "colored",
  "is_proc_translated",
+ "nonempty",
  "os_info",
  "regex",
  "serde",
@@ -3192,13 +3204,19 @@ name = "nixci"
 version = "1.1.0"
 dependencies = [
  "anyhow",
+ "async-walkdir",
  "clap",
  "colored",
+ "futures-lite",
  "nix_health",
  "nix_rs",
+ "nonempty",
+ "omnix-common",
  "reqwest",
  "serde",
  "serde_json",
+ "shell-words",
+ "tempfile",
  "thiserror",
  "tokio",
  "tracing",
@@ -3213,6 +3231,15 @@ name = "nodrop"
 version = "0.1.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "72ef4a56884ca558e5ddb05a1d1e7e1bfd9a68d9ed024c21704cc98872dae1bb"
+
+[[package]]
+name = "nonempty"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "303e8749c804ccd6ca3b428de7fe0d86cb86bc7606bc15291f100fd487960bb8"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "normalize-line-endings"
@@ -3360,8 +3387,12 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "clap-verbosity-flag",
+ "nix_rs",
+ "serde",
+ "thiserror",
  "tracing",
  "tracing-subscriber",
+ "which",
 ]
 
 [[package]]
@@ -4893,18 +4924,18 @@ checksum = "8eaa81235c7058867fa8c0e7314f33dcce9c215f535d1913822a2b3f5e289f3c"
 
 [[package]]
 name = "thiserror"
-version = "1.0.50"
+version = "1.0.63"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f9a7210f5c9a7156bb50aa36aed4c95afb51df0df00713949448cf9e97d382d2"
+checksum = "c0342370b38b6a11b6cc11d6a805569958d54cfa061a29969c3b5ce2ea405724"
 dependencies = [
  "thiserror-impl",
 ]
 
 [[package]]
 name = "thiserror-impl"
-version = "1.0.50"
+version = "1.0.63"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "266b2e40bc00e5a6c09c3584011e08b06f123c00362c92b975ba9843aaaa14b8"
+checksum = "a4558b58466b9ad7ca0f102865eccc95938dca1a74a856f2b57b6629050da261"
 dependencies = [
  "proc-macro2",
  "quote",

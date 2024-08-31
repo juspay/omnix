@@ -21,7 +21,8 @@ pub struct FlakeTemplate {
     #[serde(rename = "welcomeText")]
     pub welcome_text: Option<String>,
 
-    #[serde(skip_deserializing)]
+    /// Non-standard fields defined by Omnix itself.
+    #[serde(flatten)]
     pub config: FlakeTemplateConfig,
 }
 
@@ -42,9 +43,8 @@ impl Display for FlakeTemplate {
 
 impl FlakeTemplate {
     /// Polyfill unserialized fields
-    pub fn polyfill(&mut self, name: String, config: Option<FlakeTemplateConfig>) {
+    pub fn polyfill(&mut self, name: String) {
         self.name = name;
-        self.config = config.unwrap_or_default();
     }
 
     pub fn prompt_replacements(&self) -> anyhow::Result<Vec<Vec<FileOp>>> {
