@@ -51,7 +51,8 @@ impl NixConfig {
             .get_or_init(|| async {
                 let mut cmd = NixCmd::default();
                 cmd.with_flakes(); // Enable flakes, since don't yet know if it is already enabled.
-                let cfg = NixConfig::from_nix(&cmd).await?;
+                let nix_ver = NixVersion::from_nix(&cmd).await?;
+                let cfg = NixConfig::from_nix(&cmd, &nix_ver).await?;
                 Ok(cfg)
             })
             .await
@@ -61,14 +62,14 @@ impl NixConfig {
     #[instrument(name = "show-config")]
     pub async fn from_nix(
         nix_cmd: &super::command::NixCmd,
+        nix_version: &NixVersion,
     ) -> Result<NixConfig, super::command::NixCmdError> {
-        let nix_version = NixVersion::from_nix().await?;
         let threshold_version = NixVersion {
             major: 2,
             minor: 20,
             patch: 0,
         };
-        let v = if nix_version >= threshold_version {
+        let v = if nix_version >= &threshold_version {
             nix_cmd
                 .run_with_args_expecting_json(&["config", "show", "--json"])
                 .await?

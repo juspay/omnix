@@ -3,10 +3,11 @@ use regex::Regex;
 use serde_with::{DeserializeFromStr, SerializeDisplay};
 use std::{fmt, str::FromStr};
 use thiserror::Error;
+use tokio::sync::OnceCell;
 
 use tracing::instrument;
 
-use crate::command::NixCmd;
+use crate::command::{NixCmd, NixCmdError};
 
 /// Nix version as parsed from `nix --version`
 #[derive(Clone, Copy, PartialOrd, PartialEq, Eq, Debug, SerializeDisplay, DeserializeFromStr)]
@@ -48,14 +49,24 @@ impl FromStr for NixVersion {
     }
 }
 
-impl NixVersion {
-    /// Get the output of `nix --version`
+static NIX_VERSION: OnceCell<Result<NixVersion, NixCmdError>> = OnceCell::const_new();
 
+impl NixVersion {
+    /// Get the once version of `NixConfig`.
+    #[instrument(name = "show-config(once)")]
+    pub async fn get() -> &'static Result<NixVersion, NixCmdError> {
+        NIX_VERSION
+            .get_or_init(|| async {
+                let cmd = NixCmd::default();
+                let nix_ver = NixVersion::from_nix(&cmd).await?;
+                Ok(nix_ver)
+            })
+            .await
+    }
+    /// Get the output of `nix --version`
     #[instrument(name = "version")]
-    pub async fn from_nix() -> Result<NixVersion, super::command::NixCmdError> {
-        let v = NixCmd::default()
-            .run_with_args_expecting_fromstr(&["--version"])
-            .await?;
+    pub async fn from_nix(cmd: &NixCmd) -> Result<NixVersion, super::command::NixCmdError> {
+        let v = cmd.run_with_args_expecting_fromstr(&["--version"]).await?;
         Ok(v)
     }
 }
@@ -68,7 +79,7 @@ impl fmt::Display for NixVersion {
 
 #[tokio::test]
 async fn test_run_nix_version() {
-    let nix_version = NixVersion::from_nix().await.unwrap();
+    let nix_version = NixVersion::from_nix(&NixCmd::default()).await.unwrap();
     println!("Nix version: {}", nix_version);
 }
 
