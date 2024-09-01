@@ -41,18 +41,18 @@ pub struct ConfigVal<T> {
     pub description: String,
 }
 
-static NIX_CONFIG: OnceCell<Result<NixConfig, NixCmdError>> = OnceCell::const_new();
+static NIX_CONFIG: OnceCell<Result<NixConfig, NixConfigError>> = OnceCell::const_new();
 
 impl NixConfig {
     /// Get the once version of `NixConfig`.
     #[instrument(name = "show-config(once)")]
-    pub async fn get() -> &'static Result<NixConfig, NixCmdError> {
+    pub async fn get() -> &'static Result<NixConfig, NixConfigError> {
         NIX_CONFIG
             .get_or_init(|| async {
                 let mut cmd = NixCmd::default();
                 cmd.with_flakes(); // Enable flakes, since don't yet know if it is already enabled.
-                let nix_ver = NixVersion::from_nix(&cmd).await?;
-                let cfg = NixConfig::from_nix(&cmd, &nix_ver).await?;
+                let nix_ver = NixVersion::get().await.as_ref()?;
+                let cfg = NixConfig::from_nix(&cmd, nix_ver).await?;
                 Ok(cfg)
             })
             .await
@@ -91,6 +91,15 @@ impl NixConfig {
                 .value
                 .contains(&"flakes".to_string())
     }
+}
+
+#[derive(thiserror::Error, Debug)]
+pub enum NixConfigError {
+    #[error("Nix command error: {0}")]
+    NixCmdError(#[from] NixCmdError),
+
+    #[error("Nix command error: {0}")]
+    NixCmdErrorStatic(#[from] &'static NixCmdError),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, DeserializeFromStr)]

@@ -52,4 +52,7 @@ pub enum NixInfoError {
 
     #[error("Nix environment error: {0}")]
     NixEnvError(#[from] crate::env::NixEnvError),
+
+    #[error("Nix config error: {0}")]
+    NixConfigError(#[from] &'static crate::config::NixConfigError),
 }
