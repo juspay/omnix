@@ -5,7 +5,7 @@ use std::{collections::BTreeMap, path::PathBuf};
 use dioxus::prelude::*;
 use dioxus_router::components::Link;
 use nix_rs::flake::{
-    outputs::{FlakeOutputs, Leaf, Type, Val},
+    outputs::{FlakeOutputs, Type, Val},
     schema::FlakeSchema,
     url::FlakeUrl,
     Flake,
@@ -120,8 +120,7 @@ pub fn FlakeSchemaView(schema: FlakeSchema) -> Element {
                 BtreeMapView { title: "NixOS modules", tree: schema.nixos_modules }
                 SectionHeading { title: "Formatter" }
                 match schema.formatter.as_ref() {
-                    Some(l) => {
-                        let v = l.as_val().cloned().unwrap_or_default();
+                    Some(v) => {
                         let k = v.derivation_name.as_deref().unwrap_or("formatter");
                         rsx! { FlakeValView { k: k, v: v.clone() } }
                     },
@@ -138,7 +137,7 @@ pub fn FlakeSchemaView(schema: FlakeSchema) -> Element {
 }
 
 #[component]
-pub fn BtreeMapView(title: &'static str, tree: BTreeMap<String, Leaf>) -> Element {
+pub fn BtreeMapView(title: &'static str, tree: BTreeMap<String, Val>) -> Element {
     rsx! {
         div {
             SectionHeading { title: title, extra: tree.len().to_string() }
@@ -148,11 +147,11 @@ pub fn BtreeMapView(title: &'static str, tree: BTreeMap<String, Leaf>) -> Elemen
 }
 
 #[component]
-pub fn BtreeMapBodyView(tree: BTreeMap<String, Leaf>) -> Element {
+pub fn BtreeMapBodyView(tree: BTreeMap<String, Val>) -> Element {
     rsx! {
         div { class: "flex flex-wrap justify-start",
-            for (k , l) in tree.iter() {
-                FlakeValView { k: k.clone(), v: l.as_val().cloned().unwrap_or_default() }
+            for (k , v) in tree.iter() {
+                FlakeValView { k: k.clone(), v: v.clone() }
             }
         }
     }
@@ -219,7 +218,7 @@ pub fn FlakeOutputsRawView(outs: FlakeOutputs) -> Element {
     }
 
     match outs {
-        FlakeOutputs::Leaf(l) => rsx! { ValView { val: l.as_val().cloned().unwrap_or_default() } },
+        FlakeOutputs::Val(v) => rsx! { ValView { val: v.clone() } },
         FlakeOutputs::Attrset(v) => rsx! {
             ul { class: "list-disc",
                 for (k , v) in v.iter() {
@@ -230,5 +229,7 @@ pub fn FlakeOutputsRawView(outs: FlakeOutputs) -> Element {
                 }
             }
         },
+        // TODO: Handle other flake output types
+        _ => rsx! { "" },
     }
 }

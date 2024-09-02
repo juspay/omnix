@@ -17,7 +17,7 @@ pub async fn ci_config_from_flake_url(
     cmd: &NixCmd,
     url: &FlakeUrl,
 ) -> Result<OmConfig<SubflakesConfig>> {
-    let v = omnix_common::config::OmConfig::<SubflakesConfig>::from_flake_url(
+    let v = omnix_common::config::OmConfig::<SubflakesConfig>::from_flake_outputs(
         cmd,
         url,
         &["om.ci", "nixci"],

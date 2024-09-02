@@ -125,17 +125,17 @@
     "flake-schemas": {
       "flake": false,
       "locked": {
-        "lastModified": 1721999734,
-        "narHash": "sha256-G5CxYeJVm4lcEtaO87LKzOsVnWeTcHGKbKxNamNWgOw=",
-        "owner": "DeterminateSystems",
+        "lastModified": 1725221562,
+        "narHash": "sha256-NnvOT8CJl1QehKJoyqvseGk9jOHzfBfviSwJycqvuLs=",
+        "owner": "shivaraj-bh",
         "repo": "flake-schemas",
-        "rev": "0a5c42297d870156d9c57d8f99e476b738dcd982",
+        "rev": "a357c58f3aeea7b358a7cd1b9ef743cb8b30db95",
         "type": "github"
       },
       "original": {
-        "owner": "DeterminateSystems",
+        "owner": "shivaraj-bh",
+        "ref": "om-schema",
         "repo": "flake-schemas",
-        "rev": "0a5c42297d870156d9c57d8f99e476b738dcd982",
         "type": "github"
       }
     },
@@ -215,11 +215,11 @@
         "pre-commit-hooks": "pre-commit-hooks"
       },
       "locked": {
-        "lastModified": 1722511816,
-        "narHash": "sha256-jSrAhqM3qTKUmVvM0PQXoxKv2SQzWNRGvcW11DyOemE=",
+        "lastModified": 1724233443,
+        "narHash": "sha256-jraROyJQSEvVX1679BOmJ61dwB6K0B24pn3TKNq1eBI=",
         "owner": "shivaraj-bh",
         "repo": "nix",
-        "rev": "af109049cf392a6b4ede343a4756692eee9b4fd6",
+        "rev": "1d23c1e871981f5666a12c4409bd0574fc1e1e02",
         "type": "github"
       },
       "original": {

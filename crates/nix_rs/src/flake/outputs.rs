@@ -1,6 +1,7 @@
 //! Nix flake outputs
 
 use serde::{Deserialize, Serialize};
+use serde_json::{Map, Value};
 use std::{
     collections::{btree_map::Entry, BTreeMap},
     fmt::Display,
@@ -19,10 +20,44 @@ pub const DEFAULT_FLAKE_SCHEMAS: &str = env!("DEFAULT_FLAKE_SCHEMAS");
 /// Represents the "outputs" of a flake
 ///
 /// This structure is currently produced by `nix flake show`, thus to parse it we must toggle serde untagged.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 pub enum FlakeOutputs {
-    Leaf(Leaf),
+    Doc(String),
+    Unknown(Unknown),
+    Filtered(Filtered),
+    Skipped(Skipped),
+    Val(Val),
     Attrset(BTreeMap<String, FlakeOutputs>),
+}
+
+impl Serialize for FlakeOutputs {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::ser::Serializer,
+    {
+        use serde::ser::SerializeMap;
+
+        match self {
+            Self::Doc(_) => serializer.serialize_none(),
+            Self::Unknown(v) => v.serialize(serializer),
+            Self::Filtered(v) => v.serialize(serializer),
+            Self::Skipped(v) => v.serialize(serializer),
+            Self::Val(v) => v.value.serialize(serializer),
+            Self::Attrset(v) => {
+                let mut map = serializer.serialize_map(Some(v.len()))?;
+                for (k, v) in v {
+                    if let FlakeOutputs::Doc(_) = v {
+                        // Skip Doc variant
+                        // TODO: This can be avoided if [FlakeOutputs] identifies `output`
+                        // key of a given flake output and only serialize the value within it.
+                        continue;
+                    }
+                    map.serialize_entry(k, v)?;
+                }
+                map.end()
+            }
+        }
+    }
 }
 
 impl FlakeOutputs {
@@ -36,9 +71,9 @@ impl FlakeOutputs {
     }
 
     /// Get the non-attrset leaf
-    pub fn as_leaf(&self) -> Option<&Leaf> {
+    pub fn as_val(&self) -> Option<&Val> {
         match self {
-            Self::Leaf(v) => Some(v),
+            Self::Val(v) => Some(v),
             _ => None,
         }
     }
@@ -48,6 +83,66 @@ impl FlakeOutputs {
         match self {
             Self::Attrset(v) => Some(v),
             _ => None,
+        }
+    }
+
+    /// Flatten [FlakeOutputs] returning [Value] by extending the values `children` and `output` keys
+    /// to the parent key.
+    ///
+    /// A `json` that is of the form:
+    /// ```json
+    /// {
+    ///    attr1: {
+    ///       children: {
+    ///         attr2: {
+    ///           leaf: {
+    ///             what: "omnix config",
+    ///             value: true,
+    ///          },
+    ///        },
+    ///     },
+    ///   },
+    /// }
+    /// ```
+    /// will be flattened to:
+    /// ```json
+    /// {
+    ///   attr1: {
+    ///    attr2: true
+    ///  }
+    /// }
+    /// ```
+    pub fn as_flattened_value(&self) -> Result<Value, serde_json::Error> {
+        serde_json::to_value(self).map(Self::flatten_children_and_output)
+    }
+
+    fn flatten_children_and_output(value: Value) -> Value {
+        match value {
+            Value::Object(map) => {
+                let new_map = map.into_iter().fold(Map::new(), |mut acc, (key, value)| {
+                    let new_value = Self::flatten_children_and_output(value);
+                    match key.as_str() {
+                        "children" | "output" => {
+                            if let Value::Object(inner_map) = new_value {
+                                acc.extend(inner_map);
+                            } else {
+                                acc.insert(key, new_value);
+                            }
+                        }
+                        _ => {
+                            acc.insert(key, new_value);
+                        }
+                    }
+                    acc
+                });
+                Value::Object(new_map)
+            }
+            Value::Array(vec) => Value::Array(
+                vec.into_iter()
+                    .map(Self::flatten_children_and_output)
+                    .collect(),
+            ),
+            _ => value,
         }
     }
 
@@ -78,29 +173,6 @@ impl FlakeOutputs {
     }
 }
 
-/// Represents a leaf value of a flake output
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(untagged)]
-pub enum Leaf {
-    Val(Val),
-    Unknown(Unknown),
-    Filtered(Filtered),
-    Skipped(Skipped),
-    /// Represents description for a flake output
-    /// (e.g. `Doc` for `formatter` will be "The `formatter` output specifies the package to use to format the project.")
-    Doc(String),
-}
-
-impl Leaf {
-    /// Get the value as a [Val]
-    pub fn as_val(&self) -> Option<&Val> {
-        match self {
-            Self::Val(v) => Some(v),
-            _ => None,
-        }
-    }
-}
-
 /// The metadata of a flake output value which is of non-attrset [Type]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -109,6 +181,7 @@ pub struct Val {
     pub type_: Type,
     pub derivation_name: Option<String>,
     pub short_description: Option<String>,
+    pub value: Option<serde_json::Value>,
 }
 
 impl Default for Val {
@@ -117,6 +190,7 @@ impl Default for Val {
             type_: Type::Unknown,
             derivation_name: None,
             short_description: None,
+            value: None,
         }
     }
 }
@@ -200,8 +274,12 @@ impl Display for Type {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
 enum FlakeOutputsUntagged {
-    ULeaf(Leaf),
-    UAttrset(BTreeMap<String, FlakeOutputsUntagged>),
+    Doc(String),
+    Unknown(Unknown),
+    Filtered(Filtered),
+    Skipped(Skipped),
+    Val(Val),
+    Attrset(BTreeMap<String, FlakeOutputsUntagged>),
 }
 
 impl FlakeOutputsUntagged {
@@ -232,8 +310,12 @@ impl FlakeOutputsUntagged {
     /// Convert to [FlakeOutputs]
     fn into_flake_outputs(self) -> FlakeOutputs {
         match self {
-            Self::ULeaf(v) => FlakeOutputs::Leaf(v),
-            Self::UAttrset(v) => FlakeOutputs::Attrset(
+            Self::Doc(v) => FlakeOutputs::Doc(v),
+            Self::Unknown(v) => FlakeOutputs::Unknown(v),
+            Self::Filtered(v) => FlakeOutputs::Filtered(v),
+            Self::Skipped(v) => FlakeOutputs::Skipped(v),
+            Self::Val(v) => FlakeOutputs::Val(v),
+            Self::Attrset(v) => FlakeOutputs::Attrset(
                 v.into_iter()
                     .map(|(k, v)| (k, v.into_flake_outputs()))
                     .collect(),

@@ -6,7 +6,7 @@ use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
 
 use super::{
-    outputs::{FlakeOutputs, Leaf},
+    outputs::{FlakeOutputs, Val},
     System,
 };
 
@@ -16,20 +16,20 @@ use super::{
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct FlakeSchema {
     pub system: System,
-    pub packages: BTreeMap<String, Leaf>,
-    pub legacy_packages: BTreeMap<String, Leaf>,
-    pub devshells: BTreeMap<String, Leaf>,
-    pub checks: BTreeMap<String, Leaf>,
-    pub apps: BTreeMap<String, Leaf>,
-    pub formatter: Option<Leaf>,
-    pub nixos_configurations: BTreeMap<String, Leaf>,
-    pub darwin_configurations: BTreeMap<String, Leaf>,
-    pub home_configurations: BTreeMap<String, Leaf>,
-    pub nixos_modules: BTreeMap<String, Leaf>,
-    pub docker_images: BTreeMap<String, Leaf>,
-    pub overlays: BTreeMap<String, Leaf>,
-    pub templates: BTreeMap<String, Leaf>,
-    pub schemas: BTreeMap<String, Leaf>,
+    pub packages: BTreeMap<String, Val>,
+    pub legacy_packages: BTreeMap<String, Val>,
+    pub devshells: BTreeMap<String, Val>,
+    pub checks: BTreeMap<String, Val>,
+    pub apps: BTreeMap<String, Val>,
+    pub formatter: Option<Val>,
+    pub nixos_configurations: BTreeMap<String, Val>,
+    pub darwin_configurations: BTreeMap<String, Val>,
+    pub home_configurations: BTreeMap<String, Val>,
+    pub nixos_modules: BTreeMap<String, Val>,
+    pub docker_images: BTreeMap<String, Val>,
+    pub overlays: BTreeMap<String, Val>,
+    pub templates: BTreeMap<String, Val>,
+    pub schemas: BTreeMap<String, Val>,
     /// Other unrecognized keys.
     pub other: Option<BTreeMap<String, FlakeOutputs>>,
 }
@@ -41,14 +41,14 @@ impl FlakeSchema {
     /// as is (in [FlakeSchema::other]).
     pub fn from(output: &FlakeOutputs, system: &System) -> Self {
         let output: &mut FlakeOutputs = &mut output.clone();
-        let pop_tree = |output: &mut FlakeOutputs, ks: &[&str]| -> BTreeMap<String, Leaf> {
-            let mut f = || -> Option<BTreeMap<String, Leaf>> {
+        let pop_tree = |output: &mut FlakeOutputs, ks: &[&str]| -> BTreeMap<String, Val> {
+            let mut f = || -> Option<BTreeMap<String, Val>> {
                 let out = output.pop(ks)?;
                 let outs = out.as_attrset()?;
                 let r = outs
                     .iter()
                     .filter_map(|(k, v)| {
-                        let v = v.as_leaf()?;
+                        let v = v.as_val()?;
                         Some((k.clone(), v.clone()))
                     })
                     .collect();
@@ -58,16 +58,16 @@ impl FlakeSchema {
             output.pop(ks);
             mr.unwrap_or(BTreeMap::new())
         };
-        let pop_per_system_tree = |output: &mut FlakeOutputs, k: &str| -> BTreeMap<String, Leaf> {
+        let pop_per_system_tree = |output: &mut FlakeOutputs, k: &str| -> BTreeMap<String, Val> {
             pop_tree(
                 output,
                 &[k, "output", "children", system.as_ref(), "children"],
             )
         };
-        let pop_leaf_type = |output: &mut FlakeOutputs, k: &str| -> Option<Leaf> {
+        let pop_leaf_type = |output: &mut FlakeOutputs, k: &str| -> Option<Val> {
             let leaf = output
                 .pop(&[k, "output", "children", system.as_ref()])?
-                .as_leaf()?
+                .as_val()?
                 .clone();
             output.pop(&[k]);
             Some(leaf)

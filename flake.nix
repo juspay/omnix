@@ -19,7 +19,8 @@
     devour-flake.url = "github:srid/devour-flake";
     devour-flake.flake = false;
 
-    flake-schemas.url = "github:DeterminateSystems/flake-schemas/0a5c42297d870156d9c57d8f99e476b738dcd982";
+    # TODO: Use juspay/flake-schemas
+    flake-schemas.url = "github:shivaraj-bh/flake-schemas/om-schema";
     flake-schemas.flake = false;
     # TODO: Use upstream after https://github.com/NixOS/nix/pull/8892
     # Note: This version of nix is only used to run `nix flake show` in omnix-cli

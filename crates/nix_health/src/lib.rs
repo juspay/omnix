@@ -64,8 +64,8 @@ impl NixHealth {
     /// override it.
     pub async fn from_flake(url: &FlakeUrl) -> Result<Self, OmConfigError> {
         let cmd = NixCmd::get().await;
-        let cfg =
-            OmConfig::<NixHealth>::from_flake_url(cmd, url, &["om.health", "nix-health"]).await?;
+        let cfg = OmConfig::<NixHealth>::from_flake_outputs(cmd, url, &["om.health", "nix-health"])
+            .await?;
         let (cfg, _rest) = cfg.get_referenced()?;
         Ok(cfg.clone())
     }

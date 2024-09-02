@@ -6,7 +6,7 @@ use colored::Colorize;
 use nix_rs::{
     command::NixCmd,
     config::NixConfig,
-    flake::{outputs::Leaf, url::FlakeUrl, Flake},
+    flake::{outputs::Val, url::FlakeUrl, Flake},
 };
 use tabled::{
     settings::{location::ByColumnName, Color, Modify, Style},
@@ -72,15 +72,11 @@ pub struct Row {
 
 impl Row {
     /// Convert a [BTreeMap] to a vector of [Row]s
-    pub fn vec_from_btreemap(map: BTreeMap<String, Leaf>) -> Vec<Row> {
+    pub fn vec_from_btreemap(map: BTreeMap<String, Val>) -> Vec<Row> {
         map.into_iter()
-            .map(|(name, leaf)| Row {
+            .map(|(name, val)| Row {
                 name,
-                description: leaf
-                    .as_val()
-                    .and_then(|val| val.short_description.as_deref())
-                    .unwrap_or("N/A")
-                    .to_owned(),
+                description: val.short_description.unwrap_or("N/A".to_owned()),
             })
             .collect()
     }

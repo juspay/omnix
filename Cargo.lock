@@ -3389,6 +3389,7 @@ dependencies = [
  "clap-verbosity-flag",
  "nix_rs",
  "serde",
+ "serde_json",
  "thiserror",
  "tracing",
  "tracing-subscriber",
