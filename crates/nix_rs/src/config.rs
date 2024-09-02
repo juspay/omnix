@@ -43,6 +43,12 @@ pub struct ConfigVal<T> {
 
 static NIX_CONFIG: OnceCell<Result<NixConfig, NixConfigError>> = OnceCell::const_new();
 
+static NIX_2_20_0: NixVersion = NixVersion {
+    major: 2,
+    minor: 20,
+    patch: 0,
+};
+
 impl NixConfig {
     /// Get the once version of `NixConfig`.
     #[instrument(name = "show-config(once)")]
@@ -64,12 +70,7 @@ impl NixConfig {
         nix_cmd: &super::command::NixCmd,
         nix_version: &NixVersion,
     ) -> Result<NixConfig, super::command::NixCmdError> {
-        let threshold_version = NixVersion {
-            major: 2,
-            minor: 20,
-            patch: 0,
-        };
-        let v = if nix_version >= &threshold_version {
+        let v = if nix_version >= &NIX_2_20_0 {
             nix_cmd
                 .run_with_args_expecting_json(&["config", "show", "--json"])
                 .await?
