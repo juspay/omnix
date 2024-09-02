@@ -4,7 +4,7 @@ use super::url::FlakeUrl;
 
 /// Run `nix eval <url> --json` and parse its JSON
 ///
-/// If the attribute is missing, return None.
+/// TODO: Is this even needed anymore?
 pub async fn nix_eval_attr<T>(cmd: &NixCmd, url: &FlakeUrl) -> Result<T, NixCmdError>
 where
     T: Default + serde::de::DeserializeOwned,
