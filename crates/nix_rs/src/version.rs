@@ -52,7 +52,7 @@ impl FromStr for NixVersion {
 static NIX_VERSION: OnceCell<Result<NixVersion, NixCmdError>> = OnceCell::const_new();
 
 impl NixVersion {
-    /// Get the once version of `NixConfig`.
+    /// Get the once version of `NixVersion`.
     #[instrument(name = "show-config(once)")]
     pub async fn get() -> &'static Result<NixVersion, NixCmdError> {
         NIX_VERSION
