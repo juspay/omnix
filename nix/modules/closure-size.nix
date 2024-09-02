@@ -5,7 +5,8 @@ let
 in
 {
   perSystem = { pkgs, ... }: {
-    apps.check-closure-size = {
+    apps.check-closure-size = rec {
+      meta.description = program.meta.description;
       program = pkgs.writeShellApplication {
         name = "omnix-check-closure-size";
         runtimeInputs = [ pkgs.jq pkgs.bc pkgs.nix ];
@@ -24,7 +25,6 @@ in
           fi
         '';
       };
-      meta.description = "Check that omnix's nix closure size remains reasonably small";
     };
   };
 }
