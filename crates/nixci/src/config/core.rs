@@ -13,7 +13,7 @@ use super::subflakes::SubflakesConfig;
 /// let cfg = Config::from_flake_url(&url).await?;
 /// ```
 /// along with the config.
-pub async fn ci_config_from_flake_url(
+pub async fn ci_config_from_flake_outputs(
     cmd: &NixCmd,
     url: &FlakeUrl,
 ) -> Result<OmConfig<SubflakesConfig>> {
@@ -38,7 +38,7 @@ mod tests {
             "github:srid/haskell-flake/76214cf8b0d77ed763d1f093ddce16febaf07365#default.dev"
                 .to_string(),
         );
-        let cfg = ci_config_from_flake_url(&NixCmd::default(), url)
+        let cfg = ci_config_from_flake_outputs(&NixCmd::default(), url)
             .await
             .unwrap();
         let (config, attrs) = cfg.get_referenced().unwrap();
