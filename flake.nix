@@ -6,6 +6,7 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";
+    flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
     systems.url = "github:nix-systems/default";
 
     rust-flake.url = "github:juspay/rust-flake";
@@ -25,7 +26,7 @@
     # Note: This version of nix is only used to run `nix flake show` in omnix-cli
     # Also note: Using shivaraj-bh fork of nix which fixes x86_64-darwin on top of github:DeterminateSystems/nix-src/flake-schemas
     nix.url = "github:shivaraj-bh/nix/flake-schemas";
-
+    nix.inputs.flake-parts.follows = "flake-parts";
   };
 
   outputs = inputs:
