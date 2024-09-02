@@ -1,4 +1,3 @@
-#![feature(lazy_cell)]
 #![feature(let_chains)]
 pub mod flake_template;
 pub mod registry;
