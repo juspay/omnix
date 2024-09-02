@@ -70,15 +70,12 @@ impl NixConfig {
         nix_cmd: &super::command::NixCmd,
         nix_version: &NixVersion,
     ) -> Result<NixConfig, super::command::NixCmdError> {
-        let v = if nix_version >= &NIX_2_20_0 {
-            nix_cmd
-                .run_with_args_expecting_json(&["config", "show", "--json"])
-                .await?
+        let args: Vec<&str> = if nix_version >= &NIX_2_20_0 {
+            vec!["config", "show", "--json"]
         } else {
-            nix_cmd
-                .run_with_args_expecting_json(&["show-config", "--json"])
-                .await?
+            vec!["show-config", "--json"]
         };
+        let v = nix_cmd.run_with_args_expecting_json(&args).await?;
         Ok(v)
     }
 
