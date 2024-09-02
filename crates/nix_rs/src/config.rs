@@ -8,7 +8,10 @@ use tokio::sync::OnceCell;
 use tracing::instrument;
 use url::Url;
 
-use crate::command::{NixCmd, NixCmdError};
+use crate::{
+    command::{NixCmd, NixCmdError},
+    version::NixVersion,
+};
 
 use super::flake::system::System;
 
@@ -38,17 +41,24 @@ pub struct ConfigVal<T> {
     pub description: String,
 }
 
-static NIX_CONFIG: OnceCell<Result<NixConfig, NixCmdError>> = OnceCell::const_new();
+static NIX_CONFIG: OnceCell<Result<NixConfig, NixConfigError>> = OnceCell::const_new();
+
+static NIX_2_20_0: NixVersion = NixVersion {
+    major: 2,
+    minor: 20,
+    patch: 0,
+};
 
 impl NixConfig {
     /// Get the once version of `NixConfig`.
     #[instrument(name = "show-config(once)")]
-    pub async fn get() -> &'static Result<NixConfig, NixCmdError> {
+    pub async fn get() -> &'static Result<NixConfig, NixConfigError> {
         NIX_CONFIG
             .get_or_init(|| async {
                 let mut cmd = NixCmd::default();
                 cmd.with_flakes(); // Enable flakes, since don't yet know if it is already enabled.
-                let cfg = NixConfig::from_nix(&cmd).await?;
+                let nix_ver = NixVersion::get().await.as_ref()?;
+                let cfg = NixConfig::from_nix(&cmd, nix_ver).await?;
                 Ok(cfg)
             })
             .await
@@ -58,10 +68,14 @@ impl NixConfig {
     #[instrument(name = "show-config")]
     pub async fn from_nix(
         nix_cmd: &super::command::NixCmd,
+        nix_version: &NixVersion,
     ) -> Result<NixConfig, super::command::NixCmdError> {
-        let v = nix_cmd
-            .run_with_args_expecting_json(&["show-config", "--json"])
-            .await?;
+        let args: Vec<&str> = if nix_version >= &NIX_2_20_0 {
+            vec!["config", "show", "--json"]
+        } else {
+            vec!["show-config", "--json"]
+        };
+        let v = nix_cmd.run_with_args_expecting_json(&args).await?;
         Ok(v)
     }
 
@@ -75,6 +89,15 @@ impl NixConfig {
                 .value
                 .contains(&"flakes".to_string())
     }
+}
+
+#[derive(thiserror::Error, Debug)]
+pub enum NixConfigError {
+    #[error("Nix command error: {0}")]
+    NixCmdError(#[from] NixCmdError),
+
+    #[error("Nix command error: {0}")]
+    NixCmdErrorStatic(#[from] &'static NixCmdError),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, DeserializeFromStr)]

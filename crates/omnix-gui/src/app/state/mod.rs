@@ -12,6 +12,7 @@ use nix_rs::{
     config::NixConfig,
     flake::{url::FlakeUrl, Flake},
     info::NixInfo,
+    version::NixVersion,
 };
 
 use self::{datum::Datum, error::SystemError, refresh::Refresh};
@@ -124,7 +125,10 @@ impl AppState {
                     let flake_url_2 = flake_url.clone();
                     tracing::info!("Updating flake [{}] refresh={} ...", &flake_url, refresh);
                     let res = Datum::refresh_with(&mut flake, async move {
-                        let nix_config = NixConfig::from_nix(nixcmd)
+                        let nix_version = NixVersion::from_nix(nixcmd)
+                            .await
+                            .map_err(|e| Into::<SystemError>::into(e.to_string()))?;
+                        let nix_config = NixConfig::from_nix(nixcmd, &nix_version)
                             .await
                             .map_err(|e| Into::<SystemError>::into(e.to_string()))?;
                         Flake::from_nix(nixcmd, &nix_config, flake_url_2)
@@ -172,13 +176,19 @@ impl AppState {
                 let refresh = *nix_info_refresh.read();
                 tracing::info!("Updating nix info [{}] ...", refresh);
                 Datum::refresh_with(&mut nix_info, async {
+                    let ver = NixVersion::get()
+                        .await
+                        .as_ref()
+                        .map_err(|e| Into::<SystemError>::into(e.to_string()))?;
                     let cfg = NixConfig::get()
                         .await
                         .as_ref()
                         .map_err(|e| Into::<SystemError>::into(e.to_string()))?;
-                    NixInfo::new(cfg.clone()).await.map_err(|e| SystemError {
-                        message: format!("Error getting nix info: {:?}", e),
-                    })
+                    NixInfo::new(*ver, cfg.clone())
+                        .await
+                        .map_err(|e| SystemError {
+                            message: format!("Error getting nix info: {:?}", e),
+                        })
                 })
                 .await;
             });
