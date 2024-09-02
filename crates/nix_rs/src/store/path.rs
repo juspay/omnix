@@ -1,5 +1,8 @@
 /// Store path management
-use std::{fmt, path::PathBuf};
+use std::{
+    fmt,
+    path::{Path, PathBuf},
+};
 
 /// Represents a path in the Nix store, see: <https://zero-to-nix.com/concepts/nix-store#store-paths>
 #[derive(Debug, Ord, PartialOrd, Eq, PartialEq, Clone, Hash)]
@@ -14,6 +17,12 @@ pub enum StorePath {
 impl From<&StorePath> for PathBuf {
     fn from(sp: &StorePath) -> Self {
         sp.as_path().clone()
+    }
+}
+
+impl AsRef<Path> for StorePath {
+    fn as_ref(&self) -> &Path {
+        self.as_path()
     }
 }
 

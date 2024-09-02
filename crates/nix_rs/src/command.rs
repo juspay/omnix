@@ -16,7 +16,11 @@ use std::{
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use tokio::{io::AsyncReadExt, process::Command, sync::OnceCell};
+use tokio::{
+    io::AsyncReadExt,
+    process::{ChildStdout, Command},
+    sync::OnceCell,
+};
 
 use tracing::instrument;
 
@@ -118,7 +122,7 @@ impl NixCmd {
     where
         T: serde::de::DeserializeOwned,
     {
-        let mut stdout_stream = self.run_with_args_returning_stdout_stream(args).await?;
+        let mut stdout_stream = self.run_with_args_returning_stdout(args).await?;
         let mut stdout = Vec::new();
 
         stdout_stream
@@ -135,7 +139,7 @@ impl NixCmd {
         T: std::str::FromStr,
         <T as std::str::FromStr>::Err: std::fmt::Display,
     {
-        let mut stdout_stream = self.run_with_args_returning_stdout_stream(args).await?;
+        let mut stdout_stream = self.run_with_args_returning_stdout(args).await?;
         let mut stdout = Vec::new();
         stdout_stream
             .read_to_end(&mut stdout)
@@ -147,22 +151,18 @@ impl NixCmd {
     }
 
     /// Run nix with given args, returning stdout.
-    pub async fn run_with_args_returning_stdout_stream(
+    pub async fn run_with_args_returning_stdout(
         &self,
         args: &[&str],
-    ) -> Result<tokio::process::ChildStdout, CommandError> {
+    ) -> Result<ChildStdout, CommandError> {
         let mut cmd = self.command();
-        cmd.args(args);
-        cmd.stdout(Stdio::piped());
+        cmd.args(args).stdout(Stdio::piped());
         trace_cmd(&cmd);
 
         let mut child = cmd.spawn()?;
         let exit_status = child.wait().await?; // Wait for the child to finish
 
-        // FIXME: capture stderr. When I tried to do this, it would fail to
-        // stream stdout and block until the process finished.
         let stdout = child.stdout.take().ok_or(CommandError::ProcessFailed {
-            stderr: None,
             exit_code: exit_status.code(),
         })?;
         Ok(stdout)
@@ -181,7 +181,6 @@ impl NixCmd {
             Ok(())
         } else {
             Err(CommandError::ProcessFailed {
-                stderr: None,
                 exit_code: status.code(),
             })
         }
@@ -255,18 +254,8 @@ impl std::error::Error for FromStrError {}
 pub enum CommandError {
     #[error("Child process error: {0}")]
     ChildProcessError(#[from] std::io::Error),
-    #[error(
-        "Process exited unsuccessfully. exit_code={:?}{}",
-        exit_code,
-        match stderr {
-            Some(s) => format!(" stderr={}", s),
-            None => "".to_string()
-        },
-    )]
-    ProcessFailed {
-        stderr: Option<String>,
-        exit_code: Option<i32>,
-    },
+    #[error("Process exited unsuccessfully. exit_code={:?}", exit_code)]
+    ProcessFailed { exit_code: Option<i32> },
     #[error("Failed to decode command stderr: {0}")]
     Decode(#[from] std::string::FromUtf8Error),
 }

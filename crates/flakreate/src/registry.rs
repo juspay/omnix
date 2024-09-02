@@ -4,7 +4,10 @@ use glob::{Pattern, PatternError};
 use inquire::Select;
 use nix_rs::{
     command::{NixCmd, NixCmdError},
-    flake::{eval::nix_eval_attr, url::FlakeUrl},
+    flake::url::{
+        qualified_attr::{find_qualified_attr_in_flake_output, QualifiedAttrError},
+        FlakeUrl,
+    },
 };
 use thiserror::Error;
 
@@ -86,18 +89,10 @@ impl TemplateRegistry {
     }
 }
 
-async fn fetch_via_flake(url: &FlakeUrl) -> Result<BTreeMap<String, FlakeTemplate>, NixCmdError> {
+async fn fetch_via_flake(url: &FlakeUrl) -> Result<BTreeMap<String, FlakeTemplate>, TemplateError> {
     let nixcmd = NixCmd::get().await;
-    let templates: BTreeMap<String, FlakeTemplate> =
-        match nix_eval_attr(nixcmd, &url.with_attr("om.templates")).await? {
-            Some(v) => v,
-            None => {
-                // Legacy nix templates
-                nix_eval_attr(nixcmd, &url.with_attr("templates"))
-                    .await?
-                    .unwrap_or_default()
-            }
-        };
+    let (templates, _) =
+        find_qualified_attr_in_flake_output(nixcmd, url, &["om.templates", "templates"]).await?;
     Ok(templates)
 }
 
@@ -123,6 +118,10 @@ pub enum TemplateError {
 
     #[error("Failed to fetch templates from cache: {0}")]
     CacheError(#[from] CacheError),
+
+    /// Qualified attribute error
+    #[error("Qualified attribute error: {0}")]
+    QualifiedAttrError(#[from] QualifiedAttrError),
 }
 
 #[derive(Error, Debug)]

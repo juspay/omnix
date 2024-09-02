@@ -1,5 +1,5 @@
 /// Rust wrapper for `nix-store`
-use std::{collections::HashSet, path::PathBuf};
+use std::{collections::HashSet, path::PathBuf, process::Stdio};
 
 use crate::command::{CommandError, NixCmdError};
 use serde::{Deserialize, Serialize};
@@ -43,34 +43,47 @@ impl NixStoreCmd {
         Ok(all_outs.into_iter().collect())
     }
 
+    async fn run_query(
+        &self,
+        args: &[&str],
+        paths: &[impl AsRef<std::path::Path>],
+    ) -> Result<Vec<String>, NixStoreCmdError> {
+        let mut cmd = self.command();
+        cmd.args(args)
+            .args(paths.iter().map(AsRef::as_ref))
+            .stdout(Stdio::piped());
+        crate::command::trace_cmd(&cmd);
+
+        let output = cmd.output().await?;
+        if !output.status.success() {
+            return Err(CommandError::ProcessFailed {
+                exit_code: output.status.code(),
+            }
+            .into());
+        }
+
+        Ok(String::from_utf8(output.stdout)?
+            .lines()
+            .map(String::from)
+            .collect())
+    }
+
     /// Return the derivations used to build the given build output.
     pub async fn nix_store_query_deriver(
         &self,
         out_paths: &[StorePath],
     ) -> Result<Vec<PathBuf>, NixStoreCmdError> {
-        let mut cmd = self.command();
-        cmd.args(["--query", "--valid-derivers"])
-            .args(out_paths.iter().map(StorePath::as_path));
+        let drv_paths: Vec<PathBuf> = self
+            .run_query(&["--query", "--valid-derivers"], out_paths)
+            .await?
+            .into_iter()
+            .map(PathBuf::from)
+            .collect();
 
-        crate::command::trace_cmd(&cmd);
-
-        let out = cmd.output().await?;
-        if out.status.success() {
-            let drv_paths: Vec<PathBuf> = String::from_utf8(out.stdout)?
-                .lines()
-                .map(PathBuf::from)
-                .collect();
-            if drv_paths.contains(&PathBuf::from("unknown-deriver")) {
-                return Err(NixStoreCmdError::UnknownDeriver);
-            }
-            Ok(drv_paths)
-        } else {
-            // TODO(refactor): When upstreaming this module to nix-rs, create a
-            // nicer and unified way to create `ProcessFailed`
-            let stderr = Some(String::from_utf8_lossy(&out.stderr).to_string());
-            let exit_code = out.status.code();
-            Err(CommandError::ProcessFailed { stderr, exit_code }.into())
+        if drv_paths.contains(&PathBuf::from("unknown-deriver")) {
+            return Err(NixStoreCmdError::UnknownDeriver);
         }
+        Ok(drv_paths)
     }
 
     /// Given the derivation paths, this function recursively queries and return all
@@ -79,24 +92,12 @@ impl NixStoreCmd {
         &self,
         drv_paths: &[PathBuf],
     ) -> Result<Vec<StorePath>, NixStoreCmdError> {
-        let mut cmd = self.command();
-        cmd.args(["--query", "--requisites", "--include-outputs"])
-            .args(drv_paths);
-
-        crate::command::trace_cmd(&cmd);
-
-        let out = cmd.output().await?;
-        if out.status.success() {
-            Ok(String::from_utf8(out.stdout)?
-                .lines()
-                .map(|line| StorePath::new(PathBuf::from(line)))
-                .collect())
-        } else {
-            // TODO(refactor): see above
-            let stderr = Some(String::from_utf8_lossy(&out.stderr).to_string());
-            let exit_code = out.status.code();
-            Err(CommandError::ProcessFailed { stderr, exit_code }.into())
-        }
+        Ok(self
+            .run_query(&["--query", "--requisites", "--include-outputs"], drv_paths)
+            .await?
+            .into_iter()
+            .map(|line| StorePath::new(PathBuf::from(line)))
+            .collect())
     }
 }
 
