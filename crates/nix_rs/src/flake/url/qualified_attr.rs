@@ -52,7 +52,7 @@ where
     S: AsRef<str>,
     T: Default + serde::de::DeserializeOwned,
 {
-    let output = FlakeOutputs::from_nix(cmd, url).await?;
+    let output = FlakeOutputs::from_nix(cmd, &url.without_attr()).await?;
     let cfg = output.as_flattened_value()?;
 
     fn find_nested_value<'a>(config: &'a Value, search_path: &'a str) -> Option<&'a Value> {
