@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Support Nix 2.20
 - **`flake::url`**
   - Add `without_attr`, `get_attr`
   - Simplify the return type of `RootQualifiedAttr::eval_flake`
@@ -22,6 +23,8 @@
   - Add `trace_cmd_with`
 - **`flake::command`**:
   - Add module, for `nix run` and `nix develop`
+- **`version`**:
+  - Add `NixVersion::get`
 
 ## 1.0.0
 
