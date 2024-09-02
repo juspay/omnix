@@ -36,6 +36,7 @@
     in
     {
       schemas = flake-schemas.schemas // {
+        # Until upstream is merged: https://github.com/DeterminateSystems/flake-schemas/pull/31
         apps = appsSchema;
       };
     };
