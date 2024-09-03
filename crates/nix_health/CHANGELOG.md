@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- The flake config is now fetched from flake outputs using flake-schemas instead of `nix eval`
 - Remove unused `logging` module
 - Display Nix installer used
 

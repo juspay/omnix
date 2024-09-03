@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **Inherit `stderr`**
+  - `NixCmd::run_with_args_returning_stdout` now inherits `stderr` from parent process by default.
+  - `stderr` is no longer captured and passed along with `CommandError::ProcessFailed`.
+  - `nix_eval_attr` no longer supports missing attribute check.
+  - Introduce `FilteredFlakeOutputs` to fetch the flake config, avoiding dependency on `nix_eval_attr`.
+  - Remove `qualified_attr` module, use `find_qualified_attr` from `FilteredFlakeOutputs` instead.
+
 - Support Nix 2.20
 - **`flake::url`**
   - Add `without_attr`, `get_attr`

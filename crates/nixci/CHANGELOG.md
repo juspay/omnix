@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Flake schema
+  - The flake config is now fetched from flake outputs using flake-schemas instead of `nix eval`
 - New
   - Introduced notion of 'steps'. Renamed 'build' to 'run'.
     - Added a step to run `nix flake check`

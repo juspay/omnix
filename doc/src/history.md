@@ -4,6 +4,10 @@
 
 ### Enhancements
 
+- `flake-schemas`
+  - Fetch `om` flake config from flake outputs instead of `nix eval`
+- Inherit `stderr` from parent process
+  - Display progress of all `nix` commands by default
 - `om health`
   - Display Nix installer used (supports DetSys installer)
 - `om ci`
