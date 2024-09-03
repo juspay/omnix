@@ -4,9 +4,9 @@ use glob::{Pattern, PatternError};
 use inquire::Select;
 use nix_rs::{
     command::{NixCmd, NixCmdError},
-    flake::url::{
-        qualified_attr::{find_qualified_attr_in_flake_output, QualifiedAttrError},
-        FlakeUrl,
+    flake::{
+        outputs::{FilteredFlakeOutputs, QualifiedAttrError},
+        url::FlakeUrl,
     },
 };
 use thiserror::Error;
@@ -91,8 +91,11 @@ impl TemplateRegistry {
 
 async fn fetch_via_flake(url: &FlakeUrl) -> Result<BTreeMap<String, FlakeTemplate>, TemplateError> {
     let nixcmd = NixCmd::get().await;
-    let (templates, _) =
-        find_qualified_attr_in_flake_output(nixcmd, url, &["om.templates", "templates"]).await?;
+
+    let filtered_outputs = FilteredFlakeOutputs::from_nix(nixcmd, &url.without_attr()).await?;
+    let (templates, _) = filtered_outputs
+        .find_qualified_attr(url, &["om.templates", "templates"])
+        .await?;
     Ok(templates)
 }
 

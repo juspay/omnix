@@ -3,12 +3,10 @@
 use std::collections::BTreeMap;
 
 use nix_rs::{
-    command::NixCmd,
-    flake::url::{
-        qualified_attr::{
-            find_qualified_attr_in_flake_output, nix_eval_qualified_attr, QualifiedAttrError,
-        },
-        FlakeUrl,
+    command::{NixCmd, NixCmdError},
+    flake::{
+        outputs::{FilteredFlakeOutputs, QualifiedAttrError},
+        url::FlakeUrl,
     },
 };
 use serde::de::DeserializeOwned;
@@ -29,26 +27,7 @@ pub struct OmConfig<T> {
 }
 
 impl<T> OmConfig<T> {
-    /// Read the Om configuration from the flake URL
-    pub async fn from_flake_url<S>(
-        cmd: &NixCmd,
-        url: &FlakeUrl,
-        k: &[S],
-    ) -> Result<OmConfig<T>, OmConfigError>
-    where
-        S: AsRef<str>,
-        T: Default + DeserializeOwned,
-    {
-        let (config, reference) =
-            nix_eval_qualified_attr::<BTreeMap<String, T>, _>(cmd, url, k).await?;
-        Ok(OmConfig {
-            flake_url: url.without_attr(),
-            reference,
-            config,
-        })
-    }
-
-    /// Read the Om configuration from [FlakeOutputs]
+    /// Read the Om configuration from [FilteredFlakeOutputs]
     pub async fn from_flake_outputs<S>(
         cmd: &NixCmd,
         url: &FlakeUrl,
@@ -56,9 +35,10 @@ impl<T> OmConfig<T> {
     ) -> Result<OmConfig<T>, OmConfigError>
     where
         S: AsRef<str>,
-        T: Default + DeserializeOwned,
+        T: Default + DeserializeOwned + std::fmt::Debug,
     {
-        let (config, reference) = find_qualified_attr_in_flake_output(cmd, url, k).await?;
+        let filtered_outputs = FilteredFlakeOutputs::from_nix(cmd, &url.without_attr()).await?;
+        let (config, reference) = filtered_outputs.find_qualified_attr(url, k).await?;
         Ok(OmConfig {
             flake_url: url.without_attr(),
             reference,
@@ -104,4 +84,8 @@ pub enum OmConfigError {
     /// Missing configuration attribute
     #[error("Missing configuration attribute: {0}")]
     MissingConfigAttribute(String),
+
+    /// Nix command error
+    #[error("Nix command error: {0}")]
+    NixCmdError(#[from] NixCmdError),
 }

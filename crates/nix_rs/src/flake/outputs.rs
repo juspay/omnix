@@ -1,11 +1,12 @@
 //! Nix flake outputs
 
 use serde::{Deserialize, Serialize};
-use serde_json::{Map, Value};
 use std::{
     collections::{btree_map::Entry, BTreeMap},
     fmt::Display,
 };
+
+use super::url::FlakeUrl;
 
 /// Absolute path to the `nix` binary compiled with flake schemas support
 ///
@@ -20,7 +21,7 @@ pub const DEFAULT_FLAKE_SCHEMAS: &str = env!("DEFAULT_FLAKE_SCHEMAS");
 /// Represents the "outputs" of a flake
 ///
 /// This structure is currently produced by `nix flake show`, thus to parse it we must toggle serde untagged.
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum FlakeOutputs {
     Doc(String),
     Unknown(Unknown),
@@ -30,34 +31,23 @@ pub enum FlakeOutputs {
     Attrset(BTreeMap<String, FlakeOutputs>),
 }
 
-impl Serialize for FlakeOutputs {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::ser::Serializer,
-    {
-        use serde::ser::SerializeMap;
+/// A filtered version of [FlakeOutputs]
+///
+/// This is used to filter out the `children` and `output` keys from the flake outputs.
+/// Along with filtering out the unnecessary metadata keys from the flake outputs.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum FilteredFlakeOutputs {
+    #[serde(serialize_with = "value_serializer")]
+    Val(Val),
+    Attrset(BTreeMap<String, FilteredFlakeOutputs>),
+}
 
-        match self {
-            Self::Doc(_) => serializer.serialize_none(),
-            Self::Unknown(v) => v.serialize(serializer),
-            Self::Filtered(v) => v.serialize(serializer),
-            Self::Skipped(v) => v.serialize(serializer),
-            Self::Val(v) => v.value.serialize(serializer),
-            Self::Attrset(v) => {
-                let mut map = serializer.serialize_map(Some(v.len()))?;
-                for (k, v) in v {
-                    if let FlakeOutputs::Doc(_) = v {
-                        // Skip Doc variant
-                        // TODO: This can be avoided if [FlakeOutputs] identifies `output`
-                        // key of a given flake output and only serialize the value within it.
-                        continue;
-                    }
-                    map.serialize_entry(k, v)?;
-                }
-                map.end()
-            }
-        }
-    }
+fn value_serializer<S>(val: &Val, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    val.value.serialize(serializer)
 }
 
 impl FlakeOutputs {
@@ -86,63 +76,35 @@ impl FlakeOutputs {
         }
     }
 
-    /// Flatten [FlakeOutputs] returning [Value] by extending the values `children` and `output` keys
-    /// to the parent key.
-    ///
-    /// A `json` that is of the form:
-    /// ```json
-    /// {
-    ///    attr1: {
-    ///       children: {
-    ///         attr2: {
-    ///           leaf: {
-    ///             what: "omnix config",
-    ///             value: true,
-    ///          },
-    ///        },
-    ///     },
-    ///   },
-    /// }
-    /// ```
-    /// will be flattened to:
-    /// ```json
-    /// {
-    ///   attr1: {
-    ///    attr2: true
-    ///  }
-    /// }
-    /// ```
-    pub fn as_flattened_value(&self) -> Result<Value, serde_json::Error> {
-        serde_json::to_value(self).map(Self::flatten_children_and_output)
-    }
-
-    fn flatten_children_and_output(value: Value) -> Value {
-        match value {
-            Value::Object(map) => {
-                let new_map = map.into_iter().fold(Map::new(), |mut acc, (key, value)| {
-                    let new_value = Self::flatten_children_and_output(value);
-                    match key.as_str() {
-                        "children" | "output" => {
-                            if let Value::Object(inner_map) = new_value {
-                                acc.extend(inner_map);
-                            } else {
-                                acc.insert(key, new_value);
+    /// Convert to [FilteredFlakeOutputs]
+    pub fn into_filtered_flake_outputs(self) -> FilteredFlakeOutputs {
+        match self {
+            Self::Val(v) => FilteredFlakeOutputs::Val(v),
+            Self::Attrset(map) => {
+                let filtered_map: BTreeMap<String, FilteredFlakeOutputs> = map
+                    .into_iter()
+                    .fold(BTreeMap::new(), |mut acc, (key, value)| {
+                        let filtered_v = value.into_filtered_flake_outputs();
+                        match key.as_str() {
+                            "children" | "output" => {
+                                if let FilteredFlakeOutputs::Attrset(inner_map) = filtered_v {
+                                    acc.extend(inner_map);
+                                } else {
+                                    acc.insert(key, filtered_v);
+                                }
+                            }
+                            _ => {
+                                if !matches!(filtered_v, FilteredFlakeOutputs::Attrset(ref m) if m.is_empty()) {
+                                    acc.insert(key, filtered_v);
+                                }
                             }
                         }
-                        _ => {
-                            acc.insert(key, new_value);
-                        }
-                    }
-                    acc
-                });
-                Value::Object(new_map)
+                        acc
+                    });
+
+                FilteredFlakeOutputs::Attrset(filtered_map)
             }
-            Value::Array(vec) => Value::Array(
-                vec.into_iter()
-                    .map(Self::flatten_children_and_output)
-                    .collect(),
-            ),
-            _ => value,
+            _ => FilteredFlakeOutputs::Attrset(BTreeMap::new()),
         }
     }
 
@@ -171,6 +133,74 @@ impl FlakeOutputs {
         }
         None
     }
+}
+
+impl FilteredFlakeOutputs {
+    /// Run `nix flake show` on the given flake url and filter the outputs
+    pub async fn from_nix(
+        nix_cmd: &crate::command::NixCmd,
+        flake_url: &super::url::FlakeUrl,
+    ) -> Result<Self, crate::command::NixCmdError> {
+        let v = FlakeOutputs::from_nix(nix_cmd, flake_url).await?;
+        Ok(v.into_filtered_flake_outputs())
+    }
+
+    /// Deserialize the value into the given type
+    pub fn deserialize_into<T>(&self) -> T
+    where
+        T: Default + serde::de::DeserializeOwned,
+    {
+        serde_json::to_value(self)
+            .ok()
+            .and_then(|v| serde_json::from_value(v).ok())
+            .unwrap_or_default()
+    }
+
+    /// Find the qualified attribute in the flake outputs
+    pub async fn find_qualified_attr<T, S>(
+        &self,
+        url: &FlakeUrl,
+        root_attrs: &[S],
+    ) -> Result<(T, Vec<String>), QualifiedAttrError>
+    where
+        S: AsRef<str>,
+        T: Default + serde::de::DeserializeOwned + std::fmt::Debug,
+    {
+        for root_attr in root_attrs {
+            if let Some(v) = self.find_nested_output(root_attr.as_ref()) {
+                return Ok((v, url.get_attr().as_list()));
+            }
+        }
+        match url.get_attr().0 {
+            None => Ok((Default::default(), vec![])),
+            Some(attr) => Err(QualifiedAttrError::UnexpectedAttribute(attr)),
+        }
+    }
+
+    /// Find the nested output in the flake outputs and deserialize it into the given type
+    pub fn find_nested_output<T>(&self, root_attr: &str) -> Option<T>
+    where
+        T: Default + serde::de::DeserializeOwned,
+    {
+        root_attr
+            .split(".")
+            .try_fold(self, |acc, key| acc.get(key))
+            .map(|result| result.deserialize_into())
+    }
+
+    /// Get the value of the given key in the attrset
+    pub fn get(&self, key: &str) -> Option<&FilteredFlakeOutputs> {
+        match self {
+            FilteredFlakeOutputs::Val(_) => None,
+            FilteredFlakeOutputs::Attrset(map) => map.get(key),
+        }
+    }
+}
+#[derive(Debug, thiserror::Error)]
+pub enum QualifiedAttrError {
+    /// The attribute was not found in the flake outputs
+    #[error("Unexpected attribute, when config not present in flake: {0}")]
+    UnexpectedAttribute(String),
 }
 
 /// The metadata of a flake output value which is of non-attrset [Type]
