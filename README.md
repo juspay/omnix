@@ -85,8 +85,8 @@ See `tailwind.config.js` for colour aliases we use throughout the app. Instead o
 
 | Crate                               | Description                                   |
 | ----------------------------------- | --------------------------------------------- |
-| ./crates/nix_rs                     | Rust interface to the Nix command line        |
-| ./crates/nix_health                 | Nix health check library and executable       |
-| ./crates/nixci                      | Define and build CI for Nix projects anywhere |
-| ./crates/flakreate                  | Rich flake templates                          |
+| `./crates/nix_rs`                   | Rust interface to the Nix command line        |
+| `./crates/nix_health`               | Nix health check library and executable       |
+| `./crates/nixci`                    | Define and build CI for Nix projects anywhere |
+| `./crates/flakreate`                | Rich flake templates                          |
 | https://github.com/juspay/direnv-rs | Rust bindings for direnv                      |
