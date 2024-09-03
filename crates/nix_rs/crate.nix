@@ -1,6 +1,7 @@
 { flake
 , pkgs
 , lib
+, rust-project
 , ...
 }:
 
@@ -20,7 +21,8 @@ in
         nix # Tests need nix cli
       ];
       NIX_FLAKE_SCHEMAS_BIN = lib.getExe pkgs.nix-flake-schemas;
-      DEFAULT_FLAKE_SCHEMAS = inputs.flake-schemas;
+      inherit (rust-project.crates."omnix-cli".crane.args)
+        DEFAULT_FLAKE_SCHEMAS;
     };
   };
 }
