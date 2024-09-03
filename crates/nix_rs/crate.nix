@@ -11,11 +11,6 @@ in
 {
   crane = {
     args = {
-      buildInputs = lib.optionals pkgs.stdenv.isDarwin (
-        with pkgs.apple_sdk_frameworks; [
-          IOKit
-        ]
-      );
       nativeBuildInputs = with pkgs; [
         nix # Tests need nix cli
       ];
