@@ -187,3 +187,4 @@ Some real-world examples of how `om ci` is used with specific configurations:
 
 - [github-nix-ci](https://github.com/juspay/github-nix-ci) - A simple NixOS & nix-darwin module for self-hosting GitHub runners
 - [jenkins-nix-ci](https://github.com/juspay/jenkins-nix-ci) - Jenkins NixOS module that supports `nixci` (predecessor of `om ci`) as a Groovy function
+- [cachix-push](https://github.com/juspay/cachix-push) - A flake-parts module that provides an app to enable whitelisted pushing and pinning of store paths to cachix.
