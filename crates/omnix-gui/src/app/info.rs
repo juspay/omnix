@@ -14,7 +14,7 @@ pub fn Info() -> Element {
     let state = AppState::use_state();
     let nix_info = state.nix_info.read();
     rsx! {
-        h1 { class: "text-5xl font-bold", title: title }
+        h1 { class: "text-5xl font-bold", title }
         if nix_info.is_loading_or_refreshing() {
             Loader {}
         }
@@ -30,7 +30,9 @@ fn NixInfoView(info: NixInfo) -> Element {
         div { class: "flex flex-col max-w-prose p-4 space-y-8 bg-white border-2 rounded border-base-400",
             div {
                 b { "Nix Version" }
-                div { class: "p-1 my-1 rounded bg-primary-50", NixVersionView { version: info.nix_version } }
+                div { class: "p-1 my-1 rounded bg-primary-50",
+                    NixVersionView { version: info.nix_version }
+                }
             }
             div {
                 b { "Nix Config" }
@@ -47,7 +49,12 @@ fn NixInfoView(info: NixInfo) -> Element {
 #[component]
 fn NixVersionView(version: NixVersion) -> Element {
     rsx! {
-        a { href: nix_rs::refs::RELEASE_HISTORY, class: "font-mono hover:underline", target: "_blank", "{version}" }
+        a {
+            href: nix_rs::refs::RELEASE_HISTORY,
+            class: "font-mono hover:underline",
+            target: "_blank",
+            "{version}"
+        }
     }
 }
 
@@ -60,7 +67,9 @@ fn NixConfigView(config: NixConfig) -> Element {
                     TableRow { name: "Local System", title: config.system.description, "{config.system.value}" }
                     TableRow { name: "Max Jobs", title: config.max_jobs.description, "{config.max_jobs.value}" }
                     TableRow { name: "Cores per build", title: config.cores.description, "{config.cores.value}" }
-                    TableRow { name: "Nix Caches", title: config.substituters.description, ConfigValList { items: config.substituters.value } }
+                    TableRow { name: "Nix Caches", title: config.substituters.description,
+                        ConfigValList { items: config.substituters.value }
+                    }
                 }
             }
         }
@@ -84,10 +93,18 @@ fn NixEnvView(env: NixEnv) -> Element {
         div { class: "py-1 my-1 rounded bg-primary-50",
             table { class: "text-right",
                 tbody {
-                    TableRow { name: "Current User", title: "Logged-in user", code { "{env.current_user}" } }
-                    TableRow { name: "OS", title: "Operating System", code { "{env.os}" } }
-                    TableRow { name: "Total disk space", title: "Total disk space on the current machine", code { "{env.total_disk_space}" } }
-                    TableRow { name: "Total RAM", title: "Total memory on the current machine", code { "{env.total_memory}" } }
+                    TableRow { name: "Current User", title: "Logged-in user",
+                        code { "{env.current_user}" }
+                    }
+                    TableRow { name: "OS", title: "Operating System",
+                        code { "{env.os}" }
+                    }
+                    TableRow { name: "Total disk space", title: "Total disk space on the current machine",
+                        code { "{env.total_disk_space}" }
+                    }
+                    TableRow { name: "Total RAM", title: "Total memory on the current machine",
+                        code { "{env.total_memory}" }
+                    }
                 }
             }
         }
