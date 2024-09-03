@@ -16,12 +16,27 @@
       crateNixFile = "crate.nix";
     };
 
-    packages =
+    checks =
       let
         inherit (config.rust-project) crates;
       in
       {
-        default = crates."omnix-cli".crane.outputs.drv.crate.overrideAttrs (oa: {
+        # Clippy checks
+        # TODO: Remove after https://github.com/juspay/rust-flake/issues/23
+        omnix-cli-clippy = crates."omnix-cli".crane.outputs.drv.clippy;
+        omnix-common-clippy = crates."omnix-common".crane.outputs.drv.clippy;
+        nix_rs-clippy = crates."nix_rs".crane.outputs.drv.clippy;
+        nixci-clippy = crates."nixci".crane.outputs.drv.clippy;
+        nix_health-clippy = crates."nix_health".crane.outputs.drv.clippy;
+      };
+
+    packages =
+      let
+        inherit (config.rust-project) crates;
+      in
+      rec {
+        default = omnix-cli;
+        omnix-cli = crates."omnix-cli".crane.outputs.drv.crate.overrideAttrs (oa: {
           nativeBuildInputs = (oa.nativeBuildInputs or [ ]) ++ [ pkgs.installShellFiles ];
           postInstall = ''
             installShellCompletion --cmd om \
@@ -31,10 +46,15 @@
           '';
         });
 
-        # As autoWire is disabled for omnix-cli, let's check clippy and doc here
-        omnix-cli-clippy = crates."omnix-cli".crane.outputs.drv.clippy;
+        # Rust docs
+        # TODO: Remove after https://github.com/juspay/rust-flake/issues/23
         omnix-cli-doc = crates."omnix-cli".crane.outputs.drv.doc;
+        omnix-common-doc = crates."omnix-common".crane.outputs.drv.doc;
+        nix_rs-doc = crates."nix_rs".crane.outputs.drv.doc;
+        nixci-doc = crates."nixci".crane.outputs.drv.doc;
+        nix_health-doc = crates."nix_health".crane.outputs.drv.doc;
 
+        /*
         gui = crates."omnix-gui".crane.outputs.drv.crate.overrideAttrs (oa: {
           # Copy over assets for the desktop app to access
           installPhase =
@@ -52,6 +72,7 @@
                 --chdir $out/bin
             '';
         });
+        */
 
       };
   };

@@ -107,7 +107,11 @@ pub fn FlakeSchemaView(schema: FlakeSchema) -> Element {
         div {
             h2 { class: "my-2",
                 div { class: "text-xl font-bold text-primary-600", "{system.human_readable()}" }
-                span { class: "font-mono text-xs text-gray-500", "(", "{system }", ")" }
+                span { class: "font-mono text-xs text-gray-500",
+                    "("
+                    "{system }"
+                    ")"
+                }
             }
             div { class: "text-left",
                 BtreeMapView { title: "Packages", tree: schema.packages }
@@ -140,8 +144,8 @@ pub fn FlakeSchemaView(schema: FlakeSchema) -> Element {
 pub fn BtreeMapView(title: &'static str, tree: BTreeMap<String, Val>) -> Element {
     rsx! {
         div {
-            SectionHeading { title: title, extra: tree.len().to_string() }
-            BtreeMapBodyView { tree: tree }
+            SectionHeading { title, extra: tree.len().to_string() }
+            BtreeMapBodyView { tree }
         }
     }
 }

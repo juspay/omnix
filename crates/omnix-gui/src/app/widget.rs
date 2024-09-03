@@ -42,7 +42,7 @@ pub fn FolderDialogButton<F: 'static + FnMut(PathBuf)>(mut handler: F) -> Elemen
                     handler(path)
                 }
             },
-            id: id,
+            id,
             class: "hidden"
         }
         label {

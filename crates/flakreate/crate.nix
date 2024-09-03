@@ -11,5 +11,10 @@
         IOKit
       ]
     );
+    OM_INIT_REGISTRY =
+      lib.cleanSourceWith {
+        name = "flakreate-registry";
+        src = flake.inputs.self + /crates/flakreate/registry;
+      };
   };
 }

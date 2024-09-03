@@ -11,7 +11,7 @@ pub fn Health() -> Element {
     let health_checks = state.health_checks.read();
     let title = "Nix Health";
     rsx! {
-        h1 { class: "text-5xl font-bold", title: title }
+        h1 { class: "text-5xl font-bold", title }
         if health_checks.is_loading_or_refreshing() {
             Loader {}
         }
@@ -61,8 +61,12 @@ fn ViewCheck(check: Check) -> Element {
 #[component]
 pub fn CheckResultSummaryView(green: bool) -> Element {
     if green {
-        rsx! { span { class: "text-green-500", "✓" } }
+        rsx! {
+            span { class: "text-green-500", "✓" }
+        }
     } else {
-        rsx! { span { class: "text-red-500", "✗" } }
+        rsx! {
+            span { class: "text-red-500", "✗" }
+        }
     }
 }

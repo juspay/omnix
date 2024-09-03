@@ -39,6 +39,10 @@ jobs:
             --extra-access-tokens ${{ secrets.GITHUB_TOKEN }} \
             run --systems "path:$HOME/systems"
 
+      # Run `om show` on self
+      - name: om show
+        run: nix run . show .
+
       # Upload static binary for the next job.
       - name: "static-binary: Build"
         if: matrix.system != 'x86_64-darwin'
