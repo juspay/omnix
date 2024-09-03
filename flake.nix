@@ -22,7 +22,8 @@
 
     # TODO: Use upstream after https://github.com/NixOS/nix/pull/8892
     # Note: This version of nix is only used to run `nix flake show` in omnix-cli
-    # Also note: Using shivaraj-bh fork of nix which fixes x86_64-darwin on top of github:DeterminateSystems/nix-src/flake-schemas
+    # Also note: shivaraj-bh fork of nix is used to fix x86_64-darwin build
+    # and to support value as a filed in leaf node (see https://github.com/shivaraj-bh/nix/commit/1d23c1e871981f5666a12c4409bd0574fc1e1e02)
     nix.url = "github:shivaraj-bh/nix/flake-schemas";
     nix.inputs.flake-parts.follows = "flake-parts";
   };
