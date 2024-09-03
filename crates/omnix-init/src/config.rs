@@ -69,10 +69,12 @@ pub fn prompt_value(param: &Param) -> anyhow::Result<()> {
             }
         }
         Action::Retain { files, default } => {
-            let v = inquire::Confirm::new(&param.name)
-                .with_help_message(&param.description)
-                .with_default(default.unwrap_or(false))
-                .prompt()?;
+            let mut p = inquire::Confirm::new(&param.name).with_help_message(&param.description);
+            if let Some(def) = default {
+                p = p.with_default(*def);
+            }
+
+            let v = p.prompt()?;
             if v {
                 println!("Retain files: {:?}", files);
             } else {
