@@ -18,9 +18,11 @@ in
           CoreFoundation
         ]
       );
-      NIX_FLAKE_SCHEMAS_BIN = lib.getExe pkgs.nix-flake-schemas;
-      inherit (rust-project.crates."omnix-cli".crane.args)
-        DEFAULT_FLAKE_SCHEMAS;
+      inherit (rust-project.crates."nix_rs".crane.args)
+        DEVOUR_FLAKE
+        DEFAULT_FLAKE_SCHEMAS
+        NIX_FLAKE_SCHEMAS_BIN
+        ;
       nativeBuildInputs = with pkgs; [
         nix # Tests need nix cli
       ];
