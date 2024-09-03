@@ -16,6 +16,15 @@
       crateNixFile = "crate.nix";
     };
 
+    checks =
+      let
+        inherit (config.rust-project) crates;
+      in
+      {
+        # Clippy checks
+        omnix-cli-clippy = crates."omnix-cli".crane.outputs.drv.clippy;
+      };
+
     packages =
       let
         inherit (config.rust-project) crates;
@@ -31,8 +40,7 @@
           '';
         });
 
-        # As autoWire is disabled for omnix-cli, let's check clippy and doc here
-        omnix-cli-clippy = crates."omnix-cli".crane.outputs.drv.clippy;
+        # Rust docs
         omnix-cli-doc = crates."omnix-cli".crane.outputs.drv.doc;
 
         /*
