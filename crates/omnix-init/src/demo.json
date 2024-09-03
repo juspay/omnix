@@ -1,0 +1,25 @@
+[
+  {
+    "description": "Your unix username",
+    "name": "username",
+    "placeholder": "runner"
+  },
+  {
+    "default": false,
+    "description": "Include NeoVIM configuration?",
+    "files": [
+      "neovim.nix"
+    ],
+    "name": "include-neovim"
+  },
+  {
+    "description": "Your full name",
+    "name": "git-name",
+    "placeholder": "John Doe"
+  },
+  {
+    "description": "Your email address",
+    "name": "git-email",
+    "placeholder": "john.doe@gmail.com"
+  }
+]
