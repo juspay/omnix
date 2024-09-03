@@ -39,19 +39,19 @@
           Configuration for `omnix` CLI.
         '';
         inventory = output:
-        let
-          recurse = prefix: attrs: flake-schemas.lib.mkChildren (builtins.mapAttrs
-            (attrName: attrs:
-              if (builtins.typeOf attrs) != "set" then
-                {
-                  value = attrs;
-                  what = "omnix config";
-                }
-              else
-                recurse (prefix + attrName + ".") attrs
-            )
-            attrs);
-        in
+          let
+            recurse = prefix: attrs: flake-schemas.lib.mkChildren (builtins.mapAttrs
+              (attrName: attrs:
+                if (builtins.typeOf attrs) != "set" then
+                  {
+                    value = attrs;
+                    what = "omnix config";
+                  }
+                else
+                  recurse (prefix + attrName + ".") attrs
+              )
+              attrs);
+          in
           recurse "" output;
       };
 
@@ -61,19 +61,19 @@
           Configuration for `nixci`.
         '';
         inventory = output:
-        let
-          recurse = prefix: attrs: flake-schemas.lib.mkChildren (builtins.mapAttrs
-            (attrName: attrs:
-              if (builtins.typeOf attrs) != "set" then
-                {
-                  value = attrs;
-                  what = "nixci config";
-                }
-              else
-                recurse (prefix + attrName + ".") attrs
-            )
-            attrs);
-        in
+          let
+            recurse = prefix: attrs: flake-schemas.lib.mkChildren (builtins.mapAttrs
+              (attrName: attrs:
+                if (builtins.typeOf attrs) != "set" then
+                  {
+                    value = attrs;
+                    what = "nixci config";
+                  }
+                else
+                  recurse (prefix + attrName + ".") attrs
+              )
+              attrs);
+          in
           recurse "" output;
       };
 
@@ -83,19 +83,19 @@
           Configuration for `nix-health`.
         '';
         inventory = output:
-        let
-          recurse = prefix: attrs: flake-schemas.lib.mkChildren (builtins.mapAttrs
-            (attrName: attrs:
-              if (builtins.typeOf attrs) != "set" then
-                {
-                  value = attrs;
-                  what = "nix-health config";
-                }
-              else
-                recurse (prefix + attrName + ".") attrs
-            )
-            attrs);
-        in
+          let
+            recurse = prefix: attrs: flake-schemas.lib.mkChildren (builtins.mapAttrs
+              (attrName: attrs:
+                if (builtins.typeOf attrs) != "set" then
+                  {
+                    value = attrs;
+                    what = "nix-health config";
+                  }
+                else
+                  recurse (prefix + attrName + ".") attrs
+              )
+              attrs);
+          in
           recurse "" output;
       };
     in
