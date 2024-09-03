@@ -24,6 +24,7 @@
         # Clippy checks
         # TODO: Remove after https://github.com/juspay/rust-flake/issues/23
         omnix-cli-clippy = crates."omnix-cli".crane.outputs.drv.clippy;
+        omnix-init-clippy = crates."omnix-init".crane.outputs.drv.clippy;
         omnix-common-clippy = crates."omnix-common".crane.outputs.drv.clippy;
         nix_rs-clippy = crates."nix_rs".crane.outputs.drv.clippy;
         nixci-clippy = crates."nixci".crane.outputs.drv.clippy;
@@ -46,9 +47,13 @@
           '';
         });
 
+        # TODO: remove this
+        omnix-init = crates."omnix-init".crane.outputs.drv.crate;
+
         # Rust docs
         # TODO: Remove after https://github.com/juspay/rust-flake/issues/23
         omnix-cli-doc = crates."omnix-cli".crane.outputs.drv.doc;
+        omnix-init-doc = crates."omnix-init".crane.outputs.drv.doc;
         omnix-common-doc = crates."omnix-common".crane.outputs.drv.doc;
         nix_rs-doc = crates."nix_rs".crane.outputs.drv.doc;
         nixci-doc = crates."nixci".crane.outputs.drv.doc;
