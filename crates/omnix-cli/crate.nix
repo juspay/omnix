@@ -34,18 +34,19 @@ in
         ) ++ lib.optionals pkgs.stdenv.isLinux [
         pkgsStatic.openssl
       ];
-      OM_INIT_REGISTRY =
-        lib.cleanSourceWith {
-          name = "flakreate-registry";
-          src = flake.inputs.self + /crates/flakreate/registry;
-        };
-      DEFAULT_FLAKE_SCHEMAS = lib.cleanSourceWith {
-        name = "flake-schemas";
-        src = flake.inputs.self + /nix/flake-schemas;
-      };
-      DEVOUR_FLAKE = inputs.devour-flake;
-      OMNIX_SOURCE = inputs.self;
-      NIX_FLAKE_SCHEMAS_BIN = lib.getExe pkgs.nix-flake-schemas;
+
+      inherit (rust-project.crates."nix_rs".crane.args)
+        DEVOUR_FLAKE
+        DEFAULT_FLAKE_SCHEMAS
+        NIX_FLAKE_SCHEMAS_BIN
+        ;
+      inherit (rust-project.crates."nixci".crane.args)
+        OMNIX_SOURCE
+        ;
+      inherit (rust-project.crates."flakreate".crane.args)
+        OM_INIT_REGISTRY
+        ;
+
       # Disable tests due to sandboxing issues; we run them on CI
       # instead.
       doCheck = false;
