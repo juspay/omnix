@@ -35,6 +35,7 @@
         omnix-cli-clippy = crates."omnix-cli".crane.outputs.drv.clippy;
         omnix-cli-doc = crates."omnix-cli".crane.outputs.drv.doc;
 
+        /*
         gui = crates."omnix-gui".crane.outputs.drv.crate.overrideAttrs (oa: {
           # Copy over assets for the desktop app to access
           installPhase =
@@ -52,6 +53,7 @@
                 --chdir $out/bin
             '';
         });
+        */
 
       };
   };
