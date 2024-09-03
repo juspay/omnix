@@ -33,71 +33,36 @@
               })
             output);
       };
-      omSchema = {
+      mkTraverseSchema = name: doc: {
         version = 1;
-        doc = ''
-          Configuration for `omnix` CLI.
-        '';
+        inherit doc;
         inventory = output:
           let
-            recurse = prefix: attrs: flake-schemas.lib.mkChildren (builtins.mapAttrs
-              (attrName: attrs:
-                if (builtins.typeOf attrs) != "set" then
+            traverse = prefix: attrs: flake-schemas.lib.mkChildren (builtins.mapAttrs
+              (attrName: value:
+                if (builtins.typeOf value) != "set" then
                   {
-                    value = attrs;
-                    what = "omnix config";
+                    value = value;
+                    what = "${name} config";
                   }
                 else
-                  recurse (prefix + attrName + ".") attrs
+                  traverse (prefix + attrName + ".") value
               )
               attrs);
           in
-          recurse "" output;
+          traverse "" output;
       };
+      omSchema = mkTraverseSchema "omnix" ''
+        Configuration for `omnix` CLI.
+      '';
 
-      nixciSchema = {
-        version = 1;
-        doc = ''
-          Configuration for `nixci`.
-        '';
-        inventory = output:
-          let
-            recurse = prefix: attrs: flake-schemas.lib.mkChildren (builtins.mapAttrs
-              (attrName: attrs:
-                if (builtins.typeOf attrs) != "set" then
-                  {
-                    value = attrs;
-                    what = "nixci config";
-                  }
-                else
-                  recurse (prefix + attrName + ".") attrs
-              )
-              attrs);
-          in
-          recurse "" output;
-      };
+      nixciSchema = mkTraverseSchema "nixci" ''
+        Configuration for `nixci`.
+      '';
 
-      nixHealthSchema = {
-        version = 1;
-        doc = ''
-          Configuration for `nix-health`.
-        '';
-        inventory = output:
-          let
-            recurse = prefix: attrs: flake-schemas.lib.mkChildren (builtins.mapAttrs
-              (attrName: attrs:
-                if (builtins.typeOf attrs) != "set" then
-                  {
-                    value = attrs;
-                    what = "nix-health config";
-                  }
-                else
-                  recurse (prefix + attrName + ".") attrs
-              )
-              attrs);
-          in
-          recurse "" output;
-      };
+      nixHealthSchema = mkTraverseSchema "nix-health" ''
+        Configuration for `nix-health`.
+      '';
     in
     {
       schemas = flake-schemas.schemas // {
