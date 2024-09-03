@@ -104,23 +104,6 @@
       }
     },
     "flake-schemas": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1725221562,
-        "narHash": "sha256-NnvOT8CJl1QehKJoyqvseGk9jOHzfBfviSwJycqvuLs=",
-        "owner": "shivaraj-bh",
-        "repo": "flake-schemas",
-        "rev": "a357c58f3aeea7b358a7cd1b9ef743cb8b30db95",
-        "type": "github"
-      },
-      "original": {
-        "owner": "shivaraj-bh",
-        "ref": "om-schema",
-        "repo": "flake-schemas",
-        "type": "github"
-      }
-    },
-    "flake-schemas_2": {
       "locked": {
         "lastModified": 1719857163,
         "narHash": "sha256-wM+8JtoKBkahHiKn+EM1ikurMnitwRQrZ91hipJIJK8=",
@@ -172,7 +155,7 @@
         "flake-parts": [
           "flake-parts"
         ],
-        "flake-schemas": "flake-schemas_2",
+        "flake-schemas": "flake-schemas",
         "libgit2": "libgit2",
         "nixpkgs": "nixpkgs",
         "nixpkgs-23-11": "nixpkgs-23-11",
@@ -311,7 +294,6 @@
         "cargo-doc-live": "cargo-doc-live",
         "devour-flake": "devour-flake",
         "flake-parts": "flake-parts",
-        "flake-schemas": "flake-schemas",
         "nix": "nix",
         "nixpkgs": "nixpkgs_2",
         "process-compose-flake": "process-compose-flake",
