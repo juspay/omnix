@@ -122,10 +122,10 @@ impl NixCmd {
     where
         T: serde::de::DeserializeOwned,
     {
-        let mut stdout_stream = self.run_with_args_returning_stdout(args).await?;
+        let mut stdout_handle = self.run_with_args_returning_stdout(args).await?;
         let mut stdout = Vec::new();
 
-        stdout_stream
+        stdout_handle
             .read_to_end(&mut stdout)
             .await
             .map_err(CommandError::ChildProcessError)?;
@@ -139,9 +139,9 @@ impl NixCmd {
         T: std::str::FromStr,
         <T as std::str::FromStr>::Err: std::fmt::Display,
     {
-        let mut stdout_stream = self.run_with_args_returning_stdout(args).await?;
+        let mut stdout_handle = self.run_with_args_returning_stdout(args).await?;
         let mut stdout = Vec::new();
-        stdout_stream
+        stdout_handle
             .read_to_end(&mut stdout)
             .await
             .map_err(CommandError::ChildProcessError)?;
