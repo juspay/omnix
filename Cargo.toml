@@ -4,6 +4,7 @@ resolver = "2"
 members = [
   "crates/omnix-common",
   "crates/omnix-cli",
+  "crates/omnix-init",
   "crates/omnix-gui",
   "crates/nix_rs",
   "crates/nixci",
