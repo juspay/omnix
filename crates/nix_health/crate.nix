@@ -9,7 +9,6 @@ let
   inherit (flake) inputs;
 in
 {
-  autoWire = true;
   crane = {
     args = {
       buildInputs = lib.optionals pkgs.stdenv.isDarwin (
