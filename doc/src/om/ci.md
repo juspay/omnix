@@ -16,7 +16,7 @@ The [stdout] of `om ci run` will be a list of store paths built.
 > [!TIP]
 > If you are familiar with [nixci](https://github.com/srid/nixci), `om ci` is basically the successor to `nixci`.
 
-## Usage
+## Basic Usage {#usage}
 
 `om ci run` accepts any valid [flake URL](https://nixos.asia/en/flake-url) or a Github PR URL.
 
@@ -41,13 +41,13 @@ $ om ci run .#default.dev
 $ om ci run --on ssh://myname@myserver ~/code/myproject
 ```
 
-## Using in Github Actions {#github-actions}
+## Using in Github Actions {#gh}
 
 In addition to serving the purpose of being a "local CI", `om ci` can be used in Github Actions to enable CI for your GitHub repositories.
 
-### Standard Runners {#ghci-standard}
+### Standard Runners {#gh-simple}
 
-If you want to utilize GitHub provided runners, simply add the following to your workflow file,
+Add this to your workflow file (`.github/workflows/ci.yml`) to build all flake outputs using GitHub provided runners:
 
 ```yaml
       - uses: actions/checkout@v4
@@ -57,7 +57,11 @@ If you want to utilize GitHub provided runners, simply add the following to your
       - run: om ci
 ```
 
-### Self-hosted Runners with Job Matrix {#ghci-self}
+### Self-hosted Runners with Job Matrix {#gh-matrix}
+
+Here's a more advanced example that configures a job matrix. This is useful when you want to run the CI on multiple systems (e.g. `aarch64-linux`, `aarch64-darwin`), each captured as a separate job by GitHub, as shown in the screenshot below. It also, incidentally, demonstrates how to use self-hosted runners.
+
+![](../ci-github-matrix.png)
 
 The `om ci gh-matrix` command outputs the matrix JSON for creating [a matrix of job variations](https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/running-variations-of-jobs-in-a-workflow). An example configuration, using self-hosted runners, is shown below.
 
@@ -68,15 +72,15 @@ The `om ci gh-matrix` command outputs the matrix JSON for creating [a matrix of 
 # Run on aarch64-linux and aarch64-darwin
 jobs:
   configure:
-    runs-on: self-hosted
+    runs-on: x86_64-linux
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
      - uses: actions/checkout@v4
      - id: set-matrix
-       run: echo "matrix=$(om ci gh-matrix --systems=aarch64-linux,aarch64-darwin | jq -c .)" >> $GITHUB_OUTPUT
+       run: echo "matrix=$(om ci gh-matrix --systems=x86_64-linux,aarch64-darwin | jq -c .)" >> $GITHUB_OUTPUT
   nix:
-    runs-on: self-hosted
+    runs-on: ${{ matrix.system }}
     needs: configure
     strategy:
       matrix: ${{ fromJson(needs.configure.outputs.matrix) }}
@@ -173,6 +177,7 @@ Some real-world examples of how `om ci` is used with specific configurations:
     - Build all flake outputs, using [devour-flake](https://github.com/srid/devour-flake)[^schema]
       - Then, print the built store paths to stdout
     - Run `nix flake check`
+    - Run user defined [custom steps](#custom)
 
 [^schema]: Support for [flake-schemas](https://github.com/srid/devour-flake/pull/11) is planned
 
