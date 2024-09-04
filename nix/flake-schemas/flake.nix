@@ -53,7 +53,7 @@
           traverse "" output;
       };
       omSchema = mkTraverseSchema "omnix" ''
-        Configuration for `omnix` CLI.
+        Configuration for `omnix`.
       '';
 
       nixciSchema = mkTraverseSchema "nixci" ''
