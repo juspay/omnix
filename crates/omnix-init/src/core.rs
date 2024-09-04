@@ -4,7 +4,11 @@ use crate::config::load_templates;
 use anyhow::Context;
 use serde_json::Value;
 
-pub async fn initialize_template(path: &Path, name: Option<String>) -> anyhow::Result<()> {
+pub async fn initialize_template(
+    path: &Path,
+    name: Option<String>,
+    default_params: &HashMap<String, Value>,
+) -> anyhow::Result<()> {
     println!("Loading registry");
     let templates = load_templates().await?;
 
@@ -22,11 +26,7 @@ pub async fn initialize_template(path: &Path, name: Option<String>) -> anyhow::R
     };
     println!("Selected template: {:?}", template);
 
-    // TODO: dummy
-    let defaults: HashMap<String, Value> =
-        serde_json::from_str(r#"{"git-email": "srid@srid.ca", "param2": true}"#)?;
-
-    template.set_param_values(&defaults);
+    template.set_param_values(default_params);
     for param in template.params.iter_mut() {
         param.set_value_by_prompting()?;
     }
