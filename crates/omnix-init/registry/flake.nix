@@ -41,13 +41,13 @@
               {
                 name = "neovim";
                 description = "Include Neovim configuration";
-                paths = [ "neovim.nix" ];
+                paths = [ "**/neovim.nix" ];
                 value = false;
               }
               {
                 name = "github-ci";
                 description = "Include GitHub Actions workflow configuration";
-                paths = [ ".github" ];
+                paths = [ ".github/**" ];
                 value = false;
               }
             ];
@@ -78,19 +78,19 @@
               {
                 name = "vscode";
                 description = "Include the VSCode settings folder (./.vscode)";
-                paths = [ ".vscode" ];
+                paths = [ ".vscode/**" ];
                 value = true;
               }
               {
                 name = "nix-template";
                 description = "Keep the flake template in the project";
-                paths = [ "template.nix" ];
+                paths = [ "**/template.nix" ];
                 value = false;
               }
               {
                 name = "github-ci";
                 description = "Include GitHub Actions workflow configuration";
-                paths = [ ".github" ];
+                paths = [ ".github/**" ];
                 value = true;
               }
             ];
