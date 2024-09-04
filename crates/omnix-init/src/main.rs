@@ -1,7 +1,7 @@
 use std::{collections::HashMap, path::Path};
 
 use anyhow::Context;
-use omnix_init::{config::load_templates, param};
+use omnix_init::config::load_templates;
 use serde_json::Value;
 
 #[tokio::main]
@@ -19,7 +19,7 @@ async fn main() -> anyhow::Result<()> {
     let defaults: HashMap<String, Value> =
         serde_json::from_str(r#"{"git-email": "srid@srid.ca", "param2": true}"#)?;
 
-    param::set_values(&mut template.params, &defaults);
+    template.set_param_values(&defaults);
     for param in template.params.iter_mut() {
         param.prompt_and_set_value()?;
     }

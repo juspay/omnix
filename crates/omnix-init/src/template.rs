@@ -1,7 +1,12 @@
-use std::path::{Path, PathBuf};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+};
 
 use anyhow::Context;
+use itertools::Itertools;
 use serde::Deserialize;
+use serde_json::Value;
 
 use crate::param;
 
@@ -30,8 +35,31 @@ impl Template {
             .with_context(|| "Unable to copy files")?;
 
         // Do param replacements
-        param::apply_actions(&self.params, out_dir).await?;
+        self.apply_actions(out_dir).await?;
 
+        Ok(())
+    }
+
+    /// Set 'default' fields of prompts to the user-defined values
+    ///
+    /// Given a list of prompts, and the user-defined default values for a subset of them (as JSON-parsed `HashMap<String, Value>` where String is the prompt name and serde 'Value' is the 'default' field of action), mutate the prompts to set those 'default' fields
+    pub fn set_param_values(&mut self, values: &HashMap<String, Value>) {
+        for param in self.params.iter_mut() {
+            if let Some(v) = values.get(&param.name) {
+                param.set_value(v);
+            }
+        }
+    }
+
+    pub async fn apply_actions(&self, out_dir: &Path) -> anyhow::Result<()> {
+        for param in self.params.iter().sorted_by(|a, b| a.action.cmp(&b.action)) {
+            println!("Applying param: {:?}", param);
+            param
+                .action
+                .apply(out_dir.as_ref())
+                .await
+                .with_context(|| format!("Unable to apply param {}", param.name))?;
+        }
         Ok(())
     }
 }

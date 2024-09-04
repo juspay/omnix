@@ -1,9 +1,5 @@
-use anyhow::Context;
-use itertools::Itertools;
 use serde::Deserialize;
 use serde_json::Value;
-use std::collections::HashMap;
-use std::path::Path;
 
 use crate::action::Action;
 
@@ -15,31 +11,8 @@ pub struct Param {
     pub action: Action,
 }
 
-/// Set 'default' fields of prompts to the user-defined values
-///
-/// Given a list of prompts, and the user-defined default values for a subset of them (as JSON-parsed `HashMap<String, Value>` where String is the prompt name and serde 'Value' is the 'default' field of action), mutate the prompts to set those 'default' fields
-pub fn set_values(prompts: &mut [Param], values: &HashMap<String, Value>) {
-    for prompt in prompts.iter_mut() {
-        if let Some(v) = values.get(&prompt.name) {
-            prompt.set_value(v);
-        }
-    }
-}
-
-pub async fn apply_actions(params: &[Param], out_dir: &Path) -> anyhow::Result<()> {
-    for param in params.iter().sorted_by(|a, b| a.action.cmp(&b.action)) {
-        println!("Applying param: {:?}", param);
-        param
-            .action
-            .apply(out_dir.as_ref())
-            .await
-            .with_context(|| format!("Unable to apply param {}", param.name))?;
-    }
-    Ok(())
-}
-
 impl Param {
-    fn set_value(&mut self, val: &Value) {
+    pub fn set_value(&mut self, val: &Value) {
         match &mut self.action {
             Action::Replace { value, .. } => {
                 *value = val.as_str().map(|s| s.to_string());
