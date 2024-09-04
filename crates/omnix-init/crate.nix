@@ -18,5 +18,10 @@
       DEFAULT_FLAKE_SCHEMAS
       NIX_FLAKE_SCHEMAS_BIN
       ;
+    OM_INIT_REGISTRY =
+      lib.cleanSourceWith {
+        name = "om-init-registry";
+        src = flake.inputs.self + /crates/omnix-init/registry;
+      };
   };
 }

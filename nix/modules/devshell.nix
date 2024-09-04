@@ -18,11 +18,14 @@ in
         self'.devShells.rust
       ];
       inherit (config.rust-project.crates."omnix-cli".crane.args)
-        OM_INIT_REGISTRY
         NIX_FLAKE_SCHEMAS_BIN
         DEFAULT_FLAKE_SCHEMAS
         OMNIX_SOURCE
         ;
+      # TODO: move up
+      inherit (config.rust-project.crates."omnix-init".crane.args)
+        OM_INIT_REGISTRY;
+
       packages = with pkgs; [
         just
         cargo-watch
