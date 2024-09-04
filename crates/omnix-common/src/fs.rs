@@ -1,7 +1,11 @@
 //! Filesystem utilities
 use async_walkdir::WalkDir;
 use futures_lite::stream::StreamExt;
-use std::{fs::Permissions, os::unix::fs::PermissionsExt, path::Path};
+use std::{
+    fs::Permissions,
+    os::unix::fs::PermissionsExt,
+    path::{Path, PathBuf},
+};
 use tokio::fs;
 
 /// Copy a directory recursively
@@ -33,4 +37,18 @@ pub async fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> anyho
     }
 
     Ok(())
+}
+
+/// Recursively find files in a directory
+pub async fn find_files(dir: impl AsRef<Path>) -> anyhow::Result<Vec<PathBuf>> {
+    let mut files = Vec::new();
+    let mut walker = WalkDir::new(dir);
+
+    while let Some(entry) = walker.next().await {
+        let entry = entry?;
+        let path = entry.path();
+        files.push(path.to_path_buf());
+    }
+
+    Ok(files)
 }

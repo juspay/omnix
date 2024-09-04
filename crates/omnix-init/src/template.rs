@@ -1,5 +1,6 @@
 use std::path::{Path, PathBuf};
 
+use anyhow::Context;
 use serde::Deserialize;
 
 use crate::param;
@@ -22,9 +23,15 @@ pub struct NixTemplate {
 
 impl Template {
     // Scaffold the [Template] at the given path.
-    pub async fn scaffold_at(&self, out_dir: impl AsRef<Path>) -> anyhow::Result<()> {
+    pub async fn scaffold_at(&self, out_dir: &Path) -> anyhow::Result<()> {
         // Recursively copy the self.template.path to the output directory
-        omnix_common::fs::copy_dir_all(&self.template.path, out_dir).await?;
+        omnix_common::fs::copy_dir_all(&self.template.path, out_dir)
+            .await
+            .with_context(|| "Unable to copy files")?;
+
+        // Do param replacements
+        param::apply_actions(&self.params, out_dir).await?;
+
         Ok(())
     }
 }

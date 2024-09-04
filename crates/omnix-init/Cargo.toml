@@ -23,6 +23,7 @@ colored = { workspace = true }
 console = { workspace = true }
 glob = { workspace = true }
 inquire = { workspace = true }
+itertools = { workspace = true }
 nix_rs = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }

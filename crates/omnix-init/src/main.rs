@@ -1,5 +1,6 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, path::Path};
 
+use anyhow::Context;
 use omnix_init::{config::load_templates, param};
 use serde_json::Value;
 
@@ -19,11 +20,14 @@ async fn main() -> anyhow::Result<()> {
         serde_json::from_str(r#"{"git-email": "srid@srid.ca", "param2": true}"#)?;
 
     param::set_values(&mut template.params, &defaults);
-    for param in template.params.iter() {
-        let _action = param.prompt_value()?;
+    for param in template.params.iter_mut() {
+        param.prompt_and_set_value()?;
     }
 
-    template.scaffold_at("/tmp/init").await?;
+    template
+        .scaffold_at(Path::new("/tmp/init"))
+        .await
+        .with_context(|| "Unable to scaffold")?;
 
     // print welcomeText
     if let Some(welcome_text) = template.template.welcome_text {
