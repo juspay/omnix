@@ -21,7 +21,7 @@ async fn main() -> anyhow::Result<()> {
 
     template.set_param_values(&defaults);
     for param in template.params.iter_mut() {
-        param.prompt_and_set_value()?;
+        param.set_value_by_prompting()?;
     }
 
     template

@@ -24,7 +24,7 @@ impl Param {
     }
 
     /// Prompt the user for a value for this [Param] using inquire crate.
-    pub fn prompt_and_set_value(&mut self) -> anyhow::Result<()> {
+    pub fn set_value_by_prompting(&mut self) -> anyhow::Result<()> {
         match &mut self.action {
             Action::Replace { placeholder, value } => {
                 let mut p = inquire::Text::new(&self.description).with_placeholder(placeholder);
