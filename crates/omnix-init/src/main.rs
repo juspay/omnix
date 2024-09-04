@@ -14,12 +14,20 @@ async fn main() -> anyhow::Result<()> {
     let mut template = templates.get(template.as_str()).cloned().unwrap();
     println!("Selected template: {:?}", template);
 
+    // TODO: dummy
     let defaults: HashMap<String, Value> =
         serde_json::from_str(r#"{"git-email": "srid@srid.ca", "param2": true}"#)?;
 
     param::set_values(&mut template.params, &defaults);
     for param in template.params.iter() {
         let _action = param.prompt_value()?;
+    }
+
+    template.scaffold_at("/tmp/init").await?;
+
+    // print welcomeText
+    if let Some(welcome_text) = template.template.welcome_text {
+        println!("\n---\n{}\n---", welcome_text);
     }
 
     Ok(())

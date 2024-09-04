@@ -3204,7 +3204,6 @@ name = "nixci"
 version = "1.1.0"
 dependencies = [
  "anyhow",
- "async-walkdir",
  "clap",
  "colored",
  "futures-lite",
@@ -3385,11 +3384,15 @@ dependencies = [
 name = "omnix-common"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
+ "async-walkdir",
  "clap",
  "clap-verbosity-flag",
+ "futures-lite",
  "nix_rs",
  "serde",
  "thiserror",
+ "tokio",
  "tracing",
  "tracing-subscriber",
  "which",
@@ -3438,6 +3441,7 @@ dependencies = [
  "glob",
  "inquire",
  "nix_rs",
+ "omnix-common",
  "serde",
  "serde_json",
  "thiserror",
