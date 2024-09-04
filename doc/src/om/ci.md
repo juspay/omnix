@@ -125,7 +125,7 @@ You can define custom CI actions in your flake, which will be run as part of `om
       dir = ".";
       steps = {
         # The build step is enabled by default. It builds all flake outputs.
-        build.enable = true
+        build.enable = true;
         # Other steps include: lockfile & flake-check
 
         # Users can define custom steps to run any arbitrary flake app or devShell command.
@@ -147,7 +147,7 @@ You can define custom CI actions in your flake, which will be run as part of `om
         };
       };
     };
-  }
+  };
 }
 ```
 
