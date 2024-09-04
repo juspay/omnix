@@ -20,12 +20,12 @@ anyhow = { workspace = true }
 clap = { workspace = true }
 clap-verbosity-flag = { workspace = true }
 colored = { workspace = true }
-flakreate = { workspace = true }
 human-panic = { workspace = true }
 nixci = { workspace = true }
 nix_health = { workspace = true }
 nix_rs = { workspace = true }
 omnix-common = { workspace = true }
+omnix-init = { workspace = true }
 tabled = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
