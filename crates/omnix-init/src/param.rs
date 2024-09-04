@@ -58,7 +58,7 @@ impl Param {
     pub fn prompt_value(&self) -> anyhow::Result<Option<Action>> {
         match &self.action {
             Action::Replace { placeholder, value } => {
-                let mut p = inquire::Text::new(&self.description).with_placeholder(&placeholder);
+                let mut p = inquire::Text::new(&self.description).with_placeholder(placeholder);
                 if let Some(def) = value.as_ref() {
                     p = p.with_default(def);
                 }
@@ -66,10 +66,10 @@ impl Param {
                 let to = p.prompt()?;
                 if !to.is_empty() {
                     println!("Replace '{}' with '{}'", placeholder, to);
-                    return Ok(Some(Action::Replace {
+                    Ok(Some(Action::Replace {
                         placeholder: placeholder.clone(),
                         value: Some(to),
-                    }));
+                    }))
                 } else {
                     Ok(None)
                 }
@@ -86,10 +86,10 @@ impl Param {
                 } else {
                     println!("Delete paths: {:?}", paths);
                 }
-                return Ok(Some(Action::Retain {
+                Ok(Some(Action::Retain {
                     paths: paths.clone(),
                     value: Some(v),
-                }));
+                }))
             }
         }
     }
