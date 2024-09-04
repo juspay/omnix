@@ -40,14 +40,16 @@ pub async fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> anyho
 }
 
 /// Recursively find files in a directory
-pub async fn find_files(dir: impl AsRef<Path>) -> anyhow::Result<Vec<PathBuf>> {
+///
+/// Returned list of files are relative to the given directory.
+pub async fn find_files(dir: impl AsRef<Path> + Copy) -> anyhow::Result<Vec<PathBuf>> {
     let mut files = Vec::new();
     let mut walker = WalkDir::new(dir);
 
     while let Some(entry) = walker.next().await {
         let entry = entry?;
         let path = entry.path();
-        files.push(path.to_path_buf());
+        files.push(path.strip_prefix(dir)?.to_path_buf());
     }
 
     Ok(files)

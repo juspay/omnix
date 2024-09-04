@@ -1,3 +1,5 @@
+use glob::Pattern;
+use itertools::Itertools;
 use serde::Deserialize;
 use std::cmp::Ordering;
 use std::path::{Path, PathBuf};
@@ -84,10 +86,27 @@ impl Action {
             }
             Action::Retain { paths, value } => {
                 if *value == Some(false) {
-                    // TODO: `paths` are just suffixes; this should match that.
+                    let files = omnix_common::fs::find_files(out_dir).await?;
+                    // Build glob patterns from paths
+                    let mut pats = vec![];
                     for path in paths.iter() {
-                        let path = out_dir.join(path);
-                        if path.exists() {
+                        let path = path.to_string_lossy();
+                        pats.push(Pattern::new(path.as_ref())?);
+                    }
+                    let files_to_delete = files
+                        .iter()
+                        .filter(|file| pats.iter().any(|pat| pat.matches_path(file)))
+                        .collect::<Vec<_>>();
+                    if files_to_delete.is_empty() {
+                        anyhow::bail!("No paths matched in {:?}", files);
+                    };
+                    // Iterating in reverse-sorted order ensures that children gets deleted before their parent folders.
+                    for file in files_to_delete.iter().sorted().rev() {
+                        let path = out_dir.join(file);
+                        println!("Deleting path {:?}", path);
+                        if path.is_dir() {
+                            fs::remove_dir(path).await?;
+                        } else {
                             fs::remove_file(path).await?;
                         }
                     }
