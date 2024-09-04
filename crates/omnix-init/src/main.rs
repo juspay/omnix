@@ -8,9 +8,9 @@ fn main() -> anyhow::Result<()> {
     let defaults: HashMap<String, Value> =
         serde_json::from_str(r#"{"git-email": "srid@srid.ca", "param2": true}"#)?;
 
-    param::set_defaults(&mut params, &defaults);
+    param::set_values(&mut params, &defaults);
     for param in params.iter() {
-        param.prompt_value()?;
+        let _action = param.prompt_value()?;
     }
 
     Ok(())

@@ -8,8 +8,8 @@
   {
     name = "include-neovim";
     description = "Include NeoVIM configuration?";
-    files = [ "neovim.nix" ];
-    default = false;
+    paths = [ "neovim.nix" ];
+    value = false;
   }
   {
     name = "git-name";

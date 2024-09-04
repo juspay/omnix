@@ -5,12 +5,12 @@
     "placeholder": "runner"
   },
   {
-    "default": false,
     "description": "Include NeoVIM configuration?",
-    "files": [
+    "name": "include-neovim",
+    "paths": [
       "neovim.nix"
     ],
-    "name": "include-neovim"
+    "value": false
   },
   {
     "description": "Your full name",
