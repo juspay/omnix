@@ -47,7 +47,7 @@
               {
                 name = "github-ci";
                 description = "Include GitHub Actions workflow configuration";
-                paths = [ ".github/**" ];
+                paths = [ ".github" ];
                 value = false;
               }
             ];
@@ -78,7 +78,7 @@
               {
                 name = "vscode";
                 description = "Include the VSCode settings folder (./.vscode)";
-                paths = [ ".vscode/**" ];
+                paths = [ ".vscode" ];
                 value = true;
               }
               {
@@ -90,7 +90,7 @@
               {
                 name = "github-ci";
                 description = "Include GitHub Actions workflow configuration";
-                paths = [ ".github/**" ];
+                paths = [ ".github" ];
                 value = true;
               }
             ];

@@ -58,11 +58,14 @@ impl Action {
         match &self {
             Action::Replace { placeholder, value } => {
                 if let Some(value) = value.as_ref() {
-                    let files = omnix_common::fs::find_files(out_dir).await?;
+                    let files = omnix_common::fs::find_paths(out_dir).await?;
 
                     // Replace in content of files
                     for file in files.iter() {
                         let file_path = &out_dir.join(file);
+                        if !file_path.is_file() {
+                            continue;
+                        }
                         let content = fs::read_to_string(file_path).await?;
                         if content.contains(placeholder) {
                             tracing::info!(
@@ -98,7 +101,7 @@ impl Action {
             Action::Retain { paths, value } => {
                 if *value == Some(false) {
                     // Get files matching
-                    let files = omnix_common::fs::find_files(out_dir).await?;
+                    let files = omnix_common::fs::find_paths(out_dir).await?;
                     let set = build_glob_set(paths)?;
                     let files_to_delete = files
                         .iter()
@@ -111,11 +114,7 @@ impl Action {
                     for file in files_to_delete.iter().sorted().rev() {
                         let path = out_dir.join(file);
                         tracing::info!("   Deleting path {}", file.display());
-                        if path.is_dir() {
-                            fs::remove_dir(path).await?;
-                        } else {
-                            fs::remove_file(path).await?;
-                        }
+                        omnix_common::fs::remove_all(path).await?;
                     }
                 }
             }

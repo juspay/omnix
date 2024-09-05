@@ -1,5 +1,6 @@
 use crate::command::core::om;
 use assert_cmd::Command;
+use assert_fs::prelude::PathChild;
 use predicates::str::contains;
 
 /// `om init` runs and successfully initializes a template
@@ -22,6 +23,10 @@ fn om_init() -> anyhow::Result<()> {
         ])
         .assert()
         .success();
+
+    // File inclusion checks
+    // Fail if .vscode/ directory exists in temp_dir
+    assert!(!temp_dir.child(".vscode").exists());
 
     // Run the generated template, and compare output.
     // Is there a better way of doing these checks? Property tests + ?

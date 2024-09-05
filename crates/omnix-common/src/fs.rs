@@ -39,20 +39,29 @@ pub async fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> anyho
     Ok(())
 }
 
-/// Recursively find files in a directory
+/// Recursively find paths under a directory
 ///
-/// Returned list of files are relative to the given directory.
-pub async fn find_files(dir: impl AsRef<Path> + Copy) -> anyhow::Result<Vec<PathBuf>> {
-    let mut files = Vec::new();
+/// Returned list of files or directories are relative to the given directory.
+pub async fn find_paths(dir: impl AsRef<Path> + Copy) -> anyhow::Result<Vec<PathBuf>> {
+    let mut paths = Vec::new();
     let mut walker = WalkDir::new(dir);
 
     while let Some(entry) = walker.next().await {
         let entry = entry?;
-        if entry.file_type().await?.is_file() {
-            let path = entry.path();
-            files.push(path.strip_prefix(dir)?.to_path_buf());
-        }
+        let path = entry.path();
+        paths.push(path.strip_prefix(dir)?.to_path_buf());
     }
 
-    Ok(files)
+    Ok(paths)
+}
+
+/// Recursively delete the path
+pub async fn remove_all(path: impl AsRef<Path>) -> anyhow::Result<()> {
+    let path = path.as_ref();
+    if path.is_dir() {
+        fs::remove_dir_all(path).await?;
+    } else {
+        fs::remove_file(path).await?;
+    }
+    Ok(())
 }
