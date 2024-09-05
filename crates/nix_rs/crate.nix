@@ -9,6 +9,7 @@ let
   inherit (flake) inputs;
 in
 {
+  autoWire = [ "doc" "clippy" ];
   crane = {
     args = {
       nativeBuildInputs = with pkgs; [
