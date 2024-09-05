@@ -1,8 +1,8 @@
-use glob::Pattern;
+use globset::{Glob, GlobSetBuilder};
 use itertools::Itertools;
 use serde::Deserialize;
 use std::cmp::Ordering;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use tokio::fs;
 
 #[derive(Deserialize, Debug, Clone, PartialEq, Eq)]
@@ -19,7 +19,8 @@ pub enum Action {
     /// Delete 'files' unless 'default' is true
     Retain {
         /// The file names (suffixes) to retain or delete
-        paths: Vec<PathBuf>,
+        paths: Vec<Glob>,
+        /// Whether to retain or delete
         #[serde(default)]
         value: Option<bool>,
     },
@@ -44,6 +45,14 @@ impl PartialOrd for Action {
 }
 
 impl Action {
+    /// Whether there is a current value in this action
+    pub fn has_value(&self) -> bool {
+        match self {
+            Action::Replace { value, .. } => value.is_some(),
+            Action::Retain { value, .. } => value.is_some(),
+        }
+    }
+
     /// Apply the [Action] to the given directory
     pub async fn apply(&self, out_dir: &Path) -> anyhow::Result<()> {
         match &self {
@@ -86,16 +95,12 @@ impl Action {
             }
             Action::Retain { paths, value } => {
                 if *value == Some(false) {
+                    // Get files matching
                     let files = omnix_common::fs::find_files(out_dir).await?;
-                    // Build glob patterns from paths
-                    let mut pats = vec![];
-                    for path in paths.iter() {
-                        let path = path.to_string_lossy();
-                        pats.push(Pattern::new(path.as_ref())?);
-                    }
+                    let set = build_glob_set(paths)?;
                     let files_to_delete = files
                         .iter()
-                        .filter(|file| pats.iter().any(|pat| pat.matches_path(file)))
+                        .filter(|file| set.is_match(file))
                         .collect::<Vec<_>>();
                     if files_to_delete.is_empty() {
                         anyhow::bail!("No paths matched in {:?}", files);
@@ -115,4 +120,13 @@ impl Action {
         }
         Ok(())
     }
+}
+
+// Combine multiple glob patterns into a single set
+fn build_glob_set(globs: &[Glob]) -> anyhow::Result<globset::GlobSet> {
+    let mut builder = GlobSetBuilder::new();
+    for g in globs.iter() {
+        builder.add(g.clone());
+    }
+    Ok(builder.build()?)
 }

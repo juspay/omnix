@@ -8,6 +8,7 @@ pub async fn initialize_template(
     path: &Path,
     name: Option<String>,
     default_params: &HashMap<String, Value>,
+    non_interactive: bool,
 ) -> anyhow::Result<()> {
     println!("Loading registry");
     let templates = load_templates().await?;
@@ -27,8 +28,20 @@ pub async fn initialize_template(
     println!("Selected template: {:?}", template);
 
     template.set_param_values(default_params);
-    for param in template.params.iter_mut() {
-        param.set_value_by_prompting()?;
+
+    if non_interactive {
+        for param in template.params.iter() {
+            if !param.action.has_value() {
+                return Err(anyhow::anyhow!(
+                    "Non-interactive mode requires all parameters to be set; but {} is missing",
+                    param.name
+                ));
+            }
+        }
+    } else {
+        for param in template.params.iter_mut() {
+            param.set_value_by_prompting()?;
+        }
     }
 
     template

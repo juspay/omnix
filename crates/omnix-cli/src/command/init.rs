@@ -20,13 +20,22 @@ pub struct InitCommand {
     /// Parameter values to use for the template by default.
     #[arg(long = "params")]
     params: Params,
+
+    /// Whether to disable all prompting, making the command non-interactive
+    #[arg(long = "non-interactive")]
+    non_interactive: bool,
 }
 
 impl InitCommand {
     pub async fn run(&self) -> anyhow::Result<()> {
         tracing::warn!("\n  !! WARNING: `om init` is still under development !!\n");
-        omnix_init::core::initialize_template(&self.path, self.template.clone(), &self.params.0)
-            .await
+        omnix_init::core::initialize_template(
+            &self.path,
+            self.template.clone(),
+            &self.params.0,
+            self.non_interactive,
+        )
+        .await
     }
 }
 
