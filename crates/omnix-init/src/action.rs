@@ -62,31 +62,33 @@ impl Action {
 
                     // Replace in content of files
                     for file in files.iter() {
-                        if file.is_file() {
-                            let content = fs::read_to_string(file).await?;
-                            if content.contains(placeholder) {
-                                println!(
-                                    "Replacing '{}' with '{}' in {:?}",
-                                    placeholder, value, file
-                                );
-                                let content = content.replace(placeholder, value);
-                                fs::write(file, content).await?;
-                            }
+                        let file_path = &out_dir.join(file);
+                        let content = fs::read_to_string(file_path).await?;
+                        if content.contains(placeholder) {
+                            tracing::info!(
+                                "a   Replacing '{}' with '{}' in {}",
+                                placeholder,
+                                value,
+                                file.display()
+                            );
+                            let content = content.replace(placeholder, value);
+                            fs::write(file_path, content).await?;
                         }
                     }
                     // Replace in filename of files
                     for file in files.iter() {
+                        let file_path = &out_dir.join(file);
                         if let Some(file_name) = file.file_name().map(|f| f.to_string_lossy()) {
                             if file_name.contains(placeholder) {
                                 let new_name = file_name.replace(placeholder, value);
-                                let new_path = file.with_file_name(new_name);
+                                let new_path = file_path.with_file_name(new_name);
                                 if file != &new_path {
-                                    println!(
-                                        "Renaming '{}' to '{}'",
-                                        file.display(),
+                                    tracing::info!(
+                                        "   Renaming '{}' to '{}'",
+                                        file_path.display(),
                                         new_path.display()
                                     );
-                                    fs::rename(file, new_path).await?;
+                                    fs::rename(file_path, new_path).await?;
                                 }
                             }
                         }
@@ -108,7 +110,7 @@ impl Action {
                     // Iterating in reverse-sorted order ensures that children gets deleted before their parent folders.
                     for file in files_to_delete.iter().sorted().rev() {
                         let path = out_dir.join(file);
-                        println!("Deleting path {:?}", path);
+                        tracing::info!("   Deleting path {}", file.display());
                         if path.is_dir() {
                             fs::remove_dir(path).await?;
                         } else {

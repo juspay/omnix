@@ -34,22 +34,16 @@ impl Param {
 
                 let to = p.prompt()?;
                 if !to.is_empty() {
-                    println!("Replace '{}' with '{}'", placeholder, to);
                     *value = Some(to);
                 }
             }
-            Action::Retain { paths, value } => {
+            Action::Retain { paths: _, value } => {
                 let mut p = inquire::Confirm::new(&self.description);
                 if let Some(def) = value {
                     p = p.with_default(*def);
                 }
 
                 let v = p.prompt()?;
-                if v {
-                    println!("Retain paths: {:?}", paths);
-                } else {
-                    println!("Delete paths: {:?}", paths);
-                }
                 *value = Some(v)
             }
         }

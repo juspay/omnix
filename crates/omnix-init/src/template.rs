@@ -53,7 +53,7 @@ impl Template {
 
     async fn apply_actions(&self, out_dir: &Path) -> anyhow::Result<()> {
         for param in self.params.iter().sorted_by(|a, b| a.action.cmp(&b.action)) {
-            println!("Applying param: {:?}", param);
+            tracing::info!("🧵 {} {}", param.name, param.action.has_value());
             param
                 .action
                 .apply(out_dir.as_ref())

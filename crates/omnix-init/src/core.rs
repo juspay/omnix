@@ -10,7 +10,7 @@ pub async fn initialize_template(
     default_params: &HashMap<String, Value>,
     non_interactive: bool,
 ) -> anyhow::Result<()> {
-    println!("Loading registry");
+    tracing::info!("Loading registry");
     let templates = load_templates().await?;
 
     let mut template = match name {
@@ -25,7 +25,6 @@ pub async fn initialize_template(
             templates.get(&name).cloned().unwrap()
         }
     };
-    println!("Selected template: {:?}", template);
 
     template.set_param_values(default_params);
 
@@ -51,7 +50,7 @@ pub async fn initialize_template(
 
     // print welcomeText
     if let Some(welcome_text) = template.template.welcome_text {
-        println!("\n---\n{}\n---", welcome_text);
+        tracing::info!("\n{}", welcome_text);
     }
 
     Ok(())

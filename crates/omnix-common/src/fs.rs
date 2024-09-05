@@ -48,8 +48,10 @@ pub async fn find_files(dir: impl AsRef<Path> + Copy) -> anyhow::Result<Vec<Path
 
     while let Some(entry) = walker.next().await {
         let entry = entry?;
-        let path = entry.path();
-        files.push(path.strip_prefix(dir)?.to_path_buf());
+        if entry.file_type().await?.is_file() {
+            let path = entry.path();
+            files.push(path.strip_prefix(dir)?.to_path_buf());
+        }
     }
 
     Ok(files)
