@@ -27,6 +27,14 @@ fn om_init() -> anyhow::Result<()> {
     // File inclusion checks
     // Fail if .vscode/ directory exists in temp_dir
     assert!(!temp_dir.child(".vscode").exists());
+    // .github/ must exist (template includes by default)
+    assert!(temp_dir.child(".github").exists());
+    // .github must have files inside it
+    assert!(temp_dir
+        .child(".github")
+        .child("workflows")
+        .child("ci.yaml")
+        .exists());
 
     // Run the generated template, and compare output.
     // Is there a better way of doing these checks? Property tests + ?
