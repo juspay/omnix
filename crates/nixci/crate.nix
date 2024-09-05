@@ -9,6 +9,7 @@ let
   inherit (flake) inputs;
 in
 {
+  autoWire = [ "doc" "clippy" ];
   crane = {
     args = {
       nativeBuildInputs = with pkgs; with pkgs.apple_sdk_frameworks; lib.optionals stdenv.isDarwin [

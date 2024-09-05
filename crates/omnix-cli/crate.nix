@@ -10,7 +10,7 @@ let
   inherit (pkgs) stdenv pkgsStatic;
 in
 {
-  autoWire = false;
+  autoWire = [ "doc" "clippy" ];
   crane = {
     args = {
       nativeBuildInputs = with pkgs.apple_sdk_frameworks; lib.optionals stdenv.isDarwin [

@@ -9,7 +9,7 @@ let
   inherit (flake) inputs;
 in
 {
-  autoWire = false;
+  autoWire = [ ];
   crane = {
     args = {
       buildInputs = lib.optionals pkgs.stdenv.isLinux

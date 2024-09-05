@@ -9,7 +9,7 @@
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
     systems.url = "github:nix-systems/default";
 
-    rust-flake.url = "github:juspay/rust-flake";
+    rust-flake.url = "github:juspay/rust-flake/granular-autoWire";
     rust-flake.inputs.nixpkgs.follows = "nixpkgs";
     treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";

@@ -6,6 +6,7 @@
 }:
 
 {
+  autoWire = [ "doc" "clippy" ];
   crane = {
     args = {
       inherit (rust-project.crates."nix_rs".crane.args)
