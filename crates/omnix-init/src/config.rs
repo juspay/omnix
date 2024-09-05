@@ -14,7 +14,7 @@ static REGISTRY: LazyLock<FlakeUrl> =
 /// The `om.templates` config in flake
 pub type TemplatesConfig = HashMap<String, Template>;
 
-/// Load templates from our builtin registry [REGISTRY]
+/// Load templates from our builtin registry
 pub async fn load_templates() -> anyhow::Result<TemplatesConfig> {
     let registry = REGISTRY.clone();
     match nix_eval_attr::<TemplatesConfig>(&NixCmd::default(), &registry.with_attr("om.templates"))
