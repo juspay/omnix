@@ -62,7 +62,7 @@
               }
             ];
           };
-          haskell-template =  {
+          haskell-template = {
             template = inputs.haskell-template.templates.default;
             params = [
               {

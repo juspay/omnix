@@ -7,26 +7,25 @@ use rexpect::spawn;
 fn om_init() -> anyhow::Result<()> {
     let temp_dir = assert_fs::TempDir::new().unwrap();
 
-    // We can't use `om()`; see https://github.com/mikaelmello/inquire/issues/71
+    // TOD: back to using this
     // om()?.arg("init").arg(temp_dir.path()).assert().success();
     let om = assert_cmd::cargo::cargo_bin("om");
 
+    let template_name = "haskell-template";
+    let default_params = r#"
+      '{"package-name": "foo", "author": "John", "vscode": false }'
+    "#;
+
     let mut p = spawn(
-        &format!("{:?} init {}", om, temp_dir.path().display()),
+        &format!(
+            "{:?} init -o {} {} --non-interactive --params {}",
+            om,
+            temp_dir.path().display(),
+            template_name,
+            default_params
+        ),
         Some(30_000),
     )?;
-    p.exp_string("Select a template")?;
-    p.send_line("haskell-template")?;
-    p.exp_string("Author")?;
-    p.send_line("")?;
-    p.exp_string("Package Name")?;
-    p.send_line("foo")?;
-    p.exp_string("VSCode support")?;
-    p.send_line("")?;
-    p.exp_string("Nix Template")?;
-    p.send_line("")?;
-    p.exp_string("GitHub Actions")?;
-    p.send_line("")?;
     p.exp_eof()?;
 
     // Run the generated template, and compare output.
@@ -37,7 +36,7 @@ fn om_init() -> anyhow::Result<()> {
         .arg(format!("path:{}#foo", &temp_dir.path().display()))
         .assert()
         .success()
-        .stdout(contains("Hello"));
+        .stdout(contains("from foo"));
 
     temp_dir.close().unwrap();
     Ok(())
