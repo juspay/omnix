@@ -66,7 +66,7 @@ impl Action {
                         let content = fs::read_to_string(file_path).await?;
                         if content.contains(placeholder) {
                             tracing::info!(
-                                "a   Replacing '{}' with '{}' in {}",
+                                "   Replacing '{}' with '{}' in {}",
                                 placeholder,
                                 value,
                                 file.display()
