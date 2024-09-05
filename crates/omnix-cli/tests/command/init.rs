@@ -11,7 +11,7 @@ fn om_init() -> anyhow::Result<()> {
     let default_params = r#"{"package-name": "foo", "author": "John", "vscode": false }"#;
 
     om()?
-        .args(&[
+        .args([
             "init",
             "-o",
             &temp_dir.to_string_lossy(),
