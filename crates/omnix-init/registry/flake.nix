@@ -14,6 +14,10 @@
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       systems = import inputs.systems;
 
+      perSystem = { pkgs, ... }: {
+        packages.hello = pkgs.hello; # Dummy output for `om ci`
+      };
+
       flake = {
         # TODO: Ideally, these params should be moved to upstream module.
         # But do that only as the spec stabilizes.
