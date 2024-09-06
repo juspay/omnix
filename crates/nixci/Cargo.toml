@@ -18,7 +18,6 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 anyhow = { workspace = true }
-async-walkdir = { workspace = true }
 clap = { workspace = true }
 colored = { workspace = true }
 futures-lite = { workspace = true }

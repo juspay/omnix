@@ -43,7 +43,7 @@ in
       inherit (rust-project.crates."nixci".crane.args)
         OMNIX_SOURCE
         ;
-      inherit (rust-project.crates."flakreate".crane.args)
+      inherit (rust-project.crates."omnix-init".crane.args)
         OM_INIT_REGISTRY
         ;
 

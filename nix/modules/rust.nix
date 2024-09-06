@@ -16,7 +16,6 @@
       crateNixFile = "crate.nix";
     };
 
-
     packages =
       let
         inherit (config.rust-project) crates;
@@ -32,7 +31,6 @@
               --fish <($out/bin/om completion fish)
           '';
         });
-
 
         /*
         gui = crates."omnix-gui".crane.outputs.drv.crate.overrideAttrs (oa: {
