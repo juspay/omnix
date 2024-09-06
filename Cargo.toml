@@ -4,6 +4,7 @@ resolver = "2"
 members = [
   "crates/omnix-common",
   "crates/omnix-cli",
+  "crates/omnix-init",
   "crates/omnix-gui",
   "crates/nix_rs",
   "crates/nixci",
@@ -27,15 +28,18 @@ fermi = "0.4.3"
 flakreate = { version = "0.1.0", path = "./crates/flakreate" }
 futures-lite = "2.3.0"
 glob = "0.3.1"
+globset = { version = "0.4", features = ["serde1"] }
 http = "0.2"
 human-panic = "1.1.5"
 inquire = "0.7.5"
+itertools = "0.13"
 is_proc_translated = { version = "0.1.1" }
 nixci = { version = "1.1.0", path = "./crates/nixci" }
 nix_health = { version = "1.0.0", path = "./crates/nix_health" }
 nix_rs = { version = "1.0.0", path = "./crates/nix_rs" }
 nonempty = { version = "0.10.0", features = ["serialize"] }
 omnix-common = { version = "0.1.0", path = "./crates/omnix-common" }
+omnix-init = { version = "0.1.0", path = "./crates/omnix-init" }
 os_info = "3.7.0"
 reqwest = { version = "0.11", features = ["blocking", "json"] }
 regex = "1.9.3"
