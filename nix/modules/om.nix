@@ -33,13 +33,7 @@ in
             };
           };
         };
-        flakreate-registry = {
-          dir = "crates/flakreate/registry";
-          steps.custom.demo = {
-            type = "app";
-            name = "cache";
-          };
-        };
+        om-init-registry.dir = "crates/omnix-init/registry";
         doc.dir = "doc";
 
         # Because the cargo tests invoking Nix doesn't pass github access tokens..
