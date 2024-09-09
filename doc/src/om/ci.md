@@ -135,7 +135,7 @@ You can define custom CI actions in your flake, which will be run as part of `om
           cargo-test = {
             type = "devshell";
             # name = "default"
-            command = "cargo test";
+            command = [ "cargo" "test" ];
           };
 
           # We can also flake apps
