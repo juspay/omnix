@@ -1073,11 +1073,11 @@
         "treefmt-nix": "treefmt-nix_4"
       },
       "locked": {
-        "lastModified": 1725925858,
-        "narHash": "sha256-Oe0eaeQypuEWOzhDdX67sDK1EgXCFNh84egyZL2Dz3I=",
+        "lastModified": 1725926096,
+        "narHash": "sha256-lMtMsrP0pSh66K182FKhmH2o8onyr5Coraio2Vqz08M=",
         "owner": "srid",
         "repo": "rust-nix-template",
-        "rev": "5f7a0a528a341c455d609fa7a79cbd68deeb1106",
+        "rev": "f850df534e6ee784ac332bb13ded1d5f81d18751",
         "type": "github"
       },
       "original": {
