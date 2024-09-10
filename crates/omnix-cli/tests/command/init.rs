@@ -13,13 +13,27 @@ fn om_init() -> anyhow::Result<()> {
 }
 
 fn om_init_tests() -> Vec<OmInitTest> {
-    vec![OmInitTest {
-        template_name: "haskell-template",
-        default_params: r#"{"package-name": "foo", "author": "John", "vscode": false }"#,
-        assert_path_exists: vec![".github/workflows/ci.yaml"],
-        assert_path_not_exists: vec![".vscode"],
-        assert_nix_run_output_contains: "from foo",
-    }]
+    vec![
+        OmInitTest {
+            template_name: "haskell-template",
+            default_params: r#"{"package-name": "foo", "author": "John", "vscode": false }"#,
+            assert_path_exists: vec![".github/workflows/ci.yaml"],
+            assert_path_not_exists: vec![".vscode"],
+            assert_nix_run_output_contains: "from foo",
+        },
+        OmInitTest {
+            template_name: "rust-nix-template",
+            default_params: r#"{"package-name": "qux", "author": "John", "author-email": "john@example.com" }"#,
+            assert_path_exists: vec![
+                "Cargo.toml",
+                "flake.nix",
+                ".github/workflows/ci.yml",
+                ".vscode",
+            ],
+            assert_path_not_exists: vec!["nix/modules/template.nix"],
+            assert_nix_run_output_contains: "from qux",
+        },
+    ]
 }
 
 /// A test for a single template
