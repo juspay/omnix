@@ -7,7 +7,7 @@ use predicates::str::contains;
 #[test]
 fn om_init() -> anyhow::Result<()> {
     for test in om_init_tests() {
-        test.run_test();
+        test.run_test()?;
     }
     Ok(())
 }
