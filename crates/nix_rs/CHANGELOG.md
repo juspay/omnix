@@ -22,7 +22,7 @@
   - `run_with_args` is now `run_with`, and takes a function that mutates the `Command` at will.
   - Add `trace_cmd_with`
 - **`flake::command`**:
-  - Add module, for `nix run` and `nix develop`
+  - Add module, for `nix run`, `nix build` and `nix develop`
 - **`version`**:
   - Add `NixVersion::get`
 
