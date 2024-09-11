@@ -36,11 +36,11 @@ in
       ];
 
       inherit (rust-project.crates."nix_rs".crane.args)
-        DEVOUR_FLAKE
         DEFAULT_FLAKE_SCHEMAS
         NIX_FLAKE_SCHEMAS_BIN
         ;
       inherit (rust-project.crates."nixci".crane.args)
+        DEVOUR_FLAKE
         OMNIX_SOURCE
         ;
       inherit (rust-project.crates."omnix-init".crane.args)

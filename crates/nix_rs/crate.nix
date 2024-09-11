@@ -15,7 +15,6 @@ in
       nativeBuildInputs = with pkgs; [
         nix # Tests need nix cli
       ];
-      DEVOUR_FLAKE = inputs.devour-flake;
       DEFAULT_FLAKE_SCHEMAS = lib.cleanSourceWith {
         name = "flake-schemas";
         src = flake.inputs.self + /nix/flake-schemas;

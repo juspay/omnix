@@ -19,6 +19,7 @@ in
       ];
       inherit (config.rust-project.crates."omnix-cli".crane.args)
         NIX_FLAKE_SCHEMAS_BIN
+        DEVOUR_FLAKE
         DEFAULT_FLAKE_SCHEMAS
         OMNIX_SOURCE
         OM_INIT_REGISTRY
@@ -37,10 +38,6 @@ in
         mdbook-alerts
       ];
       shellHook =
-        ''
-          # For nixci
-          export DEVOUR_FLAKE=${inputs.devour-flake}
-        '' +
         ''
           echo
           echo "🍎🍎 Run 'just <recipe>' to get started"
