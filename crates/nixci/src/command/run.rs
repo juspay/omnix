@@ -1,4 +1,6 @@
 //! The run command
+use std::collections::HashMap;
+
 use anyhow::{Context, Result};
 use clap::Parser;
 use colored::Colorize;
@@ -16,6 +18,7 @@ use crate::{
     config::subflakes::SubflakesConfig,
     flake_ref::FlakeRef,
     nix::system_list::{SystemsList, SystemsListFlakeRef},
+    step::core::StepsResult,
 };
 
 use super::run_remote;
@@ -35,6 +38,10 @@ pub struct RunCommand {
     /// <https://github.com/nix-systems>.
     #[arg(long)]
     pub systems: Option<SystemsListFlakeRef>,
+
+    /// Whether to show results of all steps in JSON
+    #[arg(long)]
+    pub json: bool,
 
     /// Flake URL or github URL
     ///
@@ -98,7 +105,13 @@ impl RunCommand {
             "{}",
             format!("\n🤖 Running CI for {}", self.flake_ref).bold()
         );
-        ci_run(nixcmd, verbose, self, &cfg, &nix_info.nix_config).await?;
+        let res = ci_run(nixcmd, verbose, self, &cfg, &nix_info.nix_config).await?;
+
+        if self.json {
+            println!("{}", serde_json::to_string(&res)?);
+        } else {
+            // res.print();
+        }
 
         Ok(())
     }
@@ -159,7 +172,8 @@ pub async fn ci_run(
     run_cmd: &RunCommand,
     cfg: &OmConfig<SubflakesConfig>,
     nix_config: &NixConfig,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<HashMap<String, StepsResult>> {
+    let mut res = HashMap::new();
     let systems = run_cmd.get_systems(cmd, nix_config).await?;
 
     let (config, attrs) = cfg.get_referenced()?;
@@ -187,13 +201,14 @@ pub async fn ci_run(
         }
 
         tracing::info!("\n🍎 {}", name);
-        subflake
+        let steps_res = subflake
             .steps
             .run(cmd, verbose, run_cmd, &systems, &cfg.flake_url, subflake)
             .await?;
+        res.insert(subflake_name.clone(), steps_res);
     }
 
     tracing::info!("\n🥳 Success!");
 
-    Ok(())
+    Ok(res)
 }
