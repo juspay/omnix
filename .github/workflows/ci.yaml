@@ -24,24 +24,13 @@ jobs:
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
           skipPush: true
 
-      # Prep systems list
-      # Workaround until https://github.com/juspay/omnix/issues/210
-      - name: Systems to build
-        run: |
-          mkdir ~/systems
-          echo '{ outputs = _: {}; }' > ~/systems/flake.nix
-          echo '[ "${{ matrix.system }}" ]' > ~/systems/default.nix
-
-      # Run CI
+      # Build flake outputs
+      # Run omnix using self.
       - name: Omnix CI
         run: |
-          om ci \
+          nix run . -- ci \
             --extra-access-tokens ${{ secrets.GITHUB_TOKEN }} \
-            run --systems "path:$HOME/systems"
-
-      # Run `om show` on self
-      - name: om show
-        run: nix run . show .
+            run --systems "${{ matrix.system }}"
 
       # Upload static binary for the next job.
       - name: "static-binary: Build"
