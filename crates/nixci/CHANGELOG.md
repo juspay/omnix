@@ -5,6 +5,7 @@
     - Added a step to run `nix flake check`
     - Support for custom steps
 - `config.rs`: Refactored to change API.
+- Locally cache `github:nix-systems` (to avoid Github API rate limit)
 
 ## 1.1.0
 

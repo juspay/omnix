@@ -36,6 +36,12 @@ in
         NIX_FLAKE_SCHEMAS_BIN
         ;
       DEVOUR_FLAKE = inputs.devour-flake;
+      NIX_SYSTEMS = builtins.toJSON {
+        x86_64-linux = inputs.nix-systems-x86_64-linux;
+        aarch64-linux = inputs.nix-systems-aarch64-linux;
+        x86_64-darwin = inputs.nix-systems-x86_64-darwin;
+        aarch64-darwin = inputs.nix-systems-aarch64-darwin;
+      };
       OMNIX_SOURCE = inputs.self;
     };
   };
