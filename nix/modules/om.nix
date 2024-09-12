@@ -14,10 +14,10 @@ in
             # build.enable = false;
             flake-check.enable = false; # Not necessary
             custom = {
-              cli-runs = {
+              om-show = {
                 type = "app";
                 # name = "default";
-                args = [ "--help" ];
+                args = [ "show" "." ];
               };
               binary-size-is-small = {
                 type = "app";
