@@ -20,6 +20,7 @@ in
       inherit (config.rust-project.crates."omnix-cli".crane.args)
         NIX_FLAKE_SCHEMAS_BIN
         DEVOUR_FLAKE
+        NIX_SYSTEMS
         DEFAULT_FLAKE_SCHEMAS
         OMNIX_SOURCE
         OM_INIT_REGISTRY

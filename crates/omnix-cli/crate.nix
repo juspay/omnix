@@ -41,6 +41,7 @@ in
         ;
       inherit (rust-project.crates."nixci".crane.args)
         DEVOUR_FLAKE
+        NIX_SYSTEMS
         OMNIX_SOURCE
         ;
       inherit (rust-project.crates."omnix-init".crane.args)
