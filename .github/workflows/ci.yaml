@@ -30,12 +30,20 @@ jobs:
         run: |
           nix run . -- ci \
             --extra-access-tokens ${{ secrets.GITHUB_TOKEN }} \
-            run --systems "${{ matrix.system }}"
+            run \
+              --systems "${{ matrix.system }}" \
+              --write-results=$HOME/omci.json
+
+      - name: Omnix results
+        run: |
+          cat $HOME/omci.json | jq
+          cat $HOME/omci.json | jq -r '.omnix.build.byName."omnix-cli"'
 
       # Upload static binary for the next job.
-      - name: "static-binary: Build"
+      # TODO: This should ideally be in a separate workflow file, running parallel to the main job.
+      - name: "static-binary: Lookup"
         if: matrix.system != 'x86_64-darwin'
-        run: echo "om_static_binary_path=$(nix build --no-link --print-out-paths)" >> "$GITHUB_ENV"
+        run: echo "om_static_binary_path=$(jq -r '.omnix.build.byName."omnix-cli"' < $HOME/omci.json)" >> "$GITHUB_ENV"
       - name: "static-binary: Upload"
         if: matrix.system != 'x86_64-darwin'
         uses: actions/upload-artifact@v4
