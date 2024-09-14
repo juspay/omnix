@@ -17,7 +17,7 @@ impl Default for SubflakesConfig {
     /// Default value contains a single entry for the root flake.
     fn default() -> Self {
         let mut subflakes = BTreeMap::new();
-        subflakes.insert("<root>".to_string(), SubflakeConfig::default());
+        subflakes.insert("ROOT".to_string(), SubflakeConfig::default());
         SubflakesConfig(subflakes)
     }
 }
