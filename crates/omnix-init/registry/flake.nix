@@ -46,7 +46,7 @@
               {
                 name = "neovim";
                 description = "Include Neovim configuration";
-                paths = [ "**/neovim.nix" ];
+                paths = [ "**/neovim**" ];
                 value = false;
               }
               {
