@@ -1,5 +1,5 @@
 //! The run command
-use std::collections::HashMap;
+use std::{collections::HashMap, path::PathBuf};
 
 use anyhow::{Context, Result};
 use clap::Parser;
@@ -39,9 +39,9 @@ pub struct RunCommand {
     #[arg(long)]
     pub systems: Option<SystemsListFlakeRef>,
 
-    /// Whether to show results of all steps in JSON
-    #[arg(long)]
-    pub json: bool,
+    /// Path to write the results of the CI run (in JSON) to
+    #[arg(long, short = 'o')]
+    pub write_results: Option<PathBuf>,
 
     /// Flake URL or github URL
     ///
@@ -107,8 +107,12 @@ impl RunCommand {
         );
         let res = ci_run(nixcmd, verbose, self, &cfg, &nix_info.nix_config).await?;
 
-        if self.json {
-            println!("{}", serde_json::to_string(&res)?);
+        if let Some(results_file) = self.write_results.as_ref() {
+            serde_json::to_writer(std::fs::File::create(results_file)?, &res)?;
+            tracing::info!(
+                "Results written to {}",
+                results_file.to_string_lossy().bold()
+            );
         } else {
             for (_, result) in res {
                 result.print();

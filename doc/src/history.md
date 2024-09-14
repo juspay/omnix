@@ -11,7 +11,7 @@
   - Support for CI steps
     - Run `nix flake check` on all subflakes (#200)
     - Ability to add a custom CI step. For example, to run arbitrary commands.
-  - Add `--json` for JSON output
+  - Add `--write-results=FILE` to store CI results as JSON in a file
   - Misc
     - Avoid running `nix-store` command multiple times (#224)
     - Locally cache `github:nix-systems` (to avoid Github API rate limit)
