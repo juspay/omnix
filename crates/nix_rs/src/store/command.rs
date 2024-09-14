@@ -34,7 +34,7 @@ impl NixStoreCmd {
         &self,
         out_paths: &[StorePath],
     ) -> Result<Vec<StorePath>, NixStoreCmdError> {
-        let all_drvs = self.nix_store_query_deriver(&out_paths).await?;
+        let all_drvs = self.nix_store_query_deriver(out_paths).await?;
         let all_outs = self
             .nix_store_query_requisites_with_outputs(&all_drvs)
             .await?;
