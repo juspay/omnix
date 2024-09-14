@@ -20,7 +20,7 @@ pub struct DevourFlakeInput {
 }
 
 /// Output of `devour-flake`
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct DevourFlakeOutput {
     /// The built store paths
     ///

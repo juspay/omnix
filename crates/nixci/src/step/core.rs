@@ -49,6 +49,7 @@ pub struct StepsArgs {
 #[derive(Debug, Serialize, Clone, Default)]
 pub struct StepsResult {
     /// [BuildStepResult]
+    #[serde(rename = "build")]
     pub build_step: Option<BuildStepResult>,
 }
 
