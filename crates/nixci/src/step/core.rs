@@ -75,6 +75,7 @@ impl Steps {
                 .build_step
                 .run(cmd, verbose, run_cmd, url, subflake)
                 .await?;
+            build_res.print();
             res.build_step = Some(build_res);
         }
 
@@ -92,14 +93,5 @@ impl StepsArgs {
     /// Convert this type back to the user-facing command line arguments
     pub fn to_cli_args(&self) -> Vec<String> {
         self.build_step_args.to_cli_args()
-    }
-}
-
-impl StepsResult {
-    /// Print the results of all steps
-    pub fn print(&self) {
-        if let Some(build) = &self.build_step {
-            build.print();
-        }
     }
 }

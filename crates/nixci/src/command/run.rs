@@ -113,10 +113,6 @@ impl RunCommand {
                 "Results written to {}",
                 results_file.to_string_lossy().bold()
             );
-        } else {
-            for (_, result) in res {
-                result.print();
-            }
         }
 
         Ok(())
