@@ -34,8 +34,12 @@ pub struct DevourFlakeOutput {
 impl DevourFlakeOutput {
     fn from_drv(drv_out: &str) -> anyhow::Result<Self> {
         // Read drv_out file as JSON, decoding it into DevourFlakeOutput
-        let out: DevourFlakeOutput = serde_json::from_reader(std::fs::File::open(drv_out)?)
+        let mut out: DevourFlakeOutput = serde_json::from_reader(std::fs::File::open(drv_out)?)
             .context("Failed to parse devour-flake output")?;
+        // Remove duplicates, which is possible in user's flake
+        // e.g., when doing `packages.foo = self'.packages.default`
+        out.out_paths.sort();
+        out.out_paths.dedup();
         Ok(out)
     }
 }
