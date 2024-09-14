@@ -32,11 +32,9 @@ impl NixStoreCmd {
     /// `Vec<StorePath>`.
     pub async fn fetch_all_deps(
         &self,
-        out_paths: HashSet<StorePath>,
+        out_paths: Vec<StorePath>,
     ) -> Result<HashSet<StorePath>, NixStoreCmdError> {
-        let all_drvs = self
-            .nix_store_query_deriver(&out_paths.iter().cloned().collect::<Vec<_>>())
-            .await?;
+        let all_drvs = self.nix_store_query_deriver(&out_paths).await?;
         let all_outs = self
             .nix_store_query_requisites_with_outputs(&all_drvs)
             .await?;

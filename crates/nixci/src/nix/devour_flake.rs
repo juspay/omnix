@@ -5,10 +5,7 @@
 use anyhow::{bail, Context, Result};
 use nix_rs::{command::NixCmd, flake::url::FlakeUrl, store::path::StorePath};
 use serde::{Deserialize, Serialize};
-use std::{
-    collections::{HashMap, HashSet},
-    process::Stdio,
-};
+use std::{collections::HashMap, process::Stdio};
 use tokio::io::{AsyncBufReadExt, BufReader};
 
 /// Absolute path to the devour-flake flake source
@@ -28,10 +25,11 @@ pub struct DevourFlakeOutput {
     /// The built store paths
     ///
     /// This includes all dependencies if --print-all-dependencies was passed.
-    #[serde(rename = "out-paths")]
-    pub out_paths: HashSet<StorePath>,
+    #[serde(rename = "outPaths")]
+    pub out_paths: Vec<StorePath>,
 
-    #[serde(rename = "by-name")]
+    /// Output paths indexed by name (or pname) of the path if any
+    #[serde(rename = "byName")]
     pub by_name: HashMap<String, StorePath>,
 }
 
