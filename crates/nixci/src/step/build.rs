@@ -1,10 +1,12 @@
 //! The build step
-use std::path::PathBuf;
-
 use clap::Parser;
 use colored::Colorize;
-use nix_rs::{command::NixCmd, flake::url::FlakeUrl, store::command::NixStoreCmd};
-use serde::Deserialize;
+use nix_rs::{
+    command::NixCmd,
+    flake::url::FlakeUrl,
+    store::{command::NixStoreCmd, path::StorePath},
+};
+use serde::{Deserialize, Serialize};
 
 use crate::{
     command::run::RunCommand,
@@ -50,20 +52,23 @@ impl BuildStep {
             flake: url.sub_flake_url(subflake.dir.clone()),
             systems: run_cmd.systems.clone().map(|l| l.0),
         };
-        let output = nix::devour_flake::devour_flake(nixcmd, verbose, devour_input, nix_args)
-            .await?
-            .0;
+        let output =
+            nix::devour_flake::devour_flake(nixcmd, verbose, devour_input, nix_args).await?;
 
-        let paths = if run_cmd.steps_args.build_step_args.print_all_dependencies {
+        let mut res = BuildStepResult {
+            devour_flake_output: output,
+            all_deps: None,
+        };
+
+        if run_cmd.steps_args.build_step_args.print_all_dependencies {
             // Handle --print-all-dependencies
-            NixStoreCmd.fetch_all_deps(output).await
-        } else {
-            Ok(output)
-        }?;
+            let all_paths = NixStoreCmd
+                .fetch_all_deps(&res.devour_flake_output.out_paths)
+                .await?;
+            res.all_deps = Some(all_paths);
+        }
 
-        Ok(BuildStepResult {
-            out_paths: paths.iter().map(Into::into).collect(),
-        })
+        Ok(res)
     }
 }
 
@@ -130,19 +135,27 @@ impl BuildStepArgs {
 }
 
 /// The result of the build step
-#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct BuildStepResult {
-    /// The built store paths
-    ///
-    /// This includes all dependencies if --print-all-dependencies was passed.
-    pub out_paths: Vec<PathBuf>,
+    /// Output of devour-flake
+    #[serde(flatten)]
+    pub devour_flake_output: devour_flake::DevourFlakeOutput,
+
+    /// All dependencies of the out paths, if available
+    #[serde(skip_serializing_if = "Option::is_none", rename = "allDeps")]
+    pub all_deps: Option<Vec<StorePath>>,
 }
 
 impl BuildStepResult {
     /// Print the result to stdout
     pub fn print(&self) {
-        for path in &self.out_paths {
-            println!("{}", path.display());
+        let paths = if let Some(paths) = &self.all_deps {
+            paths
+        } else {
+            &self.devour_flake_output.out_paths
+        };
+        for path in paths {
+            println!("{}", path.as_path().display());
         }
     }
 }

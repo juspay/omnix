@@ -4,7 +4,8 @@
 
 use anyhow::{bail, Context, Result};
 use nix_rs::{command::NixCmd, flake::url::FlakeUrl, store::path::StorePath};
-use std::{collections::HashSet, path::PathBuf, process::Stdio};
+use serde::{Deserialize, Serialize};
+use std::{collections::HashMap, process::Stdio};
 use tokio::io::{AsyncBufReadExt, BufReader};
 
 /// Absolute path to the devour-flake flake source
@@ -19,21 +20,27 @@ pub struct DevourFlakeInput {
 }
 
 /// Output of `devour-flake`
-pub struct DevourFlakeOutput(pub HashSet<StorePath>);
+#[derive(Debug, Default, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct DevourFlakeOutput {
+    /// The built store paths
+    #[serde(rename = "outPaths")]
+    pub out_paths: Vec<StorePath>,
+
+    /// Output paths indexed by name (or pname) of the path if any
+    #[serde(rename = "byName")]
+    pub by_name: HashMap<String, StorePath>,
+}
 
 impl DevourFlakeOutput {
     fn from_drv(drv_out: &str) -> anyhow::Result<Self> {
-        let raw_output = std::fs::read_to_string(drv_out)?;
-        let outs = raw_output.split_ascii_whitespace();
-        let outs: HashSet<StorePath> = outs.map(|s| StorePath::new(PathBuf::from(s))).collect();
-        if outs.is_empty() {
-            bail!(
-                "devour-flake produced an outpath ({}) with no outputs",
-                drv_out
-            );
-        } else {
-            Ok(DevourFlakeOutput(outs))
-        }
+        // Read drv_out file as JSON, decoding it into DevourFlakeOutput
+        let mut out: DevourFlakeOutput = serde_json::from_reader(std::fs::File::open(drv_out)?)
+            .context("Failed to parse devour-flake output")?;
+        // Remove duplicates, which is possible in user's flake
+        // e.g., when doing `packages.foo = self'.packages.default`
+        out.out_paths.sort();
+        out.out_paths.dedup();
+        Ok(out)
     }
 }
 
@@ -46,7 +53,7 @@ pub async fn devour_flake(
 ) -> Result<DevourFlakeOutput> {
     // TODO: Use nix_rs here as well
     // In the context of doing https://github.com/srid/nixci/issues/15
-    let devour_flake_url = format!("{}#default", env!("DEVOUR_FLAKE"));
+    let devour_flake_url = format!("{}#json", env!("DEVOUR_FLAKE"));
     let mut cmd = nixcmd.command();
 
     let mut args = vec![

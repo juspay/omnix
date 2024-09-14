@@ -4,10 +4,10 @@ use nix_rs::{
     command::NixCmd,
     flake::{system::System, url::FlakeUrl},
 };
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use super::{
-    build::{BuildStep, BuildStepArgs},
+    build::{BuildStep, BuildStepArgs, BuildStepResult},
     custom::CustomSteps,
     flake_check::FlakeCheckStep,
     lockfile::LockfileStep,
@@ -45,6 +45,14 @@ pub struct StepsArgs {
     pub build_step_args: BuildStepArgs,
 }
 
+/// Results of [Steps]
+#[derive(Debug, Serialize, Clone, Default)]
+pub struct StepsResult {
+    /// [BuildStepResult]
+    #[serde(rename = "build")]
+    pub build_step: Option<BuildStepResult>,
+}
+
 impl Steps {
     /// Run all CI steps
     pub async fn run(
@@ -55,18 +63,19 @@ impl Steps {
         systems: &[System],
         url: &FlakeUrl,
         subflake: &SubflakeConfig,
-    ) -> anyhow::Result<()> {
+    ) -> anyhow::Result<StepsResult> {
+        let mut res = StepsResult::default();
+
         if self.lockfile_step.enable {
             self.lockfile_step.run(cmd, url, subflake).await?;
         }
 
         if self.build_step.enable {
-            let res = self
+            let build_res = self
                 .build_step
                 .run(cmd, verbose, run_cmd, url, subflake)
                 .await?;
-            // TODO: Support --json for structured output grouped by steps
-            res.print();
+            res.build_step = Some(build_res);
         }
 
         if self.flake_check_step.enable {
@@ -75,7 +84,7 @@ impl Steps {
 
         self.custom_steps.run(cmd, systems, url, subflake).await?;
 
-        Ok(())
+        Ok(res)
     }
 }
 
@@ -83,5 +92,14 @@ impl StepsArgs {
     /// Convert this type back to the user-facing command line arguments
     pub fn to_cli_args(&self) -> Vec<String> {
         self.build_step_args.to_cli_args()
+    }
+}
+
+impl StepsResult {
+    /// Print the results of all steps
+    pub fn print(&self) {
+        if let Some(build) = &self.build_step {
+            build.print();
+        }
     }
 }
