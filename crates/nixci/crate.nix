@@ -42,7 +42,7 @@ in
         x86_64-darwin = inputs.nix-systems-x86_64-darwin;
         aarch64-darwin = inputs.nix-systems-aarch64-darwin;
       };
-      OMNIX_SOURCE = inputs.self;
+      OMNIX_SOURCE = rust-project.src;
     };
   };
 }
