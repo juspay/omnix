@@ -23,8 +23,6 @@ pub struct DevourFlakeInput {
 #[derive(Debug, Default, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct DevourFlakeOutput {
     /// The built store paths
-    ///
-    /// This includes all dependencies if --print-all-dependencies was passed.
     #[serde(rename = "outPaths")]
     pub out_paths: Vec<StorePath>,
 

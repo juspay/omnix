@@ -75,8 +75,6 @@ impl Steps {
                 .build_step
                 .run(cmd, verbose, run_cmd, url, subflake)
                 .await?;
-            // TODO: Support --json for structured output grouped by steps
-            // build_res.print();
             res.build_step = Some(build_res);
         }
 

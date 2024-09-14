@@ -141,8 +141,8 @@ pub struct BuildStepResult {
     #[serde(flatten)]
     pub devour_flake_output: devour_flake::DevourFlakeOutput,
 
-    /// All dependencies of the out paths
-    #[serde(skip_serializing_if = "Option::is_none")]
+    /// All dependencies of the out paths, if available
+    #[serde(skip_serializing_if = "Option::is_none", rename = "allDeps")]
     pub all_deps: Option<Vec<StorePath>>,
 }
 
