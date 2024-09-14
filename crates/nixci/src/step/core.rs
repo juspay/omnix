@@ -96,3 +96,12 @@ impl StepsArgs {
         self.build_step_args.to_cli_args()
     }
 }
+
+impl StepsResult {
+    /// Print the results of all steps
+    pub fn print(&self) {
+        if let Some(build) = &self.build_step {
+            build.print();
+        }
+    }
+}

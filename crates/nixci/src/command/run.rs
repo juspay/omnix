@@ -110,7 +110,9 @@ impl RunCommand {
         if self.json {
             println!("{}", serde_json::to_string(&res)?);
         } else {
-            // res.print();
+            for (_, result) in res {
+                result.print();
+            }
         }
 
         Ok(())
