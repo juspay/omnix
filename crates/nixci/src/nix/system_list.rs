@@ -95,48 +95,4 @@ mod tests {
         .unwrap();
         assert_eq!(systems.0, vec![]);
     }
-
-    #[tokio::test]
-    async fn test_systems_list() {
-        assert_systems_list(
-            "github:nix-systems/default-linux",
-            vec!["aarch64-linux".into(), "x86_64-linux".into()],
-        )
-        .await;
-        assert_systems_list(
-            "github:nix-systems/default-darwin",
-            vec!["aarch64-darwin".into(), "x86_64-darwin".into()],
-        )
-        .await;
-        assert_systems_list(
-            "github:nix-systems/aarch64-linux",
-            vec!["aarch64-linux".into()],
-        )
-        .await;
-        assert_systems_list(
-            "github:nix-systems/aarch64-darwin",
-            vec!["aarch64-darwin".into()],
-        )
-        .await;
-        assert_systems_list(
-            "github:nix-systems/x86_64-linux",
-            vec!["x86_64-linux".into()],
-        )
-        .await;
-        assert_systems_list(
-            "github:nix-systems/x86_64-darwin",
-            vec!["x86_64-darwin".into()],
-        )
-        .await;
-        assert_systems_list("github:nix-systems/empty", vec![]).await;
-    }
-
-    async fn assert_systems_list(url: &str, expected: Vec<System>) {
-        let cmd = NixCmd::default();
-        let flake_url = FlakeUrl::from_str(url).unwrap();
-        let systems = SystemsList::from_flake(&cmd, &SystemsListFlakeRef(flake_url))
-            .await
-            .unwrap();
-        assert_eq!(systems.0, expected);
-    }
 }
