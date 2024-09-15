@@ -9,6 +9,7 @@
     haskell-flake.url = "github:srid/haskell-flake";
     haskell-template.url = "github:srid/haskell-template";
     nix-dev-home.url = "github:juspay/nix-dev-home";
+    rust-nix-template.url = "github:srid/rust-nix-template";
   };
   outputs = inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
@@ -45,7 +46,7 @@
               {
                 name = "neovim";
                 description = "Include Neovim configuration";
-                paths = [ "**/neovim.nix" ];
+                paths = [ "**/neovim**" ];
                 value = false;
               }
               {
@@ -56,6 +57,7 @@
               }
             ];
           };
+
           haskell-flake = {
             template = inputs.haskell-flake.templates.example;
             params = [
@@ -66,6 +68,7 @@
               }
             ];
           };
+
           haskell-template = {
             template = inputs.haskell-template.templates.default;
             params = [
@@ -86,16 +89,55 @@
                 value = true;
               }
               {
+                name = "github-ci";
+                description = "Include GitHub Actions workflow configuration";
+                paths = [ ".github" ];
+                value = true;
+              }
+              {
                 name = "nix-template";
                 description = "Keep the flake template in the project";
                 paths = [ "**/template.nix" ];
                 value = false;
+              }
+            ];
+          };
+
+          rust-nix-template = {
+            template = inputs.rust-nix-template.templates.default;
+            params = [
+              {
+                name = "package-name";
+                description = "Name of the Rust package";
+                placeholder = "rust-nix-template";
+              }
+              {
+                name = "author";
+                description = "Author name";
+                placeholder = "Sridhar Ratnakumar";
+              }
+              {
+                name = "author-email";
+                description = "Author email";
+                placeholder = "srid@srid.ca";
+              }
+              {
+                name = "vscode";
+                description = "Include the VSCode settings folder (./.vscode)";
+                paths = [ ".vscode" ];
+                value = true;
               }
               {
                 name = "github-ci";
                 description = "Include GitHub Actions workflow configuration";
                 paths = [ ".github" ];
                 value = true;
+              }
+              {
+                name = "nix-template";
+                description = "Keep the flake template in the project";
+                paths = [ "**/template.nix" ];
+                value = false;
               }
             ];
           };

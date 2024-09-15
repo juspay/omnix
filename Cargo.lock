@@ -163,6 +163,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "assert_matches"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9b34d609dfbaf33d6889b2b7106d3ca345eacad44200913df5ba02bfd31d2ba9"
+
+[[package]]
 name = "async-broadcast"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3165,6 +3171,7 @@ dependencies = [
  "clap",
  "colored",
  "futures-lite",
+ "lazy_static",
  "nix_health",
  "nix_rs",
  "nonempty",
@@ -3318,6 +3325,7 @@ dependencies = [
  "anyhow",
  "assert_cmd",
  "assert_fs",
+ "assert_matches",
  "clap",
  "clap-verbosity-flag",
  "clap_complete",

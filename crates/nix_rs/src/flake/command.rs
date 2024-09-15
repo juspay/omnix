@@ -1,9 +1,13 @@
-use std::{collections::BTreeMap, path::PathBuf};
+use std::{
+    collections::{BTreeMap, HashMap},
+    path::PathBuf,
+};
 
 use nonempty::NonEmpty;
+use serde::{Deserialize, Serialize};
 use tokio::process::Command;
 
-use crate::command::{CommandError, NixCmd};
+use crate::command::{CommandError, NixCmd, NixCmdError};
 
 use super::url::FlakeUrl;
 
@@ -37,6 +41,30 @@ pub async fn develop(
             cmd.args(command);
         })
         .await
+}
+
+/// Run `nix build`
+pub async fn build(cmd: &NixCmd, url: FlakeUrl) -> Result<Vec<OutPath>, NixCmdError> {
+    // TODO: Make this accept `FlakeOptions`
+    cmd.run_with_args_expecting_json(&["build", "--no-link", "--json", &url])
+        .await
+}
+
+/// A path built by nix, as returned by --print-out-paths
+#[derive(Serialize, Deserialize)]
+pub struct OutPath {
+    /// The derivation that built these outputs
+    #[serde(rename = "drvPath")]
+    pub drv_path: PathBuf,
+    /// Build outputs
+    pub outputs: HashMap<String, PathBuf>,
+}
+
+impl OutPath {
+    /// Return the first build output, if any
+    pub fn first_output(&self) -> Option<&PathBuf> {
+        self.outputs.values().next()
+    }
 }
 
 /// Nix CLI options when interacting with a flake

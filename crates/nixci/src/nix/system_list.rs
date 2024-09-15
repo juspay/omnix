@@ -1,7 +1,8 @@
 //! Dealing with system lists
-use std::str::FromStr;
+use std::{collections::HashMap, str::FromStr};
 
 use anyhow::Result;
+use lazy_static::lazy_static;
 use nix_rs::{
     command::{NixCmd, NixCmdError},
     flake::{system::System, url::FlakeUrl},
@@ -11,22 +12,23 @@ use nix_rs::{
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SystemsListFlakeRef(pub FlakeUrl);
 
+lazy_static! {
+    /// As a HashMap<String, String>
+    pub static ref NIX_SYSTEMS: HashMap<String, FlakeUrl> = {
+        serde_json::from_str(env!("NIX_SYSTEMS")).unwrap()
+    };
+}
+
 impl FromStr for SystemsListFlakeRef {
     type Err = String;
     fn from_str(s: &str) -> std::result::Result<SystemsListFlakeRef, String> {
         // Systems lists recognized by `github:nix-system/*`
-        let known_nix_systems = [
-            "aarch64-darwin",
-            "aarch64-linux",
-            "x86_64-darwin",
-            "x86_64-linux",
-        ];
-        let url = if known_nix_systems.contains(&s) {
-            format!("github:nix-systems/{}", s)
+        let url = if let Some(nix_system_flake) = NIX_SYSTEMS.get(s) {
+            nix_system_flake.clone()
         } else {
-            s.to_string()
+            FlakeUrl(s.to_string())
         };
-        Ok(SystemsListFlakeRef(FlakeUrl(url)))
+        Ok(SystemsListFlakeRef(url))
     }
 }
 
@@ -51,22 +53,10 @@ impl SystemsList {
     /// Handle known repos of <https://github.com/nix-systems> thereby avoiding
     /// network calls.
     fn from_known_flake(url: &SystemsListFlakeRef) -> Option<Self> {
-        match url.0 .0.as_str() {
-            "github:nix-systems/empty" => Some(SystemsList(vec![])),
-            "github:nix-systems/default-darwin" => Some(SystemsList(vec![
-                "aarch64-darwin".into(),
-                "x86_64-darwin".into(),
-            ])),
-            "github:nix-systems/default-linux" => Some(SystemsList(vec![
-                "aarch64-linux".into(),
-                "x86_64-linux".into(),
-            ])),
-            "github:nix-systems/aarch64-darwin" => Some(SystemsList(vec!["aarch64-darwin".into()])),
-            "github:nix-systems/aarch64-linux" => Some(SystemsList(vec!["aarch64-linux".into()])),
-            "github:nix-systems/x86_64-darwin" => Some(SystemsList(vec!["x86_64-darwin".into()])),
-            "github:nix-systems/x86_64-linux" => Some(SystemsList(vec!["x86_64-linux".into()])),
-            _ => None,
-        }
+        let system = NIX_SYSTEMS
+            .iter()
+            .find_map(|(v, u)| if u == &url.0 { Some(v) } else { None })?;
+        Some(SystemsList(vec![system.clone().into()]))
     }
 }
 
@@ -104,49 +94,5 @@ mod tests {
         .await
         .unwrap();
         assert_eq!(systems.0, vec![]);
-    }
-
-    #[tokio::test]
-    async fn test_systems_list() {
-        assert_systems_list(
-            "github:nix-systems/default-linux",
-            vec!["aarch64-linux".into(), "x86_64-linux".into()],
-        )
-        .await;
-        assert_systems_list(
-            "github:nix-systems/default-darwin",
-            vec!["aarch64-darwin".into(), "x86_64-darwin".into()],
-        )
-        .await;
-        assert_systems_list(
-            "github:nix-systems/aarch64-linux",
-            vec!["aarch64-linux".into()],
-        )
-        .await;
-        assert_systems_list(
-            "github:nix-systems/aarch64-darwin",
-            vec!["aarch64-darwin".into()],
-        )
-        .await;
-        assert_systems_list(
-            "github:nix-systems/x86_64-linux",
-            vec!["x86_64-linux".into()],
-        )
-        .await;
-        assert_systems_list(
-            "github:nix-systems/x86_64-darwin",
-            vec!["x86_64-darwin".into()],
-        )
-        .await;
-        assert_systems_list("github:nix-systems/empty", vec![]).await;
-    }
-
-    async fn assert_systems_list(url: &str, expected: Vec<System>) {
-        let cmd = NixCmd::default();
-        let flake_url = FlakeUrl::from_str(url).unwrap();
-        let systems = SystemsList::from_flake(&cmd, &SystemsListFlakeRef(flake_url))
-            .await
-            .unwrap();
-        assert_eq!(systems.0, expected);
     }
 }

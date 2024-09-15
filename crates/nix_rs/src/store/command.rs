@@ -1,5 +1,5 @@
 /// Rust wrapper for `nix-store`
-use std::{collections::HashSet, path::PathBuf};
+use std::path::PathBuf;
 
 use crate::command::{CommandError, NixCmdError};
 use serde::{Deserialize, Serialize};
@@ -32,15 +32,13 @@ impl NixStoreCmd {
     /// `Vec<StorePath>`.
     pub async fn fetch_all_deps(
         &self,
-        out_paths: HashSet<StorePath>,
-    ) -> Result<HashSet<StorePath>, NixStoreCmdError> {
-        let all_drvs = self
-            .nix_store_query_deriver(&out_paths.iter().cloned().collect::<Vec<_>>())
-            .await?;
+        out_paths: &[StorePath],
+    ) -> Result<Vec<StorePath>, NixStoreCmdError> {
+        let all_drvs = self.nix_store_query_deriver(out_paths).await?;
         let all_outs = self
             .nix_store_query_requisites_with_outputs(&all_drvs)
             .await?;
-        Ok(all_outs.into_iter().collect())
+        Ok(all_outs)
     }
 
     /// Return the derivations used to build the given build output.

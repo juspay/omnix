@@ -32,11 +32,17 @@ in
       # instead.
       doCheck = false;
       inherit (rust-project.crates."nix_rs".crane.args)
-        DEVOUR_FLAKE
         DEFAULT_FLAKE_SCHEMAS
         INSPECT_FLAKE
         ;
-      OMNIX_SOURCE = inputs.self;
+      DEVOUR_FLAKE = inputs.devour-flake;
+      NIX_SYSTEMS = builtins.toJSON {
+        x86_64-linux = inputs.nix-systems-x86_64-linux;
+        aarch64-linux = inputs.nix-systems-aarch64-linux;
+        x86_64-darwin = inputs.nix-systems-x86_64-darwin;
+        aarch64-darwin = inputs.nix-systems-aarch64-darwin;
+      };
+      OMNIX_SOURCE = rust-project.src;
     };
   };
 }

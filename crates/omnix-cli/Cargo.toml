@@ -36,6 +36,7 @@ serde_json = { workspace = true }
 anyhow = { workspace = true }
 assert_cmd = "2"
 assert_fs = "1"
+assert_matches = "1.5"
 ctor = "0.2"
 predicates = "3"
 regex = "1.9"

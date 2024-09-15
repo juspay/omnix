@@ -17,8 +17,13 @@
     cargo-doc-live.url = "github:srid/cargo-doc-live";
     cachix-push.url = "github:juspay/cachix-push";
 
+    # nixci
     devour-flake.url = "github:srid/devour-flake";
     devour-flake.flake = false;
+    nix-systems-x86_64-darwin.url = "github:nix-systems/x86_64-darwin";
+    nix-systems-aarch64-darwin.url = "github:nix-systems/aarch64-darwin";
+    nix-systems-x86_64-linux.url = "github:nix-systems/x86_64-linux";
+    nix-systems-aarch64-linux.url = "github:nix-systems/aarch64-linux";
 
     inspect.url = "github:juspay/inspect";
     inspect.flake = false;
