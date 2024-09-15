@@ -78,8 +78,9 @@ impl Row {
                 name,
                 description: leaf
                     .as_val()
-                    .and_then(|val| val.short_description.as_deref())
-                    .unwrap_or("N/A")
+                    .and_then(|val| val.short_description.as_ref())
+                    .filter(|s| !s.is_empty())
+                    .unwrap_or(&String::from("N/A"))
                     .to_owned(),
             })
             .collect()

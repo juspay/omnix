@@ -5,7 +5,7 @@ use super::core::om;
 /// `om show` runs, and succeeds for a local flake.
 #[test]
 fn om_show_local() -> anyhow::Result<()> {
-    om()?.arg("show").arg(".").assert().success().stdout(
+    om()?.arg("show").arg("../..").assert().success().stdout(
         contains("Packages")
             .and(contains("Apps"))
             .and(contains("Devshells"))

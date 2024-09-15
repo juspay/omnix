@@ -18,8 +18,8 @@ in
         self'.devShells.rust
       ];
       inherit (config.rust-project.crates."omnix-cli".crane.args)
-        NIX_FLAKE_SCHEMAS_BIN
         DEFAULT_FLAKE_SCHEMAS
+        INSPECT_FLAKE
         OMNIX_SOURCE
         OM_INIT_REGISTRY
         ;

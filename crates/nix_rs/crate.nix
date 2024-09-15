@@ -20,7 +20,7 @@ in
         name = "flake-schemas";
         src = flake.inputs.self + /nix/flake-schemas;
       };
-      NIX_FLAKE_SCHEMAS_BIN = lib.getExe pkgs.nix-flake-schemas;
+      INSPECT_FLAKE = inputs.inspect;
     };
   };
 }
