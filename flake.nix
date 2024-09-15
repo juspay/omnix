@@ -25,7 +25,7 @@
     nix-systems-x86_64-linux.url = "github:nix-systems/x86_64-linux";
     nix-systems-aarch64-linux.url = "github:nix-systems/aarch64-linux";
 
-    inspect.url = "github:juspay/inspect";
+    inspect.url = "github:juspay/inspect/inventory-for-systems";
     inspect.flake = false;
   };
 

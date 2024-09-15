@@ -99,6 +99,7 @@
       },
       "original": {
         "owner": "juspay",
+        "ref": "inventory-for-systems",
         "repo": "inspect",
         "type": "github"
       }
