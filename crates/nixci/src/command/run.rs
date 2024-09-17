@@ -41,7 +41,7 @@ pub struct RunCommand {
 
     /// Path to write the results of the CI run (in JSON) to
     #[arg(long, short = 'o')]
-    pub write_results: Option<PathBuf>,
+    pub results: Option<PathBuf>,
 
     /// Flake URL or github URL
     ///
@@ -107,7 +107,7 @@ impl RunCommand {
         );
         let res = ci_run(nixcmd, verbose, self, &cfg, &nix_info.nix_config).await?;
 
-        if let Some(results_file) = self.write_results.as_ref() {
+        if let Some(results_file) = self.results.as_ref() {
             serde_json::to_writer(std::fs::File::create(results_file)?, &res)?;
             tracing::info!(
                 "Results written to {}",
