@@ -19,6 +19,7 @@
 ### Fixes
 
 - `om ci run`: The `--override-input` option mandated `flake/` prefix (nixci legacy) which is no longer necessary in this release.
+- `om health`: Use `whoami` to determine username which is more reliable than relying on `USER` environment variable
 
 ### Backward-incompatible changes
 

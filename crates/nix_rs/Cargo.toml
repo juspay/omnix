@@ -30,6 +30,7 @@ sysinfo = { workspace = true }
 bytesize = { workspace = true }
 clap = { workspace = true, optional = true }
 nonempty = { workspace = true }
+whoami = { workspace = true }
 
 [features]
 clap = ["dep:clap"]
