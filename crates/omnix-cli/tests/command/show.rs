@@ -27,3 +27,16 @@ fn om_show_remote() -> anyhow::Result<()> {
         )));
     Ok(())
 }
+
+/// `om show` displays `nixosConfigurations`
+/// Note: This is used to test `evalOnAllSystems` (see: https://github.com/juspay/omnix/pull/277#discussion_r1760164052).
+#[test]
+fn om_show_nixos_configurations() -> anyhow::Result<()> {
+    om()?
+        .arg("show")
+        .arg("github:srid/nixos-config/fe9c16cc6a60bbc17646c15c8ce3c5380239ab92")
+        .assert()
+        .success()
+        .stdout(contains("NixOS Configurations").and(contains("immediacy")));
+    Ok(())
+}
