@@ -44,6 +44,7 @@
               what = "NixOS configuration";
               derivation = machine.config.system.build.toplevel;
               forSystems = [ machine.pkgs.stdenv.system ];
+              # Force evaluate this derivation on all systems. See: https://github.com/juspay/omnix/pull/277#discussion_r1760164052
               evalOnAllSystems = true;
             })
           output);
