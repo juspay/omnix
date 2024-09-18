@@ -32,7 +32,7 @@ pub enum InventoryItem {
 }
 
 impl FlakeOutputs {
-    /// Run `nix flake show` on the given flake url
+    /// Determine flake outputs using [INSPECT_FLAKE] and [DEFAULT_FLAKE_SCHEMAS]
     pub async fn from_nix(
         nix_cmd: &crate::command::NixCmd,
         flake_url: &super::url::FlakeUrl,
