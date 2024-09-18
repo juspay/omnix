@@ -44,7 +44,7 @@ jobs:
             --extra-access-tokens ${{ secrets.GITHUB_TOKEN }} \
             run \
               --systems "${{ matrix.system }}" \
-              --write-results=$HOME/omci.json
+              --results=$HOME/omci.json
 
       - name: Omnix results
         id: omci
@@ -57,9 +57,17 @@ jobs:
             jq -r '.[$ENV.subflake].build.byName.[$ENV.name]' < $HOME/omci.json
           }
 
+          echo "OMCIJSON_PATH=$HOME/omci.json" >> "$GITHUB_OUTPUT"
           echo "OMCIJSON=$(cat $HOME/omci.json)" >> "$GITHUB_OUTPUT"
           echo "OMPACKAGE=$(get_output omnix omnix-cli)" >> "$GITHUB_OUTPUT"
           echo "OMWEBSITE_${{ matrix.system }}=$(get_output doc omnix-mdbook-site)" >> "$GITHUB_OUTPUT"
+
+      - name: "Omnix: Upload results"
+        uses: actions/upload-artifact@v4
+        with:
+          name: omci-${{ matrix.system }}.json
+          path: ${{ steps.omci.outputs.OMCIJSON_PATH }}
+          if-no-files-found: error
 
       # Upload static binary for the next job.
       # TODO: This should ideally be in a separate workflow file, running parallel to the main job.

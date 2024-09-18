@@ -7,6 +7,7 @@ use os_info;
 use serde::{Deserialize, Serialize};
 use std::process::Command;
 use tracing::instrument;
+use whoami;
 
 /// The environment in which Nix operates
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -36,7 +37,7 @@ impl NixEnv {
         tracing::debug!("Detecting Nix environment");
         let os = OS::detect().await;
         tokio::task::spawn_blocking(|| {
-            let current_user = std::env::var("USER")?;
+            let current_user = whoami::username();
             let sys = sysinfo::System::new_with_specifics(
                 sysinfo::RefreshKind::new().with_disks_list().with_memory(),
             );
