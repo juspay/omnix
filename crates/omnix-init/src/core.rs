@@ -37,12 +37,10 @@ pub async fn initialize_template(
                 } else {
                     return Err(anyhow::anyhow!("No templates available"));
                 }
+            } else if non_interactive {
+                return Err(anyhow::anyhow!("Non-interactive mode requires exactly one template to be available; but {} are available. Explicit specify it in flake URL.", available.len()));
             } else {
-                if non_interactive {
-                    return Err(anyhow::anyhow!("Non-interactive mode requires exactly one template to be available; but {} are available. Explicit specify it in flake URL.", available.len()));
-                } else {
-                    &inquire::Select::new("Select a template", available).prompt()?
-                }
+                &inquire::Select::new("Select a template", available).prompt()?
             }
         }
     };
