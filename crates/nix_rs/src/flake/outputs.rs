@@ -6,35 +6,71 @@ use std::{
     fmt::Display,
 };
 
-/// Absolute path to the `nix` binary compiled with flake schemas support
-///
-/// We expect this environment to be set in Nix build and shell.
-pub const NIX_FLAKE_SCHEMAS_BIN: &str = env!("NIX_FLAKE_SCHEMAS_BIN");
+use crate::system_list::SystemsListFlakeRef;
 
 /// Flake URL of the default flake schemas
 ///
 /// We expect this environment to be set in Nix build and shell.
 pub const DEFAULT_FLAKE_SCHEMAS: &str = env!("DEFAULT_FLAKE_SCHEMAS");
 
+/// Flake URL of the flake that defines functions for inspecting flake outputs
+///
+/// We expect this environment to be set in Nix build and shell.
+pub const INSPECT_FLAKE: &str = env!("INSPECT_FLAKE");
+
 /// Represents the "outputs" of a flake
 ///
-/// This structure is currently produced by `nix flake show`, thus to parse it we must toggle serde untagged.
+/// TODO: Rename this to `FlakeSchema` while generalizing the existing `schema.rs` module.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub enum FlakeOutputs {
+pub struct FlakeOutputs {
+    pub inventory: BTreeMap<String, InventoryItem>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum InventoryItem {
     Leaf(Leaf),
-    Attrset(BTreeMap<String, FlakeOutputs>),
+    Attrset(BTreeMap<String, InventoryItem>),
 }
 
 impl FlakeOutputs {
-    /// Run `nix flake show` on the given flake url
+    /// Determine flake outputs using [INSPECT_FLAKE] and [DEFAULT_FLAKE_SCHEMAS]
     pub async fn from_nix(
         nix_cmd: &crate::command::NixCmd,
         flake_url: &super::url::FlakeUrl,
+        system: &super::System,
     ) -> Result<Self, crate::command::NixCmdError> {
-        let v = FlakeOutputsUntagged::from_nix(nix_cmd, flake_url).await?;
-        Ok(v.into_flake_outputs())
+        let v = nix_cmd
+            .run_with_args_expecting_json(&[
+                "eval",
+                "--json",
+                "--override-input",
+                "flake-schemas",
+                env!("DEFAULT_FLAKE_SCHEMAS"),
+                "--override-input",
+                "flake",
+                flake_url,
+                "--override-input",
+                "systems",
+                // TODO: don't use unwrap
+                &SystemsListFlakeRef::from_known_system(system).unwrap().0,
+                "--no-write-lock-file",
+                // Why `exculdingOutputPaths`?
+                //   This function is much faster than `includingOutputPaths` and also solves <https://github.com/juspay/omnix/discussions/231>
+                //   Also See: https://github.com/DeterminateSystems/inspect/blob/7f0275abbdc46b3487ca69e2acd932ce666a03ff/flake.nix#L139
+                //
+                //
+                // Note: We might need to use `includingOutputPaths` in the future, when replacing `devour-flake`.
+                // In which case, `om ci` and `om show` can invoke the appropriate function from `INSPECT_FLAKE`.
+                //
+                &format!("{}#contents.excludingOutputPaths", env!("INSPECT_FLAKE")),
+            ])
+            .await?;
+        Ok(v)
     }
+}
 
+impl InventoryItem {
     /// Get the non-attrset leaf
     pub fn as_leaf(&self) -> Option<&Leaf> {
         match self {
@@ -44,7 +80,7 @@ impl FlakeOutputs {
     }
 
     /// Ensure the value is an attrset, and get it
-    pub fn as_attrset(&self) -> Option<&BTreeMap<String, FlakeOutputs>> {
+    pub fn as_attrset(&self) -> Option<&BTreeMap<String, InventoryItem>> {
         match self {
             Self::Attrset(v) => Some(v),
             _ => None,
@@ -55,8 +91,8 @@ impl FlakeOutputs {
     ///
     /// # Example
     /// ```no_run
-    /// let tree : &nix_rs::flake::outputs::FlakeOutputs = todo!();
-    /// let val = tree.pop(&["packages", "aarch64-darwin", "default"]);
+    /// let tree : &nix_rs::flake::outputs::InventoryItem = todo!();
+    /// let val = tree.pop(&["aarch64-darwin", "default"]);
     /// ```
     pub fn pop(&mut self, path: &[&str]) -> Option<Self> {
         let mut curr = self;
@@ -191,53 +227,5 @@ impl Type {
 impl Display for Type {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(&format!("{:?}", self))
-    }
-}
-
-/// This type is identical to [FlakeOutputs] except for the serde untagged attribute, which enables parsing the JSON output of `nix flake show`.
-///
-/// This separation exists to workaround <https://github.com/DioxusLabs/dioxus-std/issues/20>
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(untagged)]
-enum FlakeOutputsUntagged {
-    ULeaf(Leaf),
-    UAttrset(BTreeMap<String, FlakeOutputsUntagged>),
-}
-
-impl FlakeOutputsUntagged {
-    /// Run `nix flake show` on the given flake url
-    #[tracing::instrument(name = "flake-show")]
-    async fn from_nix(
-        nix_cmd: &crate::command::NixCmd,
-        flake_url: &super::url::FlakeUrl,
-    ) -> Result<Self, crate::command::NixCmdError> {
-        let mut nix_flake_schemas_cmd = nix_cmd.clone();
-        nix_flake_schemas_cmd.command = Some(env!("NIX_FLAKE_SCHEMAS_BIN").to_string());
-
-        let v = nix_flake_schemas_cmd
-            .run_with_args_expecting_json(&[
-                "flake",
-                "show",
-                "--legacy", // for showing nixpkgs legacyPackages
-                "--allow-import-from-derivation",
-                "--json",
-                "--default-flake-schemas",
-                env!("DEFAULT_FLAKE_SCHEMAS"),
-                flake_url,
-            ])
-            .await?;
-        Ok(v)
-    }
-
-    /// Convert to [FlakeOutputs]
-    fn into_flake_outputs(self) -> FlakeOutputs {
-        match self {
-            Self::ULeaf(v) => FlakeOutputs::Leaf(v),
-            Self::UAttrset(v) => FlakeOutputs::Attrset(
-                v.into_iter()
-                    .map(|(k, v)| (k, v.into_flake_outputs()))
-                    .collect(),
-            ),
-        }
     }
 }

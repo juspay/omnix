@@ -15,7 +15,8 @@
     );
     inherit (rust-project.crates."nix_rs".crane.args)
       DEFAULT_FLAKE_SCHEMAS
-      NIX_FLAKE_SCHEMAS_BIN
+      INSPECT_FLAKE
+      NIX_SYSTEMS
       ;
     OM_INIT_REGISTRY =
       lib.cleanSourceWith {

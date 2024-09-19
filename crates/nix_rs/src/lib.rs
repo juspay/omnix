@@ -11,4 +11,5 @@ pub mod flake;
 pub mod info;
 pub mod refs;
 pub mod store;
+pub mod system_list;
 pub mod version;

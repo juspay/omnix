@@ -1,18 +1,18 @@
 //! High-level schema of a flake
 //!
-//! TODO: Use <https://github.com/DeterminateSystems/flake-schemas>
+//! TODO: Consolidate with `outputs.rs`
 use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 
 use super::{
-    outputs::{FlakeOutputs, Leaf},
+    outputs::{FlakeOutputs, InventoryItem, Leaf},
     System,
 };
 
 /// High-level schema of a flake
 ///
-/// TODO: Use <https://github.com/DeterminateSystems/flake-schemas>
+/// TODO: Consolidate with `outputs.rs`
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct FlakeSchema {
     pub system: System,
@@ -31,7 +31,7 @@ pub struct FlakeSchema {
     pub templates: BTreeMap<String, Leaf>,
     pub schemas: BTreeMap<String, Leaf>,
     /// Other unrecognized keys.
-    pub other: Option<BTreeMap<String, FlakeOutputs>>,
+    pub other: Option<FlakeOutputs>,
 }
 
 impl FlakeSchema {
@@ -41,35 +41,39 @@ impl FlakeSchema {
     /// as is (in [FlakeSchema::other]).
     pub fn from(output: &FlakeOutputs, system: &System) -> Self {
         let output: &mut FlakeOutputs = &mut output.clone();
-        let pop_tree = |output: &mut FlakeOutputs, ks: &[&str]| -> BTreeMap<String, Leaf> {
-            let mut f = || -> Option<BTreeMap<String, Leaf>> {
-                let out = output.pop(ks)?;
-                let outs = out.as_attrset()?;
-                let r = outs
-                    .iter()
-                    .filter_map(|(k, v)| {
-                        let v = v.as_leaf()?;
-                        Some((k.clone(), v.clone()))
-                    })
-                    .collect();
-                Some(r)
-            };
-            let mr = f();
-            output.pop(ks);
-            mr.unwrap_or(BTreeMap::new())
+        let pop_tree = |inventory_item: &mut Option<&mut InventoryItem>,
+                        ks: &[&str]|
+         -> BTreeMap<String, Leaf> {
+            let mut result = BTreeMap::new();
+
+            if let Some(item) = inventory_item {
+                if let Some(out) = item.pop(ks) {
+                    if let Some(outs) = out.as_attrset() {
+                        for (k, v) in outs {
+                            if let Some(leaf) = v.as_leaf() {
+                                result.insert(k.clone(), leaf.clone());
+                            }
+                        }
+                    }
+                }
+                item.pop(ks);
+            }
+
+            result
         };
         let pop_per_system_tree = |output: &mut FlakeOutputs, k: &str| -> BTreeMap<String, Leaf> {
             pop_tree(
-                output,
-                &[k, "output", "children", system.as_ref(), "children"],
+                &mut output.inventory.get_mut(k),
+                &["children", system.as_ref(), "children"],
             )
         };
         let pop_leaf_type = |output: &mut FlakeOutputs, k: &str| -> Option<Leaf> {
-            let leaf = output
-                .pop(&[k, "output", "children", system.as_ref()])?
+            let inventory_item = output.inventory.get_mut(k)?;
+            let leaf = inventory_item
+                .pop(&["children", system.as_ref()])?
                 .as_leaf()?
                 .clone();
-            output.pop(&[k]);
+            inventory_item.pop(&[k]);
             Some(leaf)
         };
 
@@ -81,18 +85,24 @@ impl FlakeSchema {
             checks: pop_per_system_tree(output, "checks"),
             apps: pop_per_system_tree(output, "apps"),
             formatter: pop_leaf_type(output, "formatter"),
-            nixos_configurations: pop_tree(output, &["nixosConfigurations", "output", "children"]),
-            darwin_configurations: pop_tree(
-                output,
-                &["darwinConfigurations", "output", "children"],
+            nixos_configurations: pop_tree(
+                &mut output.inventory.get_mut("nixosConfigurations"),
+                &["children"],
             ),
-            home_configurations: pop_tree(output, &["homeConfigurations", "output", "children"]),
-            nixos_modules: pop_tree(output, &["nixosModules", "output", "children"]),
-            docker_images: pop_tree(output, &["dockerImages", "output", "children"]),
-            overlays: pop_tree(output, &["overlays", "output", "children"]),
-            templates: pop_tree(output, &["templates", "output", "children"]),
-            schemas: pop_tree(output, &["schemas", "output", "children"]),
-            other: (*output).as_attrset().cloned(),
+            darwin_configurations: pop_tree(
+                &mut output.inventory.get_mut("darwinConfigurations"),
+                &["children"],
+            ),
+            home_configurations: pop_tree(
+                &mut output.inventory.get_mut("homeConfigurations"),
+                &["children"],
+            ),
+            nixos_modules: pop_tree(&mut output.inventory.get_mut("nixosModules"), &["children"]),
+            docker_images: pop_tree(&mut output.inventory.get_mut("dockerImages"), &["children"]),
+            overlays: pop_tree(&mut output.inventory.get_mut("overlays"), &["children"]),
+            templates: pop_tree(&mut output.inventory.get_mut("templates"), &["children"]),
+            schemas: pop_tree(&mut output.inventory.get_mut("schemas"), &["children"]),
+            other: Some(output.clone()),
         }
     }
 }

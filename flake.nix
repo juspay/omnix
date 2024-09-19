@@ -25,11 +25,8 @@
     nix-systems-x86_64-linux.url = "github:nix-systems/x86_64-linux";
     nix-systems-aarch64-linux.url = "github:nix-systems/aarch64-linux";
 
-    # TODO: Use upstream after https://github.com/NixOS/nix/pull/8892
-    # Note: This version of nix is only used to run `nix flake show` in omnix-cli
-    # Also note: Using shivaraj-bh fork of nix which fixes x86_64-darwin on top of github:DeterminateSystems/nix-src/flake-schemas
-    nix.url = "github:shivaraj-bh/nix/flake-schemas";
-    nix.inputs.flake-parts.follows = "flake-parts";
+    inspect.url = "github:juspay/inspect/inventory-for-systems";
+    inspect.flake = false;
   };
 
   outputs = inputs:

@@ -1237,6 +1237,7 @@ dependencies = [
  "clap",
  "colored",
  "is_proc_translated",
+ "lazy_static",
  "nonempty",
  "os_info",
  "regex",
