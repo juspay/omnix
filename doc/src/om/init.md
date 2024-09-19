@@ -1,14 +1,21 @@
 # `om init`
 
-> [!IMPORTANT]
-> `om init` is available as a beta-feature.
-
 The `om init` command provides a better [`nix flake init`](https://nix.dev/manual/nix/2.18/command-ref/new-cli/nix3-flake-init) experience. Specifically, it provides:
 
 1. a registry of flake templates that you can choose from
 2. support for template paramters that can be filled in by the user
 
-## Available templates {#list}
+To get started, run:
+
+```sh
+om init -t ~/myproject
+```
+
+This will prompt you to choose a template from the builtin registry (see below section), and then initialize it in the `myproject` directory.
+
+## Builtin registry {#registry}
+
+The builtin registry contains the following templates:
 
 | Description | Command |
 |-------------|---------|
@@ -16,12 +23,23 @@ The `om init` command provides a better [`nix flake init`](https://nix.dev/manua
 | [Rust project template](https://github.com/srid/rust-nix-template) | `om init rust-nix-template` |
 | [home-manager template](https://github.com/juspay/nix-dev-home) | `om init nix-dev-home` |
 
-## Adding your own project templates {#custom}
+## Initializing your own project templates {#custom}
 
-In future, you would be able to directly initialize a project from a git repository, viz.: `om init <url>`. This is explicitly not yet supported right now, because:
+If your flake provides a `om.templates` output (see below section), then `om init` will recognize it. For example:
 
-> [!NOTE]
-> The specification for template paramters are yet to be finalized. Until, then the relevant parameter configuration is tied to the registry in omnix repo. See [`crates/omnix-init/registry`](https://github.com/juspay/omnix/tree/main/crates/omnix-init/registry).
+```sh
+om init -t ~/myproject github:srid/haskell-flake
+```
+
+Because haskell-flake has [a `om.templates` output](https://github.com/srid/haskell-flake/blob/31d7f050935f5a543212b7624d245f918ab14275/flake.nix#L16-L26), `om init` will prompt you to fill in the parameters defined in the template and initialize it.
+
+You can also explicitly specify the template to choose from the flake:
+
+```sh
+om init -t ~/myproject github:srid/haskell-flake#haskell-flake
+```
+
+If there are multiple templates in the flake (as is the case with the builtin registry), omnix will the prompt the user to choose from them.
 
 ## Configuration spec {#spec}
 

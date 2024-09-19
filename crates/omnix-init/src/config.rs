@@ -8,18 +8,18 @@ use nix_rs::{
 use crate::template::Template;
 
 /// Our builtin registry of templates
-static REGISTRY: LazyLock<FlakeUrl> =
+pub static BUILTIN_REGISTRY: LazyLock<FlakeUrl> =
     LazyLock::new(|| PathBuf::from(env!("OM_INIT_REGISTRY")).into());
 
 /// The `om.templates` config in flake
 pub type TemplatesConfig = HashMap<String, Template>;
 
 /// Load templates from our builtin registry `REGISTRY`
-pub async fn load_templates() -> anyhow::Result<TemplatesConfig> {
+pub async fn load_templates(url: &FlakeUrl) -> anyhow::Result<TemplatesConfig> {
     let v = nix_eval::<TemplatesConfig>(
         &NixCmd::default(),
         &FlakeOptions::default(),
-        &REGISTRY.with_attr("om.templates"),
+        &url.with_attr("om.templates"),
     )
     .await?;
     Ok(v)
