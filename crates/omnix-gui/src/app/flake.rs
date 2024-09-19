@@ -106,7 +106,11 @@ pub fn FlakeOutputsView(output: FlakeOutputs, system: System) -> Element {
         div {
             h2 { class: "my-2",
                 div { class: "text-xl font-bold text-primary-600", "{system.human_readable()}" }
-                span { class: "font-mono text-xs text-gray-500", "(", "{system }", ")" }
+                span { class: "font-mono text-xs text-gray-500",
+                    "("
+                    "{system }"
+                    ")"
+                }
             }
             div { class: "text-left",
                 VecView {
@@ -178,8 +182,8 @@ pub fn FlakeOutputsView(output: FlakeOutputs, system: System) -> Element {
 pub fn VecView(title: &'static str, list: Vec<(String, Leaf)>) -> Element {
     rsx! {
         div {
-            SectionHeading { title: title, extra: list.len().to_string() }
-            VecBodyView { list: list }
+            SectionHeading { title, extra: tree.len().to_string() }
+            BtreeMapBodyView { tree }
         }
     }
 }
@@ -256,7 +260,9 @@ pub fn FlakeOutputsRawView(outs: FlakeOutputs) -> Element {
     }
 
     match outs {
-        FlakeOutputs::Leaf(l) => rsx! { ValView { val: l.as_val().cloned().unwrap_or_default() } },
+        FlakeOutputs::Leaf(l) => rsx! {
+            ValView { val: l.as_val().cloned().unwrap_or_default() }
+        },
         FlakeOutputs::Attrset(v) => rsx! {
             ul { class: "list-disc",
                 for (k , v) in v.iter() {

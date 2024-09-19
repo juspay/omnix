@@ -98,7 +98,7 @@ impl FlakeUrl {
         } else if let Some(path) = self.as_local_path() {
             // Local path; just join the dir
             let path_with_dir = path.join(dir);
-            FlakeUrl(format!("path:{}", path_with_dir.display()))
+            FlakeUrl::from(path_with_dir)
         } else {
             // Non-path URL; append `dir` query parameter
             let mut url = self.0.clone();
@@ -115,7 +115,14 @@ impl FlakeUrl {
 
 impl From<PathBuf> for FlakeUrl {
     fn from(path: PathBuf) -> Self {
-        FlakeUrl(format!("path:{}", path.display()))
+        FlakeUrl::from(path.as_ref())
+    }
+}
+
+impl From<&Path> for FlakeUrl {
+    fn from(path: &Path) -> Self {
+        // We do not use `path:` here, because that will trigger copying to the Nix store.
+        FlakeUrl(format!("{}", path.display()))
     }
 }
 
@@ -176,7 +183,7 @@ mod tests {
     }
 
     #[test]
-    fn test_as_local_flake() {
+    fn test_as_local_path() {
         let url = FlakeUrl("github:srid/nixci".to_string());
         assert_eq!(url.as_local_path(), None);
 
@@ -209,6 +216,14 @@ mod tests {
 
         let url = FlakeUrl("path:/foo?q=bar#attr".to_string());
         assert_eq!(url.as_local_path(), Some(std::path::Path::new("/foo")));
+
+        /* FIXME!
+        let url = FlakeUrl("/project?dir=bar".to_string());
+        assert_eq!(
+            url.as_local_path(),
+            Some(std::path::Path::new("/project/bar"))
+        );
+        */
     }
 
     #[test]
@@ -218,7 +233,7 @@ mod tests {
         assert_eq!(url.sub_flake_url(".".to_string()), url.clone());
         assert_eq!(
             url.sub_flake_url("sub".to_string()),
-            FlakeUrl("path:./sub".to_string())
+            FlakeUrl("./sub".to_string())
         );
 
         // URI refs

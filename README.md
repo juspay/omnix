@@ -21,9 +21,6 @@ See https://omnix.page/
 
 This will automatically activate the nix develop shell. Open VSCode and install recommended extensions, ensuring that direnv activates in VSCode as well.
 
-> [!NOTE]
-> If you would like to **learn the tools & technology** involved in this project, follow along this README noting the places where the emoji 🎓 is used.
-
 ### Running locally
 
 To run `omnix-cli`,
@@ -32,26 +29,16 @@ To run `omnix-cli`,
 just watch # Or `just w`; you can also pass args, e.g.: `just w show`
 ```
 
-To run `omnix-gui`,
-
-```sh
-just watch-gui # Or `just wg`
-```
-
-`just watch-gui` runs `dx serve` (with hot reload disabled) that will restart the desktop app after compilation.
-
 ### Nix workflows
 
 Inside the nix develop shell (activated by direnv) you can use any of the `cargo` or `rustc` commands, as well as [`just`](https://just.systems/) workflows. Nix specific commands can also be used to work with the project:
 
 ```sh
-# Full nix build of CLI & GUI
-nix build .#default .#gui
+# Full nix build of CLI
+nix build .#default
 
 # Build and run the CLI
 nix run
-# Build and run the GUI
-nix run .#gui
 ```
 
 ### Contributing
@@ -67,6 +54,7 @@ nix run .#gui
 
 [^cc]: We don't use any automatic changelog generator for this repo.
 
+<!--
 ### Tech
 
 #### GUI app (`omnix-gui`)
@@ -80,13 +68,14 @@ We use [Tailwind](https://tailwindcss.com/) for styling; 🎓 familiarize yourse
 ###### Color palette
 
 See `tailwind.config.js` for colour aliases we use throughout the app. Instead of, say, `text-pink-500` we use `text-primary-500` ("primary" is more semantic than "pink").
+-->
 
 ### Crates
 
 | Crate                               | Description                                   |
 | ----------------------------------- | --------------------------------------------- |
-| ./crates/nix_rs                     | Rust interface to the Nix command line        |
-| ./crates/nix_health                 | Nix health check library and executable       |
-| ./crates/nixci                      | Define and build CI for Nix projects anywhere |
-| ./crates/flakreate                  | Rich flake templates                          |
+| `./crates/nix_rs`                   | Rust interface to the Nix command line        |
+| `./crates/nix_health`               | Nix health check library and executable       |
+| `./crates/nixci`                    | Define and build CI for Nix projects anywhere |
+| `./crates/omnix-init`               | Rich flake templates                          |
 | https://github.com/juspay/direnv-rs | Rust bindings for direnv                      |

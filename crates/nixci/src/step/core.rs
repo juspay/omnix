@@ -1,19 +1,24 @@
 //! All CI steps available in nixci
 use clap::Parser;
-use nix_rs::{command::NixCmd, flake::url::FlakeUrl};
-use serde::Deserialize;
+use nix_rs::{
+    command::NixCmd,
+    flake::{system::System, url::FlakeUrl},
+};
+use serde::{Deserialize, Serialize};
 
-use crate::command::run::RunCommand;
-use crate::config::subflake::SubflakeConfig;
-use crate::step::{
-    build::{BuildStep, BuildStepArgs},
+use super::{
+    build::{BuildStep, BuildStepArgs, BuildStepResult},
+    custom::CustomSteps,
+    flake_check::FlakeCheckStep,
     lockfile::LockfileStep,
 };
+use crate::command::run::RunCommand;
+use crate::config::subflake::SubflakeConfig;
 
 /// CI steps to run
 ///
 /// Contains some builtin steps, as well as custom steps (defined by user)
-#[derive(Debug, Default, Deserialize)]
+#[derive(Debug, Default, Clone, Deserialize)]
 pub struct Steps {
     /// [LockfileStep]
     #[serde(default, rename = "lockfile")]
@@ -22,7 +27,14 @@ pub struct Steps {
     /// [BuildStep]
     #[serde(default, rename = "build")]
     pub build_step: BuildStep,
-    // TODO: custom steps
+
+    /// [FlakeCheckStep]
+    #[serde(default, rename = "flake-check")]
+    pub flake_check_step: FlakeCheckStep,
+
+    /// Custom steps
+    #[serde(rename = "custom")]
+    pub custom_steps: CustomSteps,
 }
 
 /// CLI arguments associated with [Steps]
@@ -33,6 +45,14 @@ pub struct StepsArgs {
     pub build_step_args: BuildStepArgs,
 }
 
+/// Results of [Steps]
+#[derive(Debug, Serialize, Clone, Default)]
+pub struct StepsResult {
+    /// [BuildStepResult]
+    #[serde(rename = "build")]
+    pub build_step: Option<BuildStepResult>,
+}
+
 impl Steps {
     /// Run all CI steps
     pub async fn run(
@@ -40,14 +60,32 @@ impl Steps {
         cmd: &NixCmd,
         verbose: bool,
         run_cmd: &RunCommand,
+        systems: &[System],
         url: &FlakeUrl,
         subflake: &SubflakeConfig,
-    ) -> anyhow::Result<()> {
-        self.lockfile_step.run(cmd, url, subflake).await?;
-        self.build_step
-            .run(cmd, verbose, run_cmd, url, subflake)
-            .await?;
-        Ok(())
+    ) -> anyhow::Result<StepsResult> {
+        let mut res = StepsResult::default();
+
+        if self.lockfile_step.enable {
+            self.lockfile_step.run(cmd, url, subflake).await?;
+        }
+
+        if self.build_step.enable {
+            let build_res = self
+                .build_step
+                .run(cmd, verbose, run_cmd, url, subflake)
+                .await?;
+            build_res.print();
+            res.build_step = Some(build_res);
+        }
+
+        if self.flake_check_step.enable {
+            self.flake_check_step.run(cmd, url, subflake).await?;
+        }
+
+        self.custom_steps.run(cmd, systems, url, subflake).await?;
+
+        Ok(res)
     }
 }
 

@@ -9,8 +9,8 @@
 //! ```
 
 use std::{
-    ffi::OsStr,
     fmt::{self, Display},
+    process::Stdio,
 };
 
 use serde::{Deserialize, Serialize};
@@ -118,7 +118,11 @@ impl NixCmd {
     where
         T: serde::de::DeserializeOwned,
     {
-        let stdout = self.run_with_args_returning_stdout(args).await?;
+        let stdout: Vec<u8> = self
+            .run_with_returning_stdout(|c| {
+                c.args(args);
+            })
+            .await?;
         let v = serde_json::from_slice::<T>(&stdout)?;
         Ok(v)
     }
@@ -129,21 +133,30 @@ impl NixCmd {
         T: std::str::FromStr,
         <T as std::str::FromStr>::Err: std::fmt::Display,
     {
-        let stdout = self.run_with_args_returning_stdout(args).await?;
+        let stdout = self
+            .run_with_returning_stdout(|c| {
+                c.args(args);
+            })
+            .await?;
         let v = &String::from_utf8_lossy(&stdout);
         let v = T::from_str(v.trim()).map_err(|e| FromStrError(e.to_string()))?;
         Ok(v)
     }
 
-    /// Run nix with given args, returning stdout.
-    pub async fn run_with_args_returning_stdout(
-        &self,
-        args: &[&str],
-    ) -> Result<Vec<u8>, CommandError> {
+    /// Like [Self::run_with] but returns stdout as a [`Vec<u8>`]
+    pub async fn run_with_returning_stdout<F>(&self, f: F) -> Result<Vec<u8>, CommandError>
+    where
+        F: FnOnce(&mut Command),
+    {
         let mut cmd = self.command();
-        cmd.args(args);
+        f(&mut cmd);
         trace_cmd(&cmd);
-        let out = cmd.output().await?;
+
+        cmd.stdout(Stdio::piped());
+        cmd.stderr(Stdio::piped());
+        let child = cmd.spawn()?;
+        let out = child.wait_with_output().await?;
+
         if out.status.success() {
             Ok(out.stdout)
         } else {
@@ -155,14 +168,13 @@ impl NixCmd {
         }
     }
 
-    /// Run nix with given args, letting stdout and stderr be that of parent process
-    pub async fn run_with_args<I, S>(&self, args: I) -> Result<(), CommandError>
+    /// Run Nix with given [Command] customizations, while also tracing the command being run.
+    pub async fn run_with<F>(&self, f: F) -> Result<(), CommandError>
     where
-        I: IntoIterator<Item = S>,
-        S: AsRef<OsStr>,
+        F: FnOnce(&mut Command),
     {
         let mut cmd = self.command();
-        cmd.args(args);
+        f(&mut cmd);
         trace_cmd(&cmd);
         let status = cmd.spawn()?.wait().await?;
         if status.success() {

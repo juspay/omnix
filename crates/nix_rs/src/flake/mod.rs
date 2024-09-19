@@ -1,5 +1,6 @@
 //! Rust module for Nix flakes
 
+pub mod command;
 pub mod eval;
 pub mod metadata;
 pub mod outputs;
@@ -38,7 +39,7 @@ impl Flake {
         nix_config: &NixConfig,
         url: FlakeUrl,
     ) -> Result<Flake, NixCmdError> {
-        let output = FlakeOutputs::from_nix(nix_cmd, &url).await?;
+        let output = FlakeOutputs::from_nix(nix_cmd, &url, &nix_config.system.value).await?;
         Ok(Flake {
             url,
             system: nix_config.system.value.clone(),

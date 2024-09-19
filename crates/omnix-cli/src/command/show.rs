@@ -6,7 +6,7 @@ use colored::Colorize;
 use nix_rs::{
     command::NixCmd,
     config::NixConfig,
-    flake::{outputs::FlakeOutputs, url::FlakeUrl, Flake},
+    flake::{outputs::InventoryItem, url::FlakeUrl, Flake},
 };
 use tabled::{
     settings::{location::ByColumnName, Color, Modify, Style},
@@ -72,7 +72,7 @@ pub struct Row {
 
 impl Row {
     /// Convert a [FlakeOutputs] to vector of [Row]s
-    pub fn from_flake_outputs_for(prefix: &[&str], output: &FlakeOutputs) -> Vec<Row> {
+    pub fn from_flake_outputs_for(prefix: &[&str], output: &InventoryItem) -> Vec<Row> {
         output
             .lookup_returning_qualified_attributes(prefix)
             .map(|v| {
@@ -82,7 +82,8 @@ impl Row {
                         description: leaf
                             .as_val()
                             .and_then(|val| val.short_description.as_deref())
-                            .unwrap_or("N/A")
+                            .filter(|s| !s.is_empty())
+                            .unwrap_or(&String::from("N/A"))
                             .to_owned(),
                     })
                     .collect()
@@ -101,35 +102,50 @@ impl ShowCommand {
             .with_context(|| "Unable to fetch flake")?;
 
         FlakeOutputTable {
-            rows: Row::from_flake_outputs_for(&["packages", system.as_ref()], &flake.output),
+            rows: Row::from_flake_outputs_for(
+                &[system.as_ref()],
+                flake.output.inventory.get("packages").unwrap(),
+            ),
             title: "📦 Packages".to_string(),
             command: Some(format!("nix build {}#<name>", self.flake_url)),
         }
         .print();
 
         FlakeOutputTable {
-            rows: Row::from_flake_outputs_for(&["devShells", system.as_ref()], &flake.output),
+            rows: Row::from_flake_outputs_for(
+                &[system.as_ref()],
+                flake.output.inventory.get("devShells").unwrap(),
+            ),
             title: "🐚 Devshells".to_string(),
             command: Some(format!("nix develop {}#<name>", self.flake_url)),
         }
         .print();
 
         FlakeOutputTable {
-            rows: Row::from_flake_outputs_for(&["apps", system.as_ref()], &flake.output),
+            rows: Row::from_flake_outputs_for(
+                &[system.as_ref()],
+                flake.output.inventory.get("apps").unwrap(),
+            ),
             title: "🚀 Apps".to_string(),
             command: Some(format!("nix run {}#<name>", self.flake_url)),
         }
         .print();
 
         FlakeOutputTable {
-            rows: Row::from_flake_outputs_for(&["checks", system.as_ref()], &flake.output),
+            rows: Row::from_flake_outputs_for(
+                &[system.as_ref()],
+                flake.output.inventory.get("checks").unwrap(),
+            ),
             title: "🔍 Checks".to_string(),
             command: Some("nix flake check".to_string()),
         }
         .print();
 
         FlakeOutputTable {
-            rows: Row::from_flake_outputs_for(&["nixosConfigurations"], &flake.output),
+            rows: Row::from_flake_outputs_for(
+                &[],
+                flake.output.inventory.get("nixosConfigurations").unwrap(),
+            ),
             title: "🐧 NixOS Configurations".to_string(),
             command: Some(format!(
                 "nixos-rebuild switch --flake {}#<name>",
@@ -139,7 +155,10 @@ impl ShowCommand {
         .print();
 
         FlakeOutputTable {
-            rows: Row::from_flake_outputs_for(&["darwinConfigurations"], &flake.output),
+            rows: Row::from_flake_outputs_for(
+                &[],
+                flake.output.inventory.get("darwinConfigurations").unwrap(),
+            ),
             title: "🍏 Darwin Configurations".to_string(),
             command: Some(format!(
                 "darwin-rebuild switch --flake {}#<name>",
@@ -149,7 +168,10 @@ impl ShowCommand {
         .print();
 
         FlakeOutputTable {
-            rows: Row::from_flake_outputs_for(&["nixosModules"], &flake.output),
+            rows: Row::from_flake_outputs_for(
+                &[],
+                flake.output.inventory.get("nixosModules").unwrap(),
+            ),
             title: "🔧 NixOS Modules".to_string(),
             // TODO: Command should be optional
             command: None,
@@ -157,7 +179,10 @@ impl ShowCommand {
         .print();
 
         FlakeOutputTable {
-            rows: Row::from_flake_outputs_for(&["dockerImages"], &flake.output),
+            rows: Row::from_flake_outputs_for(
+                &[],
+                flake.output.inventory.get("dockerImages").unwrap(),
+            ),
             title: "🐳 Docker Images".to_string(),
             // TODO: Try if the below command works
             command: Some(format!("nix build {}#dockerImages.<name>", self.flake_url)),
@@ -165,21 +190,24 @@ impl ShowCommand {
         .print();
 
         FlakeOutputTable {
-            rows: Row::from_flake_outputs_for(&["overlays"], &flake.output),
+            rows: Row::from_flake_outputs_for(&[], flake.output.inventory.get("overlays").unwrap()),
             title: "🎨 Overlays".to_string(),
             command: None,
         }
         .print();
 
         FlakeOutputTable {
-            rows: Row::from_flake_outputs_for(&["templates"], &flake.output),
+            rows: Row::from_flake_outputs_for(
+                &[],
+                flake.output.inventory.get("templates").unwrap(),
+            ),
             title: "📝 Templates".to_string(),
             command: Some(format!("nix flake init -t {}#<name>", self.flake_url)),
         }
         .print();
 
         FlakeOutputTable {
-            rows: Row::from_flake_outputs_for(&["schemas"], &flake.output),
+            rows: Row::from_flake_outputs_for(&[], flake.output.inventory.get("schemas").unwrap()),
             title: "📜 Schemas".to_string(),
             command: None,
         }

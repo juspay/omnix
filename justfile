@@ -43,5 +43,9 @@ test-cli:
 ci:
     nix run . ci
 
+# Run CI locally in devShell (thus, using cargo)
+ci-cargo:
+    cargo run -p omnix-cli -- ci run
+
 clippy:
     cargo clippy --release --locked --all-targets --all-features -- --deny warnings

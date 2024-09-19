@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 /// The (optional) attribute output part of a [super::FlakeUrl]
 ///
 /// Example: `foo` in `.#foo`.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct FlakeAttr(pub Option<String>);
 
 impl FlakeAttr {

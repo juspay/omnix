@@ -10,7 +10,7 @@ in
 
   perSystem = { config, self', inputs', pkgs, lib, ... }: {
     devShells.default = pkgs.mkShell {
-      name = "omnix";
+      name = "omnix-devshell";
       meta.description = "Omnix development environment";
       inputsFrom = [
         config.treefmt.build.devShell
@@ -18,11 +18,14 @@ in
         self'.devShells.rust
       ];
       inherit (config.rust-project.crates."omnix-cli".crane.args)
-        OM_INIT_REGISTRY
-        NIX_FLAKE_SCHEMAS_BIN
+        DEVOUR_FLAKE
+        NIX_SYSTEMS
         DEFAULT_FLAKE_SCHEMAS
+        INSPECT_FLAKE
         OMNIX_SOURCE
+        OM_INIT_REGISTRY
         ;
+
       packages = with pkgs; [
         just
         cargo-watch
@@ -36,10 +39,6 @@ in
         mdbook-alerts
       ];
       shellHook =
-        ''
-          # For nixci
-          export DEVOUR_FLAKE=${inputs.devour-flake}
-        '' +
         ''
           echo
           echo "🍎🍎 Run 'just <recipe>' to get started"

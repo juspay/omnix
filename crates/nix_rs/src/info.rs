@@ -20,16 +20,19 @@ impl NixInfo {
     pub async fn get() -> &'static Result<NixInfo, NixInfoError> {
         NIX_INFO
             .get_or_init(|| async {
+                let nix_version = NixVersion::get().await.as_ref()?;
                 let nix_config = NixConfig::get().await.as_ref()?;
-                let info = NixInfo::new(nix_config.clone()).await?;
+                let info = NixInfo::new(*nix_version, nix_config.clone()).await?;
                 Ok(info)
             })
             .await
     }
 
     /// Determine [NixInfo] on the user's system
-    pub async fn new(nix_config: NixConfig) -> Result<NixInfo, NixInfoError> {
-        let nix_version = NixVersion::from_nix().await?;
+    pub async fn new(
+        nix_version: NixVersion,
+        nix_config: NixConfig,
+    ) -> Result<NixInfo, NixInfoError> {
         let nix_env = NixEnv::detect().await?;
         Ok(NixInfo {
             nix_version,
@@ -49,4 +52,7 @@ pub enum NixInfoError {
 
     #[error("Nix environment error: {0}")]
     NixEnvError(#[from] crate::env::NixEnvError),
+
+    #[error("Nix config error: {0}")]
+    NixConfigError(#[from] &'static crate::config::NixConfigError),
 }

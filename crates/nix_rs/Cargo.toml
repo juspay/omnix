@@ -29,6 +29,9 @@ is_proc_translated = { workspace = true }
 sysinfo = { workspace = true }
 bytesize = { workspace = true }
 clap = { workspace = true, optional = true }
+nonempty = { workspace = true }
+whoami = { workspace = true }
+lazy_static = { workspace = true }
 
 [features]
 clap = ["dep:clap"]

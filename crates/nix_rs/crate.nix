@@ -1,6 +1,7 @@
 { flake
 , pkgs
 , lib
+, rust-project
 , ...
 }:
 
@@ -8,19 +9,23 @@ let
   inherit (flake) inputs;
 in
 {
-  autoWire = true;
+  autoWire = [ "doc" "clippy" ];
   crane = {
     args = {
-      buildInputs = lib.optionals pkgs.stdenv.isDarwin (
-        with pkgs.apple_sdk_frameworks; [
-          IOKit
-        ]
-      );
       nativeBuildInputs = with pkgs; [
         nix # Tests need nix cli
       ];
-      NIX_FLAKE_SCHEMAS_BIN = lib.getExe pkgs.nix-flake-schemas;
-      DEFAULT_FLAKE_SCHEMAS = inputs.flake-schemas;
+      DEFAULT_FLAKE_SCHEMAS = lib.cleanSourceWith {
+        name = "flake-schemas";
+        src = flake.inputs.self + /nix/flake-schemas;
+      };
+      INSPECT_FLAKE = inputs.inspect;
+      NIX_SYSTEMS = builtins.toJSON {
+        x86_64-linux = inputs.nix-systems-x86_64-linux;
+        aarch64-linux = inputs.nix-systems-aarch64-linux;
+        x86_64-darwin = inputs.nix-systems-x86_64-darwin;
+        aarch64-darwin = inputs.nix-systems-aarch64-darwin;
+      };
     };
   };
 }

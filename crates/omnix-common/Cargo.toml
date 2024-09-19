@@ -10,8 +10,15 @@ description = "Common functionality for omnix frontends"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
+anyhow = { workspace = true }
+async-walkdir = { workspace = true }
 clap = { workspace = true }
 clap-verbosity-flag = { workspace = true }
+futures-lite = { workspace = true }
+nix_rs = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 which = { workspace = true }

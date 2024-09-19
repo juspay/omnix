@@ -10,7 +10,7 @@ let
   inherit (pkgs) stdenv pkgsStatic;
 in
 {
-  autoWire = false;
+  autoWire = [ "doc" "clippy" ];
   crane = {
     args = {
       nativeBuildInputs = with pkgs.apple_sdk_frameworks; lib.optionals stdenv.isDarwin [
@@ -34,15 +34,20 @@ in
         ) ++ lib.optionals pkgs.stdenv.isLinux [
         pkgsStatic.openssl
       ];
-      OM_INIT_REGISTRY =
-        lib.cleanSourceWith {
-          name = "flakreate-registry";
-          src = flake.inputs.self + /crates/flakreate/registry;
-        };
-      DEVOUR_FLAKE = inputs.devour-flake;
-      OMNIX_SOURCE = inputs.self;
-      NIX_FLAKE_SCHEMAS_BIN = lib.getExe pkgs.nix-flake-schemas;
-      DEFAULT_FLAKE_SCHEMAS = inputs.flake-schemas;
+
+      inherit (rust-project.crates."nix_rs".crane.args)
+        DEFAULT_FLAKE_SCHEMAS
+        INSPECT_FLAKE
+        NIX_SYSTEMS
+        ;
+      inherit (rust-project.crates."nixci".crane.args)
+        DEVOUR_FLAKE
+        OMNIX_SOURCE
+        ;
+      inherit (rust-project.crates."omnix-init".crane.args)
+        OM_INIT_REGISTRY
+        ;
+
       # Disable tests due to sandboxing issues; we run them on CI
       # instead.
       doCheck = false;

@@ -8,6 +8,9 @@ homepage = "https://omnix.page"
 repository = "https://github.com/juspay/omnix"
 license = "AGPL-3.0-only"
 
+[lib]
+crate-type = ["cdylib", "rlib"]
+
 [[bin]]
 name = "om"
 path = "src/main.rs"
@@ -17,12 +20,12 @@ anyhow = { workspace = true }
 clap = { workspace = true }
 clap-verbosity-flag = { workspace = true }
 colored = { workspace = true }
-flakreate = { workspace = true }
 human-panic = { workspace = true }
 nixci = { workspace = true }
 nix_health = { workspace = true }
 nix_rs = { workspace = true }
 omnix-common = { workspace = true }
+omnix-init = { workspace = true }
 tabled = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
@@ -33,7 +36,7 @@ serde_json = { workspace = true }
 anyhow = { workspace = true }
 assert_cmd = "2"
 assert_fs = "1"
+assert_matches = "1.5"
 ctor = "0.2"
 predicates = "3"
 regex = "1.9"
-rexpect = "0.5"

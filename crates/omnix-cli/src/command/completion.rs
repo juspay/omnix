@@ -1,4 +1,3 @@
-use crate::Args;
 use clap::CommandFactory;
 use clap::Parser;
 use clap_complete::generate;
@@ -13,12 +12,16 @@ pub struct CompletionCommand {
 
 impl CompletionCommand {
     pub fn run(&self) -> anyhow::Result<()> {
-        generate_completion(self.shell)
+        generate_completion(self.shell);
+        Ok(())
     }
 }
 
-pub fn generate_completion(shell: Shell) -> anyhow::Result<()> {
-    let mut cli = Args::command();
-    generate(shell, &mut cli, "om", &mut std::io::stdout());
-    Ok(())
+fn generate_completion(shell: Shell) {
+    generate(
+        shell,
+        &mut crate::args::Args::command(),
+        "om",
+        &mut std::io::stdout(),
+    )
 }

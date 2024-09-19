@@ -20,8 +20,9 @@
       let
         inherit (config.rust-project) crates;
       in
-      {
-        default = crates."omnix-cli".crane.outputs.drv.crate.overrideAttrs (oa: {
+      rec {
+        default = omnix-cli;
+        omnix-cli = crates."omnix-cli".crane.outputs.drv.crate.overrideAttrs (oa: {
           nativeBuildInputs = (oa.nativeBuildInputs or [ ]) ++ [ pkgs.installShellFiles ];
           postInstall = ''
             installShellCompletion --cmd om \
@@ -31,10 +32,7 @@
           '';
         });
 
-        # As autoWire is disabled for omnix-cli, let's check clippy and doc here
-        omnix-cli-clippy = crates."omnix-cli".crane.outputs.drv.clippy;
-        omnix-cli-doc = crates."omnix-cli".crane.outputs.drv.doc;
-
+        /*
         gui = crates."omnix-gui".crane.outputs.drv.crate.overrideAttrs (oa: {
           # Copy over assets for the desktop app to access
           installPhase =
@@ -52,6 +50,7 @@
                 --chdir $out/bin
             '';
         });
+        */
 
       };
   };

@@ -2,7 +2,7 @@
 authors = ["Sridhar Ratnakumar <srid@srid.ca>"]
 edition = "2021"
 # If you change the name here, you must also do it in flake.nix (and run `cargo generate-lockfile` afterwards)
-name = "flakreate"
+name = "omnix-init"
 version = "0.1.0"
 repository = "https://github.com/juspay/omnix"
 description = "Enriched Nix flake templates"
@@ -17,11 +17,13 @@ crate-type = ["cdylib", "rlib"]
 anyhow = { workspace = true }
 colored = { workspace = true }
 console = { workspace = true }
-glob = { workspace = true }
+globset = { workspace = true }
 inquire = { workspace = true }
+itertools = { workspace = true }
 nix_rs = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
+omnix-common = { workspace = true }

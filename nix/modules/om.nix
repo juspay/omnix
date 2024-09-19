@@ -8,8 +8,32 @@ in
   flake = {
     om = {
       ci.default = {
-        omnix.dir = ".";
-        flakreate-registry.dir = "crates/flakreate/registry";
+        omnix = {
+          dir = ".";
+          steps = {
+            # build.enable = false;
+            flake-check.enable = false; # Not necessary
+            custom = {
+              om-show = {
+                type = "app";
+                # name = "default";
+                args = [ "show" "." ];
+              };
+              binary-size-is-small = {
+                type = "app";
+                name = "check-closure-size";
+                systems = [ "x86_64-linux" ]; # We have static binary for Linux only.
+              };
+              cargo-tests = {
+                type = "devshell";
+                # name = "default";
+                command = [ "cargo" "test" ];
+                systems = [ "x86_64-linux" "aarch64-darwin" ]; # Too slow on rosetta
+              };
+            };
+          };
+        };
+        om-init-registry.dir = "crates/omnix-init/registry";
         doc.dir = "doc";
 
         # Because the cargo tests invoking Nix doesn't pass github access tokens..

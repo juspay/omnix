@@ -20,12 +20,17 @@ crate-type = ["cdylib", "rlib"]
 anyhow = { workspace = true }
 clap = { workspace = true }
 colored = { workspace = true }
+futures-lite = { workspace = true }
+lazy_static = { workspace = true }
 nix_health = { workspace = true }
 nix_rs = { workspace = true, features = ["clap"] }
+nonempty = { workspace = true }
+omnix-common = { workspace = true }
 reqwest = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 shell-words = { workspace = true }
+tempfile = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }

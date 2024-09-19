@@ -6,7 +6,7 @@ use serde::Deserialize;
 use super::subflake::SubflakeConfig;
 
 /// CI configuration for a subflake
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct SubflakesConfig(
     // NB: we use BTreeMap instead of HashMap here so that we always iterate
     // configs in a determinitstic (i.e. asciibetical) order
@@ -17,7 +17,7 @@ impl Default for SubflakesConfig {
     /// Default value contains a single entry for the root flake.
     fn default() -> Self {
         let mut subflakes = BTreeMap::new();
-        subflakes.insert("<root>".to_string(), SubflakeConfig::default());
+        subflakes.insert("ROOT".to_string(), SubflakeConfig::default());
         SubflakesConfig(subflakes)
     }
 }
