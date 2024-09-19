@@ -143,7 +143,7 @@ impl NixCmd {
         Ok(v)
     }
 
-    /// Like [run_with] but returns stdout as a [`Vec<u8>`]
+    /// Like [Self::run_with] but returns stdout as a [`Vec<u8>`]
     pub async fn run_with_returning_stdout<F>(&self, f: F) -> Result<Vec<u8>, CommandError>
     where
         F: FnOnce(&mut Command),

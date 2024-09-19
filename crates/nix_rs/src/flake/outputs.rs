@@ -44,7 +44,7 @@ pub enum InventoryItem {
 }
 
 impl FlakeOutputs {
-    /// Determine flake outputs using [INSPECT_FLAKE] and [DEFAULT_FLAKE_SCHEMAS]
+    /// Determine flake outputs using [static@INSPECT_FLAKE] and [static@DEFAULT_FLAKE_SCHEMAS]
     pub async fn from_nix(
         nix_cmd: &crate::command::NixCmd,
         flake_url: &super::url::FlakeUrl,
@@ -194,7 +194,7 @@ pub struct Skipped {
 
 /// The type of a flake output [Val]
 ///
-/// These types can differ based on [DEFAULT_FLAKE_SCHEMAS].
+/// These types can differ based on [static@DEFAULT_FLAKE_SCHEMAS].
 /// The types here are based on <https://github.com/DeterminateSystems/flake-schemas>
 /// For example, see [NixosModule type](https://github.com/DeterminateSystems/flake-schemas/blob/0a5c42297d870156d9c57d8f99e476b738dcd982/flake.nix#L268)
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
