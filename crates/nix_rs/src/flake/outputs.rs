@@ -1,22 +1,32 @@
 //! Nix flake outputs
 
+use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 use std::{
     collections::{btree_map::Entry, BTreeMap},
     fmt::Display,
+    path::Path,
 };
 
 use crate::system_list::SystemsListFlakeRef;
 
-/// Flake URL of the default flake schemas
-///
-/// We expect this environment to be set in Nix build and shell.
-pub const DEFAULT_FLAKE_SCHEMAS: &str = env!("DEFAULT_FLAKE_SCHEMAS");
+use super::{command::FlakeOptions, eval::nix_eval, url::FlakeUrl};
 
-/// Flake URL of the flake that defines functions for inspecting flake outputs
-///
-/// We expect this environment to be set in Nix build and shell.
-pub const INSPECT_FLAKE: &str = env!("INSPECT_FLAKE");
+lazy_static! {
+  /// Flake URL of the default flake schemas
+  ///
+  /// We expect this environment to be set in Nix build and shell.
+  pub static ref DEFAULT_FLAKE_SCHEMAS: FlakeUrl = {
+    Into::<FlakeUrl>::into(Path::new(env!("DEFAULT_FLAKE_SCHEMAS")))
+  };
+
+  /// Flake URL of the flake that defines functions for inspecting flake outputs
+  ///
+  /// We expect this environment to be set in Nix build and shell.
+  pub static ref INSPECT_FLAKE: FlakeUrl = {
+    Into::<FlakeUrl>::into(Path::new(env!("INSPECT_FLAKE")))
+  };
+}
 
 /// Represents the "outputs" of a flake
 ///
@@ -34,38 +44,40 @@ pub enum InventoryItem {
 }
 
 impl FlakeOutputs {
-    /// Determine flake outputs using [INSPECT_FLAKE] and [DEFAULT_FLAKE_SCHEMAS]
+    /// Determine flake outputs using [static@INSPECT_FLAKE] and [static@DEFAULT_FLAKE_SCHEMAS]
     pub async fn from_nix(
         nix_cmd: &crate::command::NixCmd,
         flake_url: &super::url::FlakeUrl,
         system: &super::System,
     ) -> Result<Self, crate::command::NixCmdError> {
-        let v = nix_cmd
-            .run_with_args_expecting_json(&[
-                "eval",
-                "--json",
-                "--override-input",
-                "flake-schemas",
-                env!("DEFAULT_FLAKE_SCHEMAS"),
-                "--override-input",
-                "flake",
-                flake_url,
-                "--override-input",
-                "systems",
-                // TODO: don't use unwrap
-                &SystemsListFlakeRef::from_known_system(system).unwrap().0,
-                "--no-write-lock-file",
-                // Why `exculdingOutputPaths`?
-                //   This function is much faster than `includingOutputPaths` and also solves <https://github.com/juspay/omnix/discussions/231>
-                //   Also See: https://github.com/DeterminateSystems/inspect/blob/7f0275abbdc46b3487ca69e2acd932ce666a03ff/flake.nix#L139
-                //
-                //
-                // Note: We might need to use `includingOutputPaths` in the future, when replacing `devour-flake`.
-                // In which case, `om ci` and `om show` can invoke the appropriate function from `INSPECT_FLAKE`.
-                //
-                &format!("{}#contents.excludingOutputPaths", env!("INSPECT_FLAKE")),
-            ])
-            .await?;
+        let inspect_flake: FlakeUrl = INSPECT_FLAKE
+            // Why `exculdingOutputPaths`?
+            //   This function is much faster than `includingOutputPaths` and also solves <https://github.com/juspay/omnix/discussions/231>
+            //   Also See: https://github.com/DeterminateSystems/inspect/blob/7f0275abbdc46b3487ca69e2acd932ce666a03ff/flake.nix#L139
+            //
+            //
+            // Note: We might need to use `includingOutputPaths` in the future, when replacing `devour-flake`.
+            // In which case, `om ci` and `om show` can invoke the appropriate function from `INSPECT_FLAKE`.
+            //
+            .with_attr("contents.excludingOutputPaths");
+        let systems_flake = SystemsListFlakeRef::from_known_system(system)
+            // TODO: don't use unwrap
+            .unwrap()
+            .0
+            .clone();
+        let flake_opts = FlakeOptions {
+            no_write_lock_file: true,
+            override_inputs: BTreeMap::from_iter([
+                (
+                    "flake-schemas".to_string(),
+                    DEFAULT_FLAKE_SCHEMAS.to_owned(),
+                ),
+                ("flake".to_string(), flake_url.clone()),
+                ("systems".to_string(), systems_flake),
+            ]),
+            ..Default::default()
+        };
+        let v = nix_eval::<Self>(nix_cmd, &flake_opts, &inspect_flake).await?;
         Ok(v)
     }
 }
@@ -182,7 +194,7 @@ pub struct Skipped {
 
 /// The type of a flake output [Val]
 ///
-/// These types can differ based on [DEFAULT_FLAKE_SCHEMAS].
+/// These types can differ based on [static@DEFAULT_FLAKE_SCHEMAS].
 /// The types here are based on <https://github.com/DeterminateSystems/flake-schemas>
 /// For example, see [NixosModule type](https://github.com/DeterminateSystems/flake-schemas/blob/0a5c42297d870156d9c57d8f99e476b738dcd982/flake.nix#L268)
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

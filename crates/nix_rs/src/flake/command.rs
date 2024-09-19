@@ -68,10 +68,13 @@ impl OutPath {
 }
 
 /// Nix CLI options when interacting with a flake
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct FlakeOptions {
     /// The --override-input option to pass to Nix
     pub override_inputs: BTreeMap<String, FlakeUrl>,
+
+    /// Pass --no-write-lock-file
+    pub no_write_lock_file: bool,
 
     /// The directory from which to run our nix command (such that relative flake URLs resolve properly)
     pub current_dir: Option<PathBuf>,
@@ -79,12 +82,15 @@ pub struct FlakeOptions {
 
 impl FlakeOptions {
     /// Apply these options to a (Nix) [Command]
-    fn use_in_command(&self, cmd: &mut Command) {
+    pub fn use_in_command(&self, cmd: &mut Command) {
         if let Some(curent_dir) = &self.current_dir {
             cmd.current_dir(curent_dir);
         }
         for (name, url) in self.override_inputs.iter() {
             cmd.arg("--override-input").arg(name).arg(url.to_string());
+        }
+        if self.no_write_lock_file {
+            cmd.arg("--no-write-lock-file");
         }
     }
 }
