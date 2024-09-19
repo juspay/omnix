@@ -24,25 +24,22 @@ pub async fn initialize_template(
 
     // Prompt the user to select a template
     let available: Vec<String> = templates.keys().cloned().collect();
-    let name: &String = match registry.get_attr().0 {
-        Some(attr) => &attr.clone(),
-        None => {
-            if available.len() < 2 {
-                if let Some(name) = available.first() {
-                    tracing::info!(
-                        "Automatically choosing the one template available: {}",
-                        name
-                    );
-                    name
-                } else {
-                    return Err(anyhow::anyhow!("No templates available"));
-                }
-            } else if non_interactive {
-                return Err(anyhow::anyhow!("Non-interactive mode requires exactly one template to be available; but {} are available. Explicit specify it in flake URL.", available.len()));
-            } else {
-                &inquire::Select::new("Select a template", available).prompt()?
-            }
+    let name: &String = if let Some(attr) = registry.get_attr().0 {
+        &attr.clone()
+    } else if available.len() < 2 {
+        if let Some(name) = available.first() {
+            tracing::info!(
+                "Automatically choosing the one template available: {}",
+                name
+            );
+            name
+        } else {
+            return Err(anyhow::anyhow!("No templates available"));
         }
+    } else if non_interactive {
+        return Err(anyhow::anyhow!("Non-interactive mode requires exactly one template to be available; but {} are available. Explicit specify it in flake URL.", available.len()));
+    } else {
+        &inquire::Select::new("Select a template", available).prompt()?
     };
 
     let mut template = templates
