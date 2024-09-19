@@ -33,6 +33,14 @@ om init -t ~/myproject github:srid/haskell-flake
 
 Because haskell-flake has [a `om.templates` output](https://github.com/srid/haskell-flake/blob/31d7f050935f5a543212b7624d245f918ab14275/flake.nix#L16-L26), `om init` will prompt you to fill in the parameters defined in the template and initialize it.
 
+You can also explicitly specify the template to choose from the flake:
+
+```sh
+om init -t ~/myproject github:srid/haskell-flake#haskell-flake
+```
+
+If there are multiple templates in the flake (as is the case with the builtin registry), omnix will the prompt the user to choose from them.
+
 ## Configuration spec {#spec}
 
 Omnix templates can be defined by adding a `om.template` flake output. This should be an attrset of templates. The value should contain the keys `template` (referring to original flake template) as well as `params`, defined as follows:

@@ -15,7 +15,7 @@ pub static BUILTIN_REGISTRY: LazyLock<FlakeUrl> =
 pub type TemplatesConfig = HashMap<String, Template>;
 
 /// Load templates from our builtin registry `REGISTRY`
-pub async fn load_templates(url: FlakeUrl) -> anyhow::Result<TemplatesConfig> {
+pub async fn load_templates(url: &FlakeUrl) -> anyhow::Result<TemplatesConfig> {
     let v = nix_eval::<TemplatesConfig>(
         &NixCmd::default(),
         &FlakeOptions::default(),
