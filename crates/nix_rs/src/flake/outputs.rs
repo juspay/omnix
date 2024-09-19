@@ -1,5 +1,6 @@
 //! Nix flake outputs
 
+use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 use std::{
     collections::{btree_map::Entry, BTreeMap},
@@ -11,15 +12,21 @@ use crate::system_list::SystemsListFlakeRef;
 
 use super::{command::FlakeOptions, eval::nix_eval, url::FlakeUrl};
 
-/// Flake URL of the default flake schemas
-///
-/// We expect this environment to be set in Nix build and shell.
-pub const DEFAULT_FLAKE_SCHEMAS: &str = env!("DEFAULT_FLAKE_SCHEMAS");
+lazy_static! {
+  /// Flake URL of the default flake schemas
+  ///
+  /// We expect this environment to be set in Nix build and shell.
+  pub static ref DEFAULT_FLAKE_SCHEMAS: FlakeUrl = {
+    Into::<FlakeUrl>::into(Path::new(env!("DEFAULT_FLAKE_SCHEMAS")))
+  };
 
-/// Flake URL of the flake that defines functions for inspecting flake outputs
-///
-/// We expect this environment to be set in Nix build and shell.
-pub const INSPECT_FLAKE: &str = env!("INSPECT_FLAKE");
+  /// Flake URL of the flake that defines functions for inspecting flake outputs
+  ///
+  /// We expect this environment to be set in Nix build and shell.
+  pub static ref INSPECT_FLAKE: FlakeUrl = {
+    Into::<FlakeUrl>::into(Path::new(env!("INSPECT_FLAKE")))
+  };
+}
 
 /// Represents the "outputs" of a flake
 ///
@@ -43,7 +50,7 @@ impl FlakeOutputs {
         flake_url: &super::url::FlakeUrl,
         system: &super::System,
     ) -> Result<Self, crate::command::NixCmdError> {
-        let inspect_flake: FlakeUrl = Into::<FlakeUrl>::into(Path::new(INSPECT_FLAKE))
+        let inspect_flake: FlakeUrl = INSPECT_FLAKE
             // Why `exculdingOutputPaths`?
             //   This function is much faster than `includingOutputPaths` and also solves <https://github.com/juspay/omnix/discussions/231>
             //   Also See: https://github.com/DeterminateSystems/inspect/blob/7f0275abbdc46b3487ca69e2acd932ce666a03ff/flake.nix#L139
@@ -53,7 +60,6 @@ impl FlakeOutputs {
             // In which case, `om ci` and `om show` can invoke the appropriate function from `INSPECT_FLAKE`.
             //
             .with_attr("contents.excludingOutputPaths");
-        let flake_schema: FlakeUrl = Path::new(DEFAULT_FLAKE_SCHEMAS).into();
         let systems_flake = SystemsListFlakeRef::from_known_system(system)
             // TODO: don't use unwrap
             .unwrap()
@@ -62,7 +68,10 @@ impl FlakeOutputs {
         let flake_opts = FlakeOptions {
             no_write_lock_file: true,
             override_inputs: BTreeMap::from_iter([
-                ("flake-schemas".to_string(), flake_schema),
+                (
+                    "flake-schemas".to_string(),
+                    DEFAULT_FLAKE_SCHEMAS.to_owned(),
+                ),
                 ("flake".to_string(), flake_url.clone()),
                 ("systems".to_string(), systems_flake),
             ]),
