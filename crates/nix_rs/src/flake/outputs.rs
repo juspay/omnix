@@ -53,7 +53,7 @@ impl FlakeOutputs {
                 "--override-input",
                 "systems",
                 // TODO: don't use unwrap
-                &SystemsListFlakeRef::from_known_system(&system).unwrap().0,
+                &SystemsListFlakeRef::from_known_system(system).unwrap().0,
                 "--no-write-lock-file",
                 // Why `exculdingOutputPaths`?
                 //   This function is much faster than `includingOutputPaths` and also solves <https://github.com/juspay/omnix/discussions/231>

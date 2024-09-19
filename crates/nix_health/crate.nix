@@ -21,6 +21,7 @@ in
       inherit (rust-project.crates."nix_rs".crane.args)
         DEFAULT_FLAKE_SCHEMAS
         INSPECT_FLAKE
+        NIX_SYSTEMS
         ;
       nativeBuildInputs = with pkgs; [
         nix # Tests need nix cli
