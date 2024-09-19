@@ -1,12 +1,12 @@
 //! UI for /flake segment of the app
 
-use std::path::PathBuf;
+use std::{collections::BTreeMap, path::PathBuf};
 
 use dioxus::prelude::*;
 use dioxus_router::components::Link;
 use nix_rs::flake::{
     outputs::{FlakeOutputs, Leaf, Type, Val},
-    system::System,
+    schema::FlakeSchema,
     url::FlakeUrl,
     Flake,
 };
@@ -82,7 +82,7 @@ pub fn FlakeView(flake: Flake) -> Element {
             div { class: "text-sm italic text-gray-600",
                 Link { to: Route::FlakeRaw {}, "View raw output" }
             }
-            FlakeOutputsView { output: flake.output, system: flake.system.clone() }
+            FlakeSchemaView { schema: flake.schema }
         }
     }
 }
@@ -101,7 +101,8 @@ pub fn SectionHeading(title: &'static str, extra: Option<String>) -> Element {
 }
 
 #[component]
-pub fn FlakeOutputsView(output: FlakeOutputs, system: System) -> Element {
+pub fn FlakeSchemaView(schema: FlakeSchema) -> Element {
+    let system = schema.system.clone();
     rsx! {
         div {
             h2 { class: "my-2",
@@ -113,64 +114,26 @@ pub fn FlakeOutputsView(output: FlakeOutputs, system: System) -> Element {
                 }
             }
             div { class: "text-left",
-                VecView {
-                    title: "Packages",
-                    list: output
-                        .lookup_returning_qualified_attributes(&["packages", system.as_ref()])
-                        .unwrap_or_default()
-                }
-                VecView {
-                    title: "Legacy Packages",
-                    list: output
-                        .lookup_returning_qualified_attributes(&["legacyPackages", system.as_ref()])
-                        .unwrap_or_default()
-                }
-                VecView {
-                    title: "Dev Shells",
-                    list: output
-                        .lookup_returning_qualified_attributes(&["devShells", system.as_ref()])
-                        .unwrap_or_default()
-                }
-                VecView {
-                    title: "Checks",
-                    list: output
-                        .lookup_returning_qualified_attributes(&["checks", system.as_ref()])
-                        .unwrap_or_default()
-                }
-                VecView {
-                    title: "Apps",
-                    list: output
-                        .lookup_returning_qualified_attributes(&["apps", system.as_ref()])
-                        .unwrap_or_default()
-                }
-                VecView {
-                    title: "NixOS configurations",
-                    list: output
-                        .lookup_returning_qualified_attributes(&["nixosConfigurations"])
-                        .unwrap_or_default()
-                }
-                VecView {
-                    title: "Darwin configurations",
-                    list: output
-                        .lookup_returning_qualified_attributes(&["darwinConfigurations"])
-                        .unwrap_or_default()
-                }
-                VecView {
-                    title: "NixOS modules",
-                    list: output.lookup_returning_qualified_attributes(&["nixosModules"]).unwrap_or_default()
-                }
+                BtreeMapView { title: "Packages", tree: schema.packages }
+                BtreeMapView { title: "Legacy Packages", tree: schema.legacy_packages }
+                BtreeMapView { title: "Dev Shells", tree: schema.devshells }
+                BtreeMapView { title: "Checks", tree: schema.checks }
+                BtreeMapView { title: "Apps", tree: schema.apps }
+                BtreeMapView { title: "NixOS configurations", tree: schema.nixos_configurations }
+                BtreeMapView { title: "Darwin configurations", tree: schema.darwin_configurations }
+                BtreeMapView { title: "NixOS modules", tree: schema.nixos_modules }
                 SectionHeading { title: "Formatter" }
-                match output.lookup_returning_qualified_attributes(&["formatter", system.as_ref()]) {
+                match schema.formatter.as_ref() {
                     Some(l) => {
-                        match l.first() {
-                            Some((_, leaf)) => {
-                                let v = leaf.as_val().cloned().unwrap_or_default();
-                                let k = v.derivation_name.as_deref().unwrap_or("formatter");
-                                rsx! { FlakeValView { k: k, v: v.clone() } }
-                            },
-                            None => rsx! { "" }
-                        }
+                        let v = l.as_val().cloned().unwrap_or_default();
+                        let k = v.derivation_name.as_deref().unwrap_or("formatter");
+                        rsx! { FlakeValView { k: k, v: v.clone() } }
                     },
+                    None => rsx! { "" }
+                },
+                SectionHeading { title: "Other" }
+                match &schema.other {
+                    Some(v) => rsx! { FlakeOutputsRawView { outs: FlakeOutputs::Attrset(v.clone()) } },
                     None => rsx! { "" }
                 }
             }
@@ -179,7 +142,7 @@ pub fn FlakeOutputsView(output: FlakeOutputs, system: System) -> Element {
 }
 
 #[component]
-pub fn VecView(title: &'static str, list: Vec<(String, Leaf)>) -> Element {
+pub fn BtreeMapView(title: &'static str, tree: BTreeMap<String, Leaf>) -> Element {
     rsx! {
         div {
             SectionHeading { title, extra: tree.len().to_string() }
@@ -189,10 +152,10 @@ pub fn VecView(title: &'static str, list: Vec<(String, Leaf)>) -> Element {
 }
 
 #[component]
-pub fn VecBodyView(list: Vec<(String, Leaf)>) -> Element {
+pub fn BtreeMapBodyView(tree: BTreeMap<String, Leaf>) -> Element {
     rsx! {
         div { class: "flex flex-wrap justify-start",
-            for (k , l) in list.iter() {
+            for (k , l) in tree.iter() {
                 FlakeValView { k: k.clone(), v: l.as_val().cloned().unwrap_or_default() }
             }
         }
