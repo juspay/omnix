@@ -71,7 +71,7 @@ pub struct Row {
 }
 
 impl Row {
-    /// Convert a [FlakeOutputs] to vector of [Row]s
+    /// Convert a [InventoryItem] to vector of [Row]s
     pub fn from_flake_outputs_for(prefix: &[&str], output: &InventoryItem) -> Vec<Row> {
         output
             .lookup_returning_qualified_attributes(prefix)
@@ -101,6 +101,7 @@ impl ShowCommand {
             .await
             .with_context(|| "Unable to fetch flake")?;
 
+        // TODO: Handle all the unwraps below
         FlakeOutputTable {
             rows: Row::from_flake_outputs_for(
                 &[system.as_ref()],
