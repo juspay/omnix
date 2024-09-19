@@ -187,7 +187,6 @@ impl Leaf {
 pub struct Val {
     #[serde(rename = "what")]
     pub type_: Type,
-    /// The name derived from the derivation in the flake output
     pub derivation_name: Option<String>,
     pub short_description: Option<String>,
 }
