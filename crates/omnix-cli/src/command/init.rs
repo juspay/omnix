@@ -1,6 +1,7 @@
 use std::{collections::HashMap, path::PathBuf, str::FromStr};
 
 use clap::Parser;
+use nix_rs::flake::url::FlakeUrl;
 use serde_json::Value;
 
 /// Initialize a new flake project
@@ -10,12 +11,10 @@ pub struct InitCommand {
     #[arg(short = 'o', long = "output")]
     path: PathBuf,
 
-    /// The name of the template to use
+    /// The flake from which to initialize the template to use
     ///
-    /// If not passed, the user will presented with a list of templates to choose from.
-    ///
-    /// In future, this will support arbitrary URLs. For now, we only support builtin templates.
-    template: Option<String>,
+    /// Defaults to builtin registry of flake templates.
+    template: Option<FlakeUrl>,
 
     /// Parameter values to use for the template by default.
     #[arg(long = "params")]

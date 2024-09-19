@@ -1,7 +1,8 @@
 use std::{collections::HashMap, path::Path};
 
-use crate::config::load_templates;
+use crate::config::{load_templates, BUILTIN_REGISTRY};
 use anyhow::Context;
+use nix_rs::flake::url::FlakeUrl;
 use serde_json::Value;
 
 /// Initialize a template at the given path
@@ -13,24 +14,31 @@ use serde_json::Value;
 /// - `non_interactive` - Whether to disable user prompts (all params must have values set)
 pub async fn initialize_template(
     path: &Path,
-    name: Option<String>,
+    flake: Option<FlakeUrl>,
     default_params: &HashMap<String, Value>,
     non_interactive: bool,
 ) -> anyhow::Result<()> {
     tracing::info!("Loading registry ...");
-    let templates = load_templates().await?;
+    let templates = load_templates(flake.unwrap_or(BUILTIN_REGISTRY.clone())).await?;
 
-    // If the name is not provided, prompt the user to select a template
-    let name = match name {
-        Some(name) => name,
-        None => {
-            let p = inquire::Select::new("Select a template", templates.keys().cloned().collect());
-            p.prompt()?
+    // Prompt the user to select a template
+    let available: Vec<String> = templates.keys().cloned().collect();
+    let name = if available.len() < 2 {
+        if let Some(name) = available.first() {
+            tracing::info!(
+                "Automatically choosing the one template available: {}",
+                name
+            );
+            name
+        } else {
+            return Err(anyhow::anyhow!("No templates available"));
         }
+    } else {
+        &inquire::Select::new("Select a template", available).prompt()?
     };
 
     let mut template = templates
-        .get(&name)
+        .get(name)
         .cloned()
         .with_context(|| "Template not found")?;
 
