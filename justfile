@@ -6,8 +6,6 @@ default:
 
 # Auto-format the source tree
 fmt:
-    find crates/omnix-gui/src -name \*.rs | xargs -n1 sh -c 'echo "📔 $1"; dx fmt -f $1' sh
-    # Run treefmt *after* 'dx fmt' because the later rewrites the former!
     treefmt
 
 alias f := fmt
