@@ -4,9 +4,12 @@ use serde::{Deserialize, Serialize};
 use std::{
     collections::{btree_map::Entry, BTreeMap},
     fmt::Display,
+    path::Path,
 };
 
 use crate::system_list::SystemsListFlakeRef;
+
+use super::{command::FlakeOptions, eval::nix_eval, url::FlakeUrl};
 
 /// Flake URL of the default flake schemas
 ///
@@ -40,32 +43,32 @@ impl FlakeOutputs {
         flake_url: &super::url::FlakeUrl,
         system: &super::System,
     ) -> Result<Self, crate::command::NixCmdError> {
-        let v = nix_cmd
-            .run_with_args_expecting_json(&[
-                "eval",
-                "--json",
-                "--override-input",
-                "flake-schemas",
-                env!("DEFAULT_FLAKE_SCHEMAS"),
-                "--override-input",
-                "flake",
-                flake_url,
-                "--override-input",
-                "systems",
-                // TODO: don't use unwrap
-                &SystemsListFlakeRef::from_known_system(system).unwrap().0,
-                "--no-write-lock-file",
-                // Why `exculdingOutputPaths`?
-                //   This function is much faster than `includingOutputPaths` and also solves <https://github.com/juspay/omnix/discussions/231>
-                //   Also See: https://github.com/DeterminateSystems/inspect/blob/7f0275abbdc46b3487ca69e2acd932ce666a03ff/flake.nix#L139
-                //
-                //
-                // Note: We might need to use `includingOutputPaths` in the future, when replacing `devour-flake`.
-                // In which case, `om ci` and `om show` can invoke the appropriate function from `INSPECT_FLAKE`.
-                //
-                &format!("{}#contents.excludingOutputPaths", env!("INSPECT_FLAKE")),
-            ])
-            .await?;
+        let inspect_flake: FlakeUrl = Into::<FlakeUrl>::into(Path::new(INSPECT_FLAKE))
+            // Why `exculdingOutputPaths`?
+            //   This function is much faster than `includingOutputPaths` and also solves <https://github.com/juspay/omnix/discussions/231>
+            //   Also See: https://github.com/DeterminateSystems/inspect/blob/7f0275abbdc46b3487ca69e2acd932ce666a03ff/flake.nix#L139
+            //
+            //
+            // Note: We might need to use `includingOutputPaths` in the future, when replacing `devour-flake`.
+            // In which case, `om ci` and `om show` can invoke the appropriate function from `INSPECT_FLAKE`.
+            //
+            .with_attr("contents.excludingOutputPaths");
+        let flake_schema: FlakeUrl = Path::new(DEFAULT_FLAKE_SCHEMAS).into();
+        let systems_flake = SystemsListFlakeRef::from_known_system(system)
+            // TODO: don't use unwrap
+            .unwrap()
+            .0
+            .clone();
+        let flake_opts = FlakeOptions {
+            no_write_lock_file: true,
+            override_inputs: BTreeMap::from_iter([
+                ("flake-schemas".to_string(), flake_schema),
+                ("flake".to_string(), flake_url.clone()),
+                ("systems".to_string(), systems_flake),
+            ]),
+            ..Default::default()
+        };
+        let v = nix_eval::<Self>(nix_cmd, &flake_opts, &inspect_flake).await?;
         Ok(v)
     }
 }

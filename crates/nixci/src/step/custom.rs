@@ -76,6 +76,7 @@ impl CustomStep {
         let flake_opts = flake::command::FlakeOptions {
             override_inputs: subflake.override_inputs.clone(),
             current_dir: Some(path.clone()),
+            no_write_lock_file: false,
         };
 
         match self {
