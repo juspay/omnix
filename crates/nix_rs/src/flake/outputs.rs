@@ -99,63 +99,13 @@ impl InventoryItem {
         }
     }
 
-    /// Lookup the given output prefix, returning a list of ([String], [Leaf]) pairs.
-    ///
-    /// Given the following json output of `nix flake show`:
-    /// ```json
-    /// {
-    /// "packages": {
-    ///   "doc": "The `packages` flake output contains packages that can be added to a shell using `nix shell`.\n",
-    ///   "output": {
-    ///     "children": {
-    ///       "aarch64-darwin": {
-    ///         "children": {
-    ///           "cargo-doc-live": {
-    ///             "derivationName": "cargo-doc-live",
-    ///             "leaf": true,
-    ///             "what": "package"
-    ///           },
-    ///           "default": {
-    ///             "derivationName": "omnix-cli-0.1.0",
-    ///             "leaf": true,
-    ///             "shortDescription": "Improve developer experience of using Nix",
-    ///             "what": "package"
-    ///           },
-    ///           "gui": {
-    ///             "derivationName": "omnix-gui-0.1.0",
-    ///             "leaf": true,
-    ///             "shortDescription": "Graphical interface for Omnix",
-    ///             "what": "package"
-    ///           }
-    ///         }
-    ///       }
-    ///     }
-    ///   }
-    /// }
-    /// ```
-    ///
-    /// And given the prefix `packages` we get:
-    /// ```rust,ignore
-    /// Some([
-    ///   ("doc", Doc("The `packages` flake output contains packages that can be added to a shell using `nix shell`.\n")),
-    ///   ("aarch64-darwin.cargo-doc-live", Val(Val { type_: Package, derivation_name: Some("cargo-doc-live"), short_description: None, value: None })),
-    ///   ("aarch64-darwin.default", Val(Val { type_: Package, derivation_name: Some("omnix-cli-0.1.0"), short_description: Some("Improve developer experience of using Nix"), value: None })),
-    ///   ("aarch64-darwin.gui", Val(Val { type_: Package, derivation_name: Some("omnix-gui-0.1.0"), short_description: Some("Graphical interface for Omnix"), value: None })),
-    /// ])
-    /// ```
-    /// And similarly, for the prefix `packages.aarch64-darwin` we get:
-    /// ```rust,ignore
-    /// Some([
-    ///   ("cargo-doc-live", Val(Val { type_: Package, derivation_name: Some("cargo-doc-live"), short_description: None, value: None })),
-    ///   ("default", Val(Val { type_: Package, derivation_name: Some("omnix-cli-0.1.0"), short_description: Some("Improve developer experience of using Nix"), value: None })),
-    ///   ("gui", Val(Val { type_: Package, derivation_name: Some("omnix-gui-0.1.0"), short_description: Some("Graphical interface for Omnix"), value: None })),
-    /// ])
-    /// ```
+    /// Lookup the given path in the output, returning a list of ([String], [Leaf]) pairs,
+    /// where [String] represents the qualified attribute and [Leaf] its value.
     pub fn lookup_returning_qualified_attributes(
         &self,
-        prefix: &[&str],
+        path: &[&str],
     ) -> Option<Vec<(String, Leaf)>> {
-        if prefix.is_empty() {
+        if path.is_empty() {
             match self {
                 Self::Attrset(_) => Some(self.to_qualified_attributes().into_iter().collect()),
                 Self::Leaf(Leaf::Doc(_)) => Some(vec![]),
@@ -165,11 +115,11 @@ impl InventoryItem {
             match self {
                 Self::Attrset(v) => {
                     if let Some(children) = v.get("children") {
-                        children.lookup_returning_qualified_attributes(prefix)
+                        children.lookup_returning_qualified_attributes(path)
                     } else if let Some(output) = v.get("output") {
-                        output.lookup_returning_qualified_attributes(prefix)
-                    } else if let Some(entry) = v.get(prefix[0]) {
-                        entry.lookup_returning_qualified_attributes(&prefix[1..])
+                        output.lookup_returning_qualified_attributes(path)
+                    } else if let Some(entry) = v.get(path[0]) {
+                        entry.lookup_returning_qualified_attributes(&path[1..])
                     } else {
                         None
                     }
