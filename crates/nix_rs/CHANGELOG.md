@@ -27,6 +27,7 @@
   - Add module, for `nix run`, `nix build` and `nix develop`
 - **`version`**:
   - Add `NixVersion::get`
+- **`system_list`**: New module
 
 ## 1.0.0
 

@@ -1,14 +1,13 @@
 //! Dealing with system lists
 use std::{collections::HashMap, str::FromStr};
 
-use anyhow::Result;
-use lazy_static::lazy_static;
-use nix_rs::{
+use crate::{
     command::{NixCmd, NixCmdError},
     flake::{system::System, url::FlakeUrl},
 };
+use lazy_static::lazy_static;
 
-/// A flake URL that references a list of systems ([SystemsList])
+/// A flake referencing a [SystemsList]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SystemsListFlakeRef(pub FlakeUrl);
 
@@ -21,7 +20,7 @@ lazy_static! {
 
 impl FromStr for SystemsListFlakeRef {
     type Err = String;
-    fn from_str(s: &str) -> std::result::Result<SystemsListFlakeRef, String> {
+    fn from_str(s: &str) -> Result<SystemsListFlakeRef, String> {
         // Systems lists recognized by `github:nix-system/*`
         let url = if let Some(nix_system_flake) = NIX_SYSTEMS.get(s) {
             nix_system_flake.clone()
@@ -36,8 +35,8 @@ impl FromStr for SystemsListFlakeRef {
 pub struct SystemsList(pub Vec<System>);
 
 impl SystemsList {
-    /// Load the list of systems defined in a flake
-    pub async fn from_flake(cmd: &NixCmd, url: &SystemsListFlakeRef) -> Result<Self> {
+    /// Load the list of systems from a [SystemsListFlakeRef]
+    pub async fn from_flake(cmd: &NixCmd, url: &SystemsListFlakeRef) -> Result<Self, NixCmdError> {
         // Nix eval, and then return the systems
         match SystemsList::from_known_flake(url) {
             Some(systems) => Ok(systems),
@@ -45,7 +44,10 @@ impl SystemsList {
         }
     }
 
-    async fn from_remote_flake(cmd: &NixCmd, url: &SystemsListFlakeRef) -> Result<Self> {
+    async fn from_remote_flake(
+        cmd: &NixCmd,
+        url: &SystemsListFlakeRef,
+    ) -> Result<Self, NixCmdError> {
         let systems = nix_import_flake::<Vec<System>>(cmd, &url.0).await?;
         Ok(SystemsList(systems))
     }
@@ -61,7 +63,7 @@ impl SystemsList {
 }
 
 /// Evaluate `import <flake-url>` and return the result JSON parsed.
-pub async fn nix_import_flake<T>(cmd: &NixCmd, url: &FlakeUrl) -> Result<T, NixCmdError>
+async fn nix_import_flake<T>(cmd: &NixCmd, url: &FlakeUrl) -> Result<T, NixCmdError>
 where
     T: Default + serde::de::DeserializeOwned,
 {

@@ -11,15 +11,11 @@ use nix_rs::{
     flake::{system::System, url::FlakeUrl},
     info::NixInfo,
     store::uri::StoreURI,
+    system_list::{SystemsList, SystemsListFlakeRef},
 };
 use omnix_common::config::OmConfig;
 
-use crate::{
-    config::subflakes::SubflakesConfig,
-    flake_ref::FlakeRef,
-    nix::system_list::{SystemsList, SystemsListFlakeRef},
-    step::core::StepsResult,
-};
+use crate::{config::subflakes::SubflakesConfig, flake_ref::FlakeRef, step::core::StepsResult};
 
 use super::run_remote;
 
