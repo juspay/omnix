@@ -1,5 +1,5 @@
 //! Dealing with system lists
-use std::{collections::HashMap, str::FromStr};
+use std::{collections::HashMap, convert::Infallible, str::FromStr};
 
 use crate::{
     command::{NixCmd, NixCmdError},
@@ -19,8 +19,8 @@ lazy_static! {
 }
 
 impl FromStr for SystemsListFlakeRef {
-    type Err = String;
-    fn from_str(s: &str) -> Result<SystemsListFlakeRef, String> {
+    type Err = Infallible;
+    fn from_str(s: &str) -> Result<SystemsListFlakeRef, Infallible> {
         // Systems lists recognized by `github:nix-system/*`
         let url = if let Some(nix_system_flake) = NIX_SYSTEMS.get(s) {
             nix_system_flake.clone()
