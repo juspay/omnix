@@ -72,23 +72,26 @@ pub struct Row {
 
 impl Row {
     /// Convert a [InventoryItem] to vector of [Row]s
-    pub fn from_flake_outputs_for(prefix: &[&str], output: &InventoryItem) -> Vec<Row> {
-        output
-            .lookup_returning_qualified_attributes(prefix)
-            .map(|v| {
-                v.iter()
-                    .map(|(name, leaf)| Row {
-                        name: name.to_owned(),
-                        description: leaf
-                            .as_val()
-                            .and_then(|val| val.short_description.as_deref())
-                            .filter(|s| !s.is_empty())
-                            .unwrap_or(&String::from("N/A"))
-                            .to_owned(),
-                    })
-                    .collect()
-            })
-            .unwrap_or_default()
+    pub fn from_flake_outputs_for(path: &[&str], output: Option<&InventoryItem>) -> Vec<Row> {
+        match output {
+            Some(out) => out
+                .lookup_returning_qualified_attributes(path)
+                .map(|v| {
+                    v.iter()
+                        .map(|(name, leaf)| Row {
+                            name: name.to_owned(),
+                            description: leaf
+                                .as_val()
+                                .and_then(|val| val.short_description.as_deref())
+                                .filter(|s| !s.is_empty())
+                                .unwrap_or(&String::from("N/A"))
+                                .to_owned(),
+                        })
+                        .collect()
+                })
+                .unwrap_or_default(),
+            None => vec![],
+        }
     }
 }
 
@@ -101,118 +104,81 @@ impl ShowCommand {
             .await
             .with_context(|| "Unable to fetch flake")?;
 
-        // TODO: Handle all the unwraps below
-        FlakeOutputTable {
-            rows: Row::from_flake_outputs_for(
-                &[system.as_ref()],
-                flake.output.inventory.get("packages").unwrap(),
-            ),
-            title: "📦 Packages".to_string(),
-            command: Some(format!("nix build {}#<name>", self.flake_url)),
-        }
-        .print();
+        let print_flake_output_table = |title: &str, output: &str, command: Option<String>| {
+            FlakeOutputTable {
+                rows: Row::from_flake_outputs_for(
+                    &[],
+                    flake.output.get_inventory(output.to_string()),
+                ),
+                title: title.to_string(),
+                command,
+            }
+            .print();
+        };
 
-        FlakeOutputTable {
-            rows: Row::from_flake_outputs_for(
-                &[system.as_ref()],
-                flake.output.inventory.get("devShells").unwrap(),
-            ),
-            title: "🐚 Devshells".to_string(),
-            command: Some(format!("nix develop {}#<name>", self.flake_url)),
-        }
-        .print();
+        let print_per_system_flake_output_table =
+            |title: &str, output: &str, command: Option<String>| {
+                FlakeOutputTable {
+                    rows: Row::from_flake_outputs_for(
+                        &[system.as_ref()],
+                        flake.output.get_inventory(output.to_string()),
+                    ),
+                    title: title.to_string(),
+                    command,
+                }
+                .print();
+            };
 
-        FlakeOutputTable {
-            rows: Row::from_flake_outputs_for(
-                &[system.as_ref()],
-                flake.output.inventory.get("apps").unwrap(),
-            ),
-            title: "🚀 Apps".to_string(),
-            command: Some(format!("nix run {}#<name>", self.flake_url)),
-        }
-        .print();
+        print_per_system_flake_output_table(
+            "📦 Packages",
+            "packages",
+            Some(format!("nix build {}#<name>", self.flake_url)),
+        );
+        print_per_system_flake_output_table(
+            "🐚 Devshells",
+            "devShells",
+            Some(format!("nix develop {}#<name>", self.flake_url)),
+        );
+        print_per_system_flake_output_table(
+            "🚀 Apps",
+            "apps",
+            Some(format!("nix run {}#<name>", self.flake_url)),
+        );
+        print_per_system_flake_output_table(
+            "🔍 Checks",
+            "checks",
+            Some("nix flake check".to_string()),
+        );
 
-        FlakeOutputTable {
-            rows: Row::from_flake_outputs_for(
-                &[system.as_ref()],
-                flake.output.inventory.get("checks").unwrap(),
-            ),
-            title: "🔍 Checks".to_string(),
-            command: Some("nix flake check".to_string()),
-        }
-        .print();
-
-        FlakeOutputTable {
-            rows: Row::from_flake_outputs_for(
-                &[],
-                flake.output.inventory.get("nixosConfigurations").unwrap(),
-            ),
-            title: "🐧 NixOS Configurations".to_string(),
-            command: Some(format!(
+        print_flake_output_table(
+            "🐧 NixOS Configurations",
+            "nixosConfigurations",
+            Some(format!(
                 "nixos-rebuild switch --flake {}#<name>",
                 self.flake_url
             )),
-        }
-        .print();
-
-        FlakeOutputTable {
-            rows: Row::from_flake_outputs_for(
-                &[],
-                flake.output.inventory.get("darwinConfigurations").unwrap(),
-            ),
-            title: "🍏 Darwin Configurations".to_string(),
-            command: Some(format!(
+        );
+        print_flake_output_table(
+            "🍏 Darwin Configurations",
+            "darwinConfigurations",
+            Some(format!(
                 "darwin-rebuild switch --flake {}#<name>",
                 self.flake_url
             )),
-        }
-        .print();
-
-        FlakeOutputTable {
-            rows: Row::from_flake_outputs_for(
-                &[],
-                flake.output.inventory.get("nixosModules").unwrap(),
-            ),
-            title: "🔧 NixOS Modules".to_string(),
-            // TODO: Command should be optional
-            command: None,
-        }
-        .print();
-
-        FlakeOutputTable {
-            rows: Row::from_flake_outputs_for(
-                &[],
-                flake.output.inventory.get("dockerImages").unwrap(),
-            ),
-            title: "🐳 Docker Images".to_string(),
-            // TODO: Try if the below command works
-            command: Some(format!("nix build {}#dockerImages.<name>", self.flake_url)),
-        }
-        .print();
-
-        FlakeOutputTable {
-            rows: Row::from_flake_outputs_for(&[], flake.output.inventory.get("overlays").unwrap()),
-            title: "🎨 Overlays".to_string(),
-            command: None,
-        }
-        .print();
-
-        FlakeOutputTable {
-            rows: Row::from_flake_outputs_for(
-                &[],
-                flake.output.inventory.get("templates").unwrap(),
-            ),
-            title: "📝 Templates".to_string(),
-            command: Some(format!("nix flake init -t {}#<name>", self.flake_url)),
-        }
-        .print();
-
-        FlakeOutputTable {
-            rows: Row::from_flake_outputs_for(&[], flake.output.inventory.get("schemas").unwrap()),
-            title: "📜 Schemas".to_string(),
-            command: None,
-        }
-        .print();
+        );
+        print_flake_output_table("🔧 NixOS Modules", "nixosModules", None);
+        print_flake_output_table(
+            "🐳 Docker Images",
+            "dockerImages",
+            Some(format!("nix build {}#dockerImages.<name>", self.flake_url)),
+        );
+        print_flake_output_table("🎨 Overlays", "overlays", None);
+        print_flake_output_table(
+            "📝 Templates",
+            "templates",
+            Some(format!("nix flake init -t {}#<name>", self.flake_url)),
+        );
+        print_flake_output_table("📜 Schemas", "schemas", None);
 
         Ok(())
     }

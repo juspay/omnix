@@ -2,11 +2,7 @@
 
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
-use std::{
-    collections::{btree_map::Entry, BTreeMap},
-    fmt::Display,
-    path::Path,
-};
+use std::{collections::BTreeMap, fmt::Display, path::Path};
 
 use crate::system_list::SystemsListFlakeRef;
 
@@ -79,6 +75,10 @@ impl FlakeOutputs {
         };
         let v = nix_eval::<Self>(nix_cmd, &flake_opts, &inspect_flake).await?;
         Ok(v)
+    }
+
+    pub fn get_inventory(&self, output: String) -> Option<&InventoryItem> {
+        self.inventory.get(&output)
     }
 }
 
@@ -155,32 +155,6 @@ impl InventoryItem {
                     .collect()
             }
         }
-    }
-
-    /// Lookup the given path, returning the value, while removing it from the tree.
-    ///
-    /// # Example
-    /// ```no_run
-    /// let tree : &nix_rs::flake::outputs::InventoryItem = todo!();
-    /// let val = tree.pop(&["aarch64-darwin", "default"]);
-    /// ```
-    pub fn pop(&mut self, path: &[&str]) -> Option<Self> {
-        let mut curr = self;
-        let mut path = path.iter().peekable();
-        while let Some(part) = path.next() {
-            let Self::Attrset(v) = curr else {
-                return None;
-            };
-            let Entry::Occupied(entry) = v.entry(part.to_string()) else {
-                return None;
-            };
-            if path.peek().is_none() {
-                return Some(entry.remove());
-            } else {
-                curr = entry.into_mut();
-            }
-        }
-        None
     }
 }
 
