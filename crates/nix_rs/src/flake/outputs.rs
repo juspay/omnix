@@ -6,6 +6,8 @@ use std::{
     fmt::Display,
 };
 
+use crate::system_list::SystemsListFlakeRef;
+
 /// Flake URL of the default flake schemas
 ///
 /// We expect this environment to be set in Nix build and shell.
@@ -50,8 +52,8 @@ impl FlakeOutputs {
                 flake_url,
                 "--override-input",
                 "systems",
-                // TODO: Move `SystemsListFlakeRef` to `nix_rs` and use it here.
-                &format!("github:nix-systems/{}", system),
+                // TODO: don't use unwrap
+                &SystemsListFlakeRef::from_known_system(&system).unwrap().0,
                 "--no-write-lock-file",
                 // Why `exculdingOutputPaths`?
                 //   This function is much faster than `includingOutputPaths` and also solves <https://github.com/juspay/omnix/discussions/231>

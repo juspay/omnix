@@ -7,10 +7,6 @@ use crate::{
 };
 use lazy_static::lazy_static;
 
-/// A flake referencing a [SystemsList]
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SystemsListFlakeRef(pub FlakeUrl);
-
 lazy_static! {
     /// As a HashMap<String, String>
     pub static ref NIX_SYSTEMS: HashMap<String, FlakeUrl> = {
@@ -18,16 +14,26 @@ lazy_static! {
     };
 }
 
+/// A flake referencing a [SystemsList]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SystemsListFlakeRef(pub FlakeUrl);
+
+impl SystemsListFlakeRef {
+    pub fn from_known_system(system: &System) -> Option<Self> {
+        NIX_SYSTEMS
+            .get(&system.to_string())
+            .map(|url| SystemsListFlakeRef(url.clone()))
+    }
+}
+
 impl FromStr for SystemsListFlakeRef {
     type Err = Infallible;
     fn from_str(s: &str) -> Result<SystemsListFlakeRef, Infallible> {
-        // Systems lists recognized by `github:nix-system/*`
-        let url = if let Some(nix_system_flake) = NIX_SYSTEMS.get(s) {
-            nix_system_flake.clone()
-        } else {
-            FlakeUrl(s.to_string())
-        };
-        Ok(SystemsListFlakeRef(url))
+        let system = System::from(s);
+        match SystemsListFlakeRef::from_known_system(&system) {
+            Some(url) => Ok(url),
+            None => Ok(SystemsListFlakeRef(FlakeUrl(s.to_string()))),
+        }
     }
 }
 
