@@ -14,7 +14,7 @@ pub struct InitCommand {
     /// The flake from which to initialize the template to use
     ///
     /// Defaults to builtin registry of flake templates.
-    template: Option<FlakeUrl>,
+    flake: Option<FlakeUrl>,
 
     /// Parameter values to use for the template by default.
     #[arg(long = "params")]
@@ -29,7 +29,7 @@ impl InitCommand {
     pub async fn run(&self) -> anyhow::Result<()> {
         omnix_init::core::initialize_template(
             &self.path,
-            self.template.clone(),
+            self.flake.clone(),
             &self.params.clone().unwrap_or_default().0,
             self.non_interactive,
         )
