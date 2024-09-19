@@ -72,7 +72,7 @@ pub struct Row {
 
 impl Row {
     /// Convert a [InventoryItem] to vector of [Row]s
-    pub fn from_flake_outputs_for(path: &[&str], output: Option<&InventoryItem>) -> Vec<Row> {
+    pub fn from_inventory_for(path: &[&str], output: Option<&InventoryItem>) -> Vec<Row> {
         match output {
             Some(out) => out
                 .lookup_returning_qualified_attributes(path)
@@ -106,10 +106,7 @@ impl ShowCommand {
 
         let print_flake_output_table = |title: &str, output: &str, command: Option<String>| {
             FlakeOutputTable {
-                rows: Row::from_flake_outputs_for(
-                    &[],
-                    flake.output.get_inventory(output.to_string()),
-                ),
+                rows: Row::from_inventory_for(&[], flake.output.get_inventory(output.to_string())),
                 title: title.to_string(),
                 command,
             }
@@ -119,7 +116,7 @@ impl ShowCommand {
         let print_per_system_flake_output_table =
             |title: &str, output: &str, command: Option<String>| {
                 FlakeOutputTable {
-                    rows: Row::from_flake_outputs_for(
+                    rows: Row::from_inventory_for(
                         &[system.as_ref()],
                         flake.output.get_inventory(output.to_string()),
                     ),
