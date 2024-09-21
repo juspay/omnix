@@ -8,7 +8,7 @@ The `om init` command provides a better [`nix flake init`](https://nix.dev/manua
 To get started, run:
 
 ```sh
-om init -t ~/myproject
+om init -o ~/myproject
 ```
 
 This will prompt you to choose a template from the builtin registry (see below section), and then initialize it in the `myproject` directory.
@@ -28,7 +28,7 @@ The builtin registry contains the following templates:
 If your flake provides a `om.templates` output (see below section), then `om init` will recognize it. For example:
 
 ```sh
-om init -t ~/myproject github:srid/haskell-flake
+om init -o ~/myproject github:srid/haskell-flake
 ```
 
 Because haskell-flake has [a `om.templates` output](https://github.com/srid/haskell-flake/blob/31d7f050935f5a543212b7624d245f918ab14275/flake.nix#L16-L26), `om init` will prompt you to fill in the parameters defined in the template and initialize it.
@@ -36,7 +36,7 @@ Because haskell-flake has [a `om.templates` output](https://github.com/srid/hask
 You can also explicitly specify the template to choose from the flake:
 
 ```sh
-om init -t ~/myproject github:srid/haskell-flake#haskell-flake
+om init -o ~/myproject github:srid/haskell-flake#haskell-flake
 ```
 
 If there are multiple templates in the flake (as is the case with the builtin registry), omnix will the prompt the user to choose from them.
