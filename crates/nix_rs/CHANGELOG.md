@@ -2,7 +2,7 @@
 
 ## Unreleased
 - **`flake::schema`**
-  - Remove `schema` module to not hardcode flake output types
+  - Don't hardcode flake schema types
 - **`env`**:
   - use `whoami` crate to find the current user instead of depending on environment variable `USER`
 - Support Nix 2.20
