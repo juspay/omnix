@@ -18,7 +18,7 @@ pub enum FlakeOutputs {
 
 impl FlakeOutputs {
     /// Get the non-attrset value
-    pub fn as_val(&self) -> Option<&Val> {
+    pub fn get_val(&self) -> Option<&Val> {
         match self {
             Self::Val(v) => Some(v),
             _ => None,
@@ -31,7 +31,7 @@ impl FlakeOutputs {
             Self::Val(_) => vec![],
             Self::Attrset(map) => map
                 .into_iter()
-                .filter_map(|(k, v)| v.as_val().map(|val| (k, val.clone())))
+                .filter_map(|(k, v)| v.get_val().map(|val| (k, val.clone())))
                 .collect(),
         }
     }
