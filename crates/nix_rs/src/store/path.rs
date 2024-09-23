@@ -1,4 +1,4 @@
-/// Store path management
+//! Store path management
 use std::{convert::Infallible, fmt, path::PathBuf, str::FromStr};
 
 use serde_with::{DeserializeFromStr, SerializeDisplay};
@@ -30,6 +30,7 @@ impl From<&StorePath> for PathBuf {
 }
 
 impl StorePath {
+    /// Create a new `StorePath` from the given path
     pub fn new(path: PathBuf) -> Self {
         if path.ends_with(".drv") {
             StorePath::Drv(path)
@@ -38,6 +39,7 @@ impl StorePath {
         }
     }
 
+    /// Drop store path type distinction, returning the inner path.
     pub fn as_path(&self) -> &PathBuf {
         match self {
             StorePath::Drv(p) => p,

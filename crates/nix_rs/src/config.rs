@@ -19,13 +19,21 @@ use super::flake::system::System;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct NixConfig {
+    /// Number of CPU cores used for nix builds
     pub cores: ConfigVal<i32>,
+    /// Experimental features currently enabled
     pub experimental_features: ConfigVal<Vec<String>>,
+    /// Extra platforms to build for
     pub extra_platforms: ConfigVal<Vec<String>>,
+    /// The flake registry to use to lookup atomic flake inputs
     pub flake_registry: ConfigVal<String>,
+    /// Maximum number of jobs to run in parallel
     pub max_jobs: ConfigVal<i32>,
+    /// Cache substituters
     pub substituters: ConfigVal<Vec<Url>>,
+    /// Current system
     pub system: ConfigVal<System>,
+    /// Trusted users
     pub trusted_users: ConfigVal<Vec<TrustedUserValue>>,
 }
 
@@ -91,15 +99,19 @@ impl NixConfig {
     }
 }
 
+/// Error type for `NixConfig`
 #[derive(thiserror::Error, Debug)]
 pub enum NixConfigError {
+    /// A [NixCmdError]
     #[error("Nix command error: {0}")]
     NixCmdError(#[from] NixCmdError),
 
+    /// A [NixCmdError] with a static lifetime
     #[error("Nix command error: {0}")]
     NixCmdErrorStatic(#[from] &'static NixCmdError),
 }
 
+/// Accepted value for "trusted-users" in nix.conf
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, DeserializeFromStr)]
 pub enum TrustedUserValue {
     /// All users are trusted
@@ -123,6 +135,7 @@ impl TrustedUserValue {
         }
     }
 
+    /// Display the nix.conf original string
     pub fn display_original(val: &[TrustedUserValue]) -> String {
         val.iter()
             .map(|x| match x {

@@ -2,6 +2,7 @@
 //!
 //! This crate exposes various types representing what nix command gives us,
 //! along with a `from_nix` command to evaluate them.
+#![warn(missing_docs)]
 pub mod command;
 pub mod config;
 pub mod copy;

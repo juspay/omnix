@@ -12,17 +12,26 @@ use crate::command::{NixCmd, NixCmdError};
 /// Nix version as parsed from `nix --version`
 #[derive(Clone, Copy, PartialOrd, PartialEq, Eq, Debug, SerializeDisplay, DeserializeFromStr)]
 pub struct NixVersion {
+    /// Major version
     pub major: u32,
+    /// Minor version
     pub minor: u32,
+    /// Patch version
     pub patch: u32,
 }
 
+/// Error type for parsing `nix --version`
 #[derive(Error, Debug, Clone, PartialEq)]
 pub enum BadNixVersion {
+    /// Regex error
     #[error("Regex error: {0}")]
     Regex(#[from] regex::Error),
+
+    /// Parse error
     #[error("Parse error (regex): `nix --version` cannot be parsed")]
     Parse(#[from] std::num::ParseIntError),
+
+    /// Command error
     #[error("Parse error (int): `nix --version` cannot be parsed")]
     Command,
 }

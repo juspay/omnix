@@ -1,4 +1,6 @@
 //! Nix flake outputs
+// TODO: Document this module!
+#![allow(missing_docs)]
 
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};

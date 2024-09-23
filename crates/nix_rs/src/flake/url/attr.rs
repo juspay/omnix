@@ -1,3 +1,4 @@
+//! Work with flake attributes
 use serde::{Deserialize, Serialize};
 
 /// The (optional) attribute output part of a [super::FlakeUrl]
@@ -7,10 +8,12 @@ use serde::{Deserialize, Serialize};
 pub struct FlakeAttr(pub Option<String>);
 
 impl FlakeAttr {
+    /// Create a new [FlakeAttr]
     pub fn new(attr: &str) -> Self {
         FlakeAttr(Some(attr.to_owned()))
     }
 
+    /// A missing flake attribute
     pub fn none() -> Self {
         FlakeAttr(None)
     }
