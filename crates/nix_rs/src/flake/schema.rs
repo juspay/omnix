@@ -46,7 +46,7 @@ pub enum InventoryItem {
 }
 
 impl FlakeSchemas {
-    /// Get the [FlakeSchema] for the given flake
+    /// Get the [FlakeSchemas] for the given flake
     ///
     /// This uses [static@INSPECT_FLAKE] and [static@DEFAULT_FLAKE_SCHEMAS]
     pub async fn from_nix(
