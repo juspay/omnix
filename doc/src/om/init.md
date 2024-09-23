@@ -15,7 +15,7 @@ This will prompt you to choose a template from the builtin registry (see below s
 
 ## Builtin registry {#registry}
 
-The builtin registry contains the following templates:
+The builtin registry (stores in a JSON file) contains the following templates:
 
 | Description | Command |
 |-------------|---------|

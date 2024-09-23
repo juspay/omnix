@@ -1,4 +1,4 @@
-use std::{collections::HashMap, path::PathBuf, sync::LazyLock};
+use std::collections::HashMap;
 
 use nix_rs::{
     command::NixCmd,
@@ -7,14 +7,10 @@ use nix_rs::{
 
 use crate::template::Template;
 
-/// Our builtin registry of templates
-pub static BUILTIN_REGISTRY: LazyLock<FlakeUrl> =
-    LazyLock::new(|| PathBuf::from(env!("OM_INIT_REGISTRY")).into());
-
 /// The `om.templates` config in flake
 pub type TemplatesConfig = HashMap<String, Template>;
 
-/// Load templates from our builtin registry `REGISTRY`
+/// Load templates from the given flake
 pub async fn load_templates(url: &FlakeUrl) -> anyhow::Result<TemplatesConfig> {
     let v = nix_eval::<TemplatesConfig>(
         &NixCmd::default(),
