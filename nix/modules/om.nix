@@ -1,8 +1,3 @@
-{ inputs, ... }:
-
-let
-  root = inputs.self;
-in
 {
   # omnix configuration
   flake = {
@@ -33,7 +28,6 @@ in
             };
           };
         };
-        om-init-registry.dir = "crates/omnix-init/registry";
         doc.dir = "doc";
 
         # Because the cargo tests invoking Nix doesn't pass github access tokens..

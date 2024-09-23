@@ -3,7 +3,7 @@ use std::path::Path;
 use crate::command::core::om;
 use assert_cmd::Command;
 use nix_rs::{command::NixCmd, flake::url::FlakeUrl};
-use omnix_init::config::BUILTIN_REGISTRY;
+use omnix_init::registry::BUILTIN_REGISTRY;
 use predicates::str::contains;
 
 /// `om init` runs and successfully initializes a template
@@ -16,9 +16,11 @@ async fn om_init() -> anyhow::Result<()> {
 }
 
 fn om_init_tests() -> Vec<OmInitTest> {
+    let registry = BUILTIN_REGISTRY.clone();
+    let lookup = |name: &str| registry.0.get(name).cloned().unwrap();
     vec![
         OmInitTest {
-            template_name: BUILTIN_REGISTRY.with_attr("haskell-template"),
+            template_name: lookup("haskell-template"),
             default_params: r#"{"package-name": "foo", "author": "John", "vscode": false }"#,
             asserts: Asserts {
                 out_dir: PathAsserts {
@@ -30,7 +32,7 @@ fn om_init_tests() -> Vec<OmInitTest> {
             },
         },
         OmInitTest {
-            template_name: BUILTIN_REGISTRY.with_attr("rust-nix-template"),
+            template_name: lookup("rust-nix-template"),
             default_params: r#"{"package-name": "qux", "author": "John", "author-email": "john@example.com" }"#,
             asserts: Asserts {
                 out_dir: PathAsserts {
@@ -47,7 +49,7 @@ fn om_init_tests() -> Vec<OmInitTest> {
             },
         },
         OmInitTest {
-            template_name: BUILTIN_REGISTRY.with_attr("nix-dev-home"),
+            template_name: lookup("nix-dev-home"),
             default_params: r#"{"username": "john", "git-email": "jon@ex.com", "git-name": "John", "neovim": true }"#,
             asserts: Asserts {
                 out_dir: PathAsserts {

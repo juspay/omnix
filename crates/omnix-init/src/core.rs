@@ -1,6 +1,6 @@
 use std::{collections::HashMap, path::Path};
 
-use crate::config::{load_templates, BUILTIN_REGISTRY};
+use crate::config::load_templates;
 use anyhow::Context;
 use nix_rs::flake::url::FlakeUrl;
 use serde_json::Value;
@@ -14,17 +14,29 @@ use serde_json::Value;
 /// - `non_interactive` - Whether to disable user prompts (all params must have values set)
 pub async fn initialize_template(
     path: &Path,
-    flake: Option<FlakeUrl>,
+    m_flake: Option<FlakeUrl>,
     default_params: &HashMap<String, Value>,
     non_interactive: bool,
 ) -> anyhow::Result<()> {
-    tracing::info!("Loading registry ...");
-    let registry = flake.unwrap_or(BUILTIN_REGISTRY.clone());
-    let templates = load_templates(&registry).await?;
+    let flake: FlakeUrl = match m_flake {
+        Some(flake) => Ok(flake),
+        None => {
+            let builtin_registry = crate::registry::BUILTIN_REGISTRY.clone();
+            // Prompt the user to select a flake from the registry
+            let available: Vec<String> = builtin_registry.0.keys().cloned().collect();
+            let name = inquire::Select::new("Select a flake", available).prompt()?;
+            builtin_registry
+                .0
+                .get(&name)
+                .cloned()
+                .ok_or(anyhow::anyhow!("Flake not found in builtin registry"))
+        }
+    }?;
+    let templates = load_templates(&flake).await?;
 
     // Prompt the user to select a template
     let available: Vec<String> = templates.keys().cloned().collect();
-    let name: &String = if let Some(attr) = registry.get_attr().0 {
+    let name: &String = if let Some(attr) = flake.get_attr().0 {
         &attr.clone()
     } else if available.len() < 2 {
         if let Some(name) = available.first() {
