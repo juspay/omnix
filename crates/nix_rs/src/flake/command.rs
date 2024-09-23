@@ -1,3 +1,4 @@
+//! Nix commands for working with flakes
 use std::{
     collections::{BTreeMap, HashMap},
     path::PathBuf,

@@ -1,3 +1,4 @@
+//! Work with `nix eval`
 use crate::command::{CommandError, NixCmd, NixCmdError};
 
 use super::{command::FlakeOptions, url::FlakeUrl};

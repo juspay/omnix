@@ -1,6 +1,7 @@
 //! High-level schema of a flake
 //!
 //! TODO: Consolidate with `outputs.rs`
+#![allow(missing_docs)]
 use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};

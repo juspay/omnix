@@ -8,7 +8,7 @@ use crate::{
 use lazy_static::lazy_static;
 
 lazy_static! {
-    /// As a HashMap<String, String>
+    /// Builtin list of [SystemsListFlakeRef]
     pub static ref NIX_SYSTEMS: HashMap<String, FlakeUrl> = {
         serde_json::from_str(env!("NIX_SYSTEMS")).unwrap()
     };
@@ -19,6 +19,7 @@ lazy_static! {
 pub struct SystemsListFlakeRef(pub FlakeUrl);
 
 impl SystemsListFlakeRef {
+    /// Lookup a known [SystemsListFlakeRef] that will not require network calls
     pub fn from_known_system(system: &System) -> Option<Self> {
         NIX_SYSTEMS
             .get(&system.to_string())

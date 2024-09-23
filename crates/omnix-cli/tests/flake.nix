@@ -14,7 +14,7 @@
   outputs = inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       systems = import inputs.systems;
-      perSystem = { pkgs, system, ... }: {
+      perSystem = { system, ... }: {
         packages = {
           haskell-multi-nix = inputs.haskell-multi-nix.packages.${system}.default;
         };

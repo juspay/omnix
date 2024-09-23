@@ -72,12 +72,12 @@ static NIXCMD: OnceCell<NixCmd> = OnceCell::const_new();
 ///
 /// The command will be highlighted to distinguish it (for copying) from the
 /// rest of the instrumentation parameters.
-
 #[instrument(name = "command")]
 pub fn trace_cmd(cmd: &tokio::process::Command) {
     trace_cmd_with("🐚", cmd);
 }
 
+/// Like [trace_cmd] but with a custom icon
 #[instrument(name = "command")]
 pub fn trace_cmd_with(icon: &str, cmd: &tokio::process::Command) {
     use colored::Colorize;
@@ -227,19 +227,24 @@ fn to_cli(cmd: &tokio::process::Command) -> String {
 /// Errors when running and interpreting the output of a nix command
 #[derive(Error, Debug)]
 pub enum NixCmdError {
+    /// A [CommandError]
     #[error("Command error: {0}")]
     CmdError(#[from] CommandError),
 
+    /// Failed to unicode-decode the output of a command
     #[error("Failed to decode command stdout (utf8 error): {0}")]
     DecodeErrorUtf8(#[from] std::string::FromUtf8Error),
 
+    /// Failed to parse the output of a command
     #[error("Failed to decode command stdout (from_str error): {0}")]
     DecodeErrorFromStr(#[from] FromStrError),
 
+    /// Failed to parse the output of a command as JSON
     #[error("Failed to decode command stdout (json error): {0}")]
     DecodeErrorJson(#[from] serde_json::Error),
 }
 
+/// Errors when parsing a string into a type
 #[derive(Debug)]
 pub struct FromStrError(String);
 
@@ -251,10 +256,14 @@ impl Display for FromStrError {
 
 impl std::error::Error for FromStrError {}
 
+/// Errors when running a command
 #[derive(Error, Debug)]
 pub enum CommandError {
+    /// Error when spawning a child process
     #[error("Child process error: {0}")]
     ChildProcessError(#[from] std::io::Error),
+
+    /// Child process exited unsuccessfully
     #[error(
         "Process exited unsuccessfully. exit_code={:?}{}",
         exit_code,
@@ -264,9 +273,13 @@ pub enum CommandError {
         },
     )]
     ProcessFailed {
+        /// The stderr of the process, if available.
         stderr: Option<String>,
+        /// The exit code of the process
         exit_code: Option<i32>,
     },
+
+    /// Failed to decode the stderr of a command
     #[error("Failed to decode command stderr: {0}")]
     Decode(#[from] std::string::FromUtf8Error),
 }

@@ -1,12 +1,10 @@
-{ flake
-, rust-project
+{ rust-project
 , pkgs
 , lib
 , ...
 }:
 
 let
-  inherit (flake) inputs;
   inherit (pkgs) stdenv pkgsStatic;
 in
 {
