@@ -120,11 +120,11 @@ impl InventoryItem {
     }
 }
 
-/// Represents a leaf value of a flake output
+/// A terminal value of a flake schema
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum Leaf {
-    /// A terminal value of a flake output
+    #[allow(missing_docs)]
     Val(Val),
     /// Represents description for a flake output
     /// (e.g. `Doc` for `formatter` will be "The `formatter` output specifies the package to use to format the project.")
