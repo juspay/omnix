@@ -28,6 +28,7 @@ in
 
       packages = with pkgs; [
         just
+        nixd
         cargo-watch
         cargo-expand
         cargo-nextest
