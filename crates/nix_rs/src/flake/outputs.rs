@@ -26,7 +26,7 @@ impl FlakeOutputs {
     }
 
     /// Get the attrset as a vector of key-value pairs
-    pub fn as_vec(self) -> Vec<(String, Val)> {
+    pub fn get_children(self) -> Vec<(String, Val)> {
         match self {
             Self::Val(_) => vec![],
             Self::Attrset(map) => map

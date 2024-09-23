@@ -75,7 +75,7 @@ impl Row {
     pub fn vec_from_flake_output(output: Option<FlakeOutputs>) -> Vec<Row> {
         match output {
             Some(output) => output
-                .as_vec()
+                .get_children()
                 .into_iter()
                 .map(|(name, val)| Row {
                     name,
