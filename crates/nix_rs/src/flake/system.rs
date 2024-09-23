@@ -16,15 +16,20 @@ use serde_with::{DeserializeFromStr, SerializeDisplay};
     Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, SerializeDisplay, DeserializeFromStr,
 )]
 pub enum System {
+    /// macOS system
     Darwin(Arch),
+    /// Linux system
     Linux(Arch),
+    /// Other system
     Other(String),
 }
 
 /// CPU architecture in the system
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum Arch {
+    /// aarch64
     Aarch64,
+    /// x86_64
     X86_64,
 }
 

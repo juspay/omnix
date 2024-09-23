@@ -9,7 +9,9 @@ use crate::{config::NixConfig, env::NixEnv, version::NixVersion};
 pub struct NixInfo {
     /// Nix version string
     pub nix_version: NixVersion,
+    /// nix.conf configuration
     pub nix_config: NixConfig,
+    /// Environment in which Nix was installed
     pub nix_env: NixEnv,
 }
 
@@ -42,17 +44,22 @@ impl NixInfo {
     }
 }
 
+/// Error type for [NixInfo]
 #[derive(thiserror::Error, Debug)]
 pub enum NixInfoError {
+    /// A [crate::command::NixCmdError]
     #[error("Nix command error: {0}")]
     NixCmdError(#[from] crate::command::NixCmdError),
 
+    /// A [crate::command::NixCmdError] with a static lifetime
     #[error("Nix command error: {0}")]
     NixCmdErrorStatic(#[from] &'static crate::command::NixCmdError),
 
+    /// A [crate::env::NixEnvError]
     #[error("Nix environment error: {0}")]
     NixEnvError(#[from] crate::env::NixEnvError),
 
+    /// A [crate::config::NixConfigError]
     #[error("Nix config error: {0}")]
     NixConfigError(#[from] &'static crate::config::NixConfigError),
 }

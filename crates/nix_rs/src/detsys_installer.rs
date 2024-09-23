@@ -14,6 +14,7 @@ pub struct DetSysNixInstaller {
 }
 
 impl DetSysNixInstaller {
+    /// Detects if the DetSys nix-installer is installed
     pub fn detect() -> Result<Option<Self>, BadInstallerVersion> {
         let nix_installer_path = Path::new("/nix/nix-installer");
         if nix_installer_path.exists() {
@@ -46,14 +47,22 @@ impl Display for InstallerVersion {
     }
 }
 
+/// Errors that can occur when trying to get the [DetSysNixInstaller] version
 #[derive(Error, Debug)]
 pub enum BadInstallerVersion {
+    /// Regex error
     #[error("Regex error: {0}")]
     Regex(#[from] regex::Error),
+
+    /// Failed to decode installer output
     #[error("Failed to decode installer output: {0}")]
     Decode(#[from] std::string::FromUtf8Error),
+
+    /// Failed to parse installer version
     #[error("Failed to parse installer version: {0}")]
     Parse(#[from] std::num::ParseIntError),
+
+    /// Failed to fetch installer version
     #[error("Failed to fetch installer version: {0}")]
     Command(std::io::Error),
 }

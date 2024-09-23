@@ -1,4 +1,4 @@
-{ inputs, ... }:
+{ ... }:
 
 let
   root = ../..;
@@ -8,7 +8,7 @@ in
     (root + /crates/nix_health/module/flake-module.nix)
   ];
 
-  perSystem = { config, self', inputs', pkgs, lib, ... }: {
+  perSystem = { config, self', pkgs, ... }: {
     devShells.default = pkgs.mkShell {
       name = "omnix-devshell";
       meta.description = "Omnix development environment";
@@ -28,6 +28,7 @@ in
 
       packages = with pkgs; [
         just
+        nixd
         cargo-watch
         cargo-expand
         cargo-nextest

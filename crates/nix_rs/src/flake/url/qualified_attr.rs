@@ -1,3 +1,4 @@
+//! Flake attributes that are "qualified"
 use crate::{
     command::{NixCmd, NixCmdError},
     flake::eval::nix_eval_attr,
@@ -35,11 +36,14 @@ where
     }
 }
 
+/// Error type for [nix_eval_qualified_attr]
 #[derive(thiserror::Error, Debug)]
 pub enum QualifiedAttrError {
+    /// When the attribute is not found in the flake
     #[error("Unexpected attribute, when config not present in flake: {0}")]
     UnexpectedAttribute(String),
 
+    /// A [NixCmdError]
     #[error("Nix command error: {0}")]
     CommandError(#[from] NixCmdError),
 }

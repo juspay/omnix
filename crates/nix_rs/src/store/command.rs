@@ -1,4 +1,4 @@
-/// Rust wrapper for `nix-store`
+//! Rust wrapper for `nix-store`
 use std::path::PathBuf;
 
 use crate::command::{CommandError, NixCmdError};
@@ -14,6 +14,7 @@ use super::path::StorePath;
 pub struct NixStoreCmd;
 
 impl NixStoreCmd {
+    /// Get the associated [Command]
     pub fn command(&self) -> Command {
         let mut cmd = Command::new("nix-store");
         cmd.kill_on_drop(true);
@@ -101,9 +102,11 @@ impl NixStoreCmd {
 /// `nix-store` command errors
 #[derive(Error, Debug)]
 pub enum NixStoreCmdError {
+    /// A [NixCmdError]
     #[error(transparent)]
     NixCmdError(#[from] NixCmdError),
 
+    /// nix-store returned "unknown-deriver"
     #[error("Unknown deriver")]
     UnknownDeriver,
 }

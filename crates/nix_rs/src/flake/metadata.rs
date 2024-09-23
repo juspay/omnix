@@ -1,3 +1,4 @@
+//! Work with `nix flake metadata`
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 

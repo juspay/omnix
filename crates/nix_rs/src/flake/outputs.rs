@@ -1,4 +1,6 @@
 //! Nix flake outputs
+// TODO: Document this module!
+#![allow(missing_docs)]
 
 use serde::{Deserialize, Serialize};
 use std::collections::{btree_map::Entry, BTreeMap};
