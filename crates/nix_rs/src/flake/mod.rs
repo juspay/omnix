@@ -26,8 +26,7 @@ use crate::{
 pub struct Flake {
     /// The flake url which this struct represents
     pub url: FlakeUrl,
-    pub system: System,
-    /// `nix flake show` output
+    /// Flake outputs derived from [super::schema::FlakeSchemas]
     pub output: FlakeOutputs,
     // TODO: Add `nix flake metadata` info.
 }
@@ -44,7 +43,6 @@ impl Flake {
         let schemas = FlakeSchemas::from_nix(nix_cmd, &url, &nix_config.system.value).await?;
         Ok(Flake {
             url,
-            system: nix_config.system.value.clone(),
             output: schemas.to_flake_outputs(),
         })
     }

@@ -24,9 +24,7 @@ lazy_static! {
   };
 }
 
-/// Represents the "outputs" of a flake
-///
-/// TODO: Rename this to `FlakeSchema` while generalizing the existing `schema.rs` module.
+/// Represents the schema of a given flake evaluated using [static@INSPECT_FLAKE]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct FlakeSchemas {
     pub inventory: BTreeMap<String, InventoryItem>,
