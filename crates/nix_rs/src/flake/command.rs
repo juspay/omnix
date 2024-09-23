@@ -21,8 +21,9 @@ pub async fn run(
 ) -> Result<(), CommandError> {
     nixcmd
         .run_with(|cmd| {
+            cmd.args(["run".to_string()]);
             opts.use_in_command(cmd);
-            cmd.args(["run".to_string(), url.to_string(), "--".to_string()]);
+            cmd.args([url.to_string(), "--".to_string()]);
             cmd.args(args);
         })
         .await
