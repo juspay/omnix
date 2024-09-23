@@ -47,7 +47,7 @@ pub enum InventoryItem {
 
 impl FlakeSchemas {
     /// Get the [FlakeSchema] for the given flake
-    /// 
+    ///
     /// This uses [static@INSPECT_FLAKE] and [static@DEFAULT_FLAKE_SCHEMAS]
     pub async fn from_nix(
         nix_cmd: &crate::command::NixCmd,
@@ -124,14 +124,14 @@ impl InventoryItem {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum Leaf {
-    /// Metadata for a flake output value
+    /// A terminal value of a flake output
     Val(Val),
     /// Represents description for a flake output
     /// (e.g. `Doc` for `formatter` will be "The `formatter` output specifies the package to use to format the project.")
     Doc(String),
 }
 
-/// The metadata of a flake output value which is of non-attrset [Type]
+/// A terminal value of a flake output
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Val {

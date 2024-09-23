@@ -9,7 +9,7 @@ use super::schema::Val;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum FlakeOutputs {
-    /// Metadata for a flake output value
+    /// A terminal value of a flake output
     Val(Val),
     /// A tree-like structure representing a flake output.
     /// Each key in the map represents a top-level flake output.
