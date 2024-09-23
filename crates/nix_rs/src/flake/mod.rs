@@ -26,7 +26,7 @@ use crate::{
 pub struct Flake {
     /// The flake url which this struct represents
     pub url: FlakeUrl,
-    /// Flake outputs derived from [super::schema::FlakeSchemas]
+    /// Flake outputs derived from [FlakeSchemas]
     pub output: FlakeOutputs,
     // TODO: Add `nix flake metadata` info.
 }
