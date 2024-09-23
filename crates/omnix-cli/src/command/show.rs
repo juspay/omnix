@@ -72,7 +72,7 @@ pub struct Row {
 
 impl Row {
     /// Convert a [FlakeOutputs] to a vector of [Row]s
-    pub fn vec_from_flake_output(output: Option<FlakeOutputs>) -> Vec<Row> {
+    pub fn vec_from_flake_output(output: Option<&FlakeOutputs>) -> Vec<Row> {
         match output {
             Some(output) => output
                 .get_children()
@@ -99,17 +99,15 @@ impl ShowCommand {
         let flake = Flake::from_nix(nix_cmd, nix_config, self.flake_url.clone())
             .await
             .with_context(|| "Unable to fetch flake")?;
-        let mut flake_output = flake.output.clone();
 
-        let mut print_flake_output_table =
-            |title: &str, out_path: &[&str], command: Option<String>| {
-                FlakeOutputTable {
-                    rows: Row::vec_from_flake_output(flake_output.pop(out_path)),
-                    title: title.to_string(),
-                    command,
-                }
-                .print();
-            };
+        let print_flake_output_table = |title: &str, out_path: &[&str], command: Option<String>| {
+            FlakeOutputTable {
+                rows: Row::vec_from_flake_output(flake.output.get(out_path)),
+                title: title.to_string(),
+                command,
+            }
+            .print();
+        };
 
         print_flake_output_table(
             "📦 Packages",

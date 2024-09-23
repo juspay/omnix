@@ -1,7 +1,7 @@
 //! Nix flake outputs
 
 use serde::{Deserialize, Serialize};
-use std::collections::{btree_map::Entry, BTreeMap};
+use std::{borrow::Borrow, collections::HashMap};
 
 use super::schema::Val;
 
@@ -13,7 +13,7 @@ pub enum FlakeOutputs {
     Val(Val),
     /// A tree-like structure representing a flake output.
     /// Each key in the map represents a top-level flake output.
-    Attrset(BTreeMap<String, FlakeOutputs>),
+    Attrset(HashMap<String, FlakeOutputs>),
 }
 
 impl FlakeOutputs {
@@ -26,39 +26,37 @@ impl FlakeOutputs {
     }
 
     /// Get the attrset as a vector of key-value pairs
-    pub fn get_children(self) -> Vec<(String, Val)> {
+    pub fn get_children(&self) -> Vec<(String, Val)> {
         match self {
             Self::Val(_) => vec![],
             Self::Attrset(map) => map
-                .into_iter()
-                .filter_map(|(k, v)| v.get_val().map(|val| (k, val.clone())))
+                .iter()
+                .filter_map(|(k, v)| v.get_val().map(|val| (k.clone(), val.clone())))
                 .collect(),
         }
     }
 
-    /// Lookup the given path, returning the value, while removing it from the tree.
+    /// Lookup the given path, returning a reference to the value if it exists.
     ///
     /// # Example
     /// ```no_run
-    /// let tree : &nix_rs::flake::outputs::FlakeOutputs = todo!();
-    /// let val = tree.pop(&["aarch64-darwin", "default"]);
+    /// let tree = nix_rs::flake::outputs::FlakeOutputs::default();
+    /// let val = tree.get(&["aarch64-darwin", "default"]);
     /// ```
-    pub fn pop(&mut self, path: &[&str]) -> Option<Self> {
-        let mut curr = self;
-        let mut path = path.iter().peekable();
-        while let Some(part) = path.next() {
-            let Self::Attrset(v) = curr else {
-                return None;
-            };
-            let Entry::Occupied(entry) = v.entry(part.to_string()) else {
-                return None;
-            };
-            if path.peek().is_none() {
-                return Some(entry.remove());
-            } else {
-                curr = entry.into_mut();
+    pub fn get<Q>(&self, path: &[&Q]) -> Option<&Self>
+    where
+        Q: ?Sized + Eq + std::hash::Hash,
+        String: Borrow<Q>,
+    {
+        let mut current = self;
+        for key in path {
+            match current {
+                Self::Attrset(map) => {
+                    current = map.get(key.borrow())?;
+                }
+                Self::Val(_) => return None,
             }
         }
-        None
+        Some(current)
     }
 }

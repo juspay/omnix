@@ -2,7 +2,11 @@
 
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
-use std::{collections::BTreeMap, fmt::Display, path::Path};
+use std::{
+    collections::{BTreeMap, HashMap},
+    fmt::Display,
+    path::Path,
+};
 
 use crate::system_list::SystemsListFlakeRef;
 
@@ -28,7 +32,7 @@ lazy_static! {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct FlakeSchemas {
     /// Each key in the map represents either a top-level flake output or other metadata (e.g. `docs`)
-    pub inventory: BTreeMap<String, InventoryItem>,
+    pub inventory: HashMap<String, InventoryItem>,
 }
 
 /// A tree-like structure representing each flake output or metadata in [FlakeSchemas]
@@ -38,7 +42,7 @@ pub enum InventoryItem {
     /// Represents a terminal node in the tree
     Leaf(Leaf),
     /// Represents a non-terminal node in the tree
-    Attrset(BTreeMap<String, InventoryItem>),
+    Attrset(HashMap<String, InventoryItem>),
 }
 
 impl FlakeSchemas {
@@ -98,7 +102,7 @@ impl InventoryItem {
                 if let Some(children) = map.get("children") {
                     children.to_flake_outputs()
                 } else {
-                    let filtered: BTreeMap<_, _> = map
+                    let filtered: HashMap<_, _> = map
                         .iter()
                         .filter_map(|(k, v)| Some((k.clone(), v.to_flake_outputs()?)))
                         .collect();
