@@ -6,7 +6,7 @@ use colored::Colorize;
 use nix_rs::{
     command::NixCmd,
     config::NixConfig,
-    flake::{outputs::InventoryItem, url::FlakeUrl, Flake},
+    flake::{outputs::FlakeOutputs, url::FlakeUrl, Flake},
 };
 use tabled::{
     settings::{location::ByColumnName, Color, Modify, Style},
@@ -71,25 +71,21 @@ pub struct Row {
 }
 
 impl Row {
-    /// Convert a [InventoryItem] to vector of [Row]s
-    pub fn from_inventory_for(path: &[&str], output: Option<&InventoryItem>) -> Vec<Row> {
+    /// Convert a [FlakeOutputs] to a vector of [Row]s
+    pub fn vec_from_flake_output(output: Option<FlakeOutputs>) -> Vec<Row> {
         match output {
-            Some(out) => out
-                .lookup_returning_qualified_attributes(path)
-                .map(|v| {
-                    v.iter()
-                        .map(|(name, leaf)| Row {
-                            name: name.to_owned(),
-                            description: leaf
-                                .as_val()
-                                .and_then(|val| val.short_description.as_deref())
-                                .filter(|s| !s.is_empty())
-                                .unwrap_or(&String::from("N/A"))
-                                .to_owned(),
-                        })
-                        .collect()
+            Some(output) => output
+                .as_vec()
+                .into_iter()
+                .map(|(name, val)| Row {
+                    name,
+                    description: val
+                        .short_description
+                        .filter(|s| !s.is_empty())
+                        .unwrap_or(String::from("N/A"))
+                        .to_owned(),
                 })
-                .unwrap_or_default(),
+                .collect(),
             None => vec![],
         }
     }
@@ -103,53 +99,42 @@ impl ShowCommand {
         let flake = Flake::from_nix(nix_cmd, nix_config, self.flake_url.clone())
             .await
             .with_context(|| "Unable to fetch flake")?;
+        let mut flake_output = flake.output.clone();
 
-        let print_flake_output_table = |title: &str, output: &str, command: Option<String>| {
-            FlakeOutputTable {
-                rows: Row::from_inventory_for(&[], flake.output.get_inventory(output.to_string())),
-                title: title.to_string(),
-                command,
-            }
-            .print();
-        };
-
-        let print_per_system_flake_output_table =
-            |title: &str, output: &str, command: Option<String>| {
+        let mut print_flake_output_table =
+            |title: &str, out_path: &[&str], command: Option<String>| {
                 FlakeOutputTable {
-                    rows: Row::from_inventory_for(
-                        &[system.as_ref()],
-                        flake.output.get_inventory(output.to_string()),
-                    ),
+                    rows: Row::vec_from_flake_output(flake_output.pop(out_path)),
                     title: title.to_string(),
                     command,
                 }
                 .print();
             };
 
-        print_per_system_flake_output_table(
+        print_flake_output_table(
             "📦 Packages",
-            "packages",
+            &["packages", system.as_ref()],
             Some(format!("nix build {}#<name>", self.flake_url)),
         );
-        print_per_system_flake_output_table(
+        print_flake_output_table(
             "🐚 Devshells",
-            "devShells",
+            &["devShells", system.as_ref()],
             Some(format!("nix develop {}#<name>", self.flake_url)),
         );
-        print_per_system_flake_output_table(
+        print_flake_output_table(
             "🚀 Apps",
-            "apps",
+            &["apps", system.as_ref()],
             Some(format!("nix run {}#<name>", self.flake_url)),
         );
-        print_per_system_flake_output_table(
+        print_flake_output_table(
             "🔍 Checks",
-            "checks",
+            &["checks", system.as_ref()],
             Some("nix flake check".to_string()),
         );
 
         print_flake_output_table(
             "🐧 NixOS Configurations",
-            "nixosConfigurations",
+            &["nixosConfigurations"],
             Some(format!(
                 "nixos-rebuild switch --flake {}#<name>",
                 self.flake_url
@@ -157,25 +142,25 @@ impl ShowCommand {
         );
         print_flake_output_table(
             "🍏 Darwin Configurations",
-            "darwinConfigurations",
+            &["darwinConfigurations"],
             Some(format!(
                 "darwin-rebuild switch --flake {}#<name>",
                 self.flake_url
             )),
         );
-        print_flake_output_table("🔧 NixOS Modules", "nixosModules", None);
+        print_flake_output_table("🔧 NixOS Modules", &["nixosModules"], None);
         print_flake_output_table(
             "🐳 Docker Images",
-            "dockerImages",
+            &["dockerImages"],
             Some(format!("nix build {}#dockerImages.<name>", self.flake_url)),
         );
-        print_flake_output_table("🎨 Overlays", "overlays", None);
+        print_flake_output_table("🎨 Overlays", &["overlays"], None);
         print_flake_output_table(
             "📝 Templates",
-            "templates",
+            &["templates"],
             Some(format!("nix flake init -t {}#<name>", self.flake_url)),
         );
-        print_flake_output_table("📜 Schemas", "schemas", None);
+        print_flake_output_table("📜 Schemas", &["schemas"], None);
 
         Ok(())
     }

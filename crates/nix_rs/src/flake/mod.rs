@@ -4,9 +4,11 @@ pub mod command;
 pub mod eval;
 pub mod metadata;
 pub mod outputs;
+pub mod schema;
 pub mod system;
 pub mod url;
 
+use schema::FlakeSchemas;
 use serde::{Deserialize, Serialize};
 
 use system::System;
@@ -39,11 +41,11 @@ impl Flake {
         nix_config: &NixConfig,
         url: FlakeUrl,
     ) -> Result<Flake, NixCmdError> {
-        let output = FlakeOutputs::from_nix(nix_cmd, &url, &nix_config.system.value).await?;
+        let schemas = FlakeSchemas::from_nix(nix_cmd, &url, &nix_config.system.value).await?;
         Ok(Flake {
             url,
             system: nix_config.system.value.clone(),
-            output,
+            output: schemas.to_flake_outputs(),
         })
     }
 }
