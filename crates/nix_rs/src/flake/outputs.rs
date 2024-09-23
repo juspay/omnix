@@ -1,7 +1,7 @@
 //! Nix flake outputs
 
 use serde::{Deserialize, Serialize};
-use std::{borrow::Borrow, collections::HashMap};
+use std::collections::HashMap;
 
 use super::schema::Val;
 
@@ -40,19 +40,15 @@ impl FlakeOutputs {
     ///
     /// # Example
     /// ```no_run
-    /// let tree = nix_rs::flake::outputs::FlakeOutputs::default();
+    /// let tree : &nix_rs::flake::outputs::FlakeOutputs = todo!();
     /// let val = tree.get(&["aarch64-darwin", "default"]);
     /// ```
-    pub fn get<Q>(&self, path: &[&Q]) -> Option<&Self>
-    where
-        Q: ?Sized + Eq + std::hash::Hash,
-        String: Borrow<Q>,
-    {
+    pub fn get(&self, path: &[&str]) -> Option<&Self> {
         let mut current = self;
         for key in path {
             match current {
                 Self::Attrset(map) => {
-                    current = map.get(key.borrow())?;
+                    current = map.get(*key)?;
                 }
                 Self::Val(_) => return None,
             }
