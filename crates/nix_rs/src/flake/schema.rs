@@ -46,7 +46,9 @@ pub enum InventoryItem {
 }
 
 impl FlakeSchemas {
-    /// Determine flake outputs using [static@INSPECT_FLAKE] and [static@DEFAULT_FLAKE_SCHEMAS]
+    /// Get the [FlakeSchema] for the given flake
+    /// 
+    /// This uses [static@INSPECT_FLAKE] and [static@DEFAULT_FLAKE_SCHEMAS]
     pub async fn from_nix(
         nix_cmd: &crate::command::NixCmd,
         flake_url: &super::url::FlakeUrl,
