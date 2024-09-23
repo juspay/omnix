@@ -124,16 +124,6 @@ pub enum Leaf {
     Doc(String),
 }
 
-impl Leaf {
-    /// Get the value as a [Val]
-    pub fn as_val(&self) -> Option<&Val> {
-        match self {
-            Self::Val(v) => Some(v),
-            _ => None,
-        }
-    }
-}
-
 /// The metadata of a flake output value which is of non-attrset [Type]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

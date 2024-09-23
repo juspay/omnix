@@ -5,7 +5,7 @@ use std::collections::{btree_map::Entry, BTreeMap};
 
 use super::schema::Val;
 
-/// Represents the filtered version of [FlakeSchemas] and is an accurate representation of flake outputs
+/// Flake outputs derived from [super::schema::FlakeSchemas]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum FlakeOutputs {
