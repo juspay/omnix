@@ -4,6 +4,8 @@
 
 ### Enhancements
 
+- `om init`
+  - Initial working version of `om init` command
 - `om health`
   - Display Nix installer used (supports DetSys installer)
 - `om ci`
