@@ -1,6 +1,4 @@
 //! Nix flake outputs
-// TODO: Document this module!
-#![allow(missing_docs)]
 
 use serde::{Deserialize, Serialize};
 use std::collections::{btree_map::Entry, BTreeMap};
@@ -11,7 +9,10 @@ use super::schema::Val;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum FlakeOutputs {
+    /// Metadata for a flake output value
     Val(Val),
+    /// A tree-like structure representing a flake output.
+    /// Each key in the map represents a top-level flake output.
     Attrset(BTreeMap<String, FlakeOutputs>),
 }
 

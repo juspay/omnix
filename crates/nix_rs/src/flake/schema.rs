@@ -27,13 +27,17 @@ lazy_static! {
 /// Represents the schema of a given flake evaluated using [static@INSPECT_FLAKE]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct FlakeSchemas {
+    /// Each key in the map represents either a top-level flake output or other metadata (e.g. `docs`)
     pub inventory: BTreeMap<String, InventoryItem>,
 }
 
+/// A tree-like structure representing each flake output or metadata in [FlakeSchemas]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum InventoryItem {
+    /// Represents a terminal node in the tree
     Leaf(Leaf),
+    /// Represents a non-terminal node in the tree
     Attrset(BTreeMap<String, InventoryItem>),
 }
 
@@ -75,6 +79,7 @@ impl FlakeSchemas {
         Ok(v)
     }
 
+    /// Convert [FlakeSchemas] to [FlakeOutputs]
     pub fn to_flake_outputs(&self) -> FlakeOutputs {
         FlakeOutputs::Attrset(
             self.inventory
@@ -113,10 +118,8 @@ impl InventoryItem {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum Leaf {
+    /// Metadata for a flake output value
     Val(Val),
-    Unknown(Unknown),
-    Filtered(Filtered),
-    Skipped(Skipped),
     /// Represents description for a flake output
     /// (e.g. `Doc` for `formatter` will be "The `formatter` output specifies the package to use to format the project.")
     Doc(String),
@@ -127,8 +130,11 @@ pub enum Leaf {
 #[serde(rename_all = "camelCase")]
 pub struct Val {
     #[serde(rename = "what")]
+    /// Represents the type of the flake output
     pub type_: Type,
+    /// If the flake output is a derivation, this will be the name of the derivation
     pub derivation_name: Option<String>,
+    /// A short description derived from `meta.description` of the derivation with [Val::derivation_name]
     pub short_description: Option<String>,
 }
 
@@ -142,34 +148,12 @@ impl Default for Val {
     }
 }
 
-/// Boolean flags at the leaf of a flake output
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Unknown {
-    pub unknown: bool,
-}
-
-/// Represents flake outputs that cannot be evaluated on current platform
-/// (e.g. `nixosConfigurations` on darwin System)
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename = "camelCase")]
-pub struct Filtered {
-    pub filtered: bool,
-}
-
-/// Represents flake outputs that are skipped unless explicitly requested
-/// (e.g. `legacyPackages`)
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Skipped {
-    pub skipped: bool,
-}
-
 /// The type of a flake output [Val]
 ///
 /// These types can differ based on [static@DEFAULT_FLAKE_SCHEMAS].
 /// The types here are based on <https://github.com/DeterminateSystems/flake-schemas>
 /// For example, see [NixosModule type](https://github.com/DeterminateSystems/flake-schemas/blob/0a5c42297d870156d9c57d8f99e476b738dcd982/flake.nix#L268)
+#[allow(missing_docs)]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Type {
     #[serde(rename = "NixOS module")]
