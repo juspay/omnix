@@ -76,12 +76,12 @@ static NIXCMD: OnceCell<NixCmd> = OnceCell::const_new();
 ///
 /// The command will be highlighted to distinguish it (for copying) from the
 /// rest of the instrumentation parameters.
-
 #[instrument(name = "command")]
 pub fn trace_cmd(cmd: &tokio::process::Command) {
     trace_cmd_with("🐚", cmd);
 }
 
+/// Like [trace_cmd] but with a custom icon
 #[instrument(name = "command")]
 pub fn trace_cmd_with(icon: &str, cmd: &tokio::process::Command) {
     use colored::Colorize;
@@ -122,7 +122,11 @@ impl NixCmd {
     where
         T: serde::de::DeserializeOwned,
     {
-        let mut stdout_handle = self.run_with_args_returning_stdout(args).await?;
+        let mut stdout_handle = self
+            .run_with_returning_stdout(|c| {
+                c.args(args);
+            })
+            .await?;
         let mut stdout = Vec::new();
 
         stdout_handle
@@ -139,7 +143,11 @@ impl NixCmd {
         T: std::str::FromStr,
         <T as std::str::FromStr>::Err: std::fmt::Display,
     {
-        let mut stdout_handle = self.run_with_args_returning_stdout(args).await?;
+        let mut stdout_handle = self
+            .run_with_returning_stdout(|c| {
+                c.args(args);
+            })
+            .await?;
         let mut stdout = Vec::new();
         stdout_handle
             .read_to_end(&mut stdout)
@@ -150,13 +158,14 @@ impl NixCmd {
         Ok(v)
     }
 
-    /// Run nix with given args, returning stdout.
-    pub async fn run_with_args_returning_stdout(
-        &self,
-        args: &[&str],
-    ) -> Result<ChildStdout, CommandError> {
+    /// Like [Self::run_with] but returns stdout as a [`Vec<u8>`]
+    pub async fn run_with_returning_stdout<F>(&self, f: F) -> Result<ChildStdout, CommandError>
+    where
+        F: FnOnce(&mut Command),
+    {
         let mut cmd = self.command();
-        cmd.args(args).stdout(Stdio::piped());
+        f(&mut cmd);
+        cmd.stdout(Stdio::piped());
         trace_cmd(&cmd);
 
         let mut child = cmd.spawn()?;
@@ -226,19 +235,24 @@ fn to_cli(cmd: &tokio::process::Command) -> String {
 /// Errors when running and interpreting the output of a nix command
 #[derive(Error, Debug)]
 pub enum NixCmdError {
+    /// A [CommandError]
     #[error("Command error: {0}")]
     CmdError(#[from] CommandError),
 
+    /// Failed to unicode-decode the output of a command
     #[error("Failed to decode command stdout (utf8 error): {0}")]
     DecodeErrorUtf8(#[from] std::string::FromUtf8Error),
 
+    /// Failed to parse the output of a command
     #[error("Failed to decode command stdout (from_str error): {0}")]
     DecodeErrorFromStr(#[from] FromStrError),
 
+    /// Failed to parse the output of a command as JSON
     #[error("Failed to decode command stdout (json error): {0}")]
     DecodeErrorJson(#[from] serde_json::Error),
 }
 
+/// Errors when parsing a string into a type
 #[derive(Debug)]
 pub struct FromStrError(String);
 
@@ -250,12 +264,21 @@ impl Display for FromStrError {
 
 impl std::error::Error for FromStrError {}
 
+/// Errors when running a command
 #[derive(Error, Debug)]
 pub enum CommandError {
+    /// Error when spawning a child process
     #[error("Child process error: {0}")]
     ChildProcessError(#[from] std::io::Error),
+
+    /// Child process exited unsuccessfully
     #[error("Process exited unsuccessfully. exit_code={:?}", exit_code)]
-    ProcessFailed { exit_code: Option<i32> },
+    ProcessFailed {
+        /// The exit code of the failed process
+        exit_code: Option<i32>,
+    },
+
+    /// Failed to decode the stderr of a command
     #[error("Failed to decode command stderr: {0}")]
     Decode(#[from] std::string::FromUtf8Error),
 }

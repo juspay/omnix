@@ -1,4 +1,6 @@
 //! The run command
+use std::{collections::HashMap, path::PathBuf};
+
 use anyhow::{Context, Result};
 use clap::Parser;
 use colored::Colorize;
@@ -9,14 +11,11 @@ use nix_rs::{
     flake::{system::System, url::FlakeUrl},
     info::NixInfo,
     store::uri::StoreURI,
+    system_list::{SystemsList, SystemsListFlakeRef},
 };
 use omnix_common::config::OmConfig;
 
-use crate::{
-    config::subflakes::SubflakesConfig,
-    flake_ref::FlakeRef,
-    nix::system_list::{SystemsList, SystemsListFlakeRef},
-};
+use crate::{config::subflakes::SubflakesConfig, flake_ref::FlakeRef, step::core::StepsResult};
 
 use super::run_remote;
 
@@ -35,6 +34,10 @@ pub struct RunCommand {
     /// <https://github.com/nix-systems>.
     #[arg(long)]
     pub systems: Option<SystemsListFlakeRef>,
+
+    /// Path to write the results of the CI run (in JSON) to
+    #[arg(long, short = 'o')]
+    pub results: Option<PathBuf>,
 
     /// Flake URL or github URL
     ///
@@ -98,7 +101,15 @@ impl RunCommand {
             "{}",
             format!("\n🤖 Running CI for {}", self.flake_ref).bold()
         );
-        ci_run(nixcmd, verbose, self, &cfg, &nix_info.nix_config).await?;
+        let res = ci_run(nixcmd, verbose, self, &cfg, &nix_info.nix_config).await?;
+
+        if let Some(results_file) = self.results.as_ref() {
+            serde_json::to_writer(std::fs::File::create(results_file)?, &res)?;
+            tracing::info!(
+                "Results written to {}",
+                results_file.to_string_lossy().bold()
+            );
+        }
 
         Ok(())
     }
@@ -159,7 +170,8 @@ pub async fn ci_run(
     run_cmd: &RunCommand,
     cfg: &OmConfig<SubflakesConfig>,
     nix_config: &NixConfig,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<HashMap<String, StepsResult>> {
+    let mut res = HashMap::new();
     let systems = run_cmd.get_systems(cmd, nix_config).await?;
 
     let (config, attrs) = cfg.get_referenced()?;
@@ -187,13 +199,14 @@ pub async fn ci_run(
         }
 
         tracing::info!("\n🍎 {}", name);
-        subflake
+        let steps_res = subflake
             .steps
             .run(cmd, verbose, run_cmd, &systems, &cfg.flake_url, subflake)
             .await?;
+        res.insert(subflake_name.clone(), steps_res);
     }
 
     tracing::info!("\n🥳 Success!");
 
-    Ok(())
+    Ok(res)
 }

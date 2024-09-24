@@ -7,10 +7,22 @@ on:
   pull_request:
 
 jobs:
+  website:
+    if: github.ref == 'refs/heads/main'
+    needs: main
+    uses: ./.github/workflows/website.yaml
+    with:
+      static-site-path: ${{ needs.main.outputs.OMWEBSITE }}
+    secrets: inherit
+
   main:
     runs-on: ${{ matrix.system }}
     permissions:
       contents: read
+    outputs:
+      # It is important to match the matrix.system here
+      # With that of website.yaml
+      OMWEBSITE: ${{ steps.omci.outputs.OMWEBSITE_x86_64-linux }}
     strategy:
       matrix:
         system: [x86_64-linux, aarch64-darwin, x86_64-darwin]
@@ -24,35 +36,48 @@ jobs:
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
           skipPush: true
 
-      # Prep systems list
-      # Workaround until https://github.com/juspay/omnix/issues/210
-      - name: Systems to build
-        run: |
-          mkdir ~/systems
-          echo '{ outputs = _: {}; }' > ~/systems/flake.nix
-          echo '[ "${{ matrix.system }}" ]' > ~/systems/default.nix
-
-      # Run CI
+      # Build flake outputs
+      # Run omnix using self.
       - name: Omnix CI
         run: |
-          om ci \
+          nix run . -- ci \
             --extra-access-tokens ${{ secrets.GITHUB_TOKEN }} \
-            run --systems "path:$HOME/systems"
+            run \
+              --systems "${{ matrix.system }}" \
+              --results=$HOME/omci.json
 
-      # Run `om show` on self
-      - name: om show
-        run: nix run . show .
+      - name: Omnix results
+        id: omci
+        run: |
+          cat $HOME/omci.json | jq
+
+          # Retrieve the store path for the given package out of the given subflake.
+          get_output() {
+            subflake=$1 name=$2 \
+            jq -r '.[$ENV.subflake].build.byName.[$ENV.name]' < $HOME/omci.json
+          }
+
+          echo "OMCIJSON_PATH=$HOME/omci.json" >> "$GITHUB_OUTPUT"
+          echo "OMCIJSON=$(cat $HOME/omci.json)" >> "$GITHUB_OUTPUT"
+          echo "OMPACKAGE=$(get_output omnix omnix-cli)" >> "$GITHUB_OUTPUT"
+          echo "OMWEBSITE_${{ matrix.system }}=$(get_output doc omnix-mdbook-site)" >> "$GITHUB_OUTPUT"
+
+      - name: "Omnix: Upload results"
+        uses: actions/upload-artifact@v4
+        with:
+          name: omci-${{ matrix.system }}.json
+          path: ${{ steps.omci.outputs.OMCIJSON_PATH }}
+          if-no-files-found: error
 
       # Upload static binary for the next job.
-      - name: "static-binary: Build"
-        if: matrix.system != 'x86_64-darwin'
-        run: echo "om_static_binary_path=$(nix build --no-link --print-out-paths)" >> "$GITHUB_ENV"
+      # TODO: This should ideally be in a separate workflow file, running parallel to the main job.
       - name: "static-binary: Upload"
         if: matrix.system != 'x86_64-darwin'
         uses: actions/upload-artifact@v4
         with:
           name: om-${{ matrix.system }}
-          path: ${{ env.om_static_binary_path }}/bin/om
+          path: ${{ steps.omci.outputs.OMPACKAGE }}/bin/om
+          if-no-files-found: error
 
       # Push the Nix cache
       - name: Push to cachix
@@ -92,36 +117,3 @@ jobs:
             echo "om binary failed due to lack of nix installation, as expected."
             exit 0
           fi
-
-  website-build:
-    if: github.ref == 'refs/heads/main'
-    # needs: static-binary-check
-    runs-on: x86_64-linux
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build the website (Nix) 🔧
-        run: |
-          nix build ./doc -o ./_site
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-  website-deploy:
-    if: github.ref == 'refs/heads/main'
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    # Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-    # However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
-    concurrency:
-      group: "pages"
-      cancel-in-progress: false
-    runs-on: x86_64-linux
-    needs: website-build
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4

@@ -1,3 +1,4 @@
+//! Rust module for `nix copy`.
 use crate::{
     command::{CommandError, NixCmd},
     store::uri::StoreURI,

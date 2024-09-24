@@ -1,16 +1,8 @@
 //! Custom steps in the CI pipeline
-use async_walkdir::WalkDir;
 use colored::Colorize;
-use futures_lite::{stream::StreamExt, Future};
 use nonempty::NonEmpty;
 use serde::Deserialize;
-use std::{
-    collections::BTreeMap,
-    fs::Permissions,
-    os::unix::fs::PermissionsExt,
-    path::{Path, PathBuf},
-};
-use tokio::fs;
+use std::{collections::BTreeMap, future::Future, path::PathBuf};
 
 use nix_rs::{
     command::NixCmd,
@@ -84,6 +76,7 @@ impl CustomStep {
         let flake_opts = flake::command::FlakeOptions {
             override_inputs: subflake.override_inputs.clone(),
             current_dir: Some(path.clone()),
+            no_write_lock_file: false,
         };
 
         match self {
@@ -190,7 +183,7 @@ where
             .tempdir()?
             .path()
             .join("flake");
-        copy_dir_all(&local_path, &target_path).await?;
+        omnix_common::fs::copy_dir_all(&local_path, &target_path).await?;
         target_path
     } else {
         local_path
@@ -198,35 +191,4 @@ where
 
     // Finally, call the function with the path
     f(path).await
-}
-
-/// Copy a directory recursively
-///
-/// The target directory will always be user readable & writable.
-async fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> anyhow::Result<()> {
-    let src = src.as_ref();
-    let dst = dst.as_ref();
-
-    let mut walker = WalkDir::new(src);
-
-    while let Some(entry) = walker.next().await {
-        let entry = entry?;
-        let path = &entry.path();
-        let relative = path.strip_prefix(src)?;
-        let target = dst.join(relative);
-
-        if entry.file_type().await?.is_dir() {
-            fs::create_dir_all(&target).await?;
-            fs::set_permissions(&target, Permissions::from_mode(0o755)).await?;
-        } else {
-            if let Some(parent) = target.parent() {
-                fs::create_dir_all(parent).await?;
-                fs::set_permissions(&parent, Permissions::from_mode(0o755)).await?;
-            }
-            fs::copy(path, &target).await?;
-            fs::set_permissions(&target, Permissions::from_mode(0o644)).await?;
-        }
-    }
-
-    Ok(())
 }

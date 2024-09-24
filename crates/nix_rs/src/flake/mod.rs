@@ -8,11 +8,13 @@ pub mod schema;
 pub mod system;
 pub mod url;
 
+use schema::FlakeSchemas;
 use serde::{Deserialize, Serialize};
 
+use system::System;
 use tracing::instrument;
 
-use self::{outputs::FlakeOutputs, schema::FlakeSchema, system::System, url::FlakeUrl};
+use self::{outputs::FlakeOutputs, url::FlakeUrl};
 
 use crate::{
     command::{NixCmd, NixCmdError},
@@ -24,10 +26,8 @@ use crate::{
 pub struct Flake {
     /// The flake url which this struct represents
     pub url: FlakeUrl,
-    /// `nix flake show` output
+    /// Flake outputs derived from [FlakeSchemas]
     pub output: FlakeOutputs,
-    /// Flake output schema (typed version of [FlakeOutputs])
-    pub schema: FlakeSchema,
     // TODO: Add `nix flake metadata` info.
 }
 
@@ -40,12 +40,10 @@ impl Flake {
         nix_config: &NixConfig,
         url: FlakeUrl,
     ) -> Result<Flake, NixCmdError> {
-        let output = FlakeOutputs::from_nix(nix_cmd, &url).await?;
-        let schema = FlakeSchema::from(&output, &nix_config.system.value);
+        let schemas = FlakeSchemas::from_nix(nix_cmd, &url, &nix_config.system.value).await?;
         Ok(Flake {
             url,
-            output: output.clone(),
-            schema,
+            output: schemas.into(),
         })
     }
 }

@@ -7,6 +7,7 @@ use os_info;
 use serde::{Deserialize, Serialize};
 use std::process::Command;
 use tracing::instrument;
+use whoami;
 
 /// The environment in which Nix operates
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -36,7 +37,7 @@ impl NixEnv {
         tracing::debug!("Detecting Nix environment");
         let os = OS::detect().await;
         tokio::task::spawn_blocking(|| {
-            let current_user = std::env::var("USER")?;
+            let current_user = whoami::username();
             let sys = sysinfo::System::new_with_specifics(
                 sysinfo::RefreshKind::new().with_disks_list().with_memory(),
             );
@@ -94,6 +95,7 @@ pub enum OS {
     MacOS {
         /// Using nix-darwin
         nix_darwin: bool,
+        /// Architecture
         arch: MacOSArch,
     },
     /// On NixOS
@@ -102,19 +104,26 @@ pub enum OS {
     Other(os_info::Type),
 }
 
+/// macOS CPU architecture
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum MacOSArch {
+    /// Apple Silicon
     Arm64(AppleEmulation),
+    /// Other architecture
     Other(Option<String>),
 }
 
+/// Apple emulation mode
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum AppleEmulation {
+    /// Not running on Apple Silicon
     None,
+    /// Running under Rosetta
     Rosetta,
 }
 
 impl AppleEmulation {
+    /// Detect Apple emulation mode for current process
     pub fn new() -> Self {
         use is_proc_translated::is_proc_translated;
         if is_proc_translated() {
@@ -132,6 +141,7 @@ impl Default for AppleEmulation {
 }
 
 impl MacOSArch {
+    /// Create a [MacOSArch] from an OS architecture string
     pub fn from(os_arch: Option<&str>) -> MacOSArch {
         match os_arch {
             Some("arm64") => MacOSArch::Arm64(AppleEmulation::new()),
@@ -161,6 +171,7 @@ impl Display for OS {
 }
 
 impl OS {
+    /// Detect the OS
     pub async fn detect() -> Self {
         let os_info = tokio::task::spawn_blocking(os_info::get).await.unwrap();
         let os_type = os_info.os_type();
@@ -220,6 +231,7 @@ impl Display for NixInstaller {
 }
 
 impl NixInstaller {
+    /// Detect the Nix installer
     pub fn detect() -> Result<Self, NixEnvError> {
         match super::detsys_installer::DetSysNixInstaller::detect()? {
             Some(installer) => Ok(NixInstaller::DetSys(installer)),
@@ -229,18 +241,17 @@ impl NixInstaller {
 }
 
 /// Errors while trying to fetch [NixEnv]
-
 #[derive(thiserror::Error, Debug)]
 pub enum NixEnvError {
-    #[error("Cannot find $USER: {0}")]
-    UserError(#[from] std::env::VarError),
-
+    /// Unable to find user groups
     #[error("Failed to fetch groups: {0}")]
     GroupsError(std::io::Error),
 
+    /// Unable to find /nix volume
     #[error("Unable to find root disk or /nix volume")]
     NoDisk,
 
+    /// Unable to find Nix installer
     #[error("Failed to detect Nix installer: {0}")]
     InstallerError(#[from] super::detsys_installer::BadInstallerVersion),
 }

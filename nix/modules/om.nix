@@ -1,8 +1,3 @@
-{ inputs, ... }:
-
-let
-  root = inputs.self;
-in
 {
   # omnix configuration
   flake = {
@@ -14,10 +9,10 @@ in
             # build.enable = false;
             flake-check.enable = false; # Not necessary
             custom = {
-              cli-runs = {
+              om-show = {
                 type = "app";
                 # name = "default";
-                args = [ "--help" ];
+                args = [ "show" "." ];
               };
               binary-size-is-small = {
                 type = "app";
@@ -31,13 +26,6 @@ in
                 systems = [ "x86_64-linux" "aarch64-darwin" ]; # Too slow on rosetta
               };
             };
-          };
-        };
-        flakreate-registry = {
-          dir = "crates/flakreate/registry";
-          steps.custom.demo = {
-            type = "app";
-            name = "cache";
           };
         };
         doc.dir = "doc";

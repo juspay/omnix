@@ -1,16 +1,14 @@
-{ flake
-, rust-project
+{ rust-project
 , pkgs
 , lib
 , ...
 }:
 
 let
-  inherit (flake) inputs;
   inherit (pkgs) stdenv pkgsStatic;
 in
 {
-  autoWire = false;
+  autoWire = [ "doc" "clippy" ];
   crane = {
     args = {
       nativeBuildInputs = with pkgs.apple_sdk_frameworks; lib.optionals stdenv.isDarwin [
@@ -36,14 +34,15 @@ in
       ];
 
       inherit (rust-project.crates."nix_rs".crane.args)
-        DEVOUR_FLAKE
         DEFAULT_FLAKE_SCHEMAS
-        NIX_FLAKE_SCHEMAS_BIN
+        INSPECT_FLAKE
+        NIX_SYSTEMS
         ;
       inherit (rust-project.crates."nixci".crane.args)
+        DEVOUR_FLAKE
         OMNIX_SOURCE
         ;
-      inherit (rust-project.crates."flakreate".crane.args)
+      inherit (rust-project.crates."omnix-init".crane.args)
         OM_INIT_REGISTRY
         ;
 

@@ -7,6 +7,8 @@
     - Added a step to run `nix flake check`
     - Support for custom steps
 - `config.rs`: Refactored to change API.
+- Locally cache `github:nix-systems` (to avoid Github API rate limit)
+- The default subflake now uses `ROOT` instead `<root>` as the key.
 
 ## 1.1.0
 

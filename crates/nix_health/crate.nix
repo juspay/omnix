@@ -9,6 +9,7 @@ let
   inherit (flake) inputs;
 in
 {
+  autoWire = [ "doc" "clippy" ];
   crane = {
     args = {
       buildInputs = lib.optionals pkgs.stdenv.isDarwin (
@@ -18,9 +19,9 @@ in
         ]
       );
       inherit (rust-project.crates."nix_rs".crane.args)
-        DEVOUR_FLAKE
         DEFAULT_FLAKE_SCHEMAS
-        NIX_FLAKE_SCHEMAS_BIN
+        INSPECT_FLAKE
+        NIX_SYSTEMS
         ;
       nativeBuildInputs = with pkgs; [
         nix # Tests need nix cli

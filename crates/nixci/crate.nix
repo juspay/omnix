@@ -9,6 +9,7 @@ let
   inherit (flake) inputs;
 in
 {
+  autoWire = [ "doc" "clippy" ];
   crane = {
     args = {
       nativeBuildInputs = with pkgs; with pkgs.apple_sdk_frameworks; lib.optionals stdenv.isDarwin [
@@ -31,11 +32,12 @@ in
       # instead.
       doCheck = false;
       inherit (rust-project.crates."nix_rs".crane.args)
-        DEVOUR_FLAKE
         DEFAULT_FLAKE_SCHEMAS
-        NIX_FLAKE_SCHEMAS_BIN
+        INSPECT_FLAKE
+        NIX_SYSTEMS
         ;
-      OMNIX_SOURCE = inputs.self;
+      DEVOUR_FLAKE = inputs.devour-flake;
+      OMNIX_SOURCE = rust-project.src;
     };
   };
 }

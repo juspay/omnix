@@ -16,20 +16,6 @@
       crateNixFile = "crate.nix";
     };
 
-    checks =
-      let
-        inherit (config.rust-project) crates;
-      in
-      {
-        # Clippy checks
-        # TODO: Remove after https://github.com/juspay/rust-flake/issues/23
-        omnix-cli-clippy = crates."omnix-cli".crane.outputs.drv.clippy;
-        omnix-common-clippy = crates."omnix-common".crane.outputs.drv.clippy;
-        nix_rs-clippy = crates."nix_rs".crane.outputs.drv.clippy;
-        nixci-clippy = crates."nixci".crane.outputs.drv.clippy;
-        nix_health-clippy = crates."nix_health".crane.outputs.drv.clippy;
-      };
-
     packages =
       let
         inherit (config.rust-project) crates;
@@ -45,14 +31,6 @@
               --fish <($out/bin/om completion fish)
           '';
         });
-
-        # Rust docs
-        # TODO: Remove after https://github.com/juspay/rust-flake/issues/23
-        omnix-cli-doc = crates."omnix-cli".crane.outputs.drv.doc;
-        omnix-common-doc = crates."omnix-common".crane.outputs.drv.doc;
-        nix_rs-doc = crates."nix_rs".crane.outputs.drv.doc;
-        nixci-doc = crates."nixci".crane.outputs.drv.doc;
-        nix_health-doc = crates."nix_health".crane.outputs.drv.doc;
 
         /*
         gui = crates."omnix-gui".crane.outputs.drv.crate.overrideAttrs (oa: {

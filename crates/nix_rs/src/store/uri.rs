@@ -1,4 +1,4 @@
-/// Store URI management
+//! Store URI management
 use std::{fmt, str::FromStr};
 
 use serde::{Deserialize, Serialize};
@@ -20,17 +20,24 @@ pub struct SSHStoreURI {
     pub host: String,
 }
 
+/// Error parsing a store URI
 #[derive(Error, Debug)]
 pub enum StoreURIParseError {
+    /// Invalid URI format
     #[error("Invalid URI format")]
     InvalidFormat,
+    /// Unsupported scheme
     #[error("Unsupported scheme: {0}")]
     UnsupportedScheme(String),
+    /// Missing host
     #[error("Missing host")]
     MissingHost,
 }
 
 impl StoreURI {
+    /// Parse a Nix store URI
+    ///
+    /// Currently only supports `ssh` scheme
     pub fn parse(uri: &str) -> Result<Self, StoreURIParseError> {
         let (scheme, rest) = uri
             .split_once("://")

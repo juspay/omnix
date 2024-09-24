@@ -125,7 +125,7 @@ You can define custom CI actions in your flake, which will be run as part of `om
       dir = ".";
       steps = {
         # The build step is enabled by default. It builds all flake outputs.
-        build.enable = true
+        build.enable = true;
         # Other steps include: lockfile & flake-check
 
         # Users can define custom steps to run any arbitrary flake app or devShell command.
@@ -135,7 +135,7 @@ You can define custom CI actions in your flake, which will be run as part of `om
           cargo-test = {
             type = "devshell";
             # name = "default"
-            command = "cargo test";
+            command = [ "cargo" "test" ];
           };
 
           # We can also flake apps
@@ -147,7 +147,7 @@ You can define custom CI actions in your flake, which will be run as part of `om
         };
       };
     };
-  }
+  };
 }
 ```
 
@@ -165,6 +165,8 @@ Some real-world examples of how `om ci` is used with specific configurations:
 - [nixos-flake](https://github.com/srid/nixos-flake/blob/4af32875e7cc6df440c5f5cf93c67af41902768b/flake.nix#L29-L45)
 - [haskell-flake](https://github.com/srid/haskell-flake/blob/d128c7329bfc73c3eeef90f6d215d0ccd7baf78c/flake.nix#L15-L67)
     - Here's [a blog post](https://twitter.com/sridca/status/1763528379188265314) that talks about how it is used in haskell-flake
+- [superposition](https://github.com/juspay/superposition/blob/5eeb498cb351d958c923874afafe8a21127ac8ce/nix/om.nix)
+- [haskell-rust-ffi-template](https://github.com/shivaraj-bh/haskell-rust-ffi-template/blob/f38b383b2a12afcb069ef38142faa99bb4b726f4/nix/om.nix)
 
 ## What it does {#mech}
 

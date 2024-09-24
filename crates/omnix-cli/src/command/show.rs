@@ -1,4 +1,4 @@
-use std::{collections::BTreeMap, io::IsTerminal};
+use std::io::IsTerminal;
 
 use anyhow::Context;
 use clap::Parser;
@@ -6,7 +6,7 @@ use colored::Colorize;
 use nix_rs::{
     command::NixCmd,
     config::NixConfig,
-    flake::{outputs::Val, url::FlakeUrl, Flake},
+    flake::{outputs::FlakeOutputs, url::FlakeUrl, Flake},
 };
 use tabled::{
     settings::{location::ByColumnName, Color, Modify, Style},
@@ -71,12 +71,18 @@ pub struct Row {
 }
 
 impl Row {
-    /// Convert a [BTreeMap] to a vector of [Row]s
-    pub fn vec_from_btreemap(map: BTreeMap<String, Val>) -> Vec<Row> {
-        map.into_iter()
+    /// Convert a [FlakeOutputs] to a vector of [Row]s
+    pub fn vec_from_flake_output(output: &FlakeOutputs) -> Vec<Row> {
+        output
+            .get_attrset_of_val()
+            .into_iter()
             .map(|(name, val)| Row {
                 name,
-                description: val.short_description.unwrap_or("N/A".to_owned()),
+                description: val
+                    .short_description
+                    .filter(|s| !s.is_empty())
+                    .unwrap_or(String::from("N/A"))
+                    .to_owned(),
             })
             .collect()
     }
@@ -86,94 +92,73 @@ impl ShowCommand {
     pub async fn run(&self) -> anyhow::Result<()> {
         let nix_cmd = NixCmd::get().await;
         let nix_config = NixConfig::get().await.as_ref()?;
+        let system = &nix_config.system.value;
         let flake = Flake::from_nix(nix_cmd, nix_config, self.flake_url.clone())
             .await
             .with_context(|| "Unable to fetch flake")?;
 
-        FlakeOutputTable {
-            rows: Row::vec_from_btreemap(flake.schema.packages),
-            title: "📦 Packages".to_string(),
-            command: Some(format!("nix build {}#<name>", self.flake_url)),
-        }
-        .print();
+        let print_flake_output_table = |title: &str, keys: &[&str], command: Option<String>| {
+            FlakeOutputTable {
+                rows: flake
+                    .output
+                    .get_by_path(keys)
+                    .map_or(vec![], Row::vec_from_flake_output),
+                title: title.to_string(),
+                command,
+            }
+            .print();
+        };
 
-        FlakeOutputTable {
-            rows: Row::vec_from_btreemap(flake.schema.devshells),
-            title: "🐚 Devshells".to_string(),
-            command: Some(format!("nix develop {}#<name>", self.flake_url)),
-        }
-        .print();
+        print_flake_output_table(
+            "📦 Packages",
+            &["packages", system.as_ref()],
+            Some(format!("nix build {}#<name>", self.flake_url)),
+        );
+        print_flake_output_table(
+            "🐚 Devshells",
+            &["devShells", system.as_ref()],
+            Some(format!("nix develop {}#<name>", self.flake_url)),
+        );
+        print_flake_output_table(
+            "🚀 Apps",
+            &["apps", system.as_ref()],
+            Some(format!("nix run {}#<name>", self.flake_url)),
+        );
+        print_flake_output_table(
+            "🔍 Checks",
+            &["checks", system.as_ref()],
+            Some("nix flake check".to_string()),
+        );
 
-        FlakeOutputTable {
-            rows: Row::vec_from_btreemap(flake.schema.apps),
-            title: "🚀 Apps".to_string(),
-            command: Some(format!("nix run {}#<name>", self.flake_url)),
-        }
-        .print();
-
-        FlakeOutputTable {
-            rows: Row::vec_from_btreemap(flake.schema.checks),
-            title: "🔍 Checks".to_string(),
-            command: Some("nix flake check".to_string()),
-        }
-        .print();
-
-        FlakeOutputTable {
-            rows: Row::vec_from_btreemap(flake.schema.nixos_configurations),
-            title: "🐧 NixOS Configurations".to_string(),
-            command: Some(format!(
+        print_flake_output_table(
+            "🐧 NixOS Configurations",
+            &["nixosConfigurations"],
+            Some(format!(
                 "nixos-rebuild switch --flake {}#<name>",
                 self.flake_url
             )),
-        }
-        .print();
-
-        FlakeOutputTable {
-            rows: Row::vec_from_btreemap(flake.schema.darwin_configurations),
-            title: "🍏 Darwin Configurations".to_string(),
-            command: Some(format!(
+        );
+        print_flake_output_table(
+            "🍏 Darwin Configurations",
+            &["darwinConfigurations"],
+            Some(format!(
                 "darwin-rebuild switch --flake {}#<name>",
                 self.flake_url
             )),
-        }
-        .print();
-
-        FlakeOutputTable {
-            rows: Row::vec_from_btreemap(flake.schema.nixos_modules),
-            title: "🔧 NixOS Modules".to_string(),
-            // TODO: Command should be optional
-            command: None,
-        }
-        .print();
-
-        FlakeOutputTable {
-            rows: Row::vec_from_btreemap(flake.schema.docker_images),
-            title: "🐳 Docker Images".to_string(),
-            // TODO: Try if the below command works
-            command: Some(format!("nix build {}#dockerImages.<name>", self.flake_url)),
-        }
-        .print();
-
-        FlakeOutputTable {
-            rows: Row::vec_from_btreemap(flake.schema.overlays),
-            title: "🎨 Overlays".to_string(),
-            command: None,
-        }
-        .print();
-
-        FlakeOutputTable {
-            rows: Row::vec_from_btreemap(flake.schema.templates),
-            title: "📝 Templates".to_string(),
-            command: Some(format!("nix flake init -t {}#<name>", self.flake_url)),
-        }
-        .print();
-
-        FlakeOutputTable {
-            rows: Row::vec_from_btreemap(flake.schema.schemas),
-            title: "📜 Schemas".to_string(),
-            command: None,
-        }
-        .print();
+        );
+        print_flake_output_table("🔧 NixOS Modules", &["nixosModules"], None);
+        print_flake_output_table(
+            "🐳 Docker Images",
+            &["dockerImages"],
+            Some(format!("nix build {}#dockerImages.<name>", self.flake_url)),
+        );
+        print_flake_output_table("🎨 Overlays", &["overlays"], None);
+        print_flake_output_table(
+            "📝 Templates",
+            &["templates"],
+            Some(format!("nix flake init -t {}#<name>", self.flake_url)),
+        );
+        print_flake_output_table("📜 Schemas", &["schemas"], None);
 
         Ok(())
     }
