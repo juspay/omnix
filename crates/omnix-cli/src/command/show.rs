@@ -72,22 +72,19 @@ pub struct Row {
 
 impl Row {
     /// Convert a [FlakeOutputs] to a vector of [Row]s
-    pub fn vec_from_flake_output(output: Option<&FlakeOutputs>) -> Vec<Row> {
-        match output {
-            Some(output) => output
-                .get_children()
-                .into_iter()
-                .map(|(name, val)| Row {
-                    name,
-                    description: val
-                        .short_description
-                        .filter(|s| !s.is_empty())
-                        .unwrap_or(String::from("N/A"))
-                        .to_owned(),
-                })
-                .collect(),
-            None => vec![],
-        }
+    pub fn vec_from_flake_output(output: &FlakeOutputs) -> Vec<Row> {
+        output
+            .get_children()
+            .into_iter()
+            .map(|(name, val)| Row {
+                name,
+                description: val
+                    .short_description
+                    .filter(|s| !s.is_empty())
+                    .unwrap_or(String::from("N/A"))
+                    .to_owned(),
+            })
+            .collect()
     }
 }
 
@@ -102,7 +99,10 @@ impl ShowCommand {
 
         let print_flake_output_table = |title: &str, out_path: &[&str], command: Option<String>| {
             FlakeOutputTable {
-                rows: Row::vec_from_flake_output(flake.output.get(out_path)),
+                rows: flake
+                    .output
+                    .get(out_path)
+                    .map_or(vec![], Row::vec_from_flake_output),
                 title: title.to_string(),
                 command,
             }
