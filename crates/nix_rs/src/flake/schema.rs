@@ -86,7 +86,7 @@ impl FlakeSchemas {
     }
 
     /// Convert [FlakeSchemas] to [FlakeOutputs]
-    pub fn to_flake_outputs(&self) -> FlakeOutputs {
+    pub(crate) fn to_flake_outputs(&self) -> FlakeOutputs {
         FlakeOutputs::Attrset(
             self.inventory
                 .iter()

@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use super::schema::Val;
+use super::schema::{FlakeSchemas, Val};
 
 /// Flake outputs derived from [super::schema::FlakeSchemas]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -54,5 +54,11 @@ impl FlakeOutputs {
             }
         }
         Some(current)
+    }
+}
+
+impl From<FlakeSchemas> for FlakeOutputs {
+    fn from(schema: FlakeSchemas) -> Self {
+        schema.to_flake_outputs()
     }
 }

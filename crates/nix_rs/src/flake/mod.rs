@@ -43,7 +43,7 @@ impl Flake {
         let schemas = FlakeSchemas::from_nix(nix_cmd, &url, &nix_config.system.value).await?;
         Ok(Flake {
             url,
-            output: schemas.to_flake_outputs(),
+            output: schemas.into(),
         })
     }
 }
