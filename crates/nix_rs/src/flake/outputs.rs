@@ -48,7 +48,7 @@ impl FlakeOutputs {
     /// # Example
     /// ```no_run
     /// let tree : &nix_rs::flake::outputs::FlakeOutputs = todo!();
-    /// let val = tree.get(&["aarch64-darwin", "default"]);
+    /// let val = tree.get_by_path(&["aarch64-darwin", "default"]);
     /// ```
     pub fn get_by_path(&self, path: &[&str]) -> Option<&Self> {
         let mut current = self;
