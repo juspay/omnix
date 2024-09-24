@@ -99,7 +99,7 @@ impl FlakeSchemas {
 impl InventoryItem {
     fn to_flake_outputs(&self) -> Option<FlakeOutputs> {
         match self {
-            Self::Leaf(Leaf::Val(v)) => Some(FlakeOutputs::Val(v.clone())),
+            Self::Leaf(leaf) => leaf.get_val().cloned().map(FlakeOutputs::Val),
             Self::Attrset(map) => {
                 if let Some(children) = map.get("children") {
                     children.to_flake_outputs()
@@ -115,7 +115,6 @@ impl InventoryItem {
                     }
                 }
             }
-            _ => None,
         }
     }
 }
@@ -129,6 +128,16 @@ pub enum Leaf {
     /// Represents description for a flake output
     /// (e.g. `Doc` for `formatter` will be "The `formatter` output specifies the package to use to format the project.")
     Doc(String),
+}
+
+impl Leaf {
+    /// Get the [Val] if any
+    fn get_val(&self) -> Option<&Val> {
+        match self {
+            Self::Val(v) => Some(v),
+            _ => None,
+        }
+    }
 }
 
 /// A terminal value of a flake output
