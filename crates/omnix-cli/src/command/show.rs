@@ -97,11 +97,11 @@ impl ShowCommand {
             .await
             .with_context(|| "Unable to fetch flake")?;
 
-        let print_flake_output_table = |title: &str, out_path: &[&str], command: Option<String>| {
+        let print_flake_output_table = |title: &str, keys: &[&str], command: Option<String>| {
             FlakeOutputTable {
                 rows: flake
                     .output
-                    .get(out_path)
+                    .get_by_path(keys)
                     .map_or(vec![], Row::vec_from_flake_output),
                 title: title.to_string(),
                 command,

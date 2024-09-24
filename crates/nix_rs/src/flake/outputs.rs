@@ -5,19 +5,18 @@ use std::collections::HashMap;
 
 use super::schema::{FlakeSchemas, Val};
 
-/// Flake outputs derived from [super::schema::FlakeSchemas]
+/// Outputs of a flake
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum FlakeOutputs {
-    #[allow(missing_docs)]
+    /// Terminal value that is not an attrset.
     Val(Val),
-    /// A tree-like structure representing a flake output.
-    /// Each key in the map represents a top-level flake output.
+    /// An attrset of nested [FlakeOutputs]
     Attrset(HashMap<String, FlakeOutputs>),
 }
 
 impl FlakeOutputs {
-    /// Get the non-attrset value
+    /// Get the terminal value
     pub fn get_val(&self) -> Option<&Val> {
         match self {
             Self::Val(v) => Some(v),
@@ -25,15 +24,21 @@ impl FlakeOutputs {
         }
     }
 
+    /// Get the attrset
+    pub fn get_attrset(&self) -> Option<&HashMap<String, FlakeOutputs>> {
+        match self {
+            Self::Val(_) => None,
+            Self::Attrset(map) => Some(map),
+        }
+    }
+
     /// Get the attrset as a vector of key-value pairs
     pub fn get_children(&self) -> Vec<(String, Val)> {
-        match self {
-            Self::Val(_) => vec![],
-            Self::Attrset(map) => map
-                .iter()
+        self.get_attrset().map_or(vec![], |map| {
+            map.iter()
                 .filter_map(|(k, v)| v.get_val().map(|val| (k.clone(), val.clone())))
-                .collect(),
-        }
+                .collect()
+        })
     }
 
     /// Lookup the given path, returning a reference to the value if it exists.
@@ -43,15 +48,11 @@ impl FlakeOutputs {
     /// let tree : &nix_rs::flake::outputs::FlakeOutputs = todo!();
     /// let val = tree.get(&["aarch64-darwin", "default"]);
     /// ```
-    pub fn get(&self, path: &[&str]) -> Option<&Self> {
+    pub fn get_by_path(&self, path: &[&str]) -> Option<&Self> {
         let mut current = self;
         for key in path {
-            match current {
-                Self::Attrset(map) => {
-                    current = map.get(*key)?;
-                }
-                Self::Val(_) => return None,
-            }
+            let map = current.get_attrset()?;
+            current = map.get(*key)?;
         }
         Some(current)
     }
