@@ -74,7 +74,7 @@ impl Row {
     /// Convert a [FlakeOutputs] to a vector of [Row]s
     pub fn vec_from_flake_output(output: &FlakeOutputs) -> Vec<Row> {
         output
-            .get_children()
+            .get_attrset_of_val()
             .into_iter()
             .map(|(name, val)| Row {
                 name,

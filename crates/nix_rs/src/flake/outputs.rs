@@ -33,7 +33,9 @@ impl FlakeOutputs {
     }
 
     /// Get the attrset as a vector of key-value pairs
-    pub fn get_children(&self) -> Vec<(String, Val)> {
+    ///
+    /// **NOTE**: Only terminal values are included!
+    pub fn get_attrset_of_val(&self) -> Vec<(String, Val)> {
         self.get_attrset().map_or(vec![], |map| {
             map.iter()
                 .filter_map(|(k, v)| v.get_val().map(|val| (k.clone(), val.clone())))
