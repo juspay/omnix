@@ -90,11 +90,11 @@
     "inspect": {
       "flake": false,
       "locked": {
-        "lastModified": 1726418650,
-        "narHash": "sha256-Aabwu7gHQbKDU8mrbG2le6oqpbBl9oTbFvWEBFgXw/4=",
+        "lastModified": 1727621122,
+        "narHash": "sha256-GTxRovvYWYn2/LDvjA73YttGuqvtKaOFZfOR9YxtST0=",
         "owner": "juspay",
         "repo": "inspect",
-        "rev": "279cfa5c434e5bbebb4c07fa6af2deeb84e03bb0",
+        "rev": "e82e65949d2ba5283865609b8728c50ebe7573e3",
         "type": "github"
       },
       "original": {

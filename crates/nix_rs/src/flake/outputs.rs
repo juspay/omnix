@@ -1,6 +1,6 @@
 //! Nix flake outputs
 
-use serde::{Deserialize, Serialize};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::collections::HashMap;
 
 use super::schema::{FlakeSchemas, Val};
@@ -10,9 +10,17 @@ use super::schema::{FlakeSchemas, Val};
 #[serde(untagged)]
 pub enum FlakeOutputs {
     /// Terminal value that is not an attrset.
+    #[serde(serialize_with = "value_serializer")]
     Val(Val),
     /// An attrset of nested [FlakeOutputs]
     Attrset(HashMap<String, FlakeOutputs>),
+}
+
+fn value_serializer<S>(val: &Val, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    val.value.serialize(serializer)
 }
 
 impl FlakeOutputs {
@@ -57,6 +65,25 @@ impl FlakeOutputs {
             current = map.get(*key)?;
         }
         Some(current)
+    }
+
+    /// Lookup the given paths, returning the first match.
+    pub fn get_first_by_paths(&self, paths: &[&[&str]]) -> Option<&Self> {
+        for path in paths {
+            if let Some(v) = self.get_by_path(path) {
+                return Some(v);
+            }
+        }
+        None
+    }
+
+    /// Deserialize the FlakeOutputs into a generic type T
+    pub fn deserialize<T>(&self) -> Result<T, serde_json::Error>
+    where
+        T: Default + DeserializeOwned + std::fmt::Debug,
+    {
+        let json_value = serde_json::to_value(self)?;
+        serde_json::from_value(json_value)
     }
 }
 

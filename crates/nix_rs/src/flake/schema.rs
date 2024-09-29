@@ -151,6 +151,8 @@ pub struct Val {
     pub derivation_name: Option<String>,
     /// A short description derived from `meta.description` of the derivation with [Val::derivation_name]
     pub short_description: Option<String>,
+    /// The raw value of the flake output
+    pub value: Option<serde_json::Value>,
 }
 
 impl Default for Val {
@@ -159,6 +161,7 @@ impl Default for Val {
             type_: Type::Unknown,
             derivation_name: None,
             short_description: None,
+            value: None,
         }
     }
 }

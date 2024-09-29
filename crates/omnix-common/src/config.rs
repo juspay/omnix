@@ -4,10 +4,8 @@ use std::collections::BTreeMap;
 
 use nix_rs::{
     command::{NixCmd, NixCmdError},
-    flake::{
-        outputs::{FilteredFlakeOutputs, QualifiedAttrError},
-        url::FlakeUrl,
-    },
+    config::{NixConfig, NixConfigError},
+    flake::{outputs::FlakeOutputs, schema::FlakeSchemas, url::FlakeUrl},
 };
 use serde::de::DeserializeOwned;
 
@@ -27,23 +25,36 @@ pub struct OmConfig<T> {
 }
 
 impl<T> OmConfig<T> {
-    /// Read the Om configuration from [FilteredFlakeOutputs]
-    pub async fn from_flake_outputs<S>(
+    /// Read the Om configuration from a flake
+    /// TODO: simplify the implementation, it has too many responsibilities
+    pub async fn from_nix(
         cmd: &NixCmd,
         url: &FlakeUrl,
-        k: &[S],
+        k: &[&[&str]],
     ) -> Result<OmConfig<T>, OmConfigError>
     where
-        S: AsRef<str>,
         T: Default + DeserializeOwned + std::fmt::Debug,
     {
-        let filtered_outputs = FilteredFlakeOutputs::from_nix(cmd, &url.without_attr()).await?;
-        let (config, reference) = filtered_outputs.find_qualified_attr(url, k).await?;
-        Ok(OmConfig {
-            flake_url: url.without_attr(),
-            reference,
-            config,
-        })
+        let nix_config = NixConfig::get().await.as_ref().unwrap();
+        let schema = FlakeSchemas::from_nix(cmd, url, &nix_config.system.value).await?;
+        let outputs = FlakeOutputs::from(schema);
+
+        let cfg = outputs.get_first_by_paths(k);
+        match cfg {
+            Some(cfg) => Ok(OmConfig {
+                flake_url: url.without_attr(),
+                reference: url.get_attr().as_list(),
+                config: cfg.deserialize()?,
+            }),
+            None => match url.get_attr().0 {
+                None => Ok(OmConfig {
+                    flake_url: url.without_attr(),
+                    reference: vec![],
+                    config: Default::default(),
+                }),
+                Some(attr) => Err(OmConfigError::MissingConfigAttribute(attr)),
+            },
+        }
     }
 
     /// Get the user-referenced config value `T`
@@ -77,9 +88,9 @@ impl<T> OmConfig<T> {
 /// Error type for OmConfig
 #[derive(thiserror::Error, Debug)]
 pub enum OmConfigError {
-    /// Qualified attribute error
-    #[error("Qualified attribute error: {0}")]
-    QualifiedAttrError(#[from] QualifiedAttrError),
+    /// Serde JSON error
+    #[error("Serde JSON error: {0}")]
+    SerdeJson(#[from] serde_json::Error),
 
     /// Missing configuration attribute
     #[error("Missing configuration attribute: {0}")]
@@ -87,5 +98,9 @@ pub enum OmConfigError {
 
     /// Nix command error
     #[error("Nix command error: {0}")]
-    NixCmdError(#[from] NixCmdError),
+    NixCmd(#[from] NixCmdError),
+
+    /// Nix config error
+    #[error("Nix config error: {0}")]
+    NixConfig(#[from] NixConfigError),
 }
