@@ -1,3 +1,4 @@
+use anyhow::Context;
 use globset::{Glob, GlobSetBuilder};
 use itertools::Itertools;
 use serde::Deserialize;
@@ -67,7 +68,10 @@ impl Action {
 
                         // Replace in content of files
                         if file_path.is_file() {
-                            let content = fs::read_to_string(&file_path).await?;
+                            let content =
+                                fs::read_to_string(&file_path).await.with_context(|| {
+                                    format!("Unable to read file: {:?}", &file_path)
+                                })?;
                             if content.contains(placeholder) {
                                 tracing::info!("   ✍️ {}", file.to_string_lossy());
                                 let content = content.replace(placeholder, value);
