@@ -78,6 +78,9 @@ pub struct FlakeOptions {
     /// Pass --no-write-lock-file
     pub no_write_lock_file: bool,
 
+    /// Pass --refresh
+    pub refresh: bool,
+
     /// The directory from which to run our nix command (such that relative flake URLs resolve properly)
     pub current_dir: Option<PathBuf>,
 }
@@ -93,6 +96,9 @@ impl FlakeOptions {
         }
         if self.no_write_lock_file {
             cmd.arg("--no-write-lock-file");
+        }
+        if self.refresh {
+            cmd.arg("--refresh");
         }
     }
 }
