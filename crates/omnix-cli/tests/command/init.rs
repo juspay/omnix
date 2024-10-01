@@ -53,7 +53,7 @@ fn om_init_tests() -> Vec<OmInitTest> {
             default_params: r#"{"username": "john", "git-email": "jon@ex.com", "git-name": "John", "neovim": true }"#,
             asserts: Asserts {
                 out_dir: PathAsserts {
-                    exists: vec!["nix/modules/home/neovim/default.nix"],
+                    exists: vec!["modules/home/neovim/default.nix"],
                     not_exists: vec![".github/workflows"],
                 },
                 nix_run_output_contains: None, // Can't activate in sandbox
