@@ -84,7 +84,11 @@ pub async fn initialize_template(
     tracing::info!("🥳 Initialized a {} project at {}", name, path.display());
 
     if let Some(welcome_text) = template.template.welcome_text {
-        tracing::info!("\n{}", welcome_text);
+        let skin = termimad::MadSkin::default();
+        eprint!(
+            "\n{}",
+            skin.term_text(&format!("---\n{}---", &welcome_text))
+        );
     }
 
     Ok(())
