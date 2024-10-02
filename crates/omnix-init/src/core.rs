@@ -40,10 +40,9 @@ pub async fn initialize_template(
     let templates = load_templates(&flake).await?;
 
     // Prompt the user to select a template
-    // let available: Vec<String> = templates.keys().cloned().collect();
-    let available: Vec<AssocTemplate> = templates
+    let available: Vec<FlakeTemplate> = templates
         .iter()
-        .map(|(k, v)| AssocTemplate {
+        .map(|(k, v)| FlakeTemplate {
             flake: &flake,
             template_name: k.as_str(),
             template: v,
@@ -106,15 +105,15 @@ pub async fn initialize_template(
     Ok(())
 }
 
-/// A template associated with a flake
+/// A named [Template] associated with a [FlakeUrl]
 #[derive(Debug, Clone)]
-struct AssocTemplate<'a> {
+struct FlakeTemplate<'a> {
     flake: &'a FlakeUrl,
     template_name: &'a str,
     template: &'a Template,
 }
 
-impl<'a> Display for AssocTemplate<'a> {
+impl<'a> Display for FlakeTemplate<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
             f,
