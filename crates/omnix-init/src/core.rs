@@ -1,12 +1,7 @@
-use std::{
-    collections::HashMap,
-    fmt::{self, Display, Formatter},
-    path::Path,
-};
+use std::{collections::HashMap, path::Path};
 
 use crate::{config::load_templates, template::Template};
 use anyhow::Context;
-use colored::Colorize;
 use nix_rs::flake::url::FlakeUrl;
 use serde_json::Value;
 
@@ -40,21 +35,14 @@ pub async fn initialize_template(
     let templates = load_templates(&flake).await?;
 
     // Prompt the user to select a template
-    let available: Vec<FlakeTemplate> = templates
-        .iter()
-        .map(|(k, v)| FlakeTemplate {
-            flake: &flake,
-            template_name: k.as_str(),
-            template: v,
-        })
-        .collect();
     let mut template: Template = if let Some(attr) = flake.get_attr().0 {
         templates
-            .get(&attr)
-            .cloned()
+            .iter()
+            .find(|t| t.template_name == attr)
+            .map(|t| t.template.clone())
             .with_context(|| "Template not found")?
-    } else if available.len() < 2 {
-        if let Some(first) = available.first() {
+    } else if templates.len() < 2 {
+        if let Some(first) = templates.first() {
             tracing::info!(
                 "Automatically choosing the one template available: {}",
                 first.template_name
@@ -64,9 +52,11 @@ pub async fn initialize_template(
             return Err(anyhow::anyhow!("No templates available"));
         }
     } else if non_interactive {
-        return Err(anyhow::anyhow!("Non-interactive mode requires exactly one template to be available; but {} are available. Explicit specify it in flake URL.", available.len()));
+        return Err(
+            anyhow::anyhow!("Non-interactive mode requires exactly one template to be available; but {} are available. Explicit specify it in flake URL.",
+            templates.len()));
     } else {
-        let select = inquire::Select::new("Select a template", available);
+        let select = inquire::Select::new("Select a template", templates);
         select.prompt()?.template.clone()
     };
 
@@ -103,23 +93,4 @@ pub async fn initialize_template(
     }
 
     Ok(())
-}
-
-/// A named [Template] associated with a [FlakeUrl]
-#[derive(Debug, Clone)]
-struct FlakeTemplate<'a> {
-    flake: &'a FlakeUrl,
-    template_name: &'a str,
-    template: &'a Template,
-}
-
-impl<'a> Display for FlakeTemplate<'a> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{:<15} {}",
-            self.template_name,
-            format!("[{}]", self.flake).dimmed()
-        )
-    }
 }
