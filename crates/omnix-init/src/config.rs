@@ -23,9 +23,17 @@ impl<'a> Display for FlakeTemplate<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "{:<15} {}",
+            "{:<15} {} {}",
             self.template_name,
-            format!("[{}]", self.flake).dimmed()
+            format!("[{}]", self.flake).dimmed(),
+            format!(
+                "{}",
+                self.template
+                    .template
+                    .description
+                    .as_ref()
+                    .unwrap_or(&"".to_string())
+            )
         )
     }
 }
