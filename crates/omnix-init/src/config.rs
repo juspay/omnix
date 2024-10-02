@@ -26,14 +26,11 @@ impl<'a> Display for FlakeTemplate<'a> {
             "{:<15} {} {}",
             self.template_name,
             format!("[{}]", self.flake).dimmed(),
-            format!(
-                "{}",
-                self.template
-                    .template
-                    .description
-                    .as_ref()
-                    .unwrap_or(&"".to_string())
-            )
+            self.template
+                .template
+                .description
+                .as_ref()
+                .unwrap_or(&"".to_string())
         )
     }
 }
