@@ -1,7 +1,12 @@
-use std::{collections::HashMap, path::Path};
+use std::{
+    collections::HashMap,
+    fmt::{self, Display, Formatter},
+    path::Path,
+};
 
 use crate::config::load_templates;
 use anyhow::Context;
+use colored::Colorize;
 use nix_rs::flake::url::FlakeUrl;
 use serde_json::Value;
 
@@ -35,23 +40,32 @@ pub async fn initialize_template(
     let templates = load_templates(&flake).await?;
 
     // Prompt the user to select a template
-    let available: Vec<String> = templates.keys().cloned().collect();
-    let name: &String = if let Some(attr) = flake.get_attr().0 {
+    // let available: Vec<String> = templates.keys().cloned().collect();
+    let available: Vec<AssocTemplate> = templates
+        .keys()
+        .into_iter()
+        .map(|k| AssocTemplate {
+            flake: &flake,
+            template_name: k.as_str(),
+        })
+        .collect();
+    let name: &str = if let Some(attr) = flake.get_attr().0 {
         &attr.clone()
     } else if available.len() < 2 {
-        if let Some(name) = available.first() {
+        if let Some(first) = available.first() {
             tracing::info!(
                 "Automatically choosing the one template available: {}",
-                name
+                first.template_name
             );
-            name
+            first.template_name
         } else {
             return Err(anyhow::anyhow!("No templates available"));
         }
     } else if non_interactive {
         return Err(anyhow::anyhow!("Non-interactive mode requires exactly one template to be available; but {} are available. Explicit specify it in flake URL.", available.len()));
     } else {
-        &inquire::Select::new("Select a template", available).prompt()?
+        let select = inquire::Select::new("Select a template", available);
+        select.prompt()?.template_name
     };
 
     let mut template = templates
@@ -92,4 +106,22 @@ pub async fn initialize_template(
     }
 
     Ok(())
+}
+
+/// A template associated with a flake
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct AssocTemplate<'a> {
+    flake: &'a FlakeUrl,
+    template_name: &'a str,
+}
+
+impl<'a> Display for AssocTemplate<'a> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{:<15} {}",
+            self.template_name,
+            format!("[{}]", self.flake).dimmed()
+        )
+    }
 }
