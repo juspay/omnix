@@ -1,6 +1,6 @@
 use std::{collections::HashMap, path::Path};
 
-use crate::config::load_templates;
+use crate::{config::load_templates, template::Template};
 use anyhow::Context;
 use nix_rs::flake::url::FlakeUrl;
 use serde_json::Value;
@@ -35,29 +35,30 @@ pub async fn initialize_template(
     let templates = load_templates(&flake).await?;
 
     // Prompt the user to select a template
-    let available: Vec<String> = templates.keys().cloned().collect();
-    let name: &String = if let Some(attr) = flake.get_attr().0 {
-        &attr.clone()
-    } else if available.len() < 2 {
-        if let Some(name) = available.first() {
+    let mut template: Template = if let Some(attr) = flake.get_attr().0 {
+        templates
+            .iter()
+            .find(|t| t.template_name == attr)
+            .map(|t| t.template.clone())
+            .with_context(|| "Template not found")?
+    } else if templates.len() < 2 {
+        if let Some(first) = templates.first() {
             tracing::info!(
                 "Automatically choosing the one template available: {}",
-                name
+                first.template_name
             );
-            name
+            first.template.clone()
         } else {
             return Err(anyhow::anyhow!("No templates available"));
         }
     } else if non_interactive {
-        return Err(anyhow::anyhow!("Non-interactive mode requires exactly one template to be available; but {} are available. Explicit specify it in flake URL.", available.len()));
+        return Err(
+            anyhow::anyhow!("Non-interactive mode requires exactly one template to be available; but {} are available. Explicit specify it in flake URL.",
+            templates.len()));
     } else {
-        &inquire::Select::new("Select a template", available).prompt()?
+        let select = inquire::Select::new("Select a template", templates);
+        select.prompt()?.template.clone()
     };
-
-    let mut template = templates
-        .get(name)
-        .cloned()
-        .with_context(|| "Template not found")?;
 
     template.set_param_values(default_params);
 
@@ -76,12 +77,12 @@ pub async fn initialize_template(
         }
     }
 
-    tracing::info!("Initializing '{}' template at {}", name, path.display());
+    tracing::info!("Initializing template at {}", path.display());
     template
         .scaffold_at(path)
         .await
         .with_context(|| "Unable to scaffold")?;
-    tracing::info!("🥳 Initialized a {} project at {}", name, path.display());
+    tracing::info!("🥳 Initialized template at {}", path.display());
 
     if let Some(welcome_text) = template.template.welcome_text {
         let skin = termimad::MadSkin::default();
