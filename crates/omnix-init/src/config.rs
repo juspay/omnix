@@ -42,7 +42,7 @@ pub(crate) async fn load_templates<'a>(url: &FlakeUrl) -> anyhow::Result<Vec<Fla
         ..Default::default()
     };
     let v = nix_eval::<HashMap<String, Template>>(
-        &NixCmd::default(),
+        NixCmd::get().await,
         &opts,
         &url.with_attr("om.templates"),
     )
