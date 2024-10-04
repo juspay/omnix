@@ -36,20 +36,6 @@ impl Deref for FlakeUrl {
 }
 
 impl FlakeUrl {
-    /// Provide real-world examples of flake URLs
-    pub fn suggestions() -> Vec<FlakeUrl> {
-        vec![
-            str::parse("github:nammayatri/nammayatri").unwrap(),
-            str::parse("github:srid/emanote").unwrap(),
-            str::parse("github:srid/nixos-config").unwrap(),
-            str::parse("github:juspay/nix-browser").unwrap(),
-            str::parse("github:juspay/nix-dev-home").unwrap(),
-            // Commented out until we figure out rendering performance and/or
-            // search filtering/limit.
-            // "github:nixos/nixpkgs".into(),
-        ]
-    }
-
     /// Return the local path if the flake URL is a local path
     ///
     /// Applicable only if the flake URL uses the [Path-like

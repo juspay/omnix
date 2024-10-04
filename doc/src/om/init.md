@@ -15,13 +15,13 @@ This will prompt you to choose a template from the builtin registry (see below s
 
 ## Builtin registry {#registry}
 
-The builtin registry (stores in a JSON file) contains the following templates:
+The builtin registry (stored in [a JSON file][json]) contains the following templates:
 
-| Description | Command |
-|-------------|---------|
-| [Haskell project template](https://github.com/srid/haskell-template) | `om init haskell-template` |
-| [Rust project template](https://github.com/srid/rust-nix-template) | `om init rust-nix-template` |
-| [home-manager template](https://github.com/juspay/nix-dev-home) | `om init nix-dev-home` |
+- [Haskell project template](https://github.com/srid/haskell-template)
+- [Rust project template](https://github.com/srid/rust-nix-template)
+- [home-manager/ nix-darwin template](https://github.com/juspay/nixos-unified-template)
+
+[json]: https://github.com/juspay/omnix/blob/main/crates/omnix-init/registry/registry.json
 
 ## Initializing your own project templates {#custom}
 

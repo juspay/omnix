@@ -28,7 +28,7 @@ fn om_init_tests() -> Vec<OmInitTest> {
                     not_exists: vec![".vscode"],
                 },
                 nix_run_output_contains: Some("from foo"),
-                nix_build_result: None,
+                ..Default::default()
             },
         },
         OmInitTest {
@@ -45,22 +45,25 @@ fn om_init_tests() -> Vec<OmInitTest> {
                     not_exists: vec!["nix/modules/template.nix"],
                 },
                 nix_run_output_contains: Some("from qux"),
-                nix_build_result: None,
+                ..Default::default()
             },
         },
         OmInitTest {
-            template_name: lookup("nix-dev-home"),
+            template_name: lookup("nixos-unified-template").with_attr("home"),
             default_params: r#"{"username": "john", "git-email": "jon@ex.com", "git-name": "John", "neovim": true }"#,
             asserts: Asserts {
                 out_dir: PathAsserts {
-                    exists: vec!["nix/modules/home/neovim/default.nix"],
+                    exists: vec!["modules/home/neovim/default.nix"],
                     not_exists: vec![".github/workflows"],
                 },
-                nix_run_output_contains: None, // Can't activate in sandbox
-                nix_build_result: Some(PathAsserts {
-                    exists: vec!["home-path/bin/nvim"],
-                    not_exists: vec!["home-path/bin/vim"],
-                }),
+                nix_build_result: Some((
+                    "homeConfigurations.john.activationPackage".to_string(),
+                    PathAsserts {
+                        exists: vec!["home-path/bin/nvim"],
+                        not_exists: vec!["home-path/bin/vim"],
+                    },
+                )),
+                ..Default::default()
             },
         },
     ]
@@ -112,12 +115,13 @@ impl OmInitTest {
     }
 }
 
+#[derive(Default)]
 struct Asserts {
     out_dir: PathAsserts,
     /// The output of `nix run` should contain this string
     nix_run_output_contains: Option<&'static str>,
-    /// The store path built by `nix build` should contain these paths
-    nix_build_result: Option<PathAsserts>,
+    /// The store path built by `nix build .#attr` should contain these paths
+    nix_build_result: Option<(String, PathAsserts)>,
 }
 
 impl Asserts {
@@ -133,9 +137,12 @@ impl Asserts {
                 .stdout(contains(nix_run_output_contains));
         }
 
-        if let Some(nix_build_result) = &self.nix_build_result {
-            let paths =
-                nix_rs::flake::command::build(&NixCmd::default(), FlakeUrl::from(dir)).await?;
+        if let Some((attr, nix_build_result)) = &self.nix_build_result {
+            let paths = nix_rs::flake::command::build(
+                &NixCmd::default(),
+                FlakeUrl::from(dir).with_attr(attr),
+            )
+            .await?;
             assert_matches!(paths.first().and_then(|v| v.first_output()), Some(path) => {
                 nix_build_result.assert(path);
             });
@@ -158,8 +165,9 @@ impl PathAsserts {
         for path in &self.exists {
             assert!(
                 dir.join(path).exists(),
-                "Expected path to exist: {:?}",
+                "Expected path to exist: {:?} (under {:?})",
                 path,
+                dir,
             );
         }
         for path in &self.not_exists {

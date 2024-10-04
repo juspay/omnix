@@ -25,5 +25,6 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
+termimad = { workspace = true }
 tracing = { workspace = true }
 omnix-common = { workspace = true }
