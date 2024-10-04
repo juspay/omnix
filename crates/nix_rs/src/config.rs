@@ -64,7 +64,7 @@ impl NixConfig {
         NIX_CONFIG
             .get_or_init(|| async {
                 let mut cmd = NixCmd::default();
-                cmd.with_flakes(); // Enable flakes, since don't yet know if it is already enabled.
+                cmd.with_nix_command(); // Enable nix-command, since don't yet know if it is already enabled.
                 let nix_ver = NixVersion::get().await.as_ref()?;
                 let cfg = NixConfig::from_nix(&cmd, nix_ver).await?;
                 Ok(cfg)

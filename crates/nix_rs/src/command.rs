@@ -105,6 +105,12 @@ impl NixCmd {
             .append(vec!["nix-command".to_string(), "flakes".to_string()].as_mut());
     }
 
+    /// Enable nix-command on this [NixCmd] configuration
+    pub fn with_nix_command(&mut self) {
+        self.extra_experimental_features
+            .append(vec!["nix-command".to_string()].as_mut());
+    }
+
     /// Return a [Command] for this [NixCmd] configuration
     pub fn command(&self) -> Command {
         let mut cmd = Command::new(self.command.as_deref().unwrap_or("nix"));
