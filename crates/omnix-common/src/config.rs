@@ -36,7 +36,8 @@ impl<T> OmConfig<T> {
         T: Default + DeserializeOwned + std::fmt::Debug,
     {
         let nix_config = NixConfig::get().await.as_ref().unwrap();
-        let schema = FlakeSchemas::from_nix(cmd, url, &nix_config.system.value).await?;
+        let schema =
+            FlakeSchemas::from_nix(cmd, &url.without_attr(), &nix_config.system.value).await?;
         let outputs = FlakeOutputs::from(schema);
 
         let cfg = outputs.get_first_by_paths(k);
