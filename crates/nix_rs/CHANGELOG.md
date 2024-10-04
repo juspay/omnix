@@ -3,6 +3,8 @@
 ## Unreleased
 - **`flake::schema`**
   - Don't hardcode flake schema types
+- **`config`**
+  - Don't enable flakes during `NixConfig::get`
 - **`env`**:
   - use `whoami` crate to find the current user instead of depending on environment variable `USER`
 - Support Nix 2.20
