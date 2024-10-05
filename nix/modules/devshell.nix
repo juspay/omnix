@@ -29,7 +29,7 @@ in
       packages = with pkgs; [
         just
         nixd
-        cargo-watch
+        bacon
         cargo-expand
         cargo-nextest
         config.process-compose.cargo-doc-live.outputs.package
