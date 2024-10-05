@@ -26,22 +26,15 @@ alias wg := watch-gui
 
 # Run omnix-cli locally
 watch *ARGS:
-    cargo watch -p omnix-cli -x 'run -- {{ARGS}}'
+    bacon --job run -- -- {{ ARGS }}
 
 alias w := watch
-
-# Run tests
-test:
-    cargo test
-
-test-cli:
-    cd ./crates/omnix-cli && cargo watch -x test
 
 # Run CI locally
 ci:
     nix run . ci
 
-# Run CI locally in devShell (thus, using cargo)
+# Run CI locally in devShell (using cargo)
 ci-cargo:
     cargo run -p omnix-cli -- ci run
 
