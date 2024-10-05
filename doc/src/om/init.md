@@ -19,7 +19,7 @@ The builtin registry (stored in [a JSON file][json]) contains the following temp
 
 - [Haskell project template](https://github.com/srid/haskell-template)
 - [Rust project template](https://github.com/srid/rust-nix-template)
-- [home-manager/ nix-darwin template](https://github.com/juspay/nixos-unified-template)
+- [NixOS/ nix-darwin/ home-manager template](https://github.com/juspay/nixos-unified-template)
 
 [json]: https://github.com/juspay/omnix/blob/main/crates/omnix-init/registry/registry.json
 
