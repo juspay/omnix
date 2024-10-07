@@ -1,6 +1,10 @@
 # Changelog
 
 ## Unreleased
+
+- **`eval::nix_eval`**
+  - Display evaluation progress
+  - Decrease logging verbosity
 - **`flake::schema`**
   - Don't hardcode flake schema types
 - **`config`**

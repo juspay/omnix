@@ -175,20 +175,22 @@ impl NixCmd {
     }
 
     /// Run Nix with given [Command] customizations, while also tracing the command being run.
-    pub async fn run_with<F>(&self, f: F) -> Result<(), CommandError>
+    ///
+    /// Return the stdout bytes returned by [tokio::process::Child::wait_with_output]. In order to capture stdout, you must call `cmd.stdout(Stdio::piped());` inside the handler.
+    pub async fn run_with<F>(&self, f: F) -> Result<Vec<u8>, CommandError>
     where
         F: FnOnce(&mut Command),
     {
         let mut cmd = self.command();
         f(&mut cmd);
         trace_cmd(&cmd);
-        let status = cmd.spawn()?.wait().await?;
-        if status.success() {
-            Ok(())
+        let out = cmd.spawn()?.wait_with_output().await?;
+        if out.status.success() {
+            Ok(out.stdout)
         } else {
             Err(CommandError::ProcessFailed {
                 stderr: None,
-                exit_code: status.code(),
+                exit_code: out.status.code(),
             })
         }
     }

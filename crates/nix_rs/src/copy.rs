@@ -28,5 +28,6 @@ pub async fn nix_copy(
     cmd.run_with(|cmd| {
         cmd.args(args);
     })
-    .await
+    .await?;
+    Ok(())
 }
