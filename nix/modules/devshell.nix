@@ -32,6 +32,7 @@ in
         bacon
         cargo-expand
         cargo-nextest
+        cargo-audit
         config.process-compose.cargo-doc-live.outputs.package
         # For when we start using Tauri
         cargo-tauri

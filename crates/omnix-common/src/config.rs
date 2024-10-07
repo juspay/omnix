@@ -35,7 +35,7 @@ impl<T> OmConfig<T> {
     ) -> Result<OmConfig<T>, OmConfigError>
     where
         S: AsRef<str>,
-        T: Default + DeserializeOwned,
+        T: DeserializeOwned,
     {
         let (config, reference) =
             nix_eval_qualified_attr::<BTreeMap<String, T>, _>(cmd, url, k).await?;
