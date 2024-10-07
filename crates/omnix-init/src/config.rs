@@ -1,13 +1,11 @@
-use std::{
-    collections::HashMap,
-    fmt::{self, Display, Formatter},
-};
+use std::fmt::{self, Display, Formatter};
 
 use colored::Colorize;
 use nix_rs::{
     command::NixCmd,
-    flake::{command::FlakeOptions, eval::nix_eval, url::FlakeUrl},
+    flake::{command::FlakeOptions, url::FlakeUrl},
 };
+use omnix_common::config::OmConfig;
 
 use crate::template::Template;
 
@@ -37,16 +35,13 @@ impl<'a> Display for FlakeTemplate<'a> {
 
 /// Load templates from the given flake
 pub(crate) async fn load_templates<'a>(url: &FlakeUrl) -> anyhow::Result<Vec<FlakeTemplate>> {
-    let opts = FlakeOptions {
+    let _opts = FlakeOptions {
         refresh: true,
         ..Default::default()
     };
-    let v = nix_eval::<HashMap<String, Template>>(
-        NixCmd::get().await,
-        &opts,
-        &url.with_attr("om.templates"),
-    )
-    .await?;
+    let v = OmConfig::<Template>::from_flake_url(NixCmd::get().await, url, &["om.templates"])
+        .await?
+        .config;
     Ok(v.into_iter()
         .map(|(k, v)| FlakeTemplate {
             flake: url,
