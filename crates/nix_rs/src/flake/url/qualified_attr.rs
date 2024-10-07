@@ -10,7 +10,7 @@ use super::FlakeUrl;
 ///
 /// A qualified attribute is expected to be found at the root of a flake
 ///
-/// `&["om.ci", "ci"]` will locate the given attribute
+/// `&["om.ci", "nixci"]` will locate the given attribute
 /// under the one of these parent attributes, searched in that order.
 pub async fn nix_eval_qualified_attr<T, S>(
     cmd: &NixCmd,
