@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::{collections::HashMap, path::Path};
 
 use crate::command::core::om;
 use nix_rs::{command::NixCmd, flake::url::FlakeUrl};
@@ -21,16 +21,13 @@ fn om_init_tests() -> Vec<OmInitTest> {
             template_name: lookup("haskell-template"),
             params: r#"{"package-name": "foo", "author": "John", "vscode": false }"#,
             asserts: Asserts {
-                source: PathAsserts {
-                    exists: vec![".github/workflows/ci.yaml"],
-                    not_exists: vec![".vscode"],
-                },
+                source: PathAsserts(HashMap::from([
+                    (".github/workflows/ci.yaml", true),
+                    (".vscode", false),
+                ])),
                 package: Some((
                     "default".to_string(),
-                    PathAsserts {
-                        exists: vec!["bin/foo"],
-                        not_exists: vec![],
-                    },
+                    PathAsserts(HashMap::from([("bin/foo", true)])),
                 )),
             },
         },
@@ -38,21 +35,16 @@ fn om_init_tests() -> Vec<OmInitTest> {
             template_name: lookup("rust-nix-template"),
             params: r#"{"package-name": "qux", "author": "John", "author-email": "john@example.com" }"#,
             asserts: Asserts {
-                source: PathAsserts {
-                    exists: vec![
-                        "Cargo.toml",
-                        "flake.nix",
-                        ".github/workflows/ci.yml",
-                        ".vscode",
-                    ],
-                    not_exists: vec!["nix/modules/template.nix"],
-                },
+                source: PathAsserts(HashMap::from([
+                    ("Cargo.toml", true),
+                    ("flake.nix", true),
+                    (".github/workflows/ci.yml", true),
+                    (".vscode", true),
+                    ("nix/modules/template.nix", false),
+                ])),
                 package: Some((
                     "default".to_string(),
-                    PathAsserts {
-                        exists: vec!["bin/qux"],
-                        not_exists: vec![],
-                    },
+                    PathAsserts(HashMap::from([("bin/qux", true)])),
                 )),
             },
         },
@@ -60,16 +52,16 @@ fn om_init_tests() -> Vec<OmInitTest> {
             template_name: lookup("nixos-unified-template").with_attr("home"),
             params: r#"{"username": "john", "git-email": "jon@ex.com", "git-name": "John", "neovim": true }"#,
             asserts: Asserts {
-                source: PathAsserts {
-                    exists: vec!["modules/home/neovim/default.nix"],
-                    not_exists: vec![".github/workflows"],
-                },
+                source: PathAsserts(HashMap::from([
+                    ("modules/home/neovim/default.nix", true),
+                    (".github/workflows", false),
+                ])),
                 package: Some((
                     "homeConfigurations.john.activationPackage".to_string(),
-                    PathAsserts {
-                        exists: vec!["home-path/bin/nvim"],
-                        not_exists: vec!["home-path/bin/vim"],
-                    },
+                    PathAsserts(HashMap::from([
+                        ("home-path/bin/nvim", true),
+                        ("home-path/bin/vim", false),
+                    ])),
                 )),
             },
         },
@@ -149,29 +141,23 @@ impl Asserts {
     }
 }
 
+/// Set of path assertions to make
+///
+/// If value is true, the path must exist.
 #[derive(Default)]
-struct PathAsserts {
-    // Assert that these paths exist
-    exists: Vec<&'static str>,
-    // Assert that these paths do not exist
-    not_exists: Vec<&'static str>,
-}
+struct PathAsserts(HashMap<&'static str, bool>);
 
 impl PathAsserts {
     fn assert(&self, dir: &Path) {
-        for path in &self.exists {
+        for (path, must_exist) in self.0.iter() {
+            let check = dir.join(path).exists();
+            let verb = if *must_exist { "exist" } else { "not exist" };
             assert!(
-                dir.join(path).exists(),
-                "Expected path to exist: {:?} (under {:?})",
+                if *must_exist { check } else { !check },
+                "Expected path to {}: {:?} (under {:?})",
+                verb,
                 path,
                 dir,
-            );
-        }
-        for path in &self.not_exists {
-            assert!(
-                !dir.join(path).exists(),
-                "Expected path to not exist: {:?}",
-                path,
             );
         }
     }
