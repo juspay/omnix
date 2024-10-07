@@ -25,10 +25,10 @@ fn om_init_tests() -> Vec<OmInitTest> {
                     (".github/workflows/ci.yaml", true),
                     (".vscode", false),
                 ])),
-                package: Some((
+                packages: HashMap::from([(
                     "default".to_string(),
                     PathAsserts(HashMap::from([("bin/foo", true)])),
-                )),
+                )]),
             },
         },
         OmInitTest {
@@ -42,10 +42,10 @@ fn om_init_tests() -> Vec<OmInitTest> {
                     (".vscode", true),
                     ("nix/modules/template.nix", false),
                 ])),
-                package: Some((
+                packages: HashMap::from([(
                     "default".to_string(),
                     PathAsserts(HashMap::from([("bin/qux", true)])),
-                )),
+                )]),
             },
         },
         OmInitTest {
@@ -56,13 +56,13 @@ fn om_init_tests() -> Vec<OmInitTest> {
                     ("modules/home/neovim/default.nix", true),
                     (".github/workflows", false),
                 ])),
-                package: Some((
+                packages: HashMap::from([(
                     "homeConfigurations.john.activationPackage".to_string(),
                     PathAsserts(HashMap::from([
                         ("home-path/bin/nvim", true),
                         ("home-path/bin/vim", false),
                     ])),
-                )),
+                )]),
             },
         },
     ]
@@ -119,14 +119,14 @@ struct Asserts {
     /// [PathAsserts] for the source directory
     source: PathAsserts,
     /// [PathAsserts] for `nix build .#<name>`'s out path
-    package: Option<(String, PathAsserts)>,
+    packages: HashMap<String, PathAsserts>,
 }
 
 impl Asserts {
     async fn assert(&self, dir: &Path) -> anyhow::Result<()> {
         self.source.assert(dir);
 
-        if let Some((attr, package)) = &self.package {
+        for (attr, package) in self.packages.iter() {
             let paths = nix_rs::flake::command::build(
                 &NixCmd::default(),
                 FlakeUrl::from(dir).with_attr(attr),
