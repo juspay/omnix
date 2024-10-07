@@ -14,6 +14,10 @@
                 # name = "default";
                 args = [ "show" "." ];
               };
+              build-omnix-source = {
+                type = "app";
+                name = "build-omnix-source";
+              };
               binary-size-is-small = {
                 type = "app";
                 name = "check-closure-size";
