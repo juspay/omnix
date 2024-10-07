@@ -20,8 +20,7 @@ where
             cmd.args(["eval", "--json"]);
             opts.use_in_command(cmd);
             cmd.arg(url.to_string());
-            // Decrease logging verbosity to avoid polluting the `om` output
-            // with logs other than the flake evaluation progress.
+            // Avoid Nix from dumping logs related to `--override-input` use. Yes, this requires *double* use of --quiet.
             cmd.args(["--quiet", "--quiet"]);
         })
         .await?;
