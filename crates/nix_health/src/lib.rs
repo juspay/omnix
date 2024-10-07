@@ -17,8 +17,8 @@ use tracing::instrument;
 use traits::Check;
 
 use self::check::{
-    caches::Caches, flake_enabled::FlakeEnabled, max_jobs::MaxJobs, min_nix_version::MinNixVersion,
-    rosetta::Rosetta, trusted_users::TrustedUsers,
+    caches::Caches, flake_enabled::FlakeEnabled, home_manager::HomeManager, max_jobs::MaxJobs,
+    min_nix_version::MinNixVersion, rosetta::Rosetta, trusted_users::TrustedUsers,
 };
 
 /// Nix Health check information for user's install
@@ -35,6 +35,7 @@ pub struct NixHealth {
     pub trusted_users: TrustedUsers,
     pub rosetta: Rosetta,
     pub direnv: Direnv,
+    pub home_manager: HomeManager,
 }
 
 impl<'a> IntoIterator for &'a NixHealth {
@@ -52,6 +53,7 @@ impl<'a> IntoIterator for &'a NixHealth {
             &self.caches,
             &self.trusted_users,
             &self.direnv,
+            &self.home_manager,
         ];
         items.into_iter()
     }
