@@ -3,7 +3,7 @@ use crate::{
     command::{CommandError, NixCmd},
     store::uri::StoreURI,
 };
-use std::{path::Path, process::Stdio};
+use std::path::Path;
 
 /// Copy store paths to a remote Nix store using `nix copy`.
 ///

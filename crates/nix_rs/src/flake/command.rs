@@ -2,7 +2,6 @@
 use std::{
     collections::{BTreeMap, HashMap},
     path::PathBuf,
-    process::Stdio,
 };
 
 use nonempty::NonEmpty;
