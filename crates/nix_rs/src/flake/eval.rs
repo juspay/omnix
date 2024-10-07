@@ -1,4 +1,6 @@
 //! Work with `nix eval`
+use std::process::Stdio;
+
 use crate::command::{CommandError, NixCmd, NixCmdError};
 
 use super::{command::FlakeOptions, url::FlakeUrl};
@@ -13,7 +15,8 @@ where
     T: serde::de::DeserializeOwned,
 {
     let stdout = nixcmd
-        .trace_run_with_returning_stdout(|cmd| {
+        .run_with(|cmd| {
+            cmd.stdout(Stdio::piped());
             cmd.args(["eval", "--json"]);
             opts.use_in_command(cmd);
             cmd.arg(url.to_string());

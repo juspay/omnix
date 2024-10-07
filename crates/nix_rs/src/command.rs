@@ -174,46 +174,21 @@ impl NixCmd {
         }
     }
 
-    /// Like [Self::run_with_returning_stdout] but inherits stderr from parent to trace the progress
-    /// of running Nix with [Command] customizations.
-    pub async fn trace_run_with_returning_stdout<F>(&self, f: F) -> Result<Vec<u8>, CommandError>
+    /// Run Nix with given [Command] customizations, while also tracing the command being run.
+    pub async fn run_with<F>(&self, f: F) -> Result<Vec<u8>, CommandError>
     where
         F: FnOnce(&mut Command),
     {
         let mut cmd = self.command();
         f(&mut cmd);
         trace_cmd(&cmd);
-
-        cmd.stdout(Stdio::piped());
-
-        let child = cmd.spawn()?;
-        let out = child.wait_with_output().await?;
-
+        let out = cmd.spawn()?.wait_with_output().await?;
         if out.status.success() {
             Ok(out.stdout)
         } else {
             Err(CommandError::ProcessFailed {
                 stderr: None,
                 exit_code: out.status.code(),
-            })
-        }
-    }
-
-    /// Run Nix with given [Command] customizations, while also tracing the command being run.
-    pub async fn run_with<F>(&self, f: F) -> Result<(), CommandError>
-    where
-        F: FnOnce(&mut Command),
-    {
-        let mut cmd = self.command();
-        f(&mut cmd);
-        trace_cmd(&cmd);
-        let status = cmd.spawn()?.wait().await?;
-        if status.success() {
-            Ok(())
-        } else {
-            Err(CommandError::ProcessFailed {
-                stderr: None,
-                exit_code: status.code(),
             })
         }
     }
