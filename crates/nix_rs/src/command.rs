@@ -175,6 +175,8 @@ impl NixCmd {
     }
 
     /// Run Nix with given [Command] customizations, while also tracing the command being run.
+    ///
+    /// Return the stdout bytes returned by [tokio::process::Child::wait_with_output]
     pub async fn run_with<F>(&self, f: F) -> Result<Vec<u8>, CommandError>
     where
         F: FnOnce(&mut Command),
