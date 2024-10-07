@@ -27,7 +27,6 @@ pub async fn nix_copy(
     }
     cmd.run_with(|cmd| {
         cmd.args(args);
-        cmd.stdout(Stdio::null());
     })
     .await?;
     Ok(())

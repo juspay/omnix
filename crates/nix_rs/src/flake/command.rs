@@ -26,7 +26,6 @@ pub async fn run(
             opts.use_in_command(cmd);
             cmd.args([url.to_string(), "--".to_string()]);
             cmd.args(args);
-            cmd.stdout(Stdio::null());
         })
         .await?;
     Ok(())
@@ -44,7 +43,6 @@ pub async fn develop(
             opts.use_in_command(cmd);
             cmd.args(["develop".to_string(), url.to_string(), "-c".to_string()]);
             cmd.args(command);
-            cmd.stdout(Stdio::null());
         })
         .await?;
     Ok(())
