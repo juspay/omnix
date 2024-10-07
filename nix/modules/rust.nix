@@ -8,7 +8,7 @@
     inputs.process-compose-flake.flakeModule
     inputs.cargo-doc-live.flakeModule
   ];
-  perSystem = { inputs', config, self', pkgs, lib, system, ... }: {
+  perSystem = { config, self', pkgs, ... }: {
     cargo-doc-live.crateName = "omnix-gui";
 
     rust-project = {
@@ -32,5 +32,19 @@
           '';
         });
       };
+
+    # Make sure that `OMNIX_SOURCE` is buildable.
+    # We must check this in CI, because it is built only during runtime otherwise (as part of `om ci run --on`).
+    apps.build-omnix-source = {
+      meta.description = "Build OMNIX_SOURCE";
+      program = pkgs.writeShellApplication {
+        name = "build-omnix-source";
+        runtimeInputs = [ pkgs.nix ];
+        text = ''
+          set -x
+          nix build -L --no-link --print-out-paths ${self'.packages.omnix-cli.OMNIX_SOURCE.outPath}
+        '';
+      };
+    };
   };
 }
