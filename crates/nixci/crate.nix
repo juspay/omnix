@@ -7,6 +7,7 @@
 
 let
   inherit (flake) inputs;
+  inherit (inputs) self;
 in
 {
   autoWire = [ "doc" "clippy" ];
@@ -37,7 +38,17 @@ in
         NIX_SYSTEMS
         ;
       DEVOUR_FLAKE = inputs.devour-flake;
-      OMNIX_SOURCE = rust-project.src;
+
+      # To avoid unnecessary rebuilds, start from cleaned source, and then add the Nix files necessary to `nix run` it. Finally, add any files required by the Rust build.
+      OMNIX_SOURCE = lib.cleanSourceWith {
+        src = inputs.self;
+        filter = path: type:
+          rust-project.crane-lib.filterCargoSources path type
+          || lib.hasSuffix ".nix" path
+          || lib.hasSuffix "flake.lock" path
+          || lib.hasSuffix "registry.json" path
+        ;
+      };
     };
   };
 }
