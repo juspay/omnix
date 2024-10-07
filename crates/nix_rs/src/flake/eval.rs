@@ -13,10 +13,13 @@ where
     T: serde::de::DeserializeOwned,
 {
     let stdout = nixcmd
-        .run_with_returning_stdout(|cmd| {
+        .trace_run_with_returning_stdout(|cmd| {
             cmd.args(["eval", "--json"]);
             opts.use_in_command(cmd);
             cmd.arg(url.to_string());
+            // Decrease logging verbosity to avoid polluting the `om` output
+            // with logs other than the flake evaluation progress.
+            cmd.args(["--quiet", "--quiet"]);
         })
         .await?;
     let v = serde_json::from_slice::<T>(&stdout)?;
