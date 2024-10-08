@@ -12,12 +12,12 @@ impl Checkable for ShellConfigurations {
     fn check(&self, _: &info::NixInfo, _: Option<&nix_rs::flake::url::FlakeUrl>) -> Vec<Check> {
         let check = Check {
             title: "Shell Configurations".to_string(),
-            info: "Shell Configurations are managed by Nix".to_string(),
+            info: "are dotfiles managed by Nix ?".to_string(),
             result: if check_shell_configuration() {
                 CheckResult::Green
             } else {
                 CheckResult::Red {
-                    msg: "Shell Configurations".into(),
+                    msg: "Shell Configurations are not managed by Nix".into(),
                     suggestion: "Manage shell configurations through https://github.com/juspay/nixos-unified-template".into(),
                 }
             },
@@ -32,7 +32,7 @@ fn check_shell_configuration() -> bool {
     let mut shell_dotfiles = HashMap::new();
     shell_dotfiles.insert("zsh", vec![".zshrc"]);
     shell_dotfiles.insert("bash", vec![".bashrc", ".bash_profile", ".profile"]);
-    //
+    // Check if shell configurations (zsh or bash) are managed by Nix
     are_shell_dotfiles_nix_managed("zsh", &shell_dotfiles)
         || are_shell_dotfiles_nix_managed("bashrc", &shell_dotfiles)
 }
