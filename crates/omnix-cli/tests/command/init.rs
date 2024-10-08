@@ -1,10 +1,8 @@
-use std::path::Path;
+use std::{collections::HashMap, path::Path};
 
 use crate::command::core::om;
-use assert_cmd::Command;
 use nix_rs::{command::NixCmd, flake::url::FlakeUrl};
 use omnix_init::registry::BUILTIN_REGISTRY;
-use predicates::str::contains;
 
 /// `om init` runs and successfully initializes a template
 #[tokio::test]
@@ -21,49 +19,50 @@ fn om_init_tests() -> Vec<OmInitTest> {
     vec![
         OmInitTest {
             template_name: lookup("haskell-template"),
-            default_params: r#"{"package-name": "foo", "author": "John", "vscode": false }"#,
+            params: r#"{"package-name": "foo", "author": "John", "vscode": false }"#,
             asserts: Asserts {
-                out_dir: PathAsserts {
-                    exists: vec![".github/workflows/ci.yaml"],
-                    not_exists: vec![".vscode"],
-                },
-                nix_run_output_contains: Some("from foo"),
-                ..Default::default()
+                source: PathAsserts(HashMap::from([
+                    (".github/workflows/ci.yaml", true),
+                    (".vscode", false),
+                ])),
+                packages: HashMap::from([(
+                    "default".to_string(),
+                    PathAsserts(HashMap::from([("bin/foo", true)])),
+                )]),
             },
         },
         OmInitTest {
             template_name: lookup("rust-nix-template"),
-            default_params: r#"{"package-name": "qux", "author": "John", "author-email": "john@example.com" }"#,
+            params: r#"{"package-name": "qux", "author": "John", "author-email": "john@example.com" }"#,
             asserts: Asserts {
-                out_dir: PathAsserts {
-                    exists: vec![
-                        "Cargo.toml",
-                        "flake.nix",
-                        ".github/workflows/ci.yml",
-                        ".vscode",
-                    ],
-                    not_exists: vec!["nix/modules/template.nix"],
-                },
-                nix_run_output_contains: Some("from qux"),
-                ..Default::default()
+                source: PathAsserts(HashMap::from([
+                    ("Cargo.toml", true),
+                    ("flake.nix", true),
+                    (".github/workflows/ci.yml", true),
+                    (".vscode", true),
+                    ("nix/modules/template.nix", false),
+                ])),
+                packages: HashMap::from([(
+                    "default".to_string(),
+                    PathAsserts(HashMap::from([("bin/qux", true)])),
+                )]),
             },
         },
         OmInitTest {
             template_name: lookup("nixos-unified-template").with_attr("home"),
-            default_params: r#"{"username": "john", "git-email": "jon@ex.com", "git-name": "John", "neovim": true }"#,
+            params: r#"{"username": "john", "git-email": "jon@ex.com", "git-name": "John", "neovim": true }"#,
             asserts: Asserts {
-                out_dir: PathAsserts {
-                    exists: vec!["modules/home/neovim/default.nix"],
-                    not_exists: vec![".github/workflows"],
-                },
-                nix_build_result: Some((
+                source: PathAsserts(HashMap::from([
+                    ("modules/home/neovim/default.nix", true),
+                    (".github/workflows", false),
+                ])),
+                packages: HashMap::from([(
                     "homeConfigurations.john.activationPackage".to_string(),
-                    PathAsserts {
-                        exists: vec!["home-path/bin/nvim"],
-                        not_exists: vec!["home-path/bin/vim"],
-                    },
-                )),
-                ..Default::default()
+                    PathAsserts(HashMap::from([
+                        ("home-path/bin/nvim", true),
+                        ("home-path/bin/vim", false),
+                    ])),
+                )]),
             },
         },
     ]
@@ -74,7 +73,7 @@ struct OmInitTest {
     /// The template name to pass to `om init`
     template_name: FlakeUrl,
     /// The --default-params to pass to `om init`
-    default_params: &'static str,
+    params: &'static str,
     /// Various assertions to make after running `om init`
     asserts: Asserts,
 }
@@ -91,7 +90,7 @@ impl OmInitTest {
                 &self.template_name,
                 "--non-interactive",
                 "--params",
-                self.default_params,
+                self.params,
             ])
             .assert()
             .success();
@@ -117,34 +116,24 @@ impl OmInitTest {
 
 #[derive(Default)]
 struct Asserts {
-    out_dir: PathAsserts,
-    /// The output of `nix run` should contain this string
-    nix_run_output_contains: Option<&'static str>,
-    /// The store path built by `nix build .#attr` should contain these paths
-    nix_build_result: Option<(String, PathAsserts)>,
+    /// [PathAsserts] for the source directory
+    source: PathAsserts,
+    /// [PathAsserts] for `nix build .#<name>`'s out path
+    packages: HashMap<String, PathAsserts>,
 }
 
 impl Asserts {
     async fn assert(&self, dir: &Path) -> anyhow::Result<()> {
-        self.out_dir.assert(dir);
+        self.source.assert(dir);
 
-        if let Some(nix_run_output_contains) = self.nix_run_output_contains {
-            Command::new("nix")
-                .arg("run")
-                .arg(FlakeUrl::from(dir).to_string())
-                .assert()
-                .success()
-                .stdout(contains(nix_run_output_contains));
-        }
-
-        if let Some((attr, nix_build_result)) = &self.nix_build_result {
+        for (attr, package) in self.packages.iter() {
             let paths = nix_rs::flake::command::build(
                 &NixCmd::default(),
                 FlakeUrl::from(dir).with_attr(attr),
             )
             .await?;
             assert_matches!(paths.first().and_then(|v| v.first_output()), Some(path) => {
-                nix_build_result.assert(path);
+                package.assert(path);
             });
         }
 
@@ -152,29 +141,23 @@ impl Asserts {
     }
 }
 
+/// Set of path assertions to make
+///
+/// If value is true, the path must exist.
 #[derive(Default)]
-struct PathAsserts {
-    // Assert that these paths exist
-    exists: Vec<&'static str>,
-    // Assert that these paths do not exist
-    not_exists: Vec<&'static str>,
-}
+struct PathAsserts(HashMap<&'static str, bool>);
 
 impl PathAsserts {
     fn assert(&self, dir: &Path) {
-        for path in &self.exists {
+        for (path, must_exist) in self.0.iter() {
+            let check = dir.join(path).exists();
+            let verb = if *must_exist { "exist" } else { "not exist" };
             assert!(
-                dir.join(path).exists(),
-                "Expected path to exist: {:?} (under {:?})",
+                if *must_exist { check } else { !check },
+                "Expected path to {}: {:?} (under {:?})",
+                verb,
                 path,
                 dir,
-            );
-        }
-        for path in &self.not_exists {
-            assert!(
-                !dir.join(path).exists(),
-                "Expected path to not exist: {:?}",
-                path,
             );
         }
     }

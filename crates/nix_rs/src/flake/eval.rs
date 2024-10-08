@@ -1,4 +1,6 @@
 //! Work with `nix eval`
+use std::process::Stdio;
+
 use crate::command::{CommandError, NixCmd, NixCmdError};
 
 use super::{command::FlakeOptions, url::FlakeUrl};
@@ -13,10 +15,13 @@ where
     T: serde::de::DeserializeOwned,
 {
     let stdout = nixcmd
-        .run_with_returning_stdout(|cmd| {
+        .run_with(|cmd| {
+            cmd.stdout(Stdio::piped());
             cmd.args(["eval", "--json"]);
             opts.use_in_command(cmd);
             cmd.arg(url.to_string());
+            // Avoid Nix from dumping logs related to `--override-input` use. Yes, this requires *double* use of `--quiet`. Also, `-qq` won't work until https://github.com/NixOS/nix/pull/11652
+            cmd.args(["--quiet", "--quiet"]);
         })
         .await?;
     let v = serde_json::from_slice::<T>(&stdout)?;

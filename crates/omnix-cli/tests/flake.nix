@@ -9,6 +9,17 @@
     haskell-multi-nix.url = "github:srid/haskell-multi-nix/c85563721c388629fa9e538a1d97274861bc8321";
     services-flake.url = "github:juspay/services-flake/3d764f19d0a121915447641fe49a9b8d02777ff8";
     nixos-config.url = "github:srid/nixos-config/fe9c16cc6a60bbc17646c15c8ce3c5380239ab92";
+
+    # FIXME: Sadly, these will still result in rate-limiting errors, due to the 60/hour limit.
+    # See https://github.com/NixOS/nix/issues/5409
+
+    # system_list.rs tests
+    nix-systems-empty.url = "github:nix-systems/empty";
+    # Used in `om init` tests
+    haskell-flake.url = "github:srid/haskell-flake";
+    haskell-template.url = "github:srid/haskell-template";
+    rust-nix-template.url = "github:srid/rust-nix-template";
+    nixos-unified-template.url = "github:juspay/nixos-unified-template";
   };
 
   outputs = inputs:

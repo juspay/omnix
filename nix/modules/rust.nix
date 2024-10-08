@@ -8,7 +8,7 @@
     inputs.process-compose-flake.flakeModule
     inputs.cargo-doc-live.flakeModule
   ];
-  perSystem = { inputs', config, self', pkgs, lib, system, ... }: {
+  perSystem = { config, self', pkgs, ... }: {
     cargo-doc-live.crateName = "omnix-gui";
 
     rust-project = {
@@ -31,27 +31,20 @@
               --fish <($out/bin/om completion fish)
           '';
         });
-
-        /*
-        gui = crates."omnix-gui".crane.outputs.drv.crate.overrideAttrs (oa: {
-          # Copy over assets for the desktop app to access
-          installPhase =
-            (oa.installPhase or"") + ''
-              cp -r ${inputs.self + /crates/omnix-gui/assets}/* $out/bin/
-            '';
-          postFixup =
-            (oa.postFixup or"") + ''
-              # HACK: The Linux desktop app is unable to locate the assets
-              # directory, but it does look into the current directory.
-              # So, `cd` to the directory containing assets (which is
-              # `bin/`, per the installPhase above) before launching the
-              # app.
-              wrapProgram $out/bin/${oa.pname} \
-                --chdir $out/bin
-            '';
-        });
-        */
-
       };
+
+    # Make sure that `OMNIX_SOURCE` is buildable.
+    # We must check this in CI, because it is built only during runtime otherwise (as part of `om ci run --on`).
+    apps.build-omnix-source = {
+      meta.description = "Build OMNIX_SOURCE";
+      program = pkgs.writeShellApplication {
+        name = "build-omnix-source";
+        runtimeInputs = [ pkgs.nix ];
+        text = ''
+          set -x
+          nix build -L --no-link --print-out-paths ${self'.packages.omnix-cli.OMNIX_SOURCE.outPath}
+        '';
+      };
+    };
   };
 }

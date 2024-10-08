@@ -26,7 +26,8 @@ pub async fn run(
             cmd.args([url.to_string(), "--".to_string()]);
             cmd.args(args);
         })
-        .await
+        .await?;
+    Ok(())
 }
 
 /// Run `nix develop` on the given flake devshell.
@@ -42,7 +43,8 @@ pub async fn develop(
             cmd.args(["develop".to_string(), url.to_string(), "-c".to_string()]);
             cmd.args(command);
         })
-        .await
+        .await?;
+    Ok(())
 }
 
 /// Run `nix build`
