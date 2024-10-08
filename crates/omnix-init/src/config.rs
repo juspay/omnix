@@ -11,12 +11,13 @@ use crate::template::Template;
 
 /// A named [Template] associated with a [FlakeUrl]
 #[derive(Debug, Clone)]
-pub(crate) struct FlakeTemplate<'a> {
-    pub(crate) flake: &'a FlakeUrl,
-    pub(crate) template_name: String,
-    pub(crate) template: Template,
+pub struct FlakeTemplate<'a> {
+    pub flake: &'a FlakeUrl,
+    pub template_name: String,
+    pub template: Template,
 }
 
+// This instance is used during user prompting.
 impl<'a> Display for FlakeTemplate<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
@@ -34,7 +35,7 @@ impl<'a> Display for FlakeTemplate<'a> {
 }
 
 /// Load templates from the given flake
-pub(crate) async fn load_templates<'a>(url: &FlakeUrl) -> anyhow::Result<Vec<FlakeTemplate>> {
+pub async fn load_templates<'a>(url: &FlakeUrl) -> anyhow::Result<Vec<FlakeTemplate>> {
     let _opts = FlakeOptions {
         refresh: true,
         ..Default::default()

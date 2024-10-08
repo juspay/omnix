@@ -1502,6 +1502,8 @@ name = "omnix-init"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "assert_fs",
+ "assert_matches",
  "colored",
  "console",
  "globset",
