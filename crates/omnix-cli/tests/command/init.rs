@@ -9,6 +9,7 @@ async fn om_init() -> anyhow::Result<()> {
     let current_system = &cfg.system.value;
     for url in registry.0.values() {
         // TODO: Refactor(DRY) with src/core.rs:run_tests
+        // TODO: Make this test (and other tests) use tracing!
         println!("🕍 Testing template: {}", url);
         let templates = omnix_init::config::load_templates(url).await?;
         for template in templates {
