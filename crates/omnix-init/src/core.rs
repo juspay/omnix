@@ -2,7 +2,7 @@ use std::{collections::HashMap, path::Path};
 
 use crate::config::{load_templates, FlakeTemplate};
 use anyhow::Context;
-use nix_rs::flake::url::FlakeUrl;
+use nix_rs::flake::{system::System, url::FlakeUrl};
 use serde_json::Value;
 
 pub async fn select_from_registry() -> anyhow::Result<FlakeUrl> {
@@ -17,13 +17,17 @@ pub async fn select_from_registry() -> anyhow::Result<FlakeUrl> {
         .ok_or(anyhow::anyhow!("Flake not found in builtin registry"))
 }
 
-pub async fn run_tests(flake: &FlakeUrl) -> anyhow::Result<()> {
+pub async fn run_tests(current_system: &System, flake: &FlakeUrl) -> anyhow::Result<()> {
     let templates = load_templates(flake).await?;
     for template in templates.iter() {
         tracing::info!("Testing template: {}", template.template_name);
         for (name, test) in template.template.tests.iter() {
-            tracing::info!("Running test: {}", name);
-            test.run_test(name, template).await?;
+            if test.can_run_on(current_system) {
+                tracing::info!("Running test: {}", name);
+                test.run_test(name, template).await?;
+            } else {
+                tracing::info!("Skipping test: {}", name);
+            }
         }
     }
     Ok(())

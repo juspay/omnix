@@ -80,6 +80,7 @@ The configuration can also include a `tests` key that defines a list of tests to
 {
   tests = {
     default = {
+      # systems = [ ]; # Optional whitelist of systems to limit this test to
       params = {
         username = "john";
         git-email = "john@ex.com";

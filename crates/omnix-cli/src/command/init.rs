@@ -1,7 +1,7 @@
 use std::{collections::HashMap, path::PathBuf, str::FromStr};
 
 use clap::Parser;
-use nix_rs::flake::url::FlakeUrl;
+use nix_rs::{config::NixConfig, flake::url::FlakeUrl};
 use serde_json::Value;
 
 /// Initialize a new flake project
@@ -49,7 +49,8 @@ impl InitCommand {
             None => &omnix_init::core::select_from_registry().await?,
         };
         if self.test {
-            omnix_init::core::run_tests(flake).await?;
+            let cfg = NixConfig::get().await.as_ref()?;
+            omnix_init::core::run_tests(&cfg.system.value, flake).await?;
         } else {
             let path = self.path.as_ref().unwrap(); // unwrap is okay, because of `required_unless_present`
             let params = self

@@ -1,7 +1,10 @@
 use std::{collections::HashMap, path::Path};
 
 use anyhow::Context;
-use nix_rs::{command::NixCmd, flake::url::FlakeUrl};
+use nix_rs::{
+    command::NixCmd,
+    flake::{system::System, url::FlakeUrl},
+};
 use serde::Deserialize;
 use serde_json::Value;
 
@@ -17,9 +20,20 @@ pub struct OmInitTest {
     params: HashMap<String, Value>,
     /// Various assertions to make after running `om init`
     asserts: Asserts,
+    /// Optional, whitelist of systems to run this test on (others are ignored)
+    systems: Option<Vec<System>>,
 }
 
 impl OmInitTest {
+    /// Can this test be run on this system?
+    pub fn can_run_on(&self, system: &System) -> bool {
+        if let Some(systems) = self.systems.as_ref() {
+            systems.contains(system)
+        } else {
+            true
+        }
+    }
+
     /// Run this test on a temporary directory
     pub async fn run_test<'a>(
         &self,
@@ -58,8 +72,11 @@ impl OmInitTest {
 #[derive(Debug, Deserialize, Clone, Default)]
 pub struct Asserts {
     /// [PathAsserts] for the source directory
+    #[serde(default)]
     source: PathAsserts,
+
     /// [PathAsserts] for `nix build .#<name>`'s out path
+    #[serde(default)]
     packages: HashMap<String, PathAsserts>,
 }
 
