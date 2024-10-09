@@ -37,14 +37,15 @@ impl OmInitTest {
     /// Run this test on a temporary directory
     pub async fn run_test<'a>(
         &self,
-        _name: &str,
+        url: &FlakeUrl,
         template: &FlakeTemplate<'a>,
     ) -> anyhow::Result<()> {
         let temp_dir = assert_fs::TempDir::new().unwrap();
         let mut template = template.clone();
 
         tracing::info!(
-            "Initializing template; params={:?} systems-whitelist={}",
+            "🧪 [{:?}] Running test params={:?} systems-whitelist={}",
+            &url,
             &self.params,
             self.systems
                 .as_ref()
