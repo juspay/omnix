@@ -60,7 +60,9 @@ pub struct Asserts {
     /// [PathAsserts] for the source directory
     #[serde(default)]
     source: PathAsserts,
+
     /// [PathAsserts] for `nix build .#<name>`'s out path
+    #[serde(default)]
     packages: HashMap<String, PathAsserts>,
 }
 
