@@ -58,6 +58,7 @@ impl OmInitTest {
 #[derive(Debug, Deserialize, Clone, Default)]
 pub struct Asserts {
     /// [PathAsserts] for the source directory
+    #[serde(default)]
     source: PathAsserts,
     /// [PathAsserts] for `nix build .#<name>`'s out path
     packages: HashMap<String, PathAsserts>,
