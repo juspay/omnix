@@ -42,6 +42,19 @@ impl OmInitTest {
     ) -> anyhow::Result<()> {
         let temp_dir = assert_fs::TempDir::new().unwrap();
         let mut template = template.clone();
+
+        tracing::info!(
+            "Initializing template; params={:?} systems-whitelist={}",
+            &self.params,
+            self.systems
+                .as_ref()
+                .map(|systems| systems
+                    .iter()
+                    .map(|s| s.to_string())
+                    .collect::<Vec<_>>()
+                    .join(","))
+                .unwrap_or_else(|| "all".to_string())
+        );
         template.template.set_param_values(&self.params);
         template
             .template
@@ -51,8 +64,8 @@ impl OmInitTest {
 
         // Recursively print the contents of temp_dir to debug test failures
         let paths = omnix_common::fs::find_paths(&temp_dir).await?;
-        println!(
-            "Paths in temp_dir {}: {}",
+        tracing::debug!(
+            "Template files (under {}): {}",
             temp_dir.path().display(),
             paths
                 .iter()
