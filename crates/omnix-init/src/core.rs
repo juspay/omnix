@@ -24,7 +24,11 @@ pub async fn run_tests(current_system: &System, flake: &FlakeUrl) -> anyhow::Res
         for (name, test) in template.template.tests.iter() {
             if test.can_run_on(current_system) {
                 tracing::info!("🧪 Running test: {} (on {})", name, current_system);
-                test.run_test(name, template).await?;
+                test.run_test(
+                    &flake.with_attr(&format!("{}.{}", template.template_name, name)),
+                    template,
+                )
+                .await?;
             } else {
                 tracing::info!(
                     "⚠️ Skipping test: {} (cannot run on {})",

@@ -14,7 +14,11 @@ async fn om_init() -> anyhow::Result<()> {
                     "🧪 [{}#{}] Running test: {}",
                     url, template.template_name, name
                 );
-                test.run_test(name, &template).await?;
+                test.run_test(
+                    &url.with_attr(&format!("{}.{}", template.template_name, name)),
+                    &template,
+                )
+                .await?;
             }
         }
     }
