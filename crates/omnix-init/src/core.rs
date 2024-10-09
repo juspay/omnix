@@ -6,7 +6,7 @@ use nix_rs::flake::{system::System, url::FlakeUrl};
 use serde_json::Value;
 
 pub async fn select_from_registry() -> anyhow::Result<FlakeUrl> {
-    let builtin_registry = crate::registry::BUILTIN_REGISTRY.clone();
+    let builtin_registry = crate::registry::get().await.as_ref()?;
     // Prompt the user to select a flake from the registry
     let available: Vec<String> = builtin_registry.0.keys().cloned().collect();
     let name = inquire::Select::new("Select a flake", available).prompt()?;

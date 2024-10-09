@@ -1,0 +1,78 @@
+{
+  "nodes": {
+    "haskell-flake": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1728227251,
+        "narHash": "sha256-JLDhMFyGyFe0QJAbCuSxB7/kjUCA7uUAMa6BFRORwXk=",
+        "owner": "srid",
+        "repo": "haskell-flake",
+        "rev": "9cbfbfc38f1fbf9a0f471795c84780211875fd45",
+        "type": "github"
+      },
+      "original": {
+        "owner": "srid",
+        "repo": "haskell-flake",
+        "type": "github"
+      }
+    },
+    "haskell-template": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1728428876,
+        "narHash": "sha256-DJFBFzs9+45z/i53kqYge6L3kxzRok+d2JQcYjBWT50=",
+        "owner": "srid",
+        "repo": "haskell-template",
+        "rev": "c05c9977e04c0e09ae6b5e06ac2f2332c60dcad5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "srid",
+        "repo": "haskell-template",
+        "type": "github"
+      }
+    },
+    "nixos-unified-template": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1728495100,
+        "narHash": "sha256-SHTeInt30t+pEPIpP4OSyf1iuofI4+BhOBTsKk2jQRw=",
+        "owner": "juspay",
+        "repo": "nixos-unified-template",
+        "rev": "f8ce617b401c3ca5d694931486599bcb28671037",
+        "type": "github"
+      },
+      "original": {
+        "owner": "juspay",
+        "repo": "nixos-unified-template",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "haskell-flake": "haskell-flake",
+        "haskell-template": "haskell-template",
+        "nixos-unified-template": "nixos-unified-template",
+        "rust-nix-template": "rust-nix-template"
+      }
+    },
+    "rust-nix-template": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1728428985,
+        "narHash": "sha256-QSJyUpGjBsBnhvKPlpu5ZQZu8wlUtdk2sw8Wn/cyR/0=",
+        "owner": "srid",
+        "repo": "rust-nix-template",
+        "rev": "f1fea514816b0c9ed39fb19985726377ddcf32fd",
+        "type": "github"
+      },
+      "original": {
+        "owner": "srid",
+        "repo": "rust-nix-template",
+        "type": "github"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}

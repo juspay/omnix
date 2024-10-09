@@ -1,10 +1,9 @@
 use nix_rs::config::NixConfig;
-use omnix_init::registry::BUILTIN_REGISTRY;
 
 /// `om init` runs and successfully initializes a template
 #[tokio::test]
 async fn om_init() -> anyhow::Result<()> {
-    let registry = BUILTIN_REGISTRY.clone();
+    let registry = omnix_init::registry::get().await.as_ref()?;
     let cfg = NixConfig::get().await.as_ref()?;
     let current_system = &cfg.system.value;
     for url in registry.0.values() {

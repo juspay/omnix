@@ -1,6 +1,0 @@
-{
-  "haskell-flake": "github:srid/haskell-flake",
-  "haskell-template": "github:srid/haskell-template",
-  "rust-nix-template": "github:srid/rust-nix-template",
-  "nixos-unified-template": "github:juspay/nixos-unified-template"
-}
