@@ -15,13 +15,13 @@ This will prompt you to choose a template from the builtin registry (see below s
 
 ## Builtin registry {#registry}
 
-The builtin registry (stored in [a JSON file][json]) contains the following templates:
+The builtin registry (stored in [a flake][flake]) contains the following templates:
 
 - [Haskell project template](https://github.com/srid/haskell-template)
 - [Rust project template](https://github.com/srid/rust-nix-template)
 - [NixOS/ nix-darwin/ home-manager template](https://github.com/juspay/nixos-unified-template)
 
-[json]: https://github.com/juspay/omnix/blob/main/crates/omnix-init/registry/registry.json
+[flake]: https://github.com/juspay/omnix/blob/main/crates/omnix-init/registry/flake.nix
 
 ## Initializing your own project templates {#custom}
 
