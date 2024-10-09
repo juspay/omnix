@@ -55,7 +55,10 @@ in
       };
       CARGO_BUILD_RUSTFLAGS = "-C target-feature=+crt-static";
     } //
-    lib.optionalAttrs pkgs.stdenv.isLinux {
+    lib.optionalAttrs (stdenv.isLinux && stdenv.isAarch64) {
+      CARGO_BUILD_TARGET = "aarch64-unknown-linux-musl";
+    } //
+    lib.optionalAttrs (stdenv.isLinux && stdenv.isx86_64) {
       CARGO_BUILD_TARGET = "x86_64-unknown-linux-musl";
     };
   };
