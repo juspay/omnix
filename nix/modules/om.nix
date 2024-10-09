@@ -34,6 +34,16 @@
         };
         doc.dir = "doc";
 
+        registry = {
+          dir = "crates/omnix-init/registry";
+          steps = {
+            build.enable = false;
+
+            # FIXME: Why does omnix require this?
+            custom = { };
+          };
+        };
+
         # Because the cargo tests invoking Nix doesn't pass github access tokens..
         # To avoid GitHub rate limits during the integration test (which
         # doesn't use the token)

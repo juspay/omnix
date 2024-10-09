@@ -1,13 +1,36 @@
-use std::{collections::HashMap, sync::LazyLock};
+use lazy_static::lazy_static;
+use std::{collections::HashMap, path::Path};
 
-use nix_rs::flake::url::FlakeUrl;
+use nix_rs::{
+    command::{NixCmd, NixCmdError},
+    flake::{command::FlakeOptions, eval::nix_eval, url::FlakeUrl},
+};
+use tokio::sync::OnceCell;
 
-const BUILTIN_REGISTRY_JSON: &str =
-    include_str!(concat!(env!("OM_INIT_REGISTRY"), "/registry.json"));
+lazy_static! {
+    /// The registry flake
+    pub static ref OM_INIT_REGISTRY: FlakeUrl = {
+        let path = env!("OM_INIT_REGISTRY");
+        Into::<FlakeUrl>::into(Path::new(path)).with_attr("registry")
+    };
+}
 
 /// Our builtin registry of templates
-pub static BUILTIN_REGISTRY: LazyLock<Registry> =
-    LazyLock::new(|| serde_json::from_str(BUILTIN_REGISTRY_JSON).unwrap());
+pub static BUILTIN_REGISTRY: OnceCell<Result<Registry, NixCmdError>> = OnceCell::const_new();
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Deserialize, serde::Serialize)]
 pub struct Registry(pub HashMap<String, FlakeUrl>);
+
+pub async fn get() -> &'static Result<Registry, NixCmdError> {
+    BUILTIN_REGISTRY
+        .get_or_init(|| async {
+            let registry = nix_eval::<Registry>(
+                NixCmd::get().await,
+                &FlakeOptions::default(),
+                &OM_INIT_REGISTRY,
+            )
+            .await?;
+            Ok(registry)
+        })
+        .await
+}

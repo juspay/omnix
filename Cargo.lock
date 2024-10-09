@@ -1509,6 +1509,7 @@ dependencies = [
  "globset",
  "inquire",
  "itertools",
+ "lazy_static",
  "nix_rs",
  "omnix-common",
  "serde",

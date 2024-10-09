@@ -1,10 +1,12 @@
-{ rust-project
+{ flake
+, rust-project
 , pkgs
 , lib
 , ...
 }:
 
 let
+  inherit (flake) inputs;
   inherit (pkgs) stdenv pkgsStatic;
 in
 {
@@ -40,11 +42,21 @@ in
         ;
       inherit (rust-project.crates."nixci".crane.args)
         DEVOUR_FLAKE
-        OMNIX_SOURCE
         ;
       inherit (rust-project.crates."omnix-init".crane.args)
         OM_INIT_REGISTRY
         ;
+
+      # To avoid unnecessary rebuilds, start from cleaned source, and then add the Nix files necessary to `nix run` it. Finally, add any files required by the Rust build.
+      OMNIX_SOURCE = lib.cleanSourceWith {
+        src = inputs.self;
+        filter = path: type:
+          rust-project.crane-lib.filterCargoSources path type
+            || lib.hasSuffix ".nix" path
+            || lib.hasSuffix "flake.lock" path
+            || lib.hasSuffix "registry.json" path
+        ;
+      };
 
       # Disable tests due to sandboxing issues; we run them on CI
       # instead.
