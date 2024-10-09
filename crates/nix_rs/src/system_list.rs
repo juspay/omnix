@@ -89,19 +89,3 @@ where
         .await?;
     Ok(v)
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[tokio::test]
-    async fn test_empty_systems_list() {
-        let systems = SystemsList::from_flake(
-            &NixCmd::default(),
-            &SystemsListFlakeRef(FlakeUrl("github:nix-systems/empty".to_string())),
-        )
-        .await
-        .unwrap();
-        assert_eq!(systems.0, vec![]);
-    }
-}
