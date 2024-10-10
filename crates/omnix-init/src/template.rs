@@ -1,5 +1,5 @@
 use std::{
-    collections::HashMap,
+    collections::{BTreeMap, HashMap},
     path::{Path, PathBuf},
 };
 
@@ -15,6 +15,8 @@ use crate::param;
 pub struct Template {
     pub template: NixTemplate,
     pub params: Vec<param::Param>,
+    #[serde(default)]
+    pub tests: BTreeMap<String, super::test::OmInitTest>,
 }
 
 /// The official Nix template (`flake.templates.<name>`)

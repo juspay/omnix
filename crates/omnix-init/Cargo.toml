@@ -15,11 +15,14 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 anyhow = { workspace = true }
+assert_fs = "1"
+assert_matches = "1.5"
 colored = { workspace = true }
 console = { workspace = true }
 globset = { workspace = true }
 inquire = { workspace = true }
 itertools = { workspace = true }
+lazy_static = { workspace = true }
 nix_rs = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
