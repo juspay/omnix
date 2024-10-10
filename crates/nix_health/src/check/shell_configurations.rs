@@ -5,18 +5,42 @@ use std::path::Path;
 
 use crate::traits::{Check, CheckResult, Checkable};
 
+#[derive(Debug, Serialize, Deserialize, Clone, Hash, Eq, PartialEq)]
+#[serde(rename_all = "lowercase")]
+pub enum Shell {
+    Zsh,
+    Bash,
+    #[serde(other)]
+    Unknown,
+}
+
+impl Shell {
+    fn from_path(path: &str) -> Self {
+        let shell_name = Path::new(path)
+            .file_name()
+            .and_then(|name| name.to_str())
+            .unwrap_or("");
+
+        match shell_name {
+            "zsh" => Shell::Zsh,
+            "bash" => Shell::Bash,
+            _ => Shell::Unknown,
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(default)]
 pub struct ShellConfigurations {
-    dotfiles: HashMap<String, Vec<String>>,
+    dotfiles: HashMap<Shell, Vec<String>>,
 }
 
 impl Default for ShellConfigurations {
     fn default() -> Self {
         let mut dotfiles = HashMap::new();
-        dotfiles.insert("zsh".to_string(), vec![".zshrc".to_string()]);
+        dotfiles.insert(Shell::Zsh, vec![".zshrc".to_string()]);
         dotfiles.insert(
-            "bash".to_string(),
+            Shell::Bash,
             vec![
                 ".bashrc".to_string(),
                 ".bash_profile".to_string(),
@@ -29,33 +53,27 @@ impl Default for ShellConfigurations {
 
 impl ShellConfigurations {
     fn check_shell_configuration(&self) -> bool {
-        match std::env::var("SHELL").ok() {
-            Some(shell) => {
-                let shell_name = Path::new(&shell)
-                    .file_name()
-                    .and_then(|name| name.to_str())
-                    .unwrap_or("");
-
-                self.are_shell_dotfiles_nix_managed(shell_name)
-            }
-            None => false,
-        }
+        std::env::var("SHELL")
+            .ok()
+            .map(|shell| {
+                let shell_name = Shell::from_path(&shell);
+                self.are_shell_dotfiles_nix_managed(&shell_name)
+            })
+            .unwrap_or(false)
     }
 
-    fn are_shell_dotfiles_nix_managed(&self, shell: &str) -> bool {
-        let home = match dirs::home_dir() {
-            Some(path) => path,
-            None => return false,
-        };
-
-        self.dotfiles.get(shell).map_or(false, |shell_files| {
-            shell_files.iter().all(|dotfile| {
-                let path = home.join(dotfile);
-                std::fs::canonicalize(&path)
-                    .map(|canonical_path| canonical_path.starts_with("/nix/store/"))
-                    .unwrap_or(false)
+    fn are_shell_dotfiles_nix_managed(&self, shell: &Shell) -> bool {
+        dirs::home_dir()
+            .map(|home| {
+                self.dotfiles.get(shell).map_or(false, |shell_files| {
+                    shell_files.iter().all(|dotfile| {
+                        std::fs::canonicalize(home.join(dotfile))
+                            .map(|canonical_path| canonical_path.starts_with("/nix/store/"))
+                            .unwrap_or(false)
+                    })
+                })
             })
-        })
+            .unwrap_or(false)
     }
 }
 
