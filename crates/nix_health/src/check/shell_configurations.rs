@@ -1,55 +1,79 @@
 use nix_rs::info;
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, env, path::PathBuf};
+use std::collections::HashMap;
+use std::path::Path;
 
 use crate::traits::{Check, CheckResult, Checkable};
 
-#[derive(Debug, Default, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(default)]
-pub struct ShellConfigurations {}
+pub struct ShellConfigurations {
+    dotfiles: HashMap<String, Vec<String>>,
+}
+
+impl Default for ShellConfigurations {
+    fn default() -> Self {
+        let mut dotfiles = HashMap::new();
+        dotfiles.insert("zsh".to_string(), vec![".zshrc".to_string()]);
+        dotfiles.insert(
+            "bash".to_string(),
+            vec![
+                ".bashrc".to_string(),
+                ".bash_profile".to_string(),
+                ".profile".to_string(),
+            ],
+        );
+        Self { dotfiles }
+    }
+}
+
+impl ShellConfigurations {
+    fn check_shell_configuration(&self) -> bool {
+        match std::env::var("SHELL").ok() {
+            Some(shell) => {
+                let shell_name = Path::new(&shell)
+                    .file_name()
+                    .and_then(|name| name.to_str())
+                    .unwrap_or("");
+
+                self.are_shell_dotfiles_nix_managed(shell_name)
+            }
+            None => false,
+        }
+    }
+
+    fn are_shell_dotfiles_nix_managed(&self, shell: &str) -> bool {
+        let home = match dirs::home_dir() {
+            Some(path) => path,
+            None => return false,
+        };
+
+        self.dotfiles.get(shell).map_or(false, |shell_files| {
+            shell_files.iter().all(|dotfile| {
+                let path = home.join(dotfile);
+                std::fs::canonicalize(&path)
+                    .map(|canonical_path| canonical_path.starts_with("/nix/store/"))
+                    .unwrap_or(false)
+            })
+        })
+    }
+}
 
 impl Checkable for ShellConfigurations {
     fn check(&self, _: &info::NixInfo, _: Option<&nix_rs::flake::url::FlakeUrl>) -> Vec<Check> {
         let check = Check {
             title: "Shell Configurations".to_string(),
-            info: "are dotfiles managed by Nix ?".to_string(),
-            result: if check_shell_configuration() {
+            info: "Dotfiles managed by Nix".to_string(),
+            result: if self.check_shell_configuration() {
                 CheckResult::Green
             } else {
                 CheckResult::Red {
                     msg: "Shell Configurations are not managed by Nix".into(),
-                    suggestion: "Manage shell configurations through https://github.com/juspay/nixos-unified-template".into(),
+                    suggestion: "Manage shell (zsh, bash) configurations through https://github.com/juspay/nixos-unified-template".into(),
                 }
             },
             required: false,
         };
         vec![check]
-    }
-}
-
-fn check_shell_configuration() -> bool {
-    // Define known dotfiles for different shells
-    let mut shell_dotfiles = HashMap::new();
-    shell_dotfiles.insert("zsh", vec![".zshrc"]);
-    shell_dotfiles.insert("bash", vec![".bashrc", ".bash_profile", ".profile"]);
-    // Check if shell configurations (zsh or bash) are managed by Nix
-    are_shell_dotfiles_nix_managed("zsh", &shell_dotfiles)
-        || are_shell_dotfiles_nix_managed("bashrc", &shell_dotfiles)
-}
-
-// check if dotfile(s) for a given shell points to /nix/store
-fn are_shell_dotfiles_nix_managed(shell: &str, dotfiles: &HashMap<&str, Vec<&str>>) -> bool {
-    let home = env::var("HOME").unwrap_or_default();
-    if let Some(shell_files) = dotfiles.get(shell) {
-        shell_files.iter().all(|dotfile| {
-            let path = PathBuf::from(&home).join(dotfile);
-            if let Ok(canonical_path) = std::fs::canonicalize(&path) {
-                canonical_path.starts_with("/nix/store/")
-            } else {
-                false
-            }
-        })
-    } else {
-        false
     }
 }

@@ -33,3 +33,4 @@ which = { workspace = true }
 bytesize = { workspace = true }
 semver = { workspace = true }
 serde_repr = { workspace = true }
+dirs = { workspace = true }
