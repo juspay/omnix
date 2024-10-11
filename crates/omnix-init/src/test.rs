@@ -41,6 +41,7 @@ impl OmInitTest {
         template: &FlakeTemplate<'a>,
     ) -> anyhow::Result<()> {
         let temp_dir = assert_fs::TempDir::new().unwrap();
+        let out_dir = temp_dir.path().join("output");
         let mut template = template.clone();
 
         tracing::info!(
@@ -59,15 +60,15 @@ impl OmInitTest {
         template.template.set_param_values(&self.params);
         template
             .template
-            .scaffold_at(&temp_dir)
+            .scaffold_at(&out_dir)
             .await
             .with_context(|| "Unable to scaffold")?;
 
-        // Recursively print the contents of temp_dir to debug test failures
-        let paths = omnix_common::fs::find_paths(&temp_dir).await?;
+        // Recursively print the contents of out_dir to debug test failures
+        let paths = omnix_common::fs::find_paths(&out_dir).await?;
         tracing::debug!(
             "Template files (under {}): {}",
-            temp_dir.path().display(),
+            out_dir.display(),
             paths
                 .iter()
                 .map(|path| path.display().to_string())
@@ -76,7 +77,7 @@ impl OmInitTest {
         );
 
         // Run assertion tests
-        self.asserts.assert(&temp_dir).await?;
+        self.asserts.assert(&out_dir).await?;
 
         temp_dir.close().unwrap();
         Ok(())
