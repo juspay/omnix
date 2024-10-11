@@ -9,7 +9,9 @@ let
   inherit (flake) inputs;
 in
 {
-  autoWire = [ "doc" "clippy" ];
+  autoWire = lib.optionals
+    (lib.elem pkgs.system [ "x86_64-linux" "aarch64-darwin" ])
+    [ "doc" "clippy" ];
   crane = {
     args = {
       nativeBuildInputs = with pkgs; [

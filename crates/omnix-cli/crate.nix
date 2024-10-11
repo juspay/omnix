@@ -10,7 +10,9 @@ let
   inherit (pkgs) stdenv pkgsStatic;
 in
 {
-  autoWire = [ "doc" "clippy" ];
+  autoWire = lib.optionals
+    (lib.elem pkgs.system [ "x86_64-linux" "aarch64-darwin" ])
+    [ "doc" "clippy" ];
   crane = {
     args = {
       nativeBuildInputs = with pkgs.apple_sdk_frameworks; lib.optionals stdenv.isDarwin [
@@ -67,7 +69,10 @@ in
       };
       CARGO_BUILD_RUSTFLAGS = "-C target-feature=+crt-static";
     } //
-    lib.optionalAttrs pkgs.stdenv.isLinux {
+    lib.optionalAttrs (stdenv.isLinux && stdenv.isAarch64) {
+      CARGO_BUILD_TARGET = "aarch64-unknown-linux-musl";
+    } //
+    lib.optionalAttrs (stdenv.isLinux && stdenv.isx86_64) {
       CARGO_BUILD_TARGET = "x86_64-unknown-linux-musl";
     };
   };
