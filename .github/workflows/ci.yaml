@@ -26,6 +26,14 @@ jobs:
     strategy:
       matrix:
         system: [x86_64-linux, aarch64-linux, aarch64-darwin, x86_64-darwin]
+        isMain:
+          - ${{ contains(github.ref, 'master') }}
+        # Excluded emulated builds on PRs
+        exclude:
+          - system: aarch64-linux
+            isMain: false
+          - system: x86_64-darwin
+            isMain: false
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
