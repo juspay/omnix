@@ -31,11 +31,6 @@ pub struct NixTemplate {
 impl Template {
     // Scaffold the [Template] at the given path.
     pub async fn scaffold_at(&self, out_dir: &Path) -> anyhow::Result<()> {
-        // Make sure that the directory does not already exist. We don't risk mutating accidentally incorrect location!
-        if out_dir.exists() {
-            anyhow::bail!("Output directory already exists: {}", out_dir.display());
-        }
-
         // Recursively copy the self.template.path to the output directory
         omnix_common::fs::copy_dir_all(&self.template.path, out_dir)
             .await
