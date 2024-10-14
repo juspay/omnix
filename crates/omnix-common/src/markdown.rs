@@ -1,4 +1,5 @@
 //! Markdown rendering using `mdcat`
+use lazy_static::lazy_static;
 use pulldown_cmark::{Options, Parser};
 use pulldown_cmark_mdcat::{
     resources::FileResourceHandler, Environment, Settings, TerminalProgram, TerminalSize, Theme,
@@ -6,21 +7,22 @@ use pulldown_cmark_mdcat::{
 use std::path::Path;
 use syntect::parsing::SyntaxSet;
 
+lazy_static! {
+    static ref SYNTAX_SET: SyntaxSet = SyntaxSet::load_defaults_newlines();
+
+    /// Global settings for rendering markdown
+    pub static ref SETTINGS: Settings<'static> = Settings {
+        terminal_capabilities: TerminalProgram::detect().capabilities(),
+        terminal_size: TerminalSize::from_terminal().unwrap_or_default(),
+        theme: Theme::default(),
+        syntax_set: &SYNTAX_SET,
+    };
+}
+
 /// Print Markdown using `mdcat` to STDERR
 pub async fn print_markdown(base_dir: &Path, s: &str) -> anyhow::Result<()> {
-    // Create a new environment for rendering
     let env = Environment::for_local_directory(&base_dir)?;
-
-    // Create default settings
-    let settings = Settings {
-        terminal_capabilities: TerminalProgram::detect().capabilities(),
-        terminal_size: TerminalSize::default(),
-        theme: Theme::default(),
-        syntax_set: &SyntaxSet::default(),
-    };
-
     let handler = FileResourceHandler::new(200000);
-
     let parser = Parser::new_ext(
         s,
         Options::ENABLE_TASKLISTS
@@ -29,8 +31,7 @@ pub async fn print_markdown(base_dir: &Path, s: &str) -> anyhow::Result<()> {
             | Options::ENABLE_GFM,
     );
 
-    let mut sink = std::io::stderr();
-    pulldown_cmark_mdcat::push_tty(&settings, &env, &handler, &mut sink, parser)?;
+    pulldown_cmark_mdcat::push_tty(&SETTINGS, &env, &handler, &mut std::io::stderr(), parser)?;
 
     Ok(())
 }

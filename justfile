@@ -14,6 +14,9 @@ alias f := fmt
 watch *ARGS:
     bacon --job run -- -- {{ ARGS }}
 
+run *ARGS:
+    cargo run -p omnix-cli {{ ARGS }}
+
 alias w := watch
 
 # Run CI locally

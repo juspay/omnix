@@ -2,10 +2,10 @@
 authors = ["Sridhar Ratnakumar <srid@srid.ca>"]
 edition = "2021"
 # If you change the name here, you must also do it in flake.nix (and run `cargo generate-lockfile` afterwards)
-name = "omnix-init"
+name = "omnix-hack"
 version = "0.1.0"
 repository = "https://github.com/juspay/omnix"
-description = "Enriched Nix flake templates"
+description = "Implementation for the `om hack` command"
 license = "Apache-2.0"
 
 [lib]
@@ -15,17 +15,11 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 anyhow = { workspace = true }
-assert_fs = "1"
-assert_matches = "1.5"
-colored = { workspace = true }
-console = { workspace = true }
-globset = { workspace = true }
-inquire = { workspace = true }
-itertools = { workspace = true }
 lazy_static = { workspace = true }
 nix_rs = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
+syntect = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }

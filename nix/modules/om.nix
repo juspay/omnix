@@ -67,6 +67,35 @@
           # min_disk_space = "2T";
         };
       };
+      hack.default = {
+        # TODO: This is not implemented yet.
+        cache.cachix = {
+          enable = true;
+          name = "om";
+          # authToken = "xxx";
+        };
+        readme = ''
+          🍾 Welcome to the **omnix** project
+
+          OM_SHELL
+
+          OM_IDE
+
+          ## Running inside devShell
+
+          ```sh-session
+          just watch <args>
+          ```
+
+          ## Running through Nix
+          ```sh-session
+          nix --accept-flake-config run github:juspay/omnix
+          ```
+
+          ## Read more
+          For details, see [README.md](README.md)
+        '';
+      };
     };
   };
 }
