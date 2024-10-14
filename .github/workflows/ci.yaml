@@ -27,7 +27,7 @@ jobs:
       matrix:
         system: [x86_64-linux, aarch64-linux, aarch64-darwin, x86_64-darwin]
         isMain:
-          - ${{ contains(github.ref, 'master') }}
+          - ${{ contains(github.ref, 'main') }}
         # Excluded emulated builds on PRs
         exclude:
           - system: aarch64-linux
