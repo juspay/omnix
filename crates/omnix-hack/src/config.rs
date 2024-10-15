@@ -5,9 +5,9 @@ use omnix_common::config::OmConfig;
 
 use crate::readme::Readme;
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Default)]
 pub struct HackConfig {
-    pub cache: CacheConfig,
+    pub cache: Option<CacheConfig>,
     pub readme: Readme,
 }
 
@@ -18,8 +18,6 @@ pub struct CacheConfig {
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct CachixConfig {
-    /// If enabled, configure environment to use the cache.
-    pub enable: bool,
     /// Name of the cachix cache (`https://<name>.cachix.org`)
     pub name: String,
     /// The read-only auth token to use if this is a private cache
@@ -33,8 +31,7 @@ impl HackConfig {
         let v = OmConfig::<Self>::from_flake_url(NixCmd::get().await, url, &["om.hack"])
             .await?
             .config;
-        v.get("default")
-            .cloned()
-            .ok_or_else(|| anyhow::anyhow!("Missing key default for om.hack"))
+        let config = v.get("default").cloned().unwrap_or_default();
+        Ok(config)
     }
 }
