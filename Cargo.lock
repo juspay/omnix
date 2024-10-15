@@ -1671,7 +1671,6 @@ dependencies = [
  "thiserror",
  "tokio",
  "tracing",
- "tracing-subscriber",
  "url",
  "which",
 ]
@@ -1909,6 +1908,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "lazy_static",
+ "nix_health",
  "nix_rs",
  "omnix-common",
  "serde",
@@ -1917,6 +1917,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]

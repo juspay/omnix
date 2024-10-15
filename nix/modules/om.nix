@@ -70,7 +70,6 @@
       hack.default = {
         # TODO: This is not implemented yet.
         cache.cachix = {
-          enable = true;
           name = "om";
           # authToken = "xxx";
         };

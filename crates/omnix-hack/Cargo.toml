@@ -23,4 +23,6 @@ syntect = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
 omnix-common = { workspace = true }
+nix_health = { workspace = true }
