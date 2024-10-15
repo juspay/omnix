@@ -81,13 +81,15 @@
 
           OM_IDE
 
-          ## Running inside devShell
+          ## Running `omnix` inside devShell
+
+          This will run `cargo watch` and run the resultant program, and then restart the same as you modify the Rust sources:
 
           ```sh-session
           just watch <args>
           ```
 
-          ## Running through Nix
+          ## Running `omnix` through Nix
           ```sh-session
           nix --accept-flake-config run github:juspay/omnix
           ```
