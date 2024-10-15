@@ -74,7 +74,7 @@ static NIXCMD: OnceCell<NixCmd> = OnceCell::const_new();
 /// rest of the instrumentation parameters.
 #[instrument(name = "command")]
 pub fn trace_cmd(cmd: &tokio::process::Command) {
-    trace_cmd_with("🐚", cmd);
+    trace_cmd_with("〕", cmd);
 }
 
 /// Like [trace_cmd] but with a custom icon
