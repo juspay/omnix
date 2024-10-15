@@ -20,7 +20,7 @@ pub struct CacheConfig {
 pub struct CachixConfig {
     /// If enabled, configure environment to use the cache.
     pub enable: bool,
-    /// Name of the cachix cache (https://<name>.cachix.org)
+    /// Name of the cachix cache (`https://<name>.cachix.org`)
     pub name: String,
     /// The read-only auth token to use if this is a private cache
     ///
