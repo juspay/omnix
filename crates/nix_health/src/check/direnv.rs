@@ -103,7 +103,7 @@ fn allowed_check(
         .map(|status| status.state.is_allowed());
     Check {
         title: "Direnv allowed".to_string(),
-        info: format!("Local flake: {:?} (has .envrc and is allowed)", local_flake),
+        info: format!("Local flake: {:?} (has .envrc)", local_flake),
         result: match direnv_allowed {
             Ok(true) => CheckResult::Green,
             Ok(false) => CheckResult::Red {

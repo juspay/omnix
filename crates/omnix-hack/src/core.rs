@@ -14,7 +14,7 @@ pub async fn hack_on() -> anyhow::Result<()> {
     // Run `om health` foremost
     // TODO: Run with --quiet, possibly using `tracing::subscriber::with_default` (it doesn't work for some reason)
     let checks = nix_health::run_checks_with(Some(here_flake)).await?;
-    let exit_code = nix_health::NixHealth::print_report_returning_exit_code(&checks);
+    let exit_code = nix_health::NixHealth::print_report_returning_exit_code(&checks).await?;
     if exit_code != 0 {
         anyhow::bail!("Health checks failed");
     }

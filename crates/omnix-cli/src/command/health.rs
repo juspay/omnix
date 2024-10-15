@@ -22,7 +22,7 @@ impl HealthCommand {
             return Ok(());
         }
         let checks = run_checks_with(self.flake_url.clone()).await?;
-        let exit_code = NixHealth::print_report_returning_exit_code(&checks);
+        let exit_code = NixHealth::print_report_returning_exit_code(&checks).await?;
         if exit_code != 0 {
             std::process::exit(exit_code);
         }
