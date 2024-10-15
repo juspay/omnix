@@ -7,6 +7,8 @@ pub enum Command {
 
     Init(super::init::InitCommand),
 
+    Hack(super::hack::HackCommand),
+
     CI(super::ci::CICommand),
 
     Health(super::health::HealthCommand),
@@ -24,6 +26,7 @@ impl Command {
         match self {
             Command::Show(cmd) => cmd.run().await,
             Command::Init(cmd) => cmd.run().await,
+            Command::Hack(cmd) => cmd.run().await,
             Command::CI(cmd) => cmd.run(verbosity).await,
             Command::Health(cmd) => cmd.run().await,
             Command::Completion(cmd) => cmd.run(),

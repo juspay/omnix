@@ -1871,6 +1871,7 @@ dependencies = [
  "nix_rs",
  "nixci",
  "omnix-common",
+ "omnix-hack",
  "omnix-init",
  "predicates",
  "regex",
@@ -1900,6 +1901,22 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "which",
+]
+
+[[package]]
+name = "omnix-hack"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "lazy_static",
+ "nix_rs",
+ "omnix-common",
+ "serde",
+ "serde_json",
+ "syntect",
+ "thiserror",
+ "tokio",
+ "tracing",
 ]
 
 [[package]]
