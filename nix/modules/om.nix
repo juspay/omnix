@@ -61,11 +61,6 @@
         nix-version.min-required = "2.16.0";
         caches.required = [ "https://om.cachix.org" ];
         direnv.required = true;
-        system = {
-          # required = true;
-          min_ram = "16G";
-          # min_disk_space = "2T";
-        };
       };
       hack.default = {
         # TODO: This is not implemented yet.

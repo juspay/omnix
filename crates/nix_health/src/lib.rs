@@ -33,7 +33,6 @@ pub struct NixHealth {
     pub flake_enabled: FlakeEnabled,
     pub max_jobs: MaxJobs,
     pub rosetta: Rosetta,
-    pub system: check::system::System,
     pub trusted_users: TrustedUsers,
     pub caches: Caches,
     pub direnv: Direnv,
@@ -50,7 +49,6 @@ impl<'a> IntoIterator for &'a NixHealth {
             &self.flake_enabled,
             &self.max_jobs,
             &self.rosetta,
-            &self.system,
             &self.trusted_users,
             &self.caches,
             &self.direnv,
@@ -146,6 +144,8 @@ pub async fn run_checks_with(flake_url: Option<FlakeUrl>) -> anyhow::Result<Vec<
     if nix_info.nix_env.os != OS::NixOS {
         tracing::info!("   - Nix installer: {}", nix_info.nix_env.installer);
     }
+    tracing::info!("   - RAM: {:?}", nix_info.nix_env.total_memory);
+    tracing::info!("   - Disk Space: {:?}", nix_info.nix_env.total_disk_space);
 
     let checks = health.run_checks(nix_info, flake_url.clone());
     Ok(checks)
