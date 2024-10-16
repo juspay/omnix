@@ -10,7 +10,7 @@
 - `om health`
   - Display Nix installer used (supports DetSys installer)
   - Display information in Markdown
-  - Remove 'system' checks (not very relevant to Nix)
+  - Remove RAM/disk space checks, moving them to "information" section
 - `om ci`
   - Support for remote builds over SSH (via `--on` option)
   - Support for CI steps
