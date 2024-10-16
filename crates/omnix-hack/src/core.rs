@@ -5,8 +5,8 @@ use omnix_common::markdown::print_markdown;
 
 use crate::config::HackConfig;
 
-pub async fn hack_on() -> anyhow::Result<()> {
-    let here_flake: FlakeUrl = Into::<FlakeUrl>::into(Path::new("."));
+pub async fn hack_on(dir: &Path) -> anyhow::Result<()> {
+    let here_flake: FlakeUrl = Into::<FlakeUrl>::into(dir);
     let cfg = HackConfig::from_flake(&here_flake).await?;
 
     // TODO: cachix check
@@ -19,9 +19,8 @@ pub async fn hack_on() -> anyhow::Result<()> {
         anyhow::bail!("Health checks failed");
     }
 
-    let pwd = std::env::current_dir()?;
     eprintln!();
-    print_markdown(&pwd, &cfg.readme.get_markdown()).await?;
+    print_markdown(dir, &cfg.readme.get_markdown()).await?;
 
     Ok(())
 }
