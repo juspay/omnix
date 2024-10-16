@@ -144,6 +144,8 @@ pub async fn run_checks_with(flake_url: Option<FlakeUrl>) -> anyhow::Result<Vec<
     if nix_info.nix_env.os != OS::NixOS {
         tracing::info!("   - Nix installer: {}", nix_info.nix_env.installer);
     }
+    tracing::info!("   - RAM: {:?}", nix_info.nix_env.total_memory);
+    tracing::info!("   - Disk Space: {:?}", nix_info.nix_env.total_disk_space);
 
     let checks = health.run_checks(nix_info, flake_url.clone());
     Ok(checks)
