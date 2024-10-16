@@ -1,3 +1,4 @@
+#![feature(async_closure)]
 //! Health checks for the user's Nix install
 
 pub mod check;
@@ -12,7 +13,7 @@ use nix_rs::env::OS;
 use nix_rs::flake::url::FlakeUrl;
 use nix_rs::{command::NixCmd, info::NixInfo};
 use omnix_common::config::{OmConfig, OmConfigError};
-use omnix_common::markdown::print_markdown;
+use omnix_common::markdown::render_markdown;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
 use traits::Check;
@@ -85,27 +86,30 @@ impl NixHealth {
 
     pub async fn print_report_returning_exit_code(checks: &[traits::Check]) -> anyhow::Result<i32> {
         let mut res = AllChecksResult::new();
-        let pwd = std::env::current_dir().unwrap(); // FIXME
+        let pwd = std::env::current_dir().unwrap(); // FIXME: avoid unwrap
+        let md = async |s: &str| render_markdown(&pwd, s).await;
         for check in checks {
             match &check.result {
                 traits::CheckResult::Green => {
                     tracing::info!("✅ {}", check.title.green().bold());
-                    print_markdown(&pwd, &format!("{}", check.info.dimmed())).await?;
+                    tracing::info!("{}", md(&check.info).await?.dimmed());
                 }
                 traits::CheckResult::Red { msg, suggestion } => {
                     res.register_failure(check.required);
                     if check.required {
-                        print_markdown(&pwd, &format!("❌ {}", check.title.red().bold())).await?;
+                        tracing::error!("❌ {}", md(&check.title).await?.red().bold());
                     } else {
-                        print_markdown(&pwd, &format!("🟧 {}", check.title.yellow().bold()))
-                            .await?;
+                        tracing::warn!("🟧 {}", md(&check.title).await?.yellow().bold());
                     }
-                    print_markdown(&pwd, &format!("{}", check.info.dimmed())).await?;
-                    print_markdown(
-                        &pwd,
-                        &format!("**Problem**: {}\\\n**Fix**:     {}\n", msg, suggestion),
-                    )
-                    .await?;
+                    tracing::info!("{}", md(&check.info).await?.dimmed());
+                    tracing::error!(
+                        "{}",
+                        md(&format!(
+                            "**Problem**: {}\\\n**Fix**:     {}\n",
+                            msg, suggestion
+                        ))
+                        .await?
+                    );
                 }
             }
         }
