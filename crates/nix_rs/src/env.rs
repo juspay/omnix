@@ -159,7 +159,7 @@ impl Display for OS {
                 arch: _,
             } => {
                 if *nix_darwin {
-                    write!(f, "nix-darwin")
+                    write!(f, "macOS (nix-darwin)")
                 } else {
                     write!(f, "macOS")
                 }
