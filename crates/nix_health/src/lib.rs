@@ -12,6 +12,7 @@ use nix_rs::env::OS;
 use nix_rs::flake::url::FlakeUrl;
 use nix_rs::{command::NixCmd, info::NixInfo};
 use omnix_common::config::{OmConfig, OmConfigError};
+use omnix_common::markdown::print_markdown;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
 use traits::Check;
@@ -82,40 +83,34 @@ impl NixHealth {
             .collect()
     }
 
-    pub fn print_report_returning_exit_code(checks: &[traits::Check]) -> i32 {
+    pub async fn print_report_returning_exit_code(checks: &[traits::Check]) -> anyhow::Result<i32> {
         let mut res = AllChecksResult::new();
+        let pwd = std::env::current_dir().unwrap(); // FIXME
         for check in checks {
             match &check.result {
                 traits::CheckResult::Green => {
-                    tracing::info!(
-                        "✅ {}\n   {}",
-                        check.title.green().bold(),
-                        check.info.blue()
-                    );
+                    tracing::info!("✅ {}", check.title.green().bold());
+                    print_markdown(&pwd, &format!("{}", check.info.dimmed())).await?;
                 }
                 traits::CheckResult::Red { msg, suggestion } => {
                     res.register_failure(check.required);
                     if check.required {
-                        tracing::error!(
-                            "❌ {}\n    {}\n   {}\n   {}",
-                            check.title.red().bold(),
-                            check.info.blue(),
-                            msg.yellow(),
-                            suggestion
-                        );
+                        print_markdown(&pwd, &format!("❌ {}", check.title.red().bold())).await?;
                     } else {
-                        tracing::warn!(
-                            "🟧 {}\n   {}\n   {}\n   {}",
-                            check.title.yellow().bold(),
-                            check.info.blue(),
-                            msg.yellow(),
-                            suggestion
-                        );
+                        print_markdown(&pwd, &format!("🟧 {}", check.title.yellow().bold()))
+                            .await?;
                     }
+                    print_markdown(&pwd, &format!("{}", check.info.dimmed())).await?;
+                    print_markdown(
+                        &pwd,
+                        &format!("**Problem**: {}\\\n**Fix**:     {}\n", msg, suggestion),
+                    )
+                    .await?;
                 }
             }
         }
-        res.report()
+        let code = res.report();
+        Ok(code)
     }
 
     pub fn schema() -> Result<String, serde_json::Error> {

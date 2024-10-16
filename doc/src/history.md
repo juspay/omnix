@@ -9,6 +9,7 @@
   - Initial working version of `om init` command
 - `om health`
   - Display Nix installer used (supports DetSys installer)
+  - Display information in Markdown
 - `om ci`
   - Support for remote builds over SSH (via `--on` option)
   - Support for CI steps
