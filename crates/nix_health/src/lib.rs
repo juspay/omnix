@@ -29,13 +29,13 @@ use self::check::{
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
 #[serde(default, rename_all = "kebab-case")]
 pub struct NixHealth {
-    pub max_jobs: MaxJobs,
-    pub caches: Caches,
-    pub flake_enabled: FlakeEnabled,
     pub nix_version: MinNixVersion,
+    pub flake_enabled: FlakeEnabled,
+    pub max_jobs: MaxJobs,
+    pub rosetta: Rosetta,
     pub system: check::system::System,
     pub trusted_users: TrustedUsers,
-    pub rosetta: Rosetta,
+    pub caches: Caches,
     pub direnv: Direnv,
 }
 
@@ -46,13 +46,13 @@ impl<'a> IntoIterator for &'a NixHealth {
     /// Return an iterator to iterate on the fields of [NixHealth]
     fn into_iter(self) -> Self::IntoIter {
         let items: Vec<Self::Item> = vec![
-            &self.rosetta,
             &self.nix_version,
             &self.flake_enabled,
-            &self.system,
             &self.max_jobs,
-            &self.caches,
+            &self.rosetta,
+            &self.system,
             &self.trusted_users,
+            &self.caches,
             &self.direnv,
         ];
         items.into_iter()
