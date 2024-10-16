@@ -96,20 +96,20 @@ impl NixHealth {
                 }
                 traits::CheckResult::Red { msg, suggestion } => {
                     res.register_failure(check.required);
+                    let solution = md(&format!(
+                        "**Problem**: {}\\\n**Fix**:     {}\n",
+                        msg, suggestion
+                    ))
+                    .await?;
                     if check.required {
                         tracing::error!("❌ {}", md(&check.title).await?.red().bold());
+                        tracing::error!("{}", md(&check.info).await?.dimmed());
+                        tracing::error!("{}", solution);
                     } else {
                         tracing::warn!("🟧 {}", md(&check.title).await?.yellow().bold());
+                        tracing::warn!("{}", md(&check.info).await?.dimmed());
+                        tracing::warn!("{}", solution);
                     }
-                    tracing::info!("{}", md(&check.info).await?.dimmed());
-                    tracing::error!(
-                        "{}",
-                        md(&format!(
-                            "**Problem**: {}\\\n**Fix**:     {}\n",
-                            msg, suggestion
-                        ))
-                        .await?
-                    );
                 }
             }
         }
