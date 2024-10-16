@@ -86,7 +86,7 @@ impl NixHealth {
 
     pub async fn print_report_returning_exit_code(checks: &[traits::Check]) -> anyhow::Result<i32> {
         let mut res = AllChecksResult::new();
-        let pwd = std::env::current_dir().unwrap(); // FIXME: avoid unwrap
+        let pwd = std::env::current_dir()?;
         let md = async |s: &str| render_markdown(&pwd, s).await;
         for check in checks {
             match &check.result {
