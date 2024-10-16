@@ -56,7 +56,7 @@ fn install_check(
     direnv_install_result: &Result<direnv::DirenvInstall, direnv::DirenvInstallError>,
     required: bool,
 ) -> Check {
-    let setup_url = "https://nixos.asia/en/direnv#setup";
+    let setup_url = "https://github.com/juspay/nixos-unified-template#nixos-unified-template";
     Check {
         title: "Direnv installation".to_string(),
         info: format!(
@@ -79,7 +79,7 @@ fn install_check(
             },
             Err(e) => CheckResult::Red {
                 msg: format!("Unable to locate direnv ({})", e),
-                suggestion: format!("Install direnv <{}>", setup_url),
+                suggestion: format!("Install direnv & nix-direnv. See <{}>", setup_url),
             },
         },
         required,
@@ -97,7 +97,10 @@ fn allowed_check(
     local_flake: &std::path::Path,
     required: bool,
 ) -> Check {
-    let suggestion = format!("Run `direnv allow` under `{}`", local_flake.display());
+    let suggestion = format!(
+        "Run `direnv allow` under `{}` (this activates the Nix devshell automatically)",
+        local_flake.display()
+    );
     let direnv_allowed = direnv_install
         .status(local_flake)
         .map(|status| status.state.is_allowed());
