@@ -1,0 +1,10 @@
+# -*- mode: sh -*-
+# shellcheck shell=bash
+
+use_omnix() {
+  # TODO: Switch to nixpkgs version once we upstream
+  # Because, the user may not be a trusted-user leading to compilation!
+  nix --accept-flake-config run github:juspay/omnix health $*
+
+  use flake $*
+}
