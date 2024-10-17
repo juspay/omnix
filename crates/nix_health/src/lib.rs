@@ -132,23 +132,45 @@ pub async fn run_checks_with(flake_url: Option<FlakeUrl>) -> anyhow::Result<Vec<
         None => Ok(NixHealth::default()),
     }?;
 
-    tracing::info!(
-        "🩺️ Checking the health of your Nix setup{}",
-        match flake_url.as_ref() {
-            Some(flake_url) => format!(" using config from flake '{}'", flake_url),
-            None => "".to_string(),
-        },
-    );
-    tracing::info!("   - System: {}", nix_info.nix_config.system.value);
-    tracing::info!("   - OS: {}", nix_info.nix_env.os);
-    if nix_info.nix_env.os != OS::NixOS {
-        tracing::info!("   - Nix installer: {}", nix_info.nix_env.installer);
-    }
-    tracing::info!("   - RAM: {:?}", nix_info.nix_env.total_memory);
-    tracing::info!("   - Disk Space: {:?}", nix_info.nix_env.total_disk_space);
+    tracing::info!("🩺️ Checking the health of your Nix setup");
 
-    let checks = health.run_checks(nix_info, flake_url.clone());
+    print_info_banner(flake_url.as_ref(), nix_info).await?;
+
+    let checks = health.run_checks(nix_info, flake_url);
     Ok(checks)
+}
+
+async fn print_info_banner(flake_url: Option<&FlakeUrl>, nix_info: &NixInfo) -> anyhow::Result<()> {
+    let pwd = std::env::current_dir()?;
+    let md = async |s: &str| render_markdown(&pwd, s).await;
+
+    let mut table = String::from("| Property | Value |\n|----------|-------|\n");
+    table.push_str(&format!(
+        "| Flake | {} |\n",
+        match flake_url {
+            Some(url) => url.to_string(),
+            None => "N/A".to_string(),
+        }
+    ));
+    table.push_str(&format!(
+        "| System | {} |\n",
+        nix_info.nix_config.system.value
+    ));
+    table.push_str(&format!("| OS | {} |\n", nix_info.nix_env.os));
+    if nix_info.nix_env.os != OS::NixOS {
+        table.push_str(&format!(
+            "| Nix installer | {} |\n",
+            nix_info.nix_env.installer
+        ));
+    }
+    table.push_str(&format!("| RAM | {:?} |\n", nix_info.nix_env.total_memory));
+    table.push_str(&format!(
+        "| Disk Space | {:?} |",
+        nix_info.nix_env.total_disk_space
+    ));
+
+    tracing::info!("{}", md(&table).await?);
+    Ok(())
 }
 
 /// A convenient type to aggregate check failures, and summary report at end.
