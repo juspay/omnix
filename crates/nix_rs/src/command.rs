@@ -124,7 +124,7 @@ impl NixCmd {
         cmd
     }
 
-    /// Suppress logs related to `override-input` usage.
+    /// Suppress logs related to `override-input` usage by reducing `nix` command's verbosity
     pub fn mute_override_input_logs(&mut self) {
         // Yes, this requires *double* use of `--quiet`. Also, `-qq` won't work until https://github.com/NixOS/nix/pull/11652
         self.extra_args
