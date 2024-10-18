@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- `om {ci,show}`: Suppress logs from `--override-input` usage
+
 ### Enhancements
 
 - `om hack`: New command

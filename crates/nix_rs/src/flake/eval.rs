@@ -20,8 +20,6 @@ where
             cmd.args(["eval", "--json"]);
             opts.use_in_command(cmd);
             cmd.arg(url.to_string());
-            // Avoid Nix from dumping logs related to `--override-input` use. Yes, this requires *double* use of `--quiet`. Also, `-qq` won't work until https://github.com/NixOS/nix/pull/11652
-            cmd.args(["--quiet", "--quiet"]);
         })
         .await?;
     let v = serde_json::from_slice::<T>(&stdout)?;
