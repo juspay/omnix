@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- `om ci`: Suppress logs from `--override-input` usage
+- `om {ci,show}`: Suppress logs from `--override-input` usage
 
 ### Enhancements
 
