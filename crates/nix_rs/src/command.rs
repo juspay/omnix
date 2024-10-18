@@ -41,7 +41,7 @@ pub struct NixCmd {
     pub extra_access_tokens: Vec<String>,
 
     /// Arguments to pass verbatim to the Nix command
-    #[cfg_attr(feature = "clap", arg(long))]
+    #[cfg_attr(feature = "clap", arg(last = true))]
     pub extra_args: Vec<String>,
 
     /// Consider all previously downloaded files out-of-date.
@@ -219,6 +219,9 @@ impl NixCmd {
             args.push("--extra-access-tokens".to_string());
             args.push(self.extra_access_tokens.join(" "));
         }
+
+        args.extend(self.extra_args.clone());
+
         if self.refresh {
             args.push("--refresh".to_string());
         }
