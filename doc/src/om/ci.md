@@ -78,7 +78,10 @@ jobs:
     steps:
      - uses: actions/checkout@v4
      - id: set-matrix
-       run: echo "matrix=$(om ci gh-matrix --systems=x86_64-linux,aarch64-darwin | jq -c .)" >> $GITHUB_OUTPUT
+       run: |
+         set -euxo pipefail
+         MATRIX="$(om ci gh-matrix --systems=x86_64-linux,aarch64-darwin | jq -c .)"
+         echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
   nix:
     runs-on: ${{ matrix.system }}
     needs: configure
