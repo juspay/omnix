@@ -17,8 +17,11 @@ pub struct CICommand {
 impl CICommand {
     /// Run this sub-command
     pub async fn run(&self, verbosity: Verbosity<InfoLevel>) -> anyhow::Result<()> {
+        let mut nixcmd = self.nixcmd.clone();
+        nixcmd.mute_override_input_logs();
+
         self.command()
-            .run(&self.nixcmd, verbosity.log_level() > Some(Level::Info))
+            .run(&nixcmd, verbosity.log_level() > Some(Level::Info))
             .await?;
         Ok(())
     }

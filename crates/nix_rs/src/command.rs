@@ -40,6 +40,10 @@ pub struct NixCmd {
     #[cfg_attr(feature = "clap", arg(long))]
     pub extra_access_tokens: Vec<String>,
 
+    /// Arguments to pass verbatim to the Nix command
+    #[cfg_attr(feature = "clap", arg(long))]
+    pub extra_args: Vec<String>,
+
     /// Consider all previously downloaded files out-of-date.
     #[cfg_attr(feature = "clap", arg(long))]
     pub refresh: bool,
@@ -57,6 +61,7 @@ impl Default for NixCmd {
         Self {
             extra_experimental_features: vec![],
             extra_access_tokens: vec![],
+            extra_args: vec![],
             refresh: false,
             command: None,
         }
@@ -117,6 +122,13 @@ impl NixCmd {
         cmd.kill_on_drop(true);
         cmd.args(self.args());
         cmd
+    }
+
+    /// Suppress logs related to `override-input` usage.
+    pub fn mute_override_input_logs(&mut self) {
+        // Yes, this requires *double* use of `--quiet`. Also, `-qq` won't work until https://github.com/NixOS/nix/pull/11652
+        self.extra_args
+            .extend(vec!["--quiet".to_string(), "--quiet".to_string()]);
     }
 
     /// Run nix with given args, interpreting stdout as JSON, parsing into `T`
