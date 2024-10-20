@@ -6,7 +6,8 @@ use omnix_common::markdown::print_markdown;
 use crate::config::HackConfig;
 
 pub async fn hack_on(dir: &Path) -> anyhow::Result<()> {
-    let here_flake: FlakeUrl = Into::<FlakeUrl>::into(dir);
+    let dir = dir.canonicalize()?;
+    let here_flake: FlakeUrl = Into::<FlakeUrl>::into(dir.as_ref());
     let cfg = HackConfig::from_flake(&here_flake).await?;
 
     // TODO: cachix check
@@ -20,7 +21,7 @@ pub async fn hack_on(dir: &Path) -> anyhow::Result<()> {
     }
 
     eprintln!();
-    print_markdown(dir, &cfg.readme.get_markdown()).await?;
+    print_markdown(&dir, &cfg.readme.get_markdown()).await?;
 
     Ok(())
 }
