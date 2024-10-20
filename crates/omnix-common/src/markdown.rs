@@ -1,4 +1,5 @@
 //! Markdown rendering using `mdcat`
+use anyhow::Context;
 use lazy_static::lazy_static;
 use pulldown_cmark::{Options, Parser};
 use pulldown_cmark_mdcat::{
@@ -21,13 +22,17 @@ lazy_static! {
 
 /// Print Markdown using `mdcat` to STDERR
 pub async fn print_markdown(base_dir: &Path, s: &str) -> anyhow::Result<()> {
-    print_markdown_to(base_dir, &mut std::io::stderr(), s).await
+    print_markdown_to(base_dir, &mut std::io::stderr(), s)
+        .await
+        .with_context(|| "Cannot print markdown")
 }
 
 /// Render Markdown into a string to be printed to terminal
 pub async fn render_markdown(base_dir: &Path, s: &str) -> anyhow::Result<String> {
     let mut w = Vec::new();
-    print_markdown_to(base_dir, &mut w, s).await?;
+    print_markdown_to(base_dir, &mut w, s)
+        .await
+        .with_context(|| "Cannot render markdown")?;
     let s = String::from_utf8(w)?;
     // A trim is needed to remove unnecessary newlines at end (which can impact for single-line renders)
     Ok(s.trim().to_string())
