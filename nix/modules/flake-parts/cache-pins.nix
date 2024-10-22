@@ -11,6 +11,7 @@
       # available. The rest may be be GC'ed.
       pathsToCache = {
         cli = self'.packages.default;
+        cachix = self'.packages.cachix;
       };
     };
   };
