@@ -10,8 +10,8 @@ use crate::{config::subflakes::SubflakesConfig, flake_ref::FlakeRef, github};
 pub struct GHMatrixCommand {
     /// Flake URL or github URL
     ///
-    /// A specific nixci configuration can be specified
-    /// using '#': e.g. `nixci .#extra-tests`
+    /// A specific omnix-ci configuration can be specified
+    /// using '#': e.g. `om ci run .#extra-tests`
     #[arg(default_value = ".")]
     pub flake_ref: FlakeRef,
 

@@ -42,7 +42,7 @@ in
       DEVOUR_FLAKE = inputs.devour-flake;
 
       # This value is set in omnix-cli/crate.nix.
-      # We use a dummy value here, however, to avoid unnecessarily rebuilding nixci in CI
+      # We use a dummy value here, however, to avoid unnecessarily rebuilding omnix-ci in CI
       OMNIX_SOURCE = pkgs.hello;
     };
   };

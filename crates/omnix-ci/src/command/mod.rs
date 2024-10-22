@@ -1,4 +1,4 @@
-//! CLI commands for nixci
+//! CLI commands for omnix-ci
 pub mod core;
 pub mod gh_matrix;
 pub mod run;

@@ -7,7 +7,7 @@ members = [
   "crates/omnix-init",
   "crates/omnix-hack",
   "crates/nix_rs",
-  "crates/nixci",
+  "crates/omnix-ci",
   "crates/omnix-health",
 ]
 
@@ -35,7 +35,7 @@ is_proc_translated = { version = "0.1.1" }
 lazy_static = "1.4.0"
 pulldown-cmark-mdcat = "2.5.0"
 pulldown-cmark = { version = "0.12.1", default-features = false }
-nixci = { version = "1.1.0", path = "./crates/nixci" }
+omnix-ci = { version = "1.1.0", path = "./crates/omnix-ci" }
 omnix-health = { version = "1.0.0", path = "./crates/omnix-health" }
 nix_rs = { version = "1.0.0", path = "./crates/nix_rs" }
 nonempty = { version = "0.10.0", features = ["serialize"] }

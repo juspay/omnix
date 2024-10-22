@@ -1,4 +1,4 @@
-//! nixci: CI for Nix projects
+//! omnix-ci: CI for Nix projects
 #![warn(missing_docs)]
 #![feature(exit_status_error)]
 #![feature(let_chains)]

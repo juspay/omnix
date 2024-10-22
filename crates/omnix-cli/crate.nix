@@ -42,7 +42,7 @@ in
         INSPECT_FLAKE
         NIX_SYSTEMS
         ;
-      inherit (rust-project.crates."nixci".crane.args)
+      inherit (rust-project.crates."omnix-ci".crane.args)
         DEVOUR_FLAKE
         ;
       inherit (rust-project.crates."omnix-init".crane.args)

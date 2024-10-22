@@ -1675,33 +1675,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "nixci"
-version = "1.1.0"
-dependencies = [
- "anyhow",
- "clap",
- "colored",
- "futures-lite",
- "lazy_static",
- "nix_rs",
- "nonempty",
- "omnix-common",
- "omnix-health",
- "reqwest",
- "serde",
- "serde_json",
- "shell-words",
- "tempfile",
- "thiserror",
- "tokio",
- "tracing",
- "tracing-subscriber",
- "try-guard",
- "url",
- "urlencoding",
-]
-
-[[package]]
 name = "nom"
 version = "7.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1827,6 +1800,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "omnix-ci"
+version = "1.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "colored",
+ "futures-lite",
+ "lazy_static",
+ "nix_rs",
+ "nonempty",
+ "omnix-common",
+ "omnix-health",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "shell-words",
+ "tempfile",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "try-guard",
+ "url",
+ "urlencoding",
+]
+
+[[package]]
 name = "omnix-cli"
 version = "0.1.0"
 dependencies = [
@@ -1841,7 +1841,7 @@ dependencies = [
  "ctor",
  "human-panic",
  "nix_rs",
- "nixci",
+ "omnix-ci",
  "omnix-common",
  "omnix-hack",
  "omnix-health",

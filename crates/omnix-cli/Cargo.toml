@@ -21,7 +21,7 @@ clap = { workspace = true }
 clap-verbosity-flag = { workspace = true }
 colored = { workspace = true }
 human-panic = { workspace = true }
-nixci = { workspace = true }
+omnix-ci = { workspace = true }
 omnix-health = { workspace = true }
 nix_rs = { workspace = true }
 omnix-common = { workspace = true }

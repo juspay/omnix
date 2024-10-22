@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Crate renamed to `omnix-health`
 - Remove unused `logging` module
 - Display Nix installer used
 

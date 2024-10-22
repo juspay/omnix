@@ -1,4 +1,4 @@
-//! All CI steps available in nixci
+//! All CI steps available
 use clap::Parser;
 use nix_rs::{
     command::NixCmd,
