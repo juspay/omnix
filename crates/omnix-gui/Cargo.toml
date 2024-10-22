@@ -26,7 +26,7 @@ direnv = { workspace = true }
 fermi = { workspace = true }
 http = { workspace = true }
 human-panic = { workspace = true }
-nix_health = { workspace = true }
+omnix-health = { workspace = true }
 nix_rs = { workspace = true }
 omnix-common = { workspace = true }
 regex = { workspace = true }

@@ -4,7 +4,6 @@ use std::{collections::HashMap, path::PathBuf};
 use anyhow::{Context, Result};
 use clap::Parser;
 use colored::Colorize;
-use nix_health::{traits::Checkable, NixHealth};
 use nix_rs::{
     command::NixCmd,
     config::NixConfig,
@@ -14,6 +13,7 @@ use nix_rs::{
     system_list::{SystemsList, SystemsListFlakeRef},
 };
 use omnix_common::config::OmConfig;
+use omnix_health::{traits::Checkable, NixHealth};
 
 use crate::{config::subflakes::SubflakesConfig, flake_ref::FlakeRef, step::core::StepsResult};
 
@@ -153,8 +153,8 @@ impl RunCommand {
 
 /// Check that Nix version is not too old.
 pub async fn check_nix_version(flake_url: &FlakeUrl, nix_info: &NixInfo) -> anyhow::Result<()> {
-    let nix_health = NixHealth::from_flake(flake_url).await?;
-    let checks = nix_health.nix_version.check(nix_info, Some(flake_url));
+    let omnix_health = NixHealth::from_flake(flake_url).await?;
+    let checks = omnix_health.nix_version.check(nix_info, Some(flake_url));
     let exit_code = NixHealth::print_report_returning_exit_code(&checks).await?;
 
     if exit_code != 0 {
