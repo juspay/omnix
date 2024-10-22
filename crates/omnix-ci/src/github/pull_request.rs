@@ -108,7 +108,7 @@ where
     let resp = client
         .get(&url)
         // Github API requires a user agent
-        .header(USER_AGENT, "github.com/srid/nixci")
+        .header(USER_AGENT, "github.com/juspay/omnix")
         .send()
         .await
         .with_context(|| format!("cannot create request: {}", &url))?;
