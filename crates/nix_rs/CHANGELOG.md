@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add `NixCmd::extra_args`
 - **`eval::nix_eval`**
   - Display evaluation progress
   - Decrease logging verbosity

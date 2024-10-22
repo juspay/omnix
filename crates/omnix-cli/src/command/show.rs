@@ -90,10 +90,12 @@ impl Row {
 
 impl ShowCommand {
     pub async fn run(&self) -> anyhow::Result<()> {
-        let nix_cmd = NixCmd::get().await;
+        let mut nix_cmd = NixCmd::get().await.clone();
+        nix_cmd.mute_override_input_logs();
+
         let nix_config = NixConfig::get().await.as_ref()?;
         let system = &nix_config.system.value;
-        let flake = Flake::from_nix(nix_cmd, nix_config, self.flake_url.clone())
+        let flake = Flake::from_nix(&nix_cmd, nix_config, self.flake_url.clone())
             .await
             .with_context(|| "Unable to fetch flake")?;
 
