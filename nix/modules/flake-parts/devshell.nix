@@ -1,7 +1,5 @@
-{ ... }:
-
 let
-  root = ../..;
+  root = ../../..;
 in
 {
   imports = [

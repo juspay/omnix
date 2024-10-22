@@ -33,10 +33,10 @@
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       systems = import inputs.systems;
 
-      # See ./nix/modules/*.nix for the modules that are imported here.
+      # See ./nix/modules/flake-parts/*.nix for the modules that are imported here.
       imports = with builtins;
         map
-          (fn: ./nix/modules/${fn})
-          (attrNames (readDir ./nix/modules));
+          (fn: ./nix/modules/flake-parts/${fn})
+          (attrNames (readDir ./nix/modules/flake-parts));
     };
 }
