@@ -1,4 +1,4 @@
-//! The top-level configuration of nixci, as defined in flake.nix
+//! The top-level configuration of omnix-ci, as defined in flake.nix
 use anyhow::Result;
 use nix_rs::{command::NixCmd, flake::url::FlakeUrl};
 use omnix_common::config::OmConfig;

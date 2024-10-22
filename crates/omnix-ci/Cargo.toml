@@ -2,7 +2,7 @@
 authors = ["Sridhar Ratnakumar <srid@srid.ca>"]
 edition = "2021"
 # If you change the name here, you must also do it in flake.nix (and run `cargo generate-lockfile` afterwards)
-name = "nixci"
+name = "omnix-ci"
 version = "1.1.0"
 license = "AGPL-3.0-only"
 readme = "README.md"

@@ -1,4 +1,4 @@
-//! The nixci commands
+//! The `om ci` subcommands
 use clap::Subcommand;
 use colored::Colorize;
 use nix_rs::command::NixCmd;
@@ -45,7 +45,7 @@ impl Command {
         }
     }
 
-    /// Get the nixci [config::Config] associated with this subcommand
+    /// Get the omnix-ci [config::Config] associated with this subcommand
     async fn get_config(&self, cmd: &NixCmd) -> anyhow::Result<OmConfig<SubflakesConfig>> {
         let url = self.get_flake_ref().to_flake_url().await?;
         let cfg = crate::config::core::ci_config_from_flake_url(cmd, &url).await?;

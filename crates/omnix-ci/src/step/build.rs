@@ -94,7 +94,7 @@ fn subflake_extra_args(subflake: &SubflakeConfig, build_step_args: &BuildStepArg
 pub struct BuildStepArgs {
     /// Print build and runtime dependencies along with out paths
     ///
-    /// By default, `nixci build` prints only the out paths. This option is
+    /// By default, `om ci run` prints only the out paths. This option is
     /// useful to explicitly push all dependencies to a cache.
     #[clap(long, short = 'd')]
     pub print_all_dependencies: bool,
