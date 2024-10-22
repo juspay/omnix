@@ -6,5 +6,6 @@ use_omnix() {
   # Because, the user may not be a trusted-user leading to compilation!
   nix --accept-flake-config run github:juspay/omnix health $*
 
-  use flake $*
+  # Use of --accept-flake-config ensures that configured cache is used to launch the devShell
+  use flake $* --accept-flake-config
 }
