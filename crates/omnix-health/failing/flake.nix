@@ -1,7 +1,7 @@
-# Just a flake.nix to configure nix-health to fail all possible checks 
+# Just a flake.nix to configure nix-health to fail all possible checks
 #
 # Used for testing purposes; run as:
-#   just watch-nix-health ./crates/nix_health/failing/
+#   just watch-nix-health ./crates/omnix-health/failing/
 
 {
   outputs = _: {

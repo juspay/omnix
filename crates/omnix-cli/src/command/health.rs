@@ -1,6 +1,6 @@
 use clap::Parser;
-use nix_health::{run_checks_with, NixHealth};
 use nix_rs::flake::url::FlakeUrl;
+use omnix_health::{run_checks_with, NixHealth};
 
 /// Display the health of your Nix dev environment
 #[derive(Parser, Debug)]

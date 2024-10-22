@@ -3,7 +3,7 @@ let
 in
 {
   imports = [
-    (root + /crates/nix_health/module/flake-module.nix)
+    (root + /crates/omnix-health/module/flake-module.nix)
   ];
 
   perSystem = { config, self', pkgs, ... }: {

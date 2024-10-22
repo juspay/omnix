@@ -1,7 +1,7 @@
 //! Nix health check UI
 
 use dioxus::prelude::*;
-use nix_health::traits::{Check, CheckResult};
+use omnix_health::traits::{Check, CheckResult};
 
 use crate::{app::state::AppState, app::widget::Loader};
 

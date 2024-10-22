@@ -22,7 +22,7 @@ clap = { workspace = true }
 colored = { workspace = true }
 futures-lite = { workspace = true }
 lazy_static = { workspace = true }
-nix_health = { workspace = true }
+omnix-health = { workspace = true }
 nix_rs = { workspace = true, features = ["clap"] }
 nonempty = { workspace = true }
 omnix-common = { workspace = true }
