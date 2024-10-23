@@ -1,3 +1,4 @@
+use colored::Colorize;
 use serde::{Deserialize, Serialize};
 
 /// Types that can do specific "health check" for Nix
@@ -37,6 +38,37 @@ pub struct Check {
     ///
     /// Failures are considered non-critical if this is false.
     pub required: bool,
+}
+
+impl Check {
+    /// Log the results using tracing crate
+    pub async fn tracing_log(&self) -> anyhow::Result<()> {
+        let pwd = std::env::current_dir()?;
+        let md = async |s: &str| omnix_common::markdown::render_markdown(&pwd, s).await;
+        match &self.result {
+            CheckResult::Green => {
+                tracing::info!("✅ {}", self.title.green().bold());
+                tracing::info!("{}", md(&self.info).await?.dimmed());
+            }
+            CheckResult::Red { msg, suggestion } => {
+                let solution = md(&format!(
+                    "**Problem**: {}\\\n**Fix**:     {}\n",
+                    msg, suggestion
+                ))
+                .await?;
+                if self.required {
+                    tracing::error!("❌ {}", md(&self.title).await?.red().bold());
+                    tracing::error!("{}", md(&self.info).await?.dimmed());
+                    tracing::error!("{}", solution);
+                } else {
+                    tracing::warn!("🟧 {}", md(&self.title).await?.yellow().bold());
+                    tracing::warn!("{}", md(&self.info).await?.dimmed());
+                    tracing::warn!("{}", solution);
+                }
+            }
+        }
+        Ok(())
+    }
 }
 
 /// The result of a health [Check]

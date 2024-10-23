@@ -23,21 +23,22 @@ use self::check::{
     rosetta::Rosetta, trusted_users::TrustedUsers,
 };
 
-/// Nix Health check information for user's install
+/// Nix Health check of user's install
 ///
-/// Each field represents an individual check which satisfies the [traits::Checkable] trait.
+/// Each check field is expected to implement [traits::Checkable].
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
 #[serde(default, rename_all = "kebab-case")]
 pub struct NixHealth {
-    pub nix_version: MinNixVersion,
     pub flake_enabled: FlakeEnabled,
-    pub max_jobs: MaxJobs,
+    pub nix_version: MinNixVersion,
     pub rosetta: Rosetta,
+    pub max_jobs: MaxJobs,
     pub trusted_users: TrustedUsers,
     pub caches: Caches,
     pub direnv: Direnv,
 }
 
+/// Convert [NixHealth] into a generic [Vec] of checks
 impl<'a> IntoIterator for &'a NixHealth {
     type Item = &'a dyn traits::Checkable;
     type IntoIter = std::vec::IntoIter<Self::Item>;
@@ -45,10 +46,10 @@ impl<'a> IntoIterator for &'a NixHealth {
     /// Return an iterator to iterate on the fields of [NixHealth]
     fn into_iter(self) -> Self::IntoIter {
         let items: Vec<Self::Item> = vec![
-            &self.nix_version,
             &self.flake_enabled,
-            &self.max_jobs,
+            &self.nix_version,
             &self.rosetta,
+            &self.max_jobs,
             &self.trusted_users,
             &self.caches,
             &self.direnv,
@@ -72,7 +73,7 @@ impl NixHealth {
 
     /// Run all checks and collect the results
     #[instrument(skip_all)]
-    pub fn run_checks(
+    pub fn run_all_checks(
         &self,
         nix_info: &nix_rs::info::NixInfo,
         flake_url: Option<FlakeUrl>,
@@ -84,32 +85,11 @@ impl NixHealth {
 
     pub async fn print_report_returning_exit_code(checks: &[traits::Check]) -> anyhow::Result<i32> {
         let mut res = AllChecksResult::new();
-        let pwd = std::env::current_dir()?;
-        let md = async |s: &str| render_markdown(&pwd, s).await;
         for check in checks {
-            match &check.result {
-                traits::CheckResult::Green => {
-                    tracing::info!("✅ {}", check.title.green().bold());
-                    tracing::info!("{}", md(&check.info).await?.dimmed());
-                }
-                traits::CheckResult::Red { msg, suggestion } => {
-                    res.register_failure(check.required);
-                    let solution = md(&format!(
-                        "**Problem**: {}\\\n**Fix**:     {}\n",
-                        msg, suggestion
-                    ))
-                    .await?;
-                    if check.required {
-                        tracing::error!("❌ {}", md(&check.title).await?.red().bold());
-                        tracing::error!("{}", md(&check.info).await?.dimmed());
-                        tracing::error!("{}", solution);
-                    } else {
-                        tracing::warn!("🟧 {}", md(&check.title).await?.yellow().bold());
-                        tracing::warn!("{}", md(&check.info).await?.dimmed());
-                        tracing::warn!("{}", solution);
-                    }
-                }
-            }
+            check.tracing_log().await?;
+            if !check.result.green() {
+                res.register_failure(check.required);
+            };
         }
         let code = res.report();
         Ok(code)
@@ -120,8 +100,8 @@ impl NixHealth {
     }
 }
 
-/// Run health checks, optionally using the given flake's configuration
-pub async fn run_checks_with(flake_url: Option<FlakeUrl>) -> anyhow::Result<Vec<Check>> {
+/// Run all health checks, optionally using the given flake's configuration
+pub async fn run_all_checks_with(flake_url: Option<FlakeUrl>) -> anyhow::Result<Vec<Check>> {
     let nix_info = NixInfo::get()
         .await
         .as_ref()
@@ -136,7 +116,7 @@ pub async fn run_checks_with(flake_url: Option<FlakeUrl>) -> anyhow::Result<Vec<
 
     print_info_banner(flake_url.as_ref(), nix_info).await?;
 
-    let checks = health.run_checks(nix_info, flake_url);
+    let checks = health.run_all_checks(nix_info, flake_url);
     Ok(checks)
 }
 
