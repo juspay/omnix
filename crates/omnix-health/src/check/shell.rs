@@ -1,5 +1,8 @@
 use serde::{Deserialize, Serialize};
-use std::path::{Path, PathBuf};
+use std::{
+    fmt::format,
+    path::{Path, PathBuf},
+};
 
 use crate::traits::{Check, CheckResult, Checkable};
 
@@ -83,6 +86,10 @@ impl Checkable for Shell {
                         suggestion: format!("Manage {} configurations through https://github.com/juspay/nixos-unified-template", shell) 
                     }
                 }
+                Err(ShellError::UnsupportedShell) => CheckResult::Red {
+                    msg: "Checking configurations for shell is not supported".to_owned(),
+                    suggestion: "We support only Bash & Zsh Shells. Manage Zsh or Bash through https://github.com/juspay/nixos-unified-template".to_owned(),
+                },
                 Err(error) => {
                     panic!(
                         "Error occurred while checking shell configuration: {}",
