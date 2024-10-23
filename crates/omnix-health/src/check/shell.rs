@@ -1,8 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::{
-    fmt::format,
-    path::{Path, PathBuf},
-};
+use std::path::{Path, PathBuf};
 
 use crate::traits::{Check, CheckResult, Checkable};
 
