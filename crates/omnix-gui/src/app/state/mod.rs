@@ -7,13 +7,13 @@ mod refresh;
 
 use dioxus::prelude::*;
 use dioxus_signals::{Readable, Signal, Writable};
-use nix_health::NixHealth;
 use nix_rs::{
     config::NixConfig,
     flake::{url::FlakeUrl, Flake},
     info::NixInfo,
     version::NixVersion,
 };
+use omnix_health::NixHealth;
 
 use self::{datum::Datum, error::SystemError, refresh::Refresh};
 
@@ -27,8 +27,8 @@ pub struct AppState {
     pub nix_info: Signal<Datum<Result<NixInfo, SystemError>>>,
     pub nix_info_refresh: Signal<Refresh>,
 
-    /// User's Nix health [nix_health::traits::Check]s
-    pub health_checks: Signal<Datum<Result<Vec<nix_health::traits::Check>, SystemError>>>,
+    /// User's Nix health [omnix_health::traits::Check]s
+    pub health_checks: Signal<Datum<Result<Vec<omnix_health::traits::Check>, SystemError>>>,
     pub health_checks_refresh: Signal<Refresh>,
 
     /// User selected [FlakeUrl]

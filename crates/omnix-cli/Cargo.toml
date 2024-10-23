@@ -21,11 +21,12 @@ clap = { workspace = true }
 clap-verbosity-flag = { workspace = true }
 colored = { workspace = true }
 human-panic = { workspace = true }
-nixci = { workspace = true }
-nix_health = { workspace = true }
+omnix-ci = { workspace = true }
+omnix-health = { workspace = true }
 nix_rs = { workspace = true }
 omnix-common = { workspace = true }
 omnix-init = { workspace = true }
+omnix-hack = { workspace = true }
 tabled = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }

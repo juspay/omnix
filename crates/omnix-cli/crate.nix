@@ -10,7 +10,9 @@ let
   inherit (pkgs) stdenv pkgsStatic;
 in
 {
-  autoWire = [ "doc" "clippy" ];
+  autoWire = lib.optionals
+    (lib.elem pkgs.system [ "x86_64-linux" "aarch64-darwin" ])
+    [ "doc" "clippy" ];
   crane = {
     args = {
       nativeBuildInputs = with pkgs.apple_sdk_frameworks; lib.optionals stdenv.isDarwin [
@@ -40,7 +42,7 @@ in
         INSPECT_FLAKE
         NIX_SYSTEMS
         ;
-      inherit (rust-project.crates."nixci".crane.args)
+      inherit (rust-project.crates."omnix-ci".crane.args)
         DEVOUR_FLAKE
         ;
       inherit (rust-project.crates."omnix-init".crane.args)
@@ -66,8 +68,13 @@ in
         mainProgram = "om";
       };
       CARGO_BUILD_RUSTFLAGS = "-C target-feature=+crt-static";
+
+      hardeningDisable = [ "fortify" ]; # https://github.com/NixOS/nixpkgs/issues/18995#issuecomment-249748307
     } //
-    lib.optionalAttrs pkgs.stdenv.isLinux {
+    lib.optionalAttrs (stdenv.isLinux && stdenv.isAarch64) {
+      CARGO_BUILD_TARGET = "aarch64-unknown-linux-musl";
+    } //
+    lib.optionalAttrs (stdenv.isLinux && stdenv.isx86_64) {
       CARGO_BUILD_TARGET = "x86_64-unknown-linux-musl";
     };
   };

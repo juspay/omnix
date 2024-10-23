@@ -25,7 +25,15 @@ jobs:
       OMWEBSITE: ${{ steps.omci.outputs.OMWEBSITE_x86_64-linux }}
     strategy:
       matrix:
-        system: [x86_64-linux, aarch64-darwin, x86_64-darwin]
+        system: [x86_64-linux, aarch64-linux, aarch64-darwin, x86_64-darwin]
+        isMain:
+          - ${{ contains(github.ref, 'main') }}
+        # Excluded emulated builds on PRs
+        exclude:
+          - system: aarch64-linux
+            isMain: false
+          - system: x86_64-darwin
+            isMain: false
       fail-fast: false
     steps:
       - uses: actions/checkout@v4

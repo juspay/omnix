@@ -43,23 +43,35 @@ pub struct InitCommand {
 
 impl InitCommand {
     pub async fn run(&self) -> anyhow::Result<()> {
-        // Prompt from builtin registry if the user has not specified one.
-        let flake = match self.flake {
-            Some(ref flake) => flake,
-            None => &omnix_init::core::select_from_registry().await?,
-        };
         if self.test {
             let cfg = NixConfig::get().await.as_ref()?;
-            omnix_init::core::run_tests(&cfg.system.value, flake).await?;
+            omnix_init::core::run_tests(&cfg.system.value, &self.registry_choose().await?).await?;
         } else {
             let path = self.path.as_ref().unwrap(); // unwrap is okay, because of `required_unless_present`
+            if path.exists() {
+                // Make sure that the directory does not already exist. We don't risk mutating accidentally incorrect location!
+                anyhow::bail!("Output directory already exists: {}", path.display());
+            }
+
             let params = self
                 .params
                 .as_ref()
                 .map_or_else(HashMap::new, |hm| hm.0.clone());
-            omnix_init::core::run(path, flake, &params, self.non_interactive).await?;
+            omnix_init::core::run(
+                path,
+                &self.registry_choose().await?,
+                &params,
+                self.non_interactive,
+            )
+            .await?;
         }
         Ok(())
+    }
+    async fn registry_choose<'a>(&self) -> anyhow::Result<FlakeUrl> {
+        match self.flake {
+            Some(ref flake) => Ok(flake.clone()),
+            None => omnix_init::core::select_from_registry().await,
+        }
     }
 }
 

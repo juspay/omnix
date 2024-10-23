@@ -53,29 +53,3 @@ nix run
 - Changes to library crates must accompany a corresponding `CHANGELOG.md` entry.[^cc]
 
 [^cc]: We don't use any automatic changelog generator for this repo.
-
-<!--
-### Tech
-
-#### GUI app (`omnix-gui`)
-
-We use [Dioxus](https://dioxuslabs.com/) to build the GUI using web technologies, as well as [dioxus-signals](https://github.com/DioxusLabs/dioxus/tree/master/packages/signals) for data reactivity.
-
-##### Styling
-
-We use [Tailwind](https://tailwindcss.com/) for styling; 🎓 familiarize yourself with it! Tailwind enables developers not familiar with design to create reasonably good looking sites. You should also 🎓 get familiar with CSS flexboxes (see [Flexbox Froggy](https://flexboxfroggy.com/)).
-
-###### Color palette
-
-See `tailwind.config.js` for colour aliases we use throughout the app. Instead of, say, `text-pink-500` we use `text-primary-500` ("primary" is more semantic than "pink").
--->
-
-### Crates
-
-| Crate                               | Description                                   |
-| ----------------------------------- | --------------------------------------------- |
-| `./crates/nix_rs`                   | Rust interface to the Nix command line        |
-| `./crates/nix_health`               | Nix health check library and executable       |
-| `./crates/nixci`                    | Define and build CI for Nix projects anywhere |
-| `./crates/omnix-init`               | Rich flake templates                          |
-| https://github.com/juspay/direnv-rs | Rust bindings for direnv                      |

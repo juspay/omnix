@@ -16,7 +16,11 @@ clap = { workspace = true }
 clap-verbosity-flag = { workspace = true }
 futures-lite = { workspace = true }
 nix_rs = { workspace = true }
+pulldown-cmark-mdcat = { workspace = true }
+pulldown-cmark = { workspace = true }
+lazy_static = { workspace = true }
 serde = { workspace = true }
+syntect = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }

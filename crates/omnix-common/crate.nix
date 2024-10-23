@@ -6,7 +6,9 @@
 }:
 
 {
-  autoWire = [ "doc" "clippy" ];
+  autoWire = lib.optionals
+    (lib.elem pkgs.system [ "x86_64-linux" "aarch64-darwin" ])
+    [ "doc" "clippy" ];
   crane = {
     args = {
       inherit (rust-project.crates."nix_rs".crane.args)

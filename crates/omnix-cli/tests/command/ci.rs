@@ -27,7 +27,7 @@ async fn om_ci_run(args: &[&str]) -> anyhow::Result<Vec<StorePath>> {
 }
 
 #[tokio::test]
-/// Run `nixci build` and check if the stdout consists of only /nix/store/* paths
+/// Run `om ci build` and check if the stdout consists of only /nix/store/* paths
 async fn build_flake_output() -> anyhow::Result<()> {
     let outs =
         om_ci_run(&["github:srid/haskell-multi-nix/c85563721c388629fa9e538a1d97274861bc8321"])
