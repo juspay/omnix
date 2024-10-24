@@ -124,8 +124,28 @@ fn are_dotfiles_nix_managed(shell: &Shell) -> Result<bool, ShellError> {
 
 fn check_dotfile_is_managed_by_nix(home_dir: &Path, dotfile: &str) -> Result<bool, ShellError> {
     let path = home_dir.join(dotfile);
+    // TODO: Remove after debuging
+    check_path(path.clone());
     let target = std::fs::read_link(path).map_err(ReadlinkError)?;
     Ok(super::direnv::is_path_in_nix_store(&target))
+}
+
+fn check_path(path: PathBuf) {
+    println!("Checking path: {}", path.display());
+    println!("Path exists: {}", path.exists());
+    println!("Is symlink: {}", path.is_symlink());
+
+    // Try to get metadata
+    match path.metadata() {
+        Ok(meta) => println!("Metadata: {:?}", meta),
+        Err(e) => println!("Cannot get metadata: {}", e),
+    }
+
+    // Try to read link
+    match std::fs::read_link(path) {
+        Ok(target) => println!("Link target: {}", target.display()),
+        Err(e) => println!("Read link error: {}", e),
+    }
 }
 
 #[derive(thiserror::Error, Debug)]
