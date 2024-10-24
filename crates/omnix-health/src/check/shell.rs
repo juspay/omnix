@@ -124,14 +124,14 @@ fn are_dotfiles_nix_managed(shell: &Shell) -> Result<bool, ShellError> {
 
 fn check_dotfile_is_managed_by_nix(home_dir: &Path, dotfile: &str) -> Result<bool, ShellError> {
     let path = home_dir.join(dotfile);
-    let canonical_path = std::fs::canonicalize(&path).map_err(CanonicalizeError)?;
-    Ok(super::direnv::is_path_in_nix_store(&canonical_path))
+    let target = std::fs::read_link(path).map_err(ReadlinkError)?;
+    Ok(super::direnv::is_path_in_nix_store(&target))
 }
 
 #[derive(thiserror::Error, Debug)]
-pub struct CanonicalizeError(#[from] std::io::Error);
+pub struct ReadlinkError(#[from] std::io::Error);
 
-impl std::fmt::Display for CanonicalizeError {
+impl std::fmt::Display for ReadlinkError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self.0)
     }
@@ -145,8 +145,8 @@ pub enum ShellError {
     #[error("Unable to determine user's default shell")]
     UndeterminableShell,
 
-    #[error("Cannot canonicalize config path: {0}")]
-    CanonicalizeError(#[from] CanonicalizeError),
+    #[error("Cannot read symlink target of config path: {0}")]
+    ReadlinkError(#[from] ReadlinkError),
 
     #[error("Environent variable {0} not set")]
     EnvVarNotSet(String),
