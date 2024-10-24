@@ -24,16 +24,14 @@ pub async fn hack_on(dir: &Path) -> anyhow::Result<()> {
         &health.nix_version,
         &health.rosetta,
         &health.max_jobs,
+        // TODO: Run this only when a cache is configured
         &health.trusted_users,
         &health.caches,
     ];
     for check_kind in relevant_checks.into_iter() {
-        let checks = check_kind.check(nix_info, Some(&here_flake));
-        for check in checks {
+        for check in check_kind.check(nix_info, Some(&here_flake)) {
             if !check.result.green() {
                 check.tracing_log().await?;
-                // TODO: Auto-resolve some problems; like running 'cachix use' automatically
-                // ... after 'cachix authtoken' if that's available (but where?)
                 if !check.result.green() && check.required {
                     tracing::error!("ERROR: Your Nix invironment is not properly setup. Run `om health` for details.");
                     anyhow::bail!("Cannot proceed");
@@ -41,6 +39,9 @@ pub async fn hack_on(dir: &Path) -> anyhow::Result<()> {
             };
         }
     }
+    if !health.caches.required.is_empty() {
+        // TODO: Auto-resolve some problems; like running 'cachix use' automatically
+    };
     tracing::info!("Healthy");
 
     eprintln!();
