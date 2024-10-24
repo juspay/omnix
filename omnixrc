@@ -9,4 +9,10 @@ use_omnix() {
   # Use of --accept-flake-config ensures that configured cache is used to launch the devShell
   # TODO: Run omnix readme step *after* this.
   use flake $* --accept-flake-config
+
+  if [[ ! -z "${NIX_DIRENV_DID_FALLBACK:-}" ]]; then
+      echo "Fallback"
+  else
+      echo "Done".
+  fi
 }
