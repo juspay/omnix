@@ -63,33 +63,18 @@
         direnv.required = true;
       };
       hack.default = {
-        # TODO: This is not implemented yet.
-        cache.cachix = {
-          name = "om";
-          # authToken = "xxx";
-        };
         readme = ''
           🍾 Welcome to the **omnix** project
 
-          OM_SHELL
-
-          OM_IDE
-
-          ## Running `omnix` inside devShell
-
-          This will run `cargo watch` and run the resultant program, and then restart the same as you modify the Rust sources:
+          To run omnix,
 
           ```sh-session
           just watch <args>
           ```
 
-          ## Running `omnix` through Nix
-          ```sh-session
-          nix --accept-flake-config run github:juspay/omnix
-          ```
+          (Now, as you edit the Rust sources, the above will reload!)
 
-          ## Read more
-          For details, see [README.md](README.md)
+          🍎🍎 Run 'just' to see more commands. See <https://nixos.asia/en/vscode> for IDE setup.
         '';
       };
     };

@@ -1,6 +1,6 @@
 use clap::Parser;
 use nix_rs::flake::url::FlakeUrl;
-use omnix_health::{run_checks_with, NixHealth};
+use omnix_health::{run_all_checks_with, NixHealth};
 
 /// Display the health of your Nix dev environment
 #[derive(Parser, Debug)]
@@ -21,7 +21,7 @@ impl HealthCommand {
             println!("{}", NixHealth::schema()?);
             return Ok(());
         }
-        let checks = run_checks_with(self.flake_url.clone()).await?;
+        let checks = run_all_checks_with(self.flake_url.clone()).await?;
         let exit_code = NixHealth::print_report_returning_exit_code(&checks).await?;
         if exit_code != 0 {
             std::process::exit(exit_code);
