@@ -26,6 +26,7 @@ in
         # > error: don't yet have a `targetPackages.darwin.LibsystemCross for x86_64-apple-darwin`
         (if (stdenv.isDarwin && stdenv.isAarch64) then pkgsStatic.libiconv else pkgs.libiconv)
         pkgs.pkg-config
+        pkgs.cachix
       ];
       buildInputs = lib.optionals pkgs.stdenv.isDarwin
         (
