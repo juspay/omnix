@@ -83,9 +83,13 @@ impl Checkable for Shell {
                         suggestion: format!("Manage {} configurations through https://github.com/juspay/nixos-unified-template", shell) 
                     }
                 }
-                Err(ShellError::UnsupportedShell) => CheckResult::Red {
-                    msg: "Checking configurations for shell is not supported".to_owned(),
+                Err(err@ShellError::UnsupportedShell) => CheckResult::Red {
+                    msg: err.to_string(),
                     suggestion: "We support only Bash & Zsh Shells. Manage Zsh or Bash through https://github.com/juspay/nixos-unified-template".to_owned(),
+                },
+                Err(ShellError::DotfilesNotFound(err)) => CheckResult::Red {
+                    msg: err.to_string(),
+                    suggestion: "Manage Zsh or Bash shells through https://github.com/juspay/nixos-unified-template".to_owned(),
                 },
                 Err(error) => {
                     panic!(
@@ -124,34 +128,15 @@ fn are_dotfiles_nix_managed(shell: &Shell) -> Result<bool, ShellError> {
 
 fn check_dotfile_is_managed_by_nix(home_dir: &Path, dotfile: &str) -> Result<bool, ShellError> {
     let path = home_dir.join(dotfile);
-    // TODO: Remove after debuging
-    check_path(path.clone());
-    let target = std::fs::read_link(path).map_err(ReadlinkError)?;
+    let target =
+        std::fs::read_link(path).map_err(|_| ShellError::DotfilesNotFound(dotfile.to_owned()))?;
     Ok(super::direnv::is_path_in_nix_store(&target))
 }
 
-fn check_path(path: PathBuf) {
-    println!("Checking path: {}", path.display());
-    println!("Path exists: {}", path.exists());
-    println!("Is symlink: {}", path.is_symlink());
-
-    // Try to get metadata
-    match path.metadata() {
-        Ok(meta) => println!("Metadata: {:?}", meta),
-        Err(e) => println!("Cannot get metadata: {}", e),
-    }
-
-    // Try to read link
-    match std::fs::read_link(path) {
-        Ok(target) => println!("Link target: {}", target.display()),
-        Err(e) => println!("Read link error: {}", e),
-    }
-}
-
 #[derive(thiserror::Error, Debug)]
-pub struct ReadlinkError(#[from] std::io::Error);
+pub struct DotfilesNotFound(#[from] std::io::Error);
 
-impl std::fmt::Display for ReadlinkError {
+impl std::fmt::Display for DotfilesNotFound {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self.0)
     }
@@ -165,8 +150,8 @@ pub enum ShellError {
     #[error("Unable to determine user's default shell")]
     UndeterminableShell,
 
-    #[error("Cannot read symlink target of config path: {0}")]
-    ReadlinkError(#[from] ReadlinkError),
+    #[error("Cannot read symlink target of : {0}")]
+    DotfilesNotFound(String),
 
     #[error("Environent variable {0} not set")]
     EnvVarNotSet(String),
