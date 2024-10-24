@@ -63,6 +63,6 @@ pub async fn hack_on_pre_shell(prj: &Project) -> anyhow::Result<()> {
 
 pub async fn hack_on_post_shell(prj: &Project) -> anyhow::Result<()> {
     eprintln!();
-    print_markdown(&prj.dir, &prj.cfg.readme.get_markdown()).await?;
+    print_markdown(&prj.dir, prj.cfg.readme.get_markdown()).await?;
     Ok(())
 }

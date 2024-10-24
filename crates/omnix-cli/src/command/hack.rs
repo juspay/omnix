@@ -9,9 +9,7 @@ pub struct HackCommand {
     #[arg(name = "DIR", default_value = ".")]
     dir: PathBuf,
 
-    // TODO: Implement these options
-    // om hack --mode-before
-    // om hack --mode-after-success
+    /// The stage to run in. If not provided, runs all stages.
     #[arg(long, value_enum)]
     stage: Option<Stage>,
 }

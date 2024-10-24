@@ -66,11 +66,7 @@
         readme = ''
           🍾 Welcome to the **omnix** project
 
-          OM_SHELL
-
-          OM_IDE
-
-          To run the project,
+          To run omnix,
 
           ```sh-session
           just watch <args>
@@ -78,7 +74,7 @@
 
           (Now, as you edit the Rust sources, the above will reload!)
 
-          🍎🍎 Run 'just' to see more commands.
+          🍎🍎 Run 'just' to see more commands. See <https://nixos.asia/en/vscode> for IDE setup.
         '';
       };
     };
