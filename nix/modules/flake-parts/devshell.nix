@@ -12,7 +12,6 @@ in
       meta.description = "Omnix development environment";
       inputsFrom = [
         config.treefmt.build.devShell
-        config.nix-health.outputs.devShell
         self'.devShells.rust
       ];
       inherit (config.rust-project.crates."omnix-cli".crane.args)
@@ -38,12 +37,6 @@ in
         mdbook
         mdbook-alerts
       ];
-      shellHook =
-        ''
-          echo
-          echo "🍎🍎 Run 'just <recipe>' to get started"
-          just
-        '';
     };
   };
 }

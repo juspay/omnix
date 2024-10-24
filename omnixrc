@@ -4,8 +4,9 @@
 use_omnix() {
   # TODO: Switch to nixpkgs version once we upstream
   # Because, the user may not be a trusted-user leading to compilation!
-  nix --accept-flake-config run github:juspay/omnix health $*
+  nix --accept-flake-config run github:juspay/omnix hack $*
 
   # Use of --accept-flake-config ensures that configured cache is used to launch the devShell
+  # TODO: Run omnix readme step *after* this.
   use flake $* --accept-flake-config
 }

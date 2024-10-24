@@ -3,7 +3,7 @@ use serde::Deserialize;
 // TODO(idea): What if we provide `om health` like checkmark for each item. Automatically check if the user is in Nix shell or direnv, and ✅ the title accordingly. If not, nudge them to do it.
 const OM_SHELL: &str = r#"## Enter the Nix shell
 
-We recommend that you setup nix-direnv (preferably using the convenient template is provided at <https://github.com/juspay/nixos-unified-template>). Then run the following in terminal to activate the Nix shell:
+We recommend that you setup nix-direnv (preferably using the convenient template provided at <https://github.com/juspay/nixos-unified-template>). Then run the following in terminal to activate the Nix shell:
 
 ```sh-session
 direnv allow
