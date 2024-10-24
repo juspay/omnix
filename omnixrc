@@ -7,7 +7,7 @@ use_omnix() {
   nix --accept-flake-config run github:juspay/omnix -- hack --stage=pre-shell $*
 
   # Use of --accept-flake-config ensures that configured cache is used to launch the devShell
-  use flake $* --accept-flake-config
+  use flake ${*:-.} --accept-flake-config
 
   if [[ ! -z "${NIX_DIRENV_DID_FALLBACK:-}" ]]; then
     # Nix shell failed; move on!
