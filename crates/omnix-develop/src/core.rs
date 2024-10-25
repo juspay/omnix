@@ -29,6 +29,11 @@ impl Project {
 pub async fn develop_on(prj: &Project) -> anyhow::Result<()> {
     develop_on_pre_shell(prj).await?;
     develop_on_post_shell(prj).await?;
+
+    tracing::warn!("");
+    tracing::warn!("🚧 !!!!");
+    tracing::warn!("🚧 Not invoking Nix devShell (not supported yet). Please use `direnv`!");
+    tracing::warn!("🚧 !!!!");
     Ok(())
 }
 
