@@ -21,6 +21,7 @@ in
         INSPECT_FLAKE
         OMNIX_SOURCE
         OM_INIT_REGISTRY
+        CACHIX_BIN
         ;
 
       packages = with pkgs; [

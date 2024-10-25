@@ -94,7 +94,7 @@ impl CachixCache {
 
     /// Run `cachix use` for this cache
     pub async fn cachix_use(&self) -> anyhow::Result<()> {
-        let mut cmd = tokio::process::Command::new("cachix");
+        let mut cmd = tokio::process::Command::new(env!("CACHIX_BIN"));
         cmd.arg("use").arg(&self.0);
         let status = cmd.spawn()?.wait().await?;
         if !status.success() {
