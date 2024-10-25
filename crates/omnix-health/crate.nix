@@ -25,7 +25,7 @@ in
         INSPECT_FLAKE
         NIX_SYSTEMS
         ;
-      CACHIX_BIN = lib.getExe pkgs.cachix;
+      CACHIX_BIN = pkgs.cachix + /bin/cachix;
       nativeBuildInputs = with pkgs; [
         nix # Tests need nix cli
       ];
