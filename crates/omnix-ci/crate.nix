@@ -39,6 +39,9 @@ in
         INSPECT_FLAKE
         NIX_SYSTEMS
         ;
+      inherit (rust-project.crates."omnix-health".crane.args)
+        CACHIX_BIN
+        ;
       DEVOUR_FLAKE = inputs.devour-flake;
 
       # This value is set in omnix-cli/crate.nix.

@@ -26,7 +26,6 @@ in
         # > error: don't yet have a `targetPackages.darwin.LibsystemCross for x86_64-apple-darwin`
         (if (stdenv.isDarwin && stdenv.isAarch64) then pkgsStatic.libiconv else pkgs.libiconv)
         pkgs.pkg-config
-        pkgs.cachix
       ];
       buildInputs = lib.optionals pkgs.stdenv.isDarwin
         (
@@ -48,6 +47,9 @@ in
         ;
       inherit (rust-project.crates."omnix-init".crane.args)
         OM_INIT_REGISTRY
+        ;
+      inherit (rust-project.crates."omnix-health".crane.args)
+        CACHIX_BIN
         ;
 
       # To avoid unnecessary rebuilds, start from cleaned source, and then add the Nix files necessary to `nix run` it. Finally, add any files required by the Rust build.
