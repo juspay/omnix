@@ -1843,7 +1843,7 @@ dependencies = [
  "nix_rs",
  "omnix-ci",
  "omnix-common",
- "omnix-hack",
+ "omnix-develop",
  "omnix-health",
  "omnix-init",
  "predicates",
@@ -1877,7 +1877,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "omnix-hack"
+name = "omnix-develop"
 version = "0.1.0"
 dependencies = [
  "anyhow",
