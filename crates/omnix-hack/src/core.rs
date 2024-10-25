@@ -34,7 +34,6 @@ pub async fn hack_on(prj: &Project) -> anyhow::Result<()> {
 
 pub async fn hack_on_pre_shell(prj: &Project) -> anyhow::Result<()> {
     // Run relevant `om health` checks
-    tracing::info!("om hack: Running pre-shell checks");
     let health = NixHealth::from_flake(&prj.flake).await?;
     let nix_info = NixInfo::get()
         .await
@@ -73,6 +72,8 @@ pub async fn hack_on_pre_shell(prj: &Project) -> anyhow::Result<()> {
             };
         }
     }
+
+    tracing::info!("✅ Nix environment is healthy.");
 
     Ok(())
 }

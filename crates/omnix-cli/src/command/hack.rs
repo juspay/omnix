@@ -26,6 +26,10 @@ enum Stage {
 
 impl HackCommand {
     pub async fn run(&self) -> anyhow::Result<()> {
+        tracing::info!(
+            "⌨️  Preparing to develop project at {:}",
+            self.dir.display()
+        );
         let prj = omnix_hack::core::Project::new(&self.dir).await?;
         match self.stage {
             Some(Stage::PreShell) => omnix_hack::core::hack_on_pre_shell(&prj).await?,
