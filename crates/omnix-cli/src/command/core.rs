@@ -7,6 +7,7 @@ pub enum Command {
 
     Init(super::init::InitCommand),
 
+    #[clap(alias = "hack")]
     Develop(super::develop::DevelopCommand),
 
     CI(super::ci::CICommand),
