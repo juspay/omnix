@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use clap::Parser;
 
-/// Prepare to hack (develop) on a flake project
+/// Prepare to develop on a flake project
 #[derive(Parser, Debug)]
 pub struct DevelopCommand {
     /// Directory of the project
