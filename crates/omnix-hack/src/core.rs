@@ -7,9 +7,13 @@ use omnix_health::{check::caches::CachixCache, traits::Checkable, NixHealth};
 
 use crate::config::HackConfig;
 
+/// A project that an be hacked on locally.
 pub struct Project {
+    /// The directory of the project.
     pub dir: PathBuf,
+    /// [FlakeUrl] corresponding to the project.
     pub flake: FlakeUrl,
+    /// The hack configuration
     pub cfg: HackConfig,
 }
 
