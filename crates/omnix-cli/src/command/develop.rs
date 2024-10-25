@@ -2,9 +2,9 @@ use std::path::PathBuf;
 
 use clap::Parser;
 
-/// Prepare to hack on a flake project
+/// Prepare to hack (develop) on a flake project
 #[derive(Parser, Debug)]
-pub struct HackCommand {
+pub struct DevelopCommand {
     /// Directory of the project
     #[arg(name = "DIR", default_value = ".")]
     dir: PathBuf,
@@ -24,7 +24,7 @@ enum Stage {
     PostShell,
 }
 
-impl HackCommand {
+impl DevelopCommand {
     pub async fn run(&self) -> anyhow::Result<()> {
         tracing::info!(
             "⌨️  Preparing to develop project at {:}",
@@ -32,9 +32,9 @@ impl HackCommand {
         );
         let prj = omnix_develop::core::Project::new(&self.dir).await?;
         match self.stage {
-            Some(Stage::PreShell) => omnix_develop::core::hack_on_pre_shell(&prj).await?,
-            Some(Stage::PostShell) => omnix_develop::core::hack_on_post_shell(&prj).await?,
-            None => omnix_develop::core::hack_on(&prj).await?,
+            Some(Stage::PreShell) => omnix_develop::core::develop_on_pre_shell(&prj).await?,
+            Some(Stage::PostShell) => omnix_develop::core::develop_on_post_shell(&prj).await?,
+            None => omnix_develop::core::develop_on(&prj).await?,
         }
         Ok(())
     }

@@ -62,7 +62,7 @@
         caches.required = [ "https://om.cachix.org" ];
         direnv.required = true;
       };
-      hack.default = {
+      develop.default = {
         readme = ''
           🍾 Welcome to the **omnix** project
 
