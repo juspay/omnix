@@ -5,7 +5,7 @@ edition = "2021"
 name = "omnix-develop"
 version = "0.1.0"
 repository = "https://github.com/juspay/omnix"
-description = "Implementation for the `om hack` command"
+description = "Implementation for the `om develop` command"
 license = "Apache-2.0"
 
 [lib]

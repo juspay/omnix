@@ -5,34 +5,34 @@ use nix_rs::{flake::url::FlakeUrl, info::NixInfo};
 use omnix_common::markdown::print_markdown;
 use omnix_health::{check::caches::CachixCache, traits::Checkable, NixHealth};
 
-use crate::config::HackConfig;
+use crate::config::DevelopConfig;
 
-/// A project that an be hacked on locally.
+/// A project that an be developed on locally.
 pub struct Project {
     /// The directory of the project.
     pub dir: PathBuf,
     /// [FlakeUrl] corresponding to the project.
     pub flake: FlakeUrl,
-    /// The hack configuration
-    pub cfg: HackConfig,
+    /// The develop configuration
+    pub cfg: DevelopConfig,
 }
 
 impl Project {
     pub async fn new(dir: &Path) -> anyhow::Result<Self> {
         let dir = dir.canonicalize()?;
         let flake: FlakeUrl = Into::<FlakeUrl>::into(dir.as_ref());
-        let cfg = HackConfig::from_flake(&flake).await?;
+        let cfg = DevelopConfig::from_flake(&flake).await?;
         Ok(Self { dir, flake, cfg })
     }
 }
 
-pub async fn hack_on(prj: &Project) -> anyhow::Result<()> {
-    hack_on_pre_shell(prj).await?;
-    hack_on_post_shell(prj).await?;
+pub async fn develop_on(prj: &Project) -> anyhow::Result<()> {
+    develop_on_pre_shell(prj).await?;
+    develop_on_post_shell(prj).await?;
     Ok(())
 }
 
-pub async fn hack_on_pre_shell(prj: &Project) -> anyhow::Result<()> {
+pub async fn develop_on_pre_shell(prj: &Project) -> anyhow::Result<()> {
     // Run relevant `om health` checks
     let health = NixHealth::from_flake(&prj.flake).await?;
     let nix_info = NixInfo::get()
@@ -78,7 +78,7 @@ pub async fn hack_on_pre_shell(prj: &Project) -> anyhow::Result<()> {
     Ok(())
 }
 
-pub async fn hack_on_post_shell(prj: &Project) -> anyhow::Result<()> {
+pub async fn develop_on_post_shell(prj: &Project) -> anyhow::Result<()> {
     eprintln!();
     print_markdown(&prj.dir, prj.cfg.readme.get_markdown()).await?;
     Ok(())

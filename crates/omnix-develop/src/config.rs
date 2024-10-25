@@ -6,7 +6,7 @@ use omnix_common::config::OmConfig;
 use crate::readme::Readme;
 
 #[derive(Debug, Deserialize, Clone, Default)]
-pub struct HackConfig {
+pub struct DevelopConfig {
     pub readme: Readme,
 }
 
@@ -16,9 +16,9 @@ pub struct CacheConfig {
     pub url: String,
 }
 
-impl HackConfig {
+impl DevelopConfig {
     pub async fn from_flake(url: &FlakeUrl) -> anyhow::Result<Self> {
-        let v = OmConfig::<Self>::from_flake_url(NixCmd::get().await, url, &["om.hack"])
+        let v = OmConfig::<Self>::from_flake_url(NixCmd::get().await, url, &["om.develop"])
             .await?
             .config;
         let config = v.get("default").cloned().unwrap_or_default();
