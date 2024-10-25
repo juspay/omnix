@@ -30,11 +30,11 @@ impl HackCommand {
             "⌨️  Preparing to develop project at {:}",
             self.dir.display()
         );
-        let prj = omnix_hack::core::Project::new(&self.dir).await?;
+        let prj = omnix_develop::core::Project::new(&self.dir).await?;
         match self.stage {
-            Some(Stage::PreShell) => omnix_hack::core::hack_on_pre_shell(&prj).await?,
-            Some(Stage::PostShell) => omnix_hack::core::hack_on_post_shell(&prj).await?,
-            None => omnix_hack::core::hack_on(&prj).await?,
+            Some(Stage::PreShell) => omnix_develop::core::hack_on_pre_shell(&prj).await?,
+            Some(Stage::PostShell) => omnix_develop::core::hack_on_post_shell(&prj).await?,
+            None => omnix_develop::core::hack_on(&prj).await?,
         }
         Ok(())
     }
