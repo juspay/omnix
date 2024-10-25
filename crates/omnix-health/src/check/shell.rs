@@ -5,14 +5,14 @@ use crate::traits::{Check, CheckResult, Checkable};
 
 /// Shell types
 ///
-#[derive(Debug, Serialize, Deserialize, Clone, Hash, Eq, PartialEq)]
+#[derive(Debug, Default, Serialize, Deserialize, Clone, Hash, Eq, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum Shell {
     Zsh,
+    #[default]
     Bash,
-    Undeterminable,
-    #[serde(other)]
-    Other,
+    /// An unknown string located at given path
+    Other(String),
 }
 
 impl std::fmt::Display for Shell {
@@ -20,23 +20,35 @@ impl std::fmt::Display for Shell {
         let shell_str = match self {
             Shell::Zsh => "zsh",
             Shell::Bash => "bash",
-            Shell::Other => "<unsupported shell>",
-            Shell::Undeterminable => "<undeterminable shell>",
+            Shell::Other(shell) => shell,
         };
         write!(f, "{}", shell_str)
     }
 }
 
 impl Shell {
+    /// Returns User's default `Shell`
+    fn get_shell() -> Result<Self, ShellError> {
+        let shell_path =
+            PathBuf::from(std::env::var("SHELL").expect("Environment variable `SHELL` not set"));
+        Self::from_path(shell_path)
+    }
+
     /// Creates a `Shell` from a path string.
-    fn from_path(path: &str) -> Self {
-        let shell_name = Path::new(path).file_name().and_then(|name| name.to_str());
+    /// For example if path is `/bin/zsh`, it would return `Zsh`
+    fn from_path(path: PathBuf) -> Result<Self, ShellError> {
+        let shell_name = path
+            .file_name()
+            .ok_or_else(|| {
+                ShellError::InvalidPath("Path does not have a file name component".to_owned())
+            })?
+            .to_str()
+            .ok_or_else(|| ShellError::InvalidPath("File name is not valid UTF-8".to_owned()))?;
 
         match shell_name {
-            None => Shell::Undeterminable,
-            Some("zsh") => Shell::Zsh,
-            Some("bash") => Shell::Bash,
-            Some(_) => Shell::Other,
+            "zsh" => Ok(Shell::Zsh),
+            "bash" => Ok(Shell::Bash),
+            shell => Ok(Shell::Other(shell.to_string())),
         }
     }
 
@@ -49,16 +61,8 @@ impl Shell {
                 ".bash_profile".to_string(),
                 ".profile".to_string(),
             ]),
-            Shell::Other => Err(ShellError::UnsupportedShell),
-            Shell::Undeterminable => Err(ShellError::UndeterminableShell),
+            Shell::Other(shell) => Err(ShellError::UnsupportedShell(shell.to_string())),
         }
-    }
-}
-
-impl Default for Shell {
-    fn default() -> Self {
-        let shell_path = std::env::var("SHELL").expect("Environment variable `SHELL` not set");
-        Shell::from_path(&shell_path)
     }
 }
 
@@ -71,36 +75,46 @@ impl Checkable for Shell {
         let check = Check {
             title: "Shell Configurations".to_string(),
             info: "Dotfiles managed by Nix".to_string(),
-            result: match are_dotfiles_nix_managed(self) {
-                Ok(true) => CheckResult::Green,
-                Ok(false) => {
-                    let shell = Shell::default();
-                    CheckResult::Red {
-                        msg: format!(
-                            "Default Shell: {} is not managed by Nix", 
-                            shell
-                        ),
-                        suggestion: format!("Manage {} configurations through https://github.com/juspay/nixos-unified-template", shell) 
-                    }
-                }
-                Err(err@ShellError::UnsupportedShell) => CheckResult::Red {
-                    msg: err.to_string(),
-                    suggestion: "We support only Bash & Zsh Shells. Manage Zsh or Bash through https://github.com/juspay/nixos-unified-template".to_owned(),
-                },
-                Err(ShellError::DotfilesNotFound(err)) => CheckResult::Red {
-                    msg: err.to_string(),
-                    suggestion: "Manage Zsh or Bash shells through https://github.com/juspay/nixos-unified-template".to_owned(),
-                },
-                Err(error) => {
-                    panic!(
-                        "Error occurred while checking shell configuration: {}",
-                        error
-                    );
+            result: {
+                let shell = Shell::get_shell();
+                match shell {
+                    Ok(shell) => check_shell_configuration(shell),
+                    Err(error) => handle_shell_error(error),
                 }
             },
             required: false,
         };
         vec![check]
+    }
+}
+
+/// Checks configurations of shell through dotfiles
+fn check_shell_configuration(shell: Shell) -> CheckResult {
+    match are_dotfiles_nix_managed(&shell) {
+        Ok(true) => CheckResult::Green,
+        Ok(false) => CheckResult::Red {
+            msg: format!("Default Shell: {} is not managed by Nix", shell),
+            suggestion: format!(
+                "Manage {} configurations through https://github.com/juspay/nixos-unified-template",
+                shell
+            ),
+        },
+        Err(error) => handle_shell_error(error),
+    }
+}
+
+// Error handler for the Shell
+fn handle_shell_error(error: ShellError) -> CheckResult {
+    match error {
+        ShellError::UnsupportedShell(err) => CheckResult::Red {
+            msg: err.to_string(),
+            suggestion: "We support only Bash & Zsh Shells. Manage Zsh or Bash through https://github.com/juspay/nixos-unified-template".to_owned(),
+        },
+        ShellError::DotfilesNotFound(err) => CheckResult::Red {
+            msg: err.to_string(),
+            suggestion: "Manage Zsh or Bash shells through https://github.com/juspay/nixos-unified-template".to_owned(),
+        },
+        error => panic!("Error occurred while checking shell configuration: {}", error),
     }
 }
 
@@ -111,9 +125,8 @@ impl Checkable for Shell {
 /// * `false` if any dotfile is not nix-managed
 /// * `Err` if there was an error during the check
 fn are_dotfiles_nix_managed(shell: &Shell) -> Result<bool, ShellError> {
-    let home_dir = PathBuf::from(
-        std::env::var("HOME").map_err(|_| ShellError::EnvVarNotSet("HOME".to_string()))?,
-    );
+    let home_dir =
+        PathBuf::from(std::env::var("HOME").expect("Environment variable `HOME` not set"));
 
     let dotfiles = Shell::get_dotfiles_of_shell(shell)?;
 
@@ -144,15 +157,12 @@ impl std::fmt::Display for DotfilesNotFound {
 
 #[derive(thiserror::Error, Debug)]
 pub enum ShellError {
-    #[error("Checking configurations for shell is not supported")]
-    UnsupportedShell,
-
-    #[error("Unable to determine user's default shell")]
-    UndeterminableShell,
+    #[error("Checking configurations for {0} is not supported")]
+    UnsupportedShell(String),
 
     #[error("Cannot read symlink target of : {0}")]
     DotfilesNotFound(String),
 
-    #[error("Environent variable {0} not set")]
-    EnvVarNotSet(String),
+    #[error("Invalid path: {0}")]
+    InvalidPath(String),
 }
