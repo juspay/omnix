@@ -31,6 +31,7 @@
             || lib.hasSuffix "crate.nix" path
             || "${inputs.self}/flake.nix" == path
             || "${inputs.self}/flake.lock" == path
+            || "${inputs.self}/rust-toolchain.toml" == path
             # Select *only* the non-Rust files necessary to build omnix package.
             || lib.hasSuffix "flake-parts/nixpkgs.nix" path
             || lib.hasSuffix "flake-parts/rust.nix" path
