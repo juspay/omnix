@@ -27,5 +27,10 @@ ci:
 ci-cargo:
     cargo run -p omnix-cli -- ci run
 
+[group('ci')]
 clippy:
     cargo clippy --release --locked --all-targets --all-features -- --deny warnings
+
+[group('ci')]
+cargo-doc:
+    cargo doc --release --all-features --workspace

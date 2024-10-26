@@ -25,9 +25,18 @@
               };
               cargo-tests = {
                 type = "devshell";
-                # name = "default";
                 command = [ "cargo" "test" ];
-                systems = [ "x86_64-linux" "aarch64-darwin" ]; # Too slow on rosetta
+                systems = [ "x86_64-linux" "aarch64-darwin" ]; # Avoid emulated systems
+              };
+              cargo-clippy = {
+                type = "devshell";
+                command = [ "just" "clippy" ];
+                systems = [ "x86_64-linux" "aarch64-darwin" ]; # Avoid emulated systems
+              };
+              cargo-doc = {
+                type = "devshell";
+                command = [ "just" "cargo-doc" ];
+                systems = [ "x86_64-linux" "aarch64-darwin" ]; # Avoid emulated systems
               };
             };
           };
