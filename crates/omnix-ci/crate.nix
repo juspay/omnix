@@ -10,9 +10,7 @@ let
   inherit (inputs) self;
 in
 {
-  autoWire = lib.optionals
-    (lib.elem pkgs.system [ "x86_64-linux" "aarch64-darwin" ])
-    [ "doc" "clippy" ];
+  autoWire = [ ];
   crane = {
     args = {
       nativeBuildInputs = with pkgs; with pkgs.apple_sdk_frameworks; lib.optionals stdenv.isDarwin [
