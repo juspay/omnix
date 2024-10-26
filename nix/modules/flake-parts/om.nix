@@ -25,7 +25,7 @@
               };
               cargo-tests = {
                 type = "devshell";
-                command = [ "cargo" "test" ];
+                command = [ "just" "cargo-test" ];
                 systems = [ "x86_64-linux" "aarch64-darwin" ]; # Avoid emulated systems
               };
               cargo-clippy = {
