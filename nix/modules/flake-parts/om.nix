@@ -19,6 +19,10 @@
                 name = "check-closure-size";
                 systems = [ "x86_64-linux" ]; # We have static binary for Linux only.
               };
+              omnix-source-is-buildable = {
+                type = "app";
+                name = "omnix-source-is-buildable";
+              };
               cargo-tests = {
                 type = "devshell";
                 command = [ "just" "cargo-test" ];

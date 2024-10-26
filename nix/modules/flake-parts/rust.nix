@@ -62,16 +62,18 @@
         });
       };
 
-    checks.omnix-source-has-flake = pkgs.runCommand
-      "omnix-source-has-flake"
-      { buildInputs = [ pkgs.lsd ]; } ''
-      set -e
-      cd ${self'.packages.omnix-cli.OMNIX_SOURCE.outPath}
-      pwd
-      lsd --tree
-      test -f flake.nix
-      test -f flake.lock
-      touch $out
-    '';
+    apps.omnix-source-is-buildable.program = pkgs.writeShellApplication {
+      name = "omnix-source-is-buildable";
+      runtimeInputs = [
+        pkgs.jq
+      ];
+      text = ''
+        set -e
+        cd ${self'.packages.omnix-cli.OMNIX_SOURCE.outPath}
+        # Make sure the drv evaluates (to test that no files are accidentally excluded)
+        nix --accept-flake-config --extra-experimental-features "flakes nix-command" \
+          derivation show "." | jq -r '.[].outputs.out.path'
+      '';
+    };
   };
 }
