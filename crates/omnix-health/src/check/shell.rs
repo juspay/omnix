@@ -52,8 +52,8 @@ impl Shell {
     }
 
     /// Get shell dotfiles
-    fn get_dotfiles(shell: &Shell) -> Result<Vec<String>, ShellError> {
-        match shell {
+    fn get_dotfiles(&self) -> Result<Vec<String>, ShellError> {
+        match &self {
             Shell::Zsh => Ok(vec![".zshrc".to_string()]),
             Shell::Bash => Ok(vec![
                 ".bashrc".to_string(),
@@ -127,7 +127,7 @@ fn are_dotfiles_nix_managed(shell: &Shell) -> Result<bool, ShellError> {
     let home_dir =
         PathBuf::from(std::env::var("HOME").expect("Environment variable `HOME` not set"));
 
-    let dotfiles = Shell::get_dotfiles(shell)?;
+    let dotfiles = shell.get_dotfiles()?;
 
     // Iterate over each dotfile and check if it is managed by nix
     for dotfile in dotfiles {
