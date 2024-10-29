@@ -106,13 +106,19 @@ fn are_dotfiles_nix_managed(shell: &Shell) -> bool {
         PathBuf::from(std::env::var("HOME").expect("Environment variable `HOME` not set"));
 
     // Iterate over each dotfile and check if it is managed by nix
-    let mut managed = vec![];
+    let mut managed = 0;
     for dotfile in shell.get_dotfiles() {
         let path = home_dir.join(dotfile);
         if path.exists() {
             match std::fs::read_link(path) {
                 Ok(target) => {
-                    managed.push(super::direnv::is_path_in_nix_store(&target));
+                    if super::direnv::is_path_in_nix_store(&target) {
+                        managed += 1;
+                    } else {
+                        // TODO: Return the dotfiles not managed by Nix
+                        // To be shown to the user
+                        return false;
+                    };
                 }
                 Err(err) => {
                     tracing::warn!("Dotfile {:?} error: {:?}", dotfile, err);
@@ -120,8 +126,5 @@ fn are_dotfiles_nix_managed(shell: &Shell) -> bool {
             }
         }
     }
-    // If all is true, return true
-    managed.iter().all(|&x| x)
-        // Some dotfile must exist
-        && !managed.is_empty()
+    managed > 0
 }
