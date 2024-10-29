@@ -3,15 +3,14 @@ use std::path::{Path, PathBuf};
 
 use crate::traits::{Check, CheckResult, Checkable};
 
-/// Shell types
-///
+/// An Unix shell
 #[derive(Debug, Default, Serialize, Deserialize, Clone, Hash, Eq, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum Shell {
     Zsh,
     #[default]
     Bash,
-    /// An unknown string located at given path
+    /// Unknown shell
     Other(String),
 }
 
@@ -27,17 +26,17 @@ impl std::fmt::Display for Shell {
 }
 
 impl Shell {
-    /// Returns User's default `Shell`
-    fn get_shell() -> Result<Self, ShellError> {
+    /// Returns the user's current [Shell]
+    fn current_shell() -> Result<Self, ShellError> {
         let shell_path =
             PathBuf::from(std::env::var("SHELL").expect("Environment variable `SHELL` not set"));
         Self::from_path(shell_path)
     }
 
-    /// Creates a `Shell` from a path string.
+    /// Lookup [Shell] from the given executable path
     /// For example if path is `/bin/zsh`, it would return `Zsh`
-    fn from_path(path: PathBuf) -> Result<Self, ShellError> {
-        let shell_name = path
+    fn from_path(exe_path: PathBuf) -> Result<Self, ShellError> {
+        let shell_name = exe_path
             .file_name()
             .ok_or_else(|| {
                 ShellError::InvalidPath("Path does not have a file name component".to_owned())
@@ -52,8 +51,8 @@ impl Shell {
         }
     }
 
-    /// Returns the dotfiles for a given `shell`
-    fn get_dotfiles_of_shell(shell: &Shell) -> Result<Vec<String>, ShellError> {
+    /// Get shell dotfiles
+    fn get_dotfiles(shell: &Shell) -> Result<Vec<String>, ShellError> {
         match shell {
             Shell::Zsh => Ok(vec![".zshrc".to_string()]),
             Shell::Bash => Ok(vec![
@@ -76,7 +75,7 @@ impl Checkable for Shell {
             title: "Shell Configurations".to_string(),
             info: "Dotfiles managed by Nix".to_string(),
             result: {
-                let shell = Shell::get_shell();
+                let shell = Shell::current_shell();
                 match shell {
                     Ok(shell) => check_shell_configuration(shell),
                     Err(error) => handle_shell_error(error),
@@ -88,7 +87,7 @@ impl Checkable for Shell {
     }
 }
 
-/// Checks configurations of shell through dotfiles
+/// Checks configurations of a [Shell] through dotfiles
 fn check_shell_configuration(shell: Shell) -> CheckResult {
     match are_dotfiles_nix_managed(&shell) {
         Ok(true) => CheckResult::Green,
@@ -118,7 +117,7 @@ fn handle_shell_error(error: ShellError) -> CheckResult {
     }
 }
 
-/// Checks if all dotfiles for a given shell are managed by nix
+/// Checks if all dotfiles for a given [Shell] are managed by nix
 ///
 /// # Returns
 /// * `true` if all dotfiles are nix-managed
@@ -128,7 +127,7 @@ fn are_dotfiles_nix_managed(shell: &Shell) -> Result<bool, ShellError> {
     let home_dir =
         PathBuf::from(std::env::var("HOME").expect("Environment variable `HOME` not set"));
 
-    let dotfiles = Shell::get_dotfiles_of_shell(shell)?;
+    let dotfiles = Shell::get_dotfiles(shell)?;
 
     // Iterate over each dotfile and check if it is managed by nix
     for dotfile in dotfiles {
