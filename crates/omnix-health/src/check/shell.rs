@@ -41,10 +41,9 @@ impl Shell {
             .ok_or_else(|| {
                 ShellError::InvalidPath("Path does not have a file name component".to_owned())
             })?
-            .to_str()
-            .ok_or_else(|| ShellError::InvalidPath("File name is not valid UTF-8".to_owned()))?;
+            .to_string_lossy();
 
-        match shell_name {
+        match shell_name.as_ref() {
             "zsh" => Ok(Shell::Zsh),
             "bash" => Ok(Shell::Bash),
             _ => Ok(Shell::Other(exe_path)),
