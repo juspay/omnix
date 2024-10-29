@@ -49,14 +49,10 @@ impl Shell {
     }
 
     /// Get shell dotfiles
-    fn get_dotfiles(&self) -> Result<Vec<String>, ShellError> {
+    fn get_dotfiles(&self) -> Result<Vec<&'static str>, ShellError> {
         match &self {
-            Shell::Zsh => Ok(vec![".zshrc".to_string()]),
-            Shell::Bash => Ok(vec![
-                ".bashrc".to_string(),
-                ".bash_profile".to_string(),
-                ".profile".to_string(),
-            ]),
+            Shell::Zsh => Ok(vec![".zshrc"]),
+            Shell::Bash => Ok(vec![".bashrc", ".bash_profile", ".profile"]),
             Shell::Other(path) => Err(ShellError::UnsupportedShell(path.clone())),
         }
     }
@@ -124,7 +120,7 @@ fn are_dotfiles_nix_managed(shell: &Shell) -> Result<bool, ShellError> {
 
     // Iterate over each dotfile and check if it is managed by nix
     for dotfile in dotfiles {
-        if !check_dotfile_is_managed_by_nix(&home_dir, &dotfile)? {
+        if !check_dotfile_is_managed_by_nix(&home_dir, dotfile)? {
             return Ok(false);
         }
     }
