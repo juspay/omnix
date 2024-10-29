@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::path::{PathBuf};
+use std::path::PathBuf;
 
 use crate::traits::{Check, CheckResult, Checkable};
 
@@ -46,7 +46,10 @@ impl Shell {
         match shell_name.as_ref() {
             "zsh" => Some(Shell::Zsh),
             "bash" => Some(Shell::Bash),
-            _ => None,
+            _ => {
+                tracing::warn!("Unrecognized shell: {:?}", exe_path);
+                None
+            }
         }
     }
 
@@ -68,7 +71,7 @@ impl Checkable for ShellCheck {
         let shell = match Shell::current_shell() {
             Some(shell) => shell,
             None => {
-                panic!("Unsupported shell");
+                panic!("Unsupported shell. Please file an issue at <https://github.com/juspay/omnix/issues>");
             }
         };
         let check = Check {
@@ -88,18 +91,6 @@ fn check_shell_configuration(shell: Shell) -> CheckResult {
         false => CheckResult::Red {
             msg: format!("Default Shell: {:?} is not managed by Nix", shell),
             suggestion: "You can use `home-manager` to manage shell configuration. See <https://github.com/juspay/nixos-unified-template>".to_string(),
-        },
-    }
-}
-
-// Error handler for the Shell
-fn handle_shell_error(error: ShellError) -> CheckResult {
-    match error {
-        ShellError::DotfilesNotFound(err) => CheckResult::Red {
-            msg: err.to_string(),
-            suggestion:
-                "Manage Zsh or Bash shells through https://github.com/juspay/nixos-unified-template"
-                    .to_owned(),
         },
     }
 }
@@ -133,19 +124,4 @@ fn are_dotfiles_nix_managed(shell: &Shell) -> bool {
     managed.iter().all(|&x| x) 
         // Some dotfile must exist
         && !managed.is_empty()
-}
-
-#[derive(thiserror::Error, Debug)]
-pub struct DotfilesNotFound(#[from] std::io::Error);
-
-impl std::fmt::Display for DotfilesNotFound {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self.0)
-    }
-}
-
-#[derive(thiserror::Error, Debug)]
-pub enum ShellError {
-    #[error("Cannot read symlink target of : {0}")]
-    DotfilesNotFound(String),
 }
