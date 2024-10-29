@@ -8,7 +8,7 @@ use_omnix() {
     --accept-flake-config \
     --option builders '' \
     -j0 \
-    run github:juspay/omnix -- hack --stage=pre-shell $* || exit 1
+    run github:juspay/omnix -- develop --stage=pre-shell $* || exit 1
 
   use flake ${*:-.} --accept-flake-config
 
@@ -16,6 +16,6 @@ use_omnix() {
     # Nix shell failed; move on!
     exit
   else
-    nix --accept-flake-config run github:juspay/omnix -- hack --stage=post-shell $*
+    nix --accept-flake-config run github:juspay/omnix -- develop --stage=post-shell $*
   fi
 }
