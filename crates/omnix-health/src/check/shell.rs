@@ -27,16 +27,6 @@ pub enum Shell {
     Bash,
 }
 
-impl std::fmt::Display for Shell {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let shell_str = match self {
-            Shell::Zsh => "zsh",
-            Shell::Bash => "bash",
-        };
-        write!(f, "{}", shell_str)
-    }
-}
-
 impl Shell {
     /// Returns the user's current [Shell]
     fn current_shell() -> Option<Self> {
@@ -96,9 +86,9 @@ fn check_shell_configuration(shell: Shell) -> CheckResult {
     match are_dotfiles_nix_managed(&shell) {
         Ok(true) => CheckResult::Green,
         Ok(false) => CheckResult::Red {
-            msg: format!("Default Shell: {} is not managed by Nix", shell),
+            msg: format!("Default Shell: {:?} is not managed by Nix", shell),
             suggestion: format!(
-                "Manage {} configurations through https://github.com/juspay/nixos-unified-template",
+                "Manage {:?} configurations through https://github.com/juspay/nixos-unified-template",
                 shell
             ),
         },
