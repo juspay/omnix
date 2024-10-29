@@ -84,12 +84,11 @@ impl Checkable for ShellCheck {
 /// Checks configurations of a [Shell] through dotfiles
 fn check_shell_configuration(shell: Shell) -> CheckResult {
     match are_dotfiles_nix_managed(&shell) {
-        Ok(true) => CheckResult::Green,
-        Ok(false) => CheckResult::Red {
+        true => CheckResult::Green,
+        false => CheckResult::Red {
             msg: format!("Default Shell: {:?} is not managed by Nix", shell),
             suggestion: "You can use `home-manager` to manage shell configuration. See <https://github.com/juspay/nixos-unified-template>".to_string(),
         },
-        Err(error) => handle_shell_error(error),
     }
 }
 
@@ -111,24 +110,28 @@ fn handle_shell_error(error: ShellError) -> CheckResult {
 /// * `true` if all dotfiles are nix-managed
 /// * `false` if any dotfile is not nix-managed
 /// * `Err` if there was an error during the check
-fn are_dotfiles_nix_managed(shell: &Shell) -> Result<bool, ShellError> {
+fn are_dotfiles_nix_managed(shell: &Shell) -> bool {
     let home_dir =
         PathBuf::from(std::env::var("HOME").expect("Environment variable `HOME` not set"));
 
     // Iterate over each dotfile and check if it is managed by nix
     for dotfile in shell.get_dotfiles() {
-        if !check_dotfile_is_managed_by_nix(&home_dir, dotfile)? {
-            return Ok(false);
+        if !check_dotfile_is_managed_by_nix(&home_dir, dotfile) {
+            return false;
         }
     }
-    Ok(true)
+    true
 }
 
-fn check_dotfile_is_managed_by_nix(home_dir: &Path, dotfile: &str) -> Result<bool, ShellError> {
+fn check_dotfile_is_managed_by_nix(home_dir: &Path, dotfile: &str) -> bool {
     let path = home_dir.join(dotfile);
-    let target =
-        std::fs::read_link(path).map_err(|_| ShellError::DotfilesNotFound(dotfile.to_owned()))?;
-    Ok(super::direnv::is_path_in_nix_store(&target))
+    match std::fs::read_link(path) {
+        Ok(target) => super::direnv::is_path_in_nix_store(&target),
+        Err(err) => {
+            tracing::warn!("Dotfile {:?} error: {:?}", dotfile, err);
+            false
+        }
+    }
 }
 
 #[derive(thiserror::Error, Debug)]
