@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::path::{Path, PathBuf};
+use std::path::{PathBuf};
 
 use crate::traits::{Check, CheckResult, Checkable};
 
@@ -115,23 +115,24 @@ fn are_dotfiles_nix_managed(shell: &Shell) -> bool {
         PathBuf::from(std::env::var("HOME").expect("Environment variable `HOME` not set"));
 
     // Iterate over each dotfile and check if it is managed by nix
+    let mut managed = vec![];
     for dotfile in shell.get_dotfiles() {
-        if !check_dotfile_is_managed_by_nix(&home_dir, dotfile) {
-            return false;
-        }
+        let path = home_dir.join(dotfile);
+        if path.exists() {
+            match std::fs::read_link(path) {
+                Ok(target) => {
+                    managed.push(super::direnv::is_path_in_nix_store(&target));
+                },
+                Err(err) => {
+                    tracing::warn!("Dotfile {:?} error: {:?}", dotfile, err);
+                }
+            }
+        } 
     }
-    true
-}
-
-fn check_dotfile_is_managed_by_nix(home_dir: &Path, dotfile: &str) -> bool {
-    let path = home_dir.join(dotfile);
-    match std::fs::read_link(path) {
-        Ok(target) => super::direnv::is_path_in_nix_store(&target),
-        Err(err) => {
-            tracing::warn!("Dotfile {:?} error: {:?}", dotfile, err);
-            false
-        }
-    }
+    // If all is true, return true
+    managed.iter().all(|&x| x) 
+        // Some dotfile must exist
+        && !managed.is_empty()
 }
 
 #[derive(thiserror::Error, Debug)]
