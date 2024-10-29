@@ -11,7 +11,7 @@ pub enum Shell {
     #[default]
     Bash,
     /// Unknown shell
-    Other(String),
+    Other(PathBuf),
 }
 
 impl std::fmt::Display for Shell {
@@ -19,7 +19,7 @@ impl std::fmt::Display for Shell {
         let shell_str = match self {
             Shell::Zsh => "zsh",
             Shell::Bash => "bash",
-            Shell::Other(shell) => shell,
+            Shell::Other(shell) => &format!("unknown({})", shell.to_string_lossy()),
         };
         write!(f, "{}", shell_str)
     }
@@ -47,7 +47,7 @@ impl Shell {
         match shell_name {
             "zsh" => Ok(Shell::Zsh),
             "bash" => Ok(Shell::Bash),
-            shell => Ok(Shell::Other(shell.to_string())),
+            _ => Ok(Shell::Other(exe_path)),
         }
     }
 
@@ -60,7 +60,7 @@ impl Shell {
                 ".bash_profile".to_string(),
                 ".profile".to_string(),
             ]),
-            Shell::Other(shell) => Err(ShellError::UnsupportedShell(shell.to_string())),
+            Shell::Other(path) => Err(ShellError::UnsupportedShell(path.clone())),
         }
     }
 }
@@ -105,8 +105,8 @@ fn check_shell_configuration(shell: Shell) -> CheckResult {
 // Error handler for the Shell
 fn handle_shell_error(error: ShellError) -> CheckResult {
     match error {
-        ShellError::UnsupportedShell(err) => CheckResult::Red {
-            msg: err.to_string(),
+        ShellError::UnsupportedShell(path) => CheckResult::Red {
+            msg: format!("Unknown shell: {}", path.to_string_lossy()),
             suggestion: "We support only Bash & Zsh Shells. Manage Zsh or Bash through https://github.com/juspay/nixos-unified-template".to_owned(),
         },
         ShellError::DotfilesNotFound(err) => CheckResult::Red {
@@ -157,7 +157,7 @@ impl std::fmt::Display for DotfilesNotFound {
 #[derive(thiserror::Error, Debug)]
 pub enum ShellError {
     #[error("Checking configurations for {0} is not supported")]
-    UnsupportedShell(String),
+    UnsupportedShell(PathBuf),
 
     #[error("Cannot read symlink target of : {0}")]
     DotfilesNotFound(String),
