@@ -87,10 +87,7 @@ fn check_shell_configuration(shell: Shell) -> CheckResult {
         Ok(true) => CheckResult::Green,
         Ok(false) => CheckResult::Red {
             msg: format!("Default Shell: {:?} is not managed by Nix", shell),
-            suggestion: format!(
-                "Manage {:?} configurations through https://github.com/juspay/nixos-unified-template",
-                shell
-            ),
+            suggestion: "You can use `home-manager` to manage shell configuration. See <https://github.com/juspay/nixos-unified-template>".to_string(),
         },
         Err(error) => handle_shell_error(error),
     }
