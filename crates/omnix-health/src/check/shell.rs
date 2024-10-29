@@ -68,10 +68,19 @@ impl Checkable for ShellCheck {
         _nix_info: &nix_rs::info::NixInfo,
         _flake: Option<&nix_rs::flake::url::FlakeUrl>,
     ) -> Vec<Check> {
+        if !self.enable {
+            return vec![];
+        }
         let shell = match Shell::current_shell() {
             Some(shell) => shell,
             None => {
-                panic!("Unsupported shell. Please file an issue at <https://github.com/juspay/omnix/issues>");
+                let msg = "Unsupported shell. Please file an issue at <https://github.com/juspay/omnix/issues>";
+                if self.required {
+                    panic!("{}", msg);
+                } else {
+                    tracing::warn!("{}", msg);
+                    return vec![];
+                }
             }
         };
         let check = Check {
