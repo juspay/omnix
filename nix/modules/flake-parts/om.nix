@@ -14,20 +14,29 @@
                 # name = "default";
                 args = [ "show" "." ];
               };
-              build-omnix-source = {
-                type = "app";
-                name = "build-omnix-source";
-              };
               binary-size-is-small = {
                 type = "app";
                 name = "check-closure-size";
                 systems = [ "x86_64-linux" ]; # We have static binary for Linux only.
               };
+              omnix-source-is-buildable = {
+                type = "app";
+                name = "omnix-source-is-buildable";
+              };
               cargo-tests = {
                 type = "devshell";
-                # name = "default";
-                command = [ "cargo" "test" ];
-                systems = [ "x86_64-linux" "aarch64-darwin" ]; # Too slow on rosetta
+                command = [ "just" "cargo-test" ];
+                systems = [ "x86_64-linux" "aarch64-darwin" ]; # Avoid emulated systems
+              };
+              cargo-clippy = {
+                type = "devshell";
+                command = [ "just" "clippy" ];
+                systems = [ "x86_64-linux" "aarch64-darwin" ]; # Avoid emulated systems
+              };
+              cargo-doc = {
+                type = "devshell";
+                command = [ "just" "cargo-doc" ];
+                systems = [ "x86_64-linux" "aarch64-darwin" ]; # Avoid emulated systems
               };
             };
           };
@@ -62,7 +71,7 @@
         caches.required = [ "https://om.cachix.org" ];
         direnv.required = true;
       };
-      hack.default = {
+      develop.default = {
         readme = ''
           🍾 Welcome to the **omnix** project
 

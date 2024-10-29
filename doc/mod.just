@@ -8,8 +8,3 @@ run:
 # Do link checks on docs
 check:
     nix run .#linkCheck
-
-# Run cargo docs server (live reloading)
-[no-cd]
-cargo:
-    cargo-doc-live

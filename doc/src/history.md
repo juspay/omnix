@@ -4,7 +4,7 @@
 
 ### Enhancements
 
-- `om hack`: New command
+- `om develop`: New command
 - `om init`
   - Initial working version of `om init` command
 - `om health`

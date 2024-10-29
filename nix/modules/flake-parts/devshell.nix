@@ -21,6 +21,7 @@ in
         INSPECT_FLAKE
         OMNIX_SOURCE
         OM_INIT_REGISTRY
+        CACHIX_BIN
         ;
 
       packages = with pkgs; [
@@ -30,7 +31,6 @@ in
         cargo-expand
         cargo-nextest
         cargo-audit
-        config.process-compose.cargo-doc-live.outputs.package
         # For when we start using Tauri
         cargo-tauri
         trunk

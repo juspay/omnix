@@ -26,12 +26,7 @@ impl Checkable for Caches {
         nix_info: &info::NixInfo,
         _: Option<&nix_rs::flake::url::FlakeUrl>,
     ) -> Vec<Check> {
-        let val = &nix_info.nix_config.substituters.value;
-        let missing_caches = self
-            .required
-            .iter()
-            .filter(|required_cache| !val.contains(required_cache))
-            .collect::<Vec<_>>();
+        let missing_caches = self.get_missing_caches(nix_info);
         let result = if missing_caches.is_empty() {
             CheckResult::Green
         } else {
@@ -54,7 +49,11 @@ impl Checkable for Caches {
             title: "Nix Caches in use".to_string(),
             info: format!(
                 "substituters = {}",
-                val.iter()
+                nix_info
+                    .nix_config
+                    .substituters
+                    .value
+                    .iter()
                     .map(|url| url.to_string())
                     .collect::<Vec<_>>()
                     .join(" ")
@@ -63,5 +62,44 @@ impl Checkable for Caches {
             required: true,
         };
         vec![check]
+    }
+}
+
+impl Caches {
+    /// Get subset of required caches not already in use
+    pub fn get_missing_caches(&self, nix_info: &info::NixInfo) -> Vec<Url> {
+        let val = &nix_info.nix_config.substituters.value;
+        self.required
+            .iter()
+            .filter(|required_cache| !val.contains(required_cache))
+            .cloned()
+            .collect()
+    }
+}
+
+pub struct CachixCache(pub String);
+
+impl CachixCache {
+    /// Parse the https URL into a CachixCache
+    pub fn from_url(url: &Url) -> Option<Self> {
+        // Parse https://foo.cachix.org into CachixCache("foo")
+        // If domain is not cachix.org, return None.
+        let host = url.host_str()?;
+        if host.ends_with(".cachix.org") {
+            Some(CachixCache(host.split('.').next()?.to_string()))
+        } else {
+            None
+        }
+    }
+
+    /// Run `cachix use` for this cache
+    pub async fn cachix_use(&self) -> anyhow::Result<()> {
+        let mut cmd = tokio::process::Command::new(env!("CACHIX_BIN"));
+        cmd.arg("use").arg(&self.0);
+        let status = cmd.spawn()?.wait().await?;
+        if !status.success() {
+            anyhow::bail!("Failed to run `cachix use {}`", self.0);
+        }
+        Ok(())
     }
 }

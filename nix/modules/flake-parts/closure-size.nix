@@ -1,7 +1,13 @@
 { ... }:
 
 let
-  maxSizeInMB = 60;
+
+  maxSize = 1000000 * maxSizeInMB.total;
+  maxSizeInMB = rec {
+    total = omnix + cachix;
+    omnix = 60;
+    cachix = 150;
+  };
 in
 {
   perSystem = { pkgs, ... }: {
@@ -13,7 +19,7 @@ in
         meta.description = "Check that omnix's nix closure size remains reasonably small";
         text = ''
           set -o pipefail
-          MAX_CLOSURE_SIZE=$(echo "${builtins.toString maxSizeInMB} * 1000000" | bc)
+          MAX_CLOSURE_SIZE=${builtins.toString maxSize}
           CLOSURE_SIZE=$(nix path-info --json -S .#default | jq '.[0]'.closureSize)
           echo "Omnix closure size: $CLOSURE_SIZE"
           echo "    Max closure size: $MAX_CLOSURE_SIZE"

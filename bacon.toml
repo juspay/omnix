@@ -96,14 +96,14 @@ command = [
 need_stdout = true
 allow_warnings = true
 
-[jobs.hack]
+[jobs.develop]
 command = [
   "cargo",
   "run",
   "--color",
   "always",
   "--",
-  "hack",
+  "develop",
   ".",
 ]
 need_stdout = true

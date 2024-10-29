@@ -43,10 +43,6 @@ pub struct NixCmd {
     /// Consider all previously downloaded files out-of-date.
     #[cfg_attr(feature = "clap", arg(long))]
     pub refresh: bool,
-
-    /// The command to run instead of `nix`.
-    #[cfg_attr(feature = "clap", arg(long))]
-    pub command: Option<String>,
 }
 
 impl Default for NixCmd {
@@ -58,7 +54,6 @@ impl Default for NixCmd {
             extra_experimental_features: vec![],
             extra_access_tokens: vec![],
             refresh: false,
-            command: None,
         }
     }
 }
@@ -74,14 +69,14 @@ static NIXCMD: OnceCell<NixCmd> = OnceCell::const_new();
 /// rest of the instrumentation parameters.
 #[instrument(name = "command")]
 pub fn trace_cmd(cmd: &tokio::process::Command) {
-    trace_cmd_with("〕", cmd);
+    trace_cmd_with("❄️ ", cmd);
 }
 
 /// Like [trace_cmd] but with a custom icon
 #[instrument(name = "command")]
 pub fn trace_cmd_with(icon: &str, cmd: &tokio::process::Command) {
     use colored::Colorize;
-    tracing::info!("{} {}️", icon, to_cli(cmd).dimmed());
+    tracing::info!("{}", format!("{} {}️", icon, to_cli(cmd)).dimmed());
 }
 
 impl NixCmd {
@@ -113,7 +108,7 @@ impl NixCmd {
 
     /// Return a [Command] for this [NixCmd] configuration
     pub fn command(&self) -> Command {
-        let mut cmd = Command::new(self.command.as_deref().unwrap_or("nix"));
+        let mut cmd = Command::new("nix");
         cmd.kill_on_drop(true);
         cmd.args(self.args());
         cmd

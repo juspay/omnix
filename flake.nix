@@ -13,8 +13,6 @@
     rust-flake.inputs.nixpkgs.follows = "nixpkgs";
     treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
-    process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
-    cargo-doc-live.url = "github:srid/cargo-doc-live";
     cachix-push.url = "github:juspay/cachix-push";
 
     # omnix-ci

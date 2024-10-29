@@ -26,7 +26,7 @@ omnix-health = { workspace = true }
 nix_rs = { workspace = true }
 omnix-common = { workspace = true }
 omnix-init = { workspace = true }
-omnix-hack = { workspace = true }
+omnix-develop = { workspace = true }
 tabled = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }

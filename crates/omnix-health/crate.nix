@@ -9,9 +9,7 @@ let
   inherit (flake) inputs;
 in
 {
-  autoWire = lib.optionals
-    (lib.elem pkgs.system [ "x86_64-linux" "aarch64-darwin" ])
-    [ "doc" "clippy" ];
+  autoWire = [ ];
   crane = {
     args = {
       buildInputs = lib.optionals pkgs.stdenv.isDarwin (
@@ -25,6 +23,7 @@ in
         INSPECT_FLAKE
         NIX_SYSTEMS
         ;
+      CACHIX_BIN = pkgs.cachix + /bin/cachix;
       nativeBuildInputs = with pkgs; [
         nix # Tests need nix cli
       ];
