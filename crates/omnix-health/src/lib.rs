@@ -6,6 +6,7 @@ pub mod report;
 pub mod traits;
 
 use anyhow::Context;
+use check::shell::ShellCheck;
 use colored::Colorize;
 
 use check::direnv::Direnv;
@@ -20,7 +21,7 @@ use traits::Check;
 
 use self::check::{
     caches::Caches, flake_enabled::FlakeEnabled, max_jobs::MaxJobs, min_nix_version::MinNixVersion,
-    rosetta::Rosetta, shell::Shell, trusted_users::TrustedUsers,
+    rosetta::Rosetta, trusted_users::TrustedUsers,
 };
 
 /// Nix Health check of user's install
@@ -36,7 +37,7 @@ pub struct NixHealth {
     pub trusted_users: TrustedUsers,
     pub caches: Caches,
     pub direnv: Direnv,
-    pub shell: Shell,
+    pub shell: ShellCheck,
 }
 
 /// Convert [NixHealth] into a generic [Vec] of checks

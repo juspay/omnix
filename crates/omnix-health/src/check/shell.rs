@@ -3,12 +3,27 @@ use std::path::{Path, PathBuf};
 
 use crate::traits::{Check, CheckResult, Checkable};
 
+#[derive(Debug, Serialize, Deserialize, Clone, Hash, Eq, PartialEq)]
+pub struct ShellCheck {
+    pub(crate) enable: bool,
+    /// Whether to produce [Check::required] checks
+    pub(crate) required: bool,
+}
+
+impl Default for ShellCheck {
+    fn default() -> Self {
+        Self {
+            enable: true,
+            required: false,
+        }
+    }
+}
+
 /// An Unix shell
-#[derive(Debug, Default, Serialize, Deserialize, Clone, Hash, Eq, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Clone, Hash, Eq, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum Shell {
     Zsh,
-    #[default]
     Bash,
 }
 
@@ -54,7 +69,7 @@ impl Shell {
     }
 }
 
-impl Checkable for Shell {
+impl Checkable for ShellCheck {
     fn check(
         &self,
         _nix_info: &nix_rs::info::NixInfo,
