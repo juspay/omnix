@@ -10,8 +10,6 @@ pub enum Shell {
     Zsh,
     #[default]
     Bash,
-    /// Unknown shell
-    Other(PathBuf),
 }
 
 impl std::fmt::Display for Shell {
@@ -19,7 +17,6 @@ impl std::fmt::Display for Shell {
         let shell_str = match self {
             Shell::Zsh => "zsh",
             Shell::Bash => "bash",
-            Shell::Other(shell) => &format!("unknown({})", shell.to_string_lossy()),
         };
         write!(f, "{}", shell_str)
     }
@@ -27,7 +24,7 @@ impl std::fmt::Display for Shell {
 
 impl Shell {
     /// Returns the user's current [Shell]
-    fn current_shell() -> Self {
+    fn current_shell() -> Option<Self> {
         let shell_path =
             PathBuf::from(std::env::var("SHELL").expect("Environment variable `SHELL` not set"));
         Self::from_path(shell_path)
@@ -35,16 +32,16 @@ impl Shell {
 
     /// Lookup [Shell] from the given executable path
     /// For example if path is `/bin/zsh`, it would return `Zsh`
-    fn from_path(exe_path: PathBuf) -> Self {
+    fn from_path(exe_path: PathBuf) -> Option<Self> {
         let shell_name = exe_path
             .file_name()
             .expect("Path does not have a file name component")
             .to_string_lossy();
 
         match shell_name.as_ref() {
-            "zsh" => Shell::Zsh,
-            "bash" => Shell::Bash,
-            _ => Shell::Other(exe_path),
+            "zsh" => Some(Shell::Zsh),
+            "bash" => Some(Shell::Bash),
+            _ => None,
         }
     }
 
@@ -53,7 +50,6 @@ impl Shell {
         match &self {
             Shell::Zsh => Ok(vec![".zshrc"]),
             Shell::Bash => Ok(vec![".bashrc", ".bash_profile", ".profile"]),
-            Shell::Other(path) => Err(ShellError::UnsupportedShell(path.clone())),
         }
     }
 }
@@ -64,13 +60,16 @@ impl Checkable for Shell {
         _nix_info: &nix_rs::info::NixInfo,
         _flake: Option<&nix_rs::flake::url::FlakeUrl>,
     ) -> Vec<Check> {
+        let shell = match Shell::current_shell() {
+            Some(shell) => shell,
+            None => {
+                panic!("Unsupported shell");
+            }
+        };
         let check = Check {
             title: "Shell Configurations".to_string(),
             info: "Dotfiles managed by Nix".to_string(),
-            result: {
-                let shell = Shell::current_shell();
-                check_shell_configuration(shell)
-            },
+            result: check_shell_configuration(shell),
             required: false,
         };
         vec![check]
@@ -95,13 +94,11 @@ fn check_shell_configuration(shell: Shell) -> CheckResult {
 // Error handler for the Shell
 fn handle_shell_error(error: ShellError) -> CheckResult {
     match error {
-        ShellError::UnsupportedShell(path) => CheckResult::Red {
-            msg: format!("Unknown shell: {}", path.to_string_lossy()),
-            suggestion: "We support only Bash & Zsh Shells. Manage Zsh or Bash through https://github.com/juspay/nixos-unified-template".to_owned(),
-        },
         ShellError::DotfilesNotFound(err) => CheckResult::Red {
             msg: err.to_string(),
-            suggestion: "Manage Zsh or Bash shells through https://github.com/juspay/nixos-unified-template".to_owned(),
+            suggestion:
+                "Manage Zsh or Bash shells through https://github.com/juspay/nixos-unified-template"
+                    .to_owned(),
         },
     }
 }
@@ -145,9 +142,6 @@ impl std::fmt::Display for DotfilesNotFound {
 
 #[derive(thiserror::Error, Debug)]
 pub enum ShellError {
-    #[error("Checking configurations for {0} is not supported")]
-    UnsupportedShell(PathBuf),
-
     #[error("Cannot read symlink target of : {0}")]
     DotfilesNotFound(String),
 }
