@@ -47,7 +47,7 @@ impl Shell {
             "zsh" => Some(Shell::Zsh),
             "bash" => Some(Shell::Bash),
             _ => {
-                tracing::warn!("Unrecognized shell: {:?}", exe_path);
+                tracing::warn!("Unrecognized shell: {:?}. Please file an issue at <https://github.com/juspay/omnix/issues>", exe_path);
                 None
             }
         }
