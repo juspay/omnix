@@ -1,5 +1,5 @@
 use anyhow::Context;
-use std::path::{Path, PathBuf};
+use std::{env::current_dir, path::PathBuf};
 
 use nix_rs::{flake::url::FlakeUrl, info::NixInfo};
 use omnix_common::markdown::print_markdown;
@@ -10,7 +10,7 @@ use crate::config::DevelopConfig;
 /// A project that an be developed on locally.
 pub struct Project {
     /// The directory of the project.
-    pub dir: PathBuf,
+    pub dir: Option<PathBuf>,
     /// [FlakeUrl] corresponding to the project.
     pub flake: FlakeUrl,
     /// The develop configuration
@@ -18,9 +18,11 @@ pub struct Project {
 }
 
 impl Project {
-    pub async fn new(dir: &Path) -> anyhow::Result<Self> {
-        let dir = dir.canonicalize()?;
-        let flake: FlakeUrl = Into::<FlakeUrl>::into(dir.as_ref());
+    pub async fn new(flake: FlakeUrl) -> anyhow::Result<Self> {
+        let dir = match flake.as_local_path() {
+            Some(path) => Some(path.canonicalize()?),
+            None => None,
+        };
         let cfg = DevelopConfig::from_flake(&flake).await?;
         Ok(Self { dir, flake, cfg })
     }
@@ -85,7 +87,9 @@ pub async fn develop_on_pre_shell(prj: &Project) -> anyhow::Result<()> {
 
 pub async fn develop_on_post_shell(prj: &Project) -> anyhow::Result<()> {
     eprintln!();
-    print_markdown(&prj.dir, prj.cfg.readme.get_markdown()).await?;
+    let pwd = current_dir()?;
+    let dir = prj.dir.as_ref().unwrap_or(&pwd);
+    print_markdown(dir, prj.cfg.readme.get_markdown()).await?;
     Ok(())
 }
 
