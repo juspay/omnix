@@ -27,7 +27,7 @@ impl std::fmt::Display for Shell {
 
 impl Shell {
     /// Returns the user's current [Shell]
-    fn current_shell() -> Result<Self, ShellError> {
+    fn current_shell() -> Self {
         let shell_path =
             PathBuf::from(std::env::var("SHELL").expect("Environment variable `SHELL` not set"));
         Self::from_path(shell_path)
@@ -35,18 +35,16 @@ impl Shell {
 
     /// Lookup [Shell] from the given executable path
     /// For example if path is `/bin/zsh`, it would return `Zsh`
-    fn from_path(exe_path: PathBuf) -> Result<Self, ShellError> {
+    fn from_path(exe_path: PathBuf) -> Self {
         let shell_name = exe_path
             .file_name()
-            .ok_or_else(|| {
-                ShellError::InvalidPath("Path does not have a file name component".to_owned())
-            })?
+            .expect("Path does not have a file name component")
             .to_string_lossy();
 
         match shell_name.as_ref() {
-            "zsh" => Ok(Shell::Zsh),
-            "bash" => Ok(Shell::Bash),
-            _ => Ok(Shell::Other(exe_path)),
+            "zsh" => Shell::Zsh,
+            "bash" => Shell::Bash,
+            _ => Shell::Other(exe_path),
         }
     }
 
@@ -75,10 +73,7 @@ impl Checkable for Shell {
             info: "Dotfiles managed by Nix".to_string(),
             result: {
                 let shell = Shell::current_shell();
-                match shell {
-                    Ok(shell) => check_shell_configuration(shell),
-                    Err(error) => handle_shell_error(error),
-                }
+                check_shell_configuration(shell)
             },
             required: false,
         };
@@ -112,7 +107,6 @@ fn handle_shell_error(error: ShellError) -> CheckResult {
             msg: err.to_string(),
             suggestion: "Manage Zsh or Bash shells through https://github.com/juspay/nixos-unified-template".to_owned(),
         },
-        error => panic!("Error occurred while checking shell configuration: {}", error),
     }
 }
 
@@ -160,7 +154,4 @@ pub enum ShellError {
 
     #[error("Cannot read symlink target of : {0}")]
     DotfilesNotFound(String),
-
-    #[error("Invalid path: {0}")]
-    InvalidPath(String),
 }
