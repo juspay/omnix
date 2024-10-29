@@ -113,15 +113,15 @@ fn are_dotfiles_nix_managed(shell: &Shell) -> bool {
             match std::fs::read_link(path) {
                 Ok(target) => {
                     managed.push(super::direnv::is_path_in_nix_store(&target));
-                },
+                }
                 Err(err) => {
                     tracing::warn!("Dotfile {:?} error: {:?}", dotfile, err);
                 }
             }
-        } 
+        }
     }
     // If all is true, return true
-    managed.iter().all(|&x| x) 
+    managed.iter().all(|&x| x)
         // Some dotfile must exist
         && !managed.is_empty()
 }
