@@ -78,7 +78,7 @@ impl Checkable for ShellCheck {
                 if self.required {
                     panic!("{}", msg);
                 } else {
-                    tracing::warn!("{}", msg);
+                    tracing::warn!("Skipping shell dotfile check! {}", msg);
                     return vec![];
                 }
             }
