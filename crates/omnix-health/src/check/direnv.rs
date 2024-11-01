@@ -87,7 +87,7 @@ fn install_check(
 }
 
 /// Check that the path is in the Nix store (usually /nix/store)
-fn is_path_in_nix_store(path: &std::path::Path) -> bool {
+pub fn is_path_in_nix_store(path: &std::path::Path) -> bool {
     path.starts_with("/nix/store")
 }
 

@@ -6,6 +6,7 @@ pub mod report;
 pub mod traits;
 
 use anyhow::Context;
+use check::shell::ShellCheck;
 use colored::Colorize;
 
 use check::direnv::Direnv;
@@ -36,6 +37,7 @@ pub struct NixHealth {
     pub trusted_users: TrustedUsers,
     pub caches: Caches,
     pub direnv: Direnv,
+    pub shell: ShellCheck,
 }
 
 /// Convert [NixHealth] into a generic [Vec] of checks
@@ -53,6 +55,7 @@ impl<'a> IntoIterator for &'a NixHealth {
             &self.trusted_users,
             &self.caches,
             &self.direnv,
+            &self.shell,
         ];
         items.into_iter()
     }
@@ -112,7 +115,10 @@ pub async fn run_all_checks_with(flake_url: Option<FlakeUrl>) -> anyhow::Result<
         None => Ok(NixHealth::default()),
     }?;
 
-    tracing::info!("🩺️ Checking the health of your Nix setup");
+    tracing::info!(
+        "🩺️ Checking the health of your Nix setup (flake={:?}",
+        flake_url.as_ref()
+    );
 
     print_info_banner(flake_url.as_ref(), nix_info).await?;
 
