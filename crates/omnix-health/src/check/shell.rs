@@ -56,7 +56,7 @@ impl Shell {
     /// Get shell dotfiles
     fn get_dotfiles(&self) -> Vec<&'static str> {
         match &self {
-            Shell::Zsh => vec![".zshrc", ".zshenv"],
+            Shell::Zsh => vec![".zshrc", ".zshenv", ".zprofile"],
             Shell::Bash => vec![".bashrc", ".bash_profile", ".profile"],
         }
     }
