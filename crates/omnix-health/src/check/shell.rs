@@ -96,11 +96,22 @@ impl Shell {
     }
 
     /// Get shell dotfiles
-    fn get_dotfiles(&self) -> Vec<&'static str> {
+    fn dotfile_names(&self) -> Vec<&'static str> {
         match &self {
             Shell::Zsh => vec![".zshrc", ".zshenv", ".zprofile"],
             Shell::Bash => vec![".bashrc", ".bash_profile", ".profile"],
         }
+    }
+
+    /// Get the currently existing dotfiles under $HOME
+    fn get_dotfiles(&self) -> Vec<PathBuf> {
+        let home_dir =
+            PathBuf::from(std::env::var("HOME").expect("Environment variable `HOME` not set"));
+        self.dotfile_names()
+            .iter()
+            .map(|dotfile| home_dir.join(dotfile))
+            .filter(|path| path.exists())
+            .collect()
     }
 }
 
@@ -111,27 +122,21 @@ impl Shell {
 /// * `false` if any dotfile is not nix-managed
 /// * `Err` if there was an error during the check
 fn are_dotfiles_nix_managed(shell: &Shell) -> bool {
-    let home_dir =
-        PathBuf::from(std::env::var("HOME").expect("Environment variable `HOME` not set"));
-
     // Iterate over each dotfile and check if it is managed by nix
     let mut managed = 0;
-    for dotfile in shell.get_dotfiles() {
-        let path = home_dir.join(dotfile);
-        if path.exists() {
-            match std::fs::read_link(path) {
-                Ok(target) => {
-                    if super::direnv::is_path_in_nix_store(&target) {
-                        managed += 1;
-                    } else {
-                        // TODO: Return the dotfiles not managed by Nix
-                        // To be shown to the user
-                        return false;
-                    };
-                }
-                Err(err) => {
-                    tracing::warn!("Dotfile {:?} error: {:?}", dotfile, err);
-                }
+    for path in &shell.get_dotfiles() {
+        match std::fs::read_link(path) {
+            Ok(target) => {
+                if super::direnv::is_path_in_nix_store(&target) {
+                    managed += 1;
+                } else {
+                    // TODO: Return the dotfiles not managed by Nix
+                    // To be shown to the user
+                    return false;
+                };
+            }
+            Err(err) => {
+                tracing::warn!("Dotfile {:?} symlink error: {:?}; ignoring.", path, err);
             }
         }
     }
