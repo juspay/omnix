@@ -52,21 +52,6 @@ impl Checkable for ShellCheck {
 
 /// Checks configurations of a [Shell] through dotfiles
 fn check_shell_configuration(shell: Shell) -> CheckResult {
-    match are_dotfiles_nix_managed(&shell) {
-        true => CheckResult::Green,
-        false => CheckResult::Red {
-            msg: format!("Default Shell: {:?} is not managed by Nix", shell),
-            suggestion: "You can use `home-manager` to manage shell configuration. See <https://github.com/juspay/nixos-unified-template>".to_string(),
-        },
-    }
-}
-/// Checks if all dotfiles for a given [Shell] are managed by nix
-///
-/// # Returns
-/// * `true` if all dotfiles are nix-managed
-/// * `false` if any dotfile is not nix-managed
-/// * `Err` if there was an error during the check
-fn are_dotfiles_nix_managed(shell: &Shell) -> bool {
     // Iterate over each dotfile and check if it is managed by nix
     let mut managed = 0;
     for path in &shell.get_dotfiles() {
@@ -77,7 +62,7 @@ fn are_dotfiles_nix_managed(shell: &Shell) -> bool {
                 } else {
                     // TODO: Return the dotfiles not managed by Nix
                     // To be shown to the user
-                    return false;
+                    break;
                 };
             }
             Err(err) => {
@@ -85,7 +70,14 @@ fn are_dotfiles_nix_managed(shell: &Shell) -> bool {
             }
         }
     }
-    managed > 0
+
+    match managed > 0 {
+        true => CheckResult::Green,
+        false => CheckResult::Red {
+            msg: format!("Default Shell: {:?} is not managed by Nix", shell),
+            suggestion: "You can use `home-manager` to manage shell configuration. See <https://github.com/juspay/nixos-unified-template>".to_string(),
+        },
+    }
 }
 
 /// An Unix shell
