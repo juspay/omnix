@@ -60,6 +60,33 @@ fn check_shell_configuration(shell: Shell) -> CheckResult {
         },
     }
 }
+/// Checks if all dotfiles for a given [Shell] are managed by nix
+///
+/// # Returns
+/// * `true` if all dotfiles are nix-managed
+/// * `false` if any dotfile is not nix-managed
+/// * `Err` if there was an error during the check
+fn are_dotfiles_nix_managed(shell: &Shell) -> bool {
+    // Iterate over each dotfile and check if it is managed by nix
+    let mut managed = 0;
+    for path in &shell.get_dotfiles() {
+        match std::fs::read_link(path) {
+            Ok(target) => {
+                if super::direnv::is_path_in_nix_store(&target) {
+                    managed += 1;
+                } else {
+                    // TODO: Return the dotfiles not managed by Nix
+                    // To be shown to the user
+                    return false;
+                };
+            }
+            Err(err) => {
+                tracing::warn!("Dotfile {:?} symlink error: {:?}; ignoring.", path, err);
+            }
+        }
+    }
+    managed > 0
+}
 
 /// An Unix shell
 #[derive(Debug, Serialize, Deserialize, Clone, Hash, Eq, PartialEq)]
@@ -113,32 +140,4 @@ impl Shell {
             .filter(|path| path.exists())
             .collect()
     }
-}
-
-/// Checks if all dotfiles for a given [Shell] are managed by nix
-///
-/// # Returns
-/// * `true` if all dotfiles are nix-managed
-/// * `false` if any dotfile is not nix-managed
-/// * `Err` if there was an error during the check
-fn are_dotfiles_nix_managed(shell: &Shell) -> bool {
-    // Iterate over each dotfile and check if it is managed by nix
-    let mut managed = 0;
-    for path in &shell.get_dotfiles() {
-        match std::fs::read_link(path) {
-            Ok(target) => {
-                if super::direnv::is_path_in_nix_store(&target) {
-                    managed += 1;
-                } else {
-                    // TODO: Return the dotfiles not managed by Nix
-                    // To be shown to the user
-                    return false;
-                };
-            }
-            Err(err) => {
-                tracing::warn!("Dotfile {:?} symlink error: {:?}; ignoring.", path, err);
-            }
-        }
-    }
-    managed > 0
 }
