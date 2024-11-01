@@ -14,6 +14,7 @@ use nix_rs::{
 };
 use omnix_common::config::OmConfig;
 use omnix_health::{traits::Checkable, NixHealth};
+use serde::Serialize;
 
 use crate::{config::subflakes::SubflakesConfig, flake_ref::FlakeRef, step::core::StepsResult};
 
@@ -170,7 +171,7 @@ pub async fn ci_run(
     run_cmd: &RunCommand,
     cfg: &OmConfig<SubflakesConfig>,
     nix_config: &NixConfig,
-) -> anyhow::Result<HashMap<String, StepsResult>> {
+) -> anyhow::Result<RunResult> {
     let mut res = HashMap::new();
     let systems = run_cmd.get_systems(cmd, nix_config).await?;
 
@@ -208,5 +209,20 @@ pub async fn ci_run(
 
     tracing::info!("\n🥳 Success!");
 
-    Ok(res)
+    Ok(RunResult {
+        systems,
+        flake: cfg.flake_url.clone(),
+        result: res,
+    })
+}
+
+/// Results of the 'ci run' command
+#[derive(Debug, Serialize, Clone)]
+pub struct RunResult {
+    /// The systems we are building for
+    systems: Vec<System>,
+    /// The flake being built
+    flake: FlakeUrl,
+    /// CI result for each subflake
+    result: HashMap<String, StepsResult>,
 }
