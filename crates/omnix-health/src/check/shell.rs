@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
+use std::{collections::HashMap, path::PathBuf};
 
 use crate::traits::{Check, CheckResult, Checkable};
 
@@ -40,43 +40,42 @@ impl Checkable for ShellCheck {
                 }
             }
         };
-        let check = Check {
-            title: "Shell Configurations".to_string(),
-            info: "Dotfiles are managed by Nix".to_string(),
-            result: check_shell_configuration(shell),
-            required: false,
-        };
-        vec![check]
-    }
-}
 
-/// Checks configurations of a [Shell] through dotfiles
-fn check_shell_configuration(shell: Shell) -> CheckResult {
-    // Iterate over each dotfile and check if it is managed by nix
-    let mut managed = 0;
-    for path in &shell.get_dotfiles() {
-        match std::fs::read_link(path) {
-            Ok(target) => {
-                if super::direnv::is_path_in_nix_store(&target) {
-                    managed += 1;
-                } else {
-                    // TODO: Return the dotfiles not managed by Nix
-                    // To be shown to the user
-                    break;
-                };
-            }
-            Err(err) => {
-                tracing::warn!("Dotfile {:?} symlink error: {:?}; ignoring.", path, err);
+        // Iterate over each dotfile and check if it is managed by nix
+        let mut managed: HashMap<PathBuf, PathBuf> = HashMap::new();
+        let mut unmanaged: Vec<PathBuf> = Vec::new();
+        for path in &shell.get_dotfiles() {
+            match std::fs::read_link(path) {
+                Ok(target) => {
+                    if super::direnv::is_path_in_nix_store(&target) {
+                        managed.insert(path.clone(), target);
+                    } else {
+                        unmanaged.push(path.clone());
+                    };
+                }
+                Err(err) => {
+                    tracing::warn!("Dotfile {:?} symlink error: {:?}; ignoring.", path, err);
+                }
             }
         }
-    }
 
-    match managed > 0 {
-        true => CheckResult::Green,
-        false => CheckResult::Red {
-            msg: format!("Default Shell: {:?} is not managed by Nix", shell),
-            suggestion: "You can use `home-manager` to manage shell configuration. See <https://github.com/juspay/nixos-unified-template>".to_string(),
-        },
+        let title = "Shell dotfiles".to_string();
+        let result = if !managed.is_empty() {
+            CheckResult::Green
+        } else {
+            CheckResult::Red {
+                msg: format!("Default Shell: {:?} is not managed by Nix", shell),
+                    suggestion: "You can use `home-manager` to manage shell configuration. See <https://github.com/juspay/nixos-unified-template>".to_string(),
+            }
+        };
+        let check = Check {
+            title,
+            info: "Dotfiles are managed by Nix".to_string(),
+            result,
+            required: self.required,
+        };
+
+        vec![check]
     }
 }
 
