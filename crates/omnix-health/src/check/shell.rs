@@ -60,6 +60,7 @@ impl Checkable for ShellCheck {
         }
 
         let title = "Shell dotfiles".to_string();
+        let info = format!("Managed: {:?}; Unmanaged: {:?}", managed, unmanaged);
         let result = if !managed.is_empty() {
             CheckResult::Green
         } else {
@@ -70,7 +71,7 @@ impl Checkable for ShellCheck {
         };
         let check = Check {
             title,
-            info: "Dotfiles are managed by Nix".to_string(),
+            info,
             result,
             required: self.required,
         };
