@@ -19,6 +19,48 @@ impl Default for ShellCheck {
     }
 }
 
+impl Checkable for ShellCheck {
+    fn check(
+        &self,
+        _nix_info: &nix_rs::info::NixInfo,
+        _flake: Option<&nix_rs::flake::url::FlakeUrl>,
+    ) -> Vec<Check> {
+        if !self.enable {
+            return vec![];
+        }
+        let shell = match Shell::current_shell() {
+            Some(shell) => shell,
+            None => {
+                let msg = "Unsupported shell. Please file an issue at <https://github.com/juspay/omnix/issues>";
+                if self.required {
+                    panic!("{}", msg);
+                } else {
+                    tracing::warn!("Skipping shell dotfile check! {}", msg);
+                    return vec![];
+                }
+            }
+        };
+        let check = Check {
+            title: "Shell Configurations".to_string(),
+            info: "Dotfiles are managed by Nix".to_string(),
+            result: check_shell_configuration(shell),
+            required: false,
+        };
+        vec![check]
+    }
+}
+
+/// Checks configurations of a [Shell] through dotfiles
+fn check_shell_configuration(shell: Shell) -> CheckResult {
+    match are_dotfiles_nix_managed(&shell) {
+        true => CheckResult::Green,
+        false => CheckResult::Red {
+            msg: format!("Default Shell: {:?} is not managed by Nix", shell),
+            suggestion: "You can use `home-manager` to manage shell configuration. See <https://github.com/juspay/nixos-unified-template>".to_string(),
+        },
+    }
+}
+
 /// An Unix shell
 #[derive(Debug, Serialize, Deserialize, Clone, Hash, Eq, PartialEq)]
 #[serde(rename_all = "lowercase")]
@@ -59,48 +101,6 @@ impl Shell {
             Shell::Zsh => vec![".zshrc", ".zshenv", ".zprofile"],
             Shell::Bash => vec![".bashrc", ".bash_profile", ".profile"],
         }
-    }
-}
-
-impl Checkable for ShellCheck {
-    fn check(
-        &self,
-        _nix_info: &nix_rs::info::NixInfo,
-        _flake: Option<&nix_rs::flake::url::FlakeUrl>,
-    ) -> Vec<Check> {
-        if !self.enable {
-            return vec![];
-        }
-        let shell = match Shell::current_shell() {
-            Some(shell) => shell,
-            None => {
-                let msg = "Unsupported shell. Please file an issue at <https://github.com/juspay/omnix/issues>";
-                if self.required {
-                    panic!("{}", msg);
-                } else {
-                    tracing::warn!("Skipping shell dotfile check! {}", msg);
-                    return vec![];
-                }
-            }
-        };
-        let check = Check {
-            title: "Shell Configurations".to_string(),
-            info: "Dotfiles managed by Nix".to_string(),
-            result: check_shell_configuration(shell),
-            required: false,
-        };
-        vec![check]
-    }
-}
-
-/// Checks configurations of a [Shell] through dotfiles
-fn check_shell_configuration(shell: Shell) -> CheckResult {
-    match are_dotfiles_nix_managed(&shell) {
-        true => CheckResult::Green,
-        false => CheckResult::Red {
-            msg: format!("Default Shell: {:?} is not managed by Nix", shell),
-            suggestion: "You can use `home-manager` to manage shell configuration. See <https://github.com/juspay/nixos-unified-template>".to_string(),
-        },
     }
 }
 
