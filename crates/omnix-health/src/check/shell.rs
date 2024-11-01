@@ -60,7 +60,10 @@ impl Checkable for ShellCheck {
         }
 
         let title = "Shell dotfiles".to_string();
-        let info = format!("Managed: {:?}; Unmanaged: {:?}", managed, unmanaged);
+        let info = format!(
+            "Shell={:?}; Managed: {:?}; Unmanaged: {:?}",
+            shell, managed, unmanaged
+        );
         let result = if !managed.is_empty() {
             CheckResult::Green
         } else {
