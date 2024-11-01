@@ -67,7 +67,7 @@ jobs:
           # Retrieve the store path for the given package out of the given subflake.
           get_output() {
             subflake=$1 name=$2 \
-            jq -r '.[$ENV.subflake].build.byName.[$ENV.name]' < $HOME/omci.json
+            jq -r '.result.[$ENV.subflake].build.byName.[$ENV.name]' < $HOME/omci.json
           }
 
           echo "OMCIJSON_PATH=$HOME/omci.json" >> "$GITHUB_OUTPUT"
