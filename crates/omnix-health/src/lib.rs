@@ -13,7 +13,7 @@ use check::direnv::Direnv;
 use nix_rs::env::OS;
 use nix_rs::flake::url::FlakeUrl;
 use nix_rs::{command::NixCmd, info::NixInfo};
-use omnix_common::config::{OmConfig, OmConfigError};
+use omnix_common::config::{OmConfig, OmConfigError, OmnixConfig};
 use omnix_common::markdown::render_markdown;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
@@ -62,6 +62,11 @@ impl<'a> IntoIterator for &'a NixHealth {
 }
 
 impl NixHealth {
+    pub fn from_om_config(om_config: &OmnixConfig) -> Result<Self, OmConfigError> {
+        // TODO: handle nix-health
+        let (cfg, _rest) = om_config.get_referenced_for::<Self>("health")?;
+        Ok(cfg.clone())
+    }
     /// Create [NixHealth] using configuration from the given flake
     ///
     /// Fallback to using the default health check config if the flake doesn't

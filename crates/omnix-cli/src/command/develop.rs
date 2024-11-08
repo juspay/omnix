@@ -1,5 +1,6 @@
 use clap::Parser;
-use nix_rs::flake::url::FlakeUrl;
+use nix_rs::{command::NixCmd, flake::url::FlakeUrl};
+use omnix_common::config::OmnixConfig;
 
 /// Prepare to develop on a flake project
 #[derive(Parser, Debug)]
@@ -26,12 +27,17 @@ enum Stage {
 impl DevelopCommand {
     pub async fn run(&self) -> anyhow::Result<()> {
         let flake = self.flake_shell.without_attr();
+
+        let om_config = OmnixConfig::from_flake_url(NixCmd::get().await, &self.flake_shell).await?;
+
         tracing::info!("⌨️  Preparing to develop project: {:}", &flake);
-        let prj = omnix_develop::core::Project::new(flake).await?;
+        let prj = omnix_develop::core::Project::new(flake, &om_config).await?;
         match self.stage {
-            Some(Stage::PreShell) => omnix_develop::core::develop_on_pre_shell(&prj).await?,
+            Some(Stage::PreShell) => {
+                omnix_develop::core::develop_on_pre_shell(&prj, &om_config).await?
+            }
             Some(Stage::PostShell) => omnix_develop::core::develop_on_post_shell(&prj).await?,
-            None => omnix_develop::core::develop_on(&prj).await?,
+            None => omnix_develop::core::develop_on(&prj, &om_config).await?,
         }
         Ok(())
     }

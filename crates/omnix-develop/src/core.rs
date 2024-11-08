@@ -2,7 +2,7 @@ use anyhow::Context;
 use std::{env::current_dir, path::PathBuf};
 
 use nix_rs::{flake::url::FlakeUrl, info::NixInfo};
-use omnix_common::markdown::print_markdown;
+use omnix_common::{config::OmnixConfig, markdown::print_markdown};
 use omnix_health::{check::caches::CachixCache, traits::Checkable, NixHealth};
 
 use crate::config::DevelopConfig;
@@ -18,18 +18,18 @@ pub struct Project {
 }
 
 impl Project {
-    pub async fn new(flake: FlakeUrl) -> anyhow::Result<Self> {
+    pub async fn new(flake: FlakeUrl, om_config: &OmnixConfig) -> anyhow::Result<Self> {
         let dir = match flake.as_local_path() {
             Some(path) => Some(path.canonicalize()?),
             None => None,
         };
-        let cfg = DevelopConfig::from_flake(&flake).await?;
+        let cfg = DevelopConfig::from_om_config(&om_config).await?;
         Ok(Self { dir, flake, cfg })
     }
 }
 
-pub async fn develop_on(prj: &Project) -> anyhow::Result<()> {
-    develop_on_pre_shell(prj).await?;
+pub async fn develop_on(prj: &Project, om_config: &OmnixConfig) -> anyhow::Result<()> {
+    develop_on_pre_shell(prj, om_config).await?;
     develop_on_post_shell(prj).await?;
 
     tracing::warn!("");
@@ -39,9 +39,9 @@ pub async fn develop_on(prj: &Project) -> anyhow::Result<()> {
     Ok(())
 }
 
-pub async fn develop_on_pre_shell(prj: &Project) -> anyhow::Result<()> {
+pub async fn develop_on_pre_shell(prj: &Project, om_config: &OmnixConfig) -> anyhow::Result<()> {
     // Run relevant `om health` checks
-    let health = NixHealth::from_flake(&prj.flake).await?;
+    let health = NixHealth::from_om_config(om_config)?;
     let nix_info = NixInfo::get()
         .await
         .as_ref()

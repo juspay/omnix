@@ -1868,6 +1868,7 @@ dependencies = [
  "pulldown-cmark",
  "pulldown-cmark-mdcat",
  "serde",
+ "serde_json",
  "syntect",
  "thiserror",
  "tokio",
