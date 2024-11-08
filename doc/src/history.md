@@ -6,13 +6,14 @@
 
 ### Enhancements
 
-- `om hack`: New command
+- `om develop`: New command
 - `om init`
   - Initial working version of `om init` command
 - `om health`
   - Display Nix installer used (supports DetSys installer)
   - Display information in Markdown
   - Remove RAM/disk space checks, moving them to "information" section
+  - Add shell check, to ensure its dotfiles are managed by Nix.
 - `om ci`
   - Support for remote builds over SSH (via `--on` option)
   - Support for CI steps

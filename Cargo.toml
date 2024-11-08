@@ -5,10 +5,10 @@ members = [
   "crates/omnix-common",
   "crates/omnix-cli",
   "crates/omnix-init",
-  "crates/omnix-hack",
+  "crates/omnix-develop",
   "crates/nix_rs",
-  "crates/nixci",
-  "crates/nix_health",
+  "crates/omnix-ci",
+  "crates/omnix-health",
 ]
 
 [workspace.dependencies]
@@ -35,13 +35,13 @@ is_proc_translated = { version = "0.1.1" }
 lazy_static = "1.4.0"
 pulldown-cmark-mdcat = "2.5.0"
 pulldown-cmark = { version = "0.12.1", default-features = false }
-nixci = { version = "1.1.0", path = "./crates/nixci" }
-nix_health = { version = "1.0.0", path = "./crates/nix_health" }
+omnix-ci = { version = "1.1.0", path = "./crates/omnix-ci" }
+omnix-health = { version = "1.0.0", path = "./crates/omnix-health" }
 nix_rs = { version = "1.0.0", path = "./crates/nix_rs" }
 nonempty = { version = "0.10.0", features = ["serialize"] }
 omnix-common = { version = "0.1.0", path = "./crates/omnix-common" }
 omnix-init = { version = "0.1.0", path = "./crates/omnix-init" }
-omnix-hack = { version = "0.1.0", path = "./crates/omnix-hack" }
+omnix-develop = { version = "0.1.0", path = "./crates/omnix-develop" }
 os_info = "3.7.0"
 reqwest = { version = "0.11", features = ["blocking", "json"] }
 regex = "1.9.3"

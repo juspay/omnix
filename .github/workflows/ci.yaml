@@ -67,7 +67,7 @@ jobs:
           # Retrieve the store path for the given package out of the given subflake.
           get_output() {
             subflake=$1 name=$2 \
-            jq -r '.[$ENV.subflake].build.byName.[$ENV.name]' < $HOME/omci.json
+            jq -r '.result.[$ENV.subflake].build.byName.[$ENV.name]' < $HOME/omci.json
           }
 
           echo "OMCIJSON_PATH=$HOME/omci.json" >> "$GITHUB_OUTPUT"
@@ -94,8 +94,16 @@ jobs:
 
       # Push the Nix cache
       - name: Push to cachix
-        if: github.ref == 'refs/heads/main'
-        run: nix --option system "${{ matrix.system }}" run .#cachix-push
+        env:
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
+        if: env.BRANCH_NAME == 'main'
+        run: |
+          nix run github:juspay/cachix-push -- \
+            --subflake omnix \
+            --prefix "${BRANCH_NAME}" \
+            --cache om \
+            < $HOME/omci.json
 
   static-binary-check:
     needs: main

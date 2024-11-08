@@ -72,15 +72,13 @@ This will output:
   };
   flake-enabled = {};
   max-jobs = {};
-  nix-version = {min-required = "2.13.0";};
+  nix-version = {min-required = "2.16.0";};
   rosetta = {
     enable = true;
     required = true;
   };
-  system = {
+  shell = {
     enable = true;
-    min_disk_space = "1024.0 GB";
-    min_ram = null;
     required = false;
   };
   trusted-users = {};

@@ -10,9 +10,7 @@ let
   inherit (pkgs) stdenv pkgsStatic;
 in
 {
-  autoWire = lib.optionals
-    (lib.elem pkgs.system [ "x86_64-linux" "aarch64-darwin" ])
-    [ "doc" "clippy" ];
+  autoWire = [ ];
   crane = {
     args = {
       nativeBuildInputs = with pkgs.apple_sdk_frameworks; lib.optionals stdenv.isDarwin [
@@ -42,23 +40,17 @@ in
         INSPECT_FLAKE
         NIX_SYSTEMS
         ;
-      inherit (rust-project.crates."nixci".crane.args)
+      inherit (rust-project.crates."omnix-ci".crane.args)
         DEVOUR_FLAKE
         ;
       inherit (rust-project.crates."omnix-init".crane.args)
         OM_INIT_REGISTRY
         ;
-
-      # To avoid unnecessary rebuilds, start from cleaned source, and then add the Nix files necessary to `nix run` it. Finally, add any files required by the Rust build.
-      OMNIX_SOURCE = lib.cleanSourceWith {
-        src = inputs.self;
-        filter = path: type:
-          rust-project.crane-lib.filterCargoSources path type
-            || lib.hasSuffix ".nix" path
-            || lib.hasSuffix "flake.lock" path
-            || lib.hasSuffix "registry.json" path
+      inherit (rust-project.crates."omnix-health".crane.args)
+        CACHIX_BIN
         ;
-      };
+
+      OMNIX_SOURCE = rust-project.src;
 
       # Disable tests due to sandboxing issues; we run them on CI
       # instead.

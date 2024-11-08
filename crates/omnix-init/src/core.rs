@@ -105,21 +105,21 @@ pub async fn run(
 
 async fn initialize_template<'a>(path: &Path, template: &FlakeTemplate<'a>) -> anyhow::Result<()> {
     tracing::info!("Initializing template at {}", path.display());
-    template
+    let path = template
         .template
         .scaffold_at(path)
         .await
         .with_context(|| "Unable to scaffold")?;
     eprintln!();
     print_markdown(
-        path,
+        &path,
         &format!("## 🥳 Initialized template at `{}`", path.display()),
     )
     .await?;
 
     if let Some(welcome_text) = template.template.template.welcome_text.as_ref() {
         eprintln!();
-        print_markdown(path, welcome_text).await?;
+        print_markdown(&path, welcome_text).await?;
     }
 
     Ok(())

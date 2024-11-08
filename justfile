@@ -20,12 +20,26 @@ run *ARGS:
 alias w := watch
 
 # Run CI locally
+[group('ci')]
 ci:
     nix run . ci
 
 # Run CI locally in devShell (using cargo)
+[group('ci')]
 ci-cargo:
     cargo run -p omnix-cli -- ci run
 
+# Do clippy checks for all crates
+[group('ci-steps')]
 clippy:
-    cargo clippy --release --locked --all-targets --all-features -- --deny warnings
+    cargo clippy --release --locked --all-targets --all-features --workspace -- --deny warnings
+
+# Build cargo doc for all crates
+[group('ci-steps')]
+cargo-doc:
+    cargo doc --release --all-features --workspace
+
+# Run cargo test for all crates
+[group('ci-steps')]
+cargo-test:
+    cargo doc --release --all-features --workspace

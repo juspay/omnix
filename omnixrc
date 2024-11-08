@@ -2,9 +2,20 @@
 # shellcheck shell=bash
 
 use_omnix() {
-  # TODO: Switch to nixpkgs version once we upstream
-  # Because, the user may not be a trusted-user leading to compilation!
-  nix --accept-flake-config run github:juspay/omnix health $*
+  # Fetch omnix only through binary cache
+  # Hence `-j0`, as well as `--option builders ''` for when there are remote builders.
+  nix \
+    --accept-flake-config \
+    --option builders '' \
+    -j0 \
+    run github:juspay/omnix -- develop --stage=pre-shell $* || exit 1
 
-  use flake $*
+  use flake ${*:-.} --accept-flake-config
+
+  if [[ ! -z "${NIX_DIRENV_DID_FALLBACK:-}" ]]; then
+    # Nix shell failed; move on!
+    exit
+  else
+    nix --accept-flake-config run github:juspay/omnix -- develop --stage=post-shell $*
+  fi
 }

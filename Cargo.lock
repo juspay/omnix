@@ -1650,32 +1650,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "nix_health"
-version = "1.1.0"
-dependencies = [
- "anyhow",
- "bytesize",
- "cfg-if",
- "clap",
- "colored",
- "direnv",
- "human-panic",
- "nix_rs",
- "omnix-common",
- "regex",
- "semver",
- "serde",
- "serde_json",
- "serde_repr",
- "serde_with",
- "thiserror",
- "tokio",
- "tracing",
- "url",
- "which",
-]
-
-[[package]]
 name = "nix_rs"
 version = "1.0.0"
 dependencies = [
@@ -1698,33 +1672,6 @@ dependencies = [
  "tracing",
  "url",
  "whoami",
-]
-
-[[package]]
-name = "nixci"
-version = "1.1.0"
-dependencies = [
- "anyhow",
- "clap",
- "colored",
- "futures-lite",
- "lazy_static",
- "nix_health",
- "nix_rs",
- "nonempty",
- "omnix-common",
- "reqwest",
- "serde",
- "serde_json",
- "shell-words",
- "tempfile",
- "thiserror",
- "tokio",
- "tracing",
- "tracing-subscriber",
- "try-guard",
- "url",
- "urlencoding",
 ]
 
 [[package]]
@@ -1853,6 +1800,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "omnix-ci"
+version = "1.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "colored",
+ "futures-lite",
+ "lazy_static",
+ "nix_rs",
+ "nonempty",
+ "omnix-common",
+ "omnix-health",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "shell-words",
+ "tempfile",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "try-guard",
+ "url",
+ "urlencoding",
+]
+
+[[package]]
 name = "omnix-cli"
 version = "0.1.0"
 dependencies = [
@@ -1866,11 +1840,11 @@ dependencies = [
  "colored",
  "ctor",
  "human-panic",
- "nix_health",
  "nix_rs",
- "nixci",
+ "omnix-ci",
  "omnix-common",
- "omnix-hack",
+ "omnix-develop",
+ "omnix-health",
  "omnix-init",
  "predicates",
  "regex",
@@ -1903,14 +1877,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "omnix-hack"
+name = "omnix-develop"
 version = "0.1.0"
 dependencies = [
  "anyhow",
  "lazy_static",
- "nix_health",
  "nix_rs",
  "omnix-common",
+ "omnix-health",
  "serde",
  "serde_json",
  "syntect",
@@ -1918,6 +1892,32 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-subscriber",
+]
+
+[[package]]
+name = "omnix-health"
+version = "1.1.0"
+dependencies = [
+ "anyhow",
+ "bytesize",
+ "cfg-if",
+ "clap",
+ "colored",
+ "direnv",
+ "human-panic",
+ "nix_rs",
+ "omnix-common",
+ "regex",
+ "semver",
+ "serde",
+ "serde_json",
+ "serde_repr",
+ "serde_with",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "url",
+ "which",
 ]
 
 [[package]]

@@ -29,8 +29,10 @@ pub struct NixTemplate {
 }
 
 impl Template {
-    // Scaffold the [Template] at the given path.
-    pub async fn scaffold_at(&self, out_dir: &Path) -> anyhow::Result<()> {
+    /// Scaffold the [Template] at the given path.
+    //
+    /// Returns the canonicalized path of the output directory
+    pub async fn scaffold_at(&self, out_dir: &Path) -> anyhow::Result<PathBuf> {
         // Recursively copy the self.template.path to the output directory
         omnix_common::fs::copy_dir_all(&self.template.path, out_dir)
             .await
@@ -39,7 +41,9 @@ impl Template {
         // Do param replacements
         self.apply_actions(out_dir).await?;
 
-        Ok(())
+        out_dir
+            .canonicalize()
+            .with_context(|| "Unable to canonicalize path")
     }
 
     /// Set 'default' fields of prompts to the user-defined values

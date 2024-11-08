@@ -9,15 +9,13 @@
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
     systems.url = "github:nix-systems/default";
 
-    rust-flake.url = "github:juspay/rust-flake/granular-autoWire";
+    rust-flake.url = "github:juspay/rust-flake";
     rust-flake.inputs.nixpkgs.follows = "nixpkgs";
     treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
-    process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
-    cargo-doc-live.url = "github:srid/cargo-doc-live";
     cachix-push.url = "github:juspay/cachix-push";
 
-    # nixci
+    # omnix-ci
     devour-flake.url = "github:srid/devour-flake";
     devour-flake.flake = false;
     nix-systems-x86_64-darwin.url = "github:nix-systems/x86_64-darwin";
@@ -33,10 +31,10 @@
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       systems = import inputs.systems;
 
-      # See ./nix/modules/*.nix for the modules that are imported here.
+      # See ./nix/modules/flake-parts/*.nix for the modules that are imported here.
       imports = with builtins;
         map
-          (fn: ./nix/modules/${fn})
-          (attrNames (readDir ./nix/modules));
+          (fn: ./nix/modules/flake-parts/${fn})
+          (attrNames (readDir ./nix/modules/flake-parts));
     };
 }

@@ -6,9 +6,7 @@
 }:
 
 {
-  autoWire = lib.optionals
-    (lib.elem pkgs.system [ "x86_64-linux" "aarch64-darwin" ])
-    [ "doc" "clippy" ];
+  autoWire = [ ];
   crane.args = {
     buildInputs = lib.optionals pkgs.stdenv.isDarwin (
       with pkgs.apple_sdk_frameworks; [
