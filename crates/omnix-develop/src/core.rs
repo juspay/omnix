@@ -23,7 +23,7 @@ impl Project {
             Some(path) => Some(path.canonicalize()?),
             None => None,
         };
-        let cfg = DevelopConfig::from_om_config(&om_config).await?;
+        let cfg = DevelopConfig::from_om_config(om_config).await?;
         Ok(Self { dir, flake, cfg })
     }
 }
