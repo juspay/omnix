@@ -17,7 +17,7 @@ pub struct CacheConfig {
 }
 
 impl DevelopConfig {
-    pub async fn from_om_config(om_config: &OmnixConfig) -> anyhow::Result<Self> {
+    pub fn from_om_config(om_config: &OmnixConfig) -> anyhow::Result<Self> {
         if let Some(v) = om_config.config.get("develop") {
             let config = v.get("default").cloned().unwrap_or_default();
             let v1 = serde_json::from_value(config)?;

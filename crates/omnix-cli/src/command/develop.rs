@@ -31,13 +31,11 @@ impl DevelopCommand {
         let om_config = OmnixConfig::from_flake_url(NixCmd::get().await, &self.flake_shell).await?;
 
         tracing::info!("⌨️  Preparing to develop project: {:}", &flake);
-        let prj = omnix_develop::core::Project::new(flake, &om_config).await?;
+        let prj = omnix_develop::core::Project::new(flake, om_config).await?;
         match self.stage {
-            Some(Stage::PreShell) => {
-                omnix_develop::core::develop_on_pre_shell(&prj, &om_config).await?
-            }
+            Some(Stage::PreShell) => omnix_develop::core::develop_on_pre_shell(&prj).await?,
             Some(Stage::PostShell) => omnix_develop::core::develop_on_post_shell(&prj).await?,
-            None => omnix_develop::core::develop_on(&prj, &om_config).await?,
+            None => omnix_develop::core::develop_on(&prj).await?,
         }
         Ok(())
     }

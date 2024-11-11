@@ -13,23 +13,26 @@ pub struct Project {
     pub dir: Option<PathBuf>,
     /// [FlakeUrl] corresponding to the project.
     pub flake: FlakeUrl,
-    /// The develop configuration
-    pub cfg: DevelopConfig,
+    /// The `om` configuration
+    pub om_config: OmnixConfig,
 }
 
 impl Project {
-    pub async fn new(flake: FlakeUrl, om_config: &OmnixConfig) -> anyhow::Result<Self> {
+    pub async fn new(flake: FlakeUrl, om_config: OmnixConfig) -> anyhow::Result<Self> {
         let dir = match flake.as_local_path() {
             Some(path) => Some(path.canonicalize()?),
             None => None,
         };
-        let cfg = DevelopConfig::from_om_config(om_config).await?;
-        Ok(Self { dir, flake, cfg })
+        Ok(Self {
+            dir,
+            flake,
+            om_config,
+        })
     }
 }
 
-pub async fn develop_on(prj: &Project, om_config: &OmnixConfig) -> anyhow::Result<()> {
-    develop_on_pre_shell(prj, om_config).await?;
+pub async fn develop_on(prj: &Project) -> anyhow::Result<()> {
+    develop_on_pre_shell(prj).await?;
     develop_on_post_shell(prj).await?;
 
     tracing::warn!("");
@@ -39,9 +42,9 @@ pub async fn develop_on(prj: &Project, om_config: &OmnixConfig) -> anyhow::Resul
     Ok(())
 }
 
-pub async fn develop_on_pre_shell(prj: &Project, om_config: &OmnixConfig) -> anyhow::Result<()> {
+pub async fn develop_on_pre_shell(prj: &Project) -> anyhow::Result<()> {
     // Run relevant `om health` checks
-    let health = NixHealth::from_om_config(om_config)?;
+    let health = NixHealth::from_om_config(&prj.om_config)?;
     let nix_info = NixInfo::get()
         .await
         .as_ref()
@@ -89,7 +92,8 @@ pub async fn develop_on_post_shell(prj: &Project) -> anyhow::Result<()> {
     eprintln!();
     let pwd = current_dir()?;
     let dir = prj.dir.as_ref().unwrap_or(&pwd);
-    print_markdown(dir, prj.cfg.readme.get_markdown()).await?;
+    let cfg = DevelopConfig::from_om_config(&prj.om_config)?;
+    print_markdown(dir, cfg.readme.get_markdown()).await?;
     Ok(())
 }
 
