@@ -3,8 +3,6 @@ use anyhow::Result;
 use nix_rs::{command::NixCmd, flake::url::FlakeUrl};
 use omnix_common::config::OmConfig;
 
-use super::subflakes::SubflakesConfig;
-
 /// Create a `Config` pointed to by this [FlakeUrl]
 ///
 /// Example:
@@ -13,21 +11,15 @@ use super::subflakes::SubflakesConfig;
 /// let cfg = Config::from_flake_url(&url).await?;
 /// ```
 /// along with the config.
-pub async fn ci_config_from_flake_url(
-    cmd: &NixCmd,
-    url: &FlakeUrl,
-) -> Result<OmConfig<SubflakesConfig>> {
-    let v = omnix_common::config::OmConfig::<SubflakesConfig>::from_flake_url(
-        cmd,
-        url,
-        &["om.ci", "nixci"],
-    )
-    .await?;
+pub async fn ci_config_from_flake_url(cmd: &NixCmd, url: &FlakeUrl) -> Result<OmConfig> {
+    let v = omnix_common::config::OmConfig::from_flake_url(cmd, url).await?;
     Ok(v)
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::config::subflakes::SubflakesConfig;
+
     use super::*;
 
     #[tokio::test]
@@ -41,7 +33,7 @@ mod tests {
         let cfg = ci_config_from_flake_url(&NixCmd::default(), url)
             .await
             .unwrap();
-        let (config, attrs) = cfg.get_referenced().unwrap();
+        let (config, attrs) = cfg.get_referenced_for::<SubflakesConfig>("ci").unwrap();
         assert_eq!(attrs, &["dev"]);
         // assert_eq!(cfg.selected_subconfig, Some("dev".to_string()));
         assert_eq!(config.0.len(), 7);

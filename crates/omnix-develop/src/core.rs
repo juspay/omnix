@@ -2,7 +2,7 @@ use anyhow::Context;
 use std::{env::current_dir, path::PathBuf};
 
 use nix_rs::{flake::url::FlakeUrl, info::NixInfo};
-use omnix_common::{config::OmnixConfig, markdown::print_markdown};
+use omnix_common::{config::OmConfig, markdown::print_markdown};
 use omnix_health::{check::caches::CachixCache, traits::Checkable, NixHealth};
 
 use crate::config::DevelopConfig;
@@ -14,11 +14,11 @@ pub struct Project {
     /// [FlakeUrl] corresponding to the project.
     pub flake: FlakeUrl,
     /// The `om` configuration
-    pub om_config: OmnixConfig,
+    pub om_config: OmConfig,
 }
 
 impl Project {
-    pub async fn new(flake: FlakeUrl, om_config: OmnixConfig) -> anyhow::Result<Self> {
+    pub async fn new(flake: FlakeUrl, om_config: OmConfig) -> anyhow::Result<Self> {
         let dir = match flake.as_local_path() {
             Some(path) => Some(path.canonicalize()?),
             None => None,

@@ -5,7 +5,7 @@ use nix_rs::command::NixCmd;
 use omnix_common::config::OmConfig;
 use tracing::instrument;
 
-use crate::{config::subflakes::SubflakesConfig, flake_ref::FlakeRef};
+use crate::flake_ref::FlakeRef;
 
 use super::{gh_matrix::GHMatrixCommand, run::RunCommand};
 
@@ -46,7 +46,7 @@ impl Command {
     }
 
     /// Get the omnix-ci [config::Config] associated with this subcommand
-    async fn get_config(&self, cmd: &NixCmd) -> anyhow::Result<OmConfig<SubflakesConfig>> {
+    async fn get_config(&self, cmd: &NixCmd) -> anyhow::Result<OmConfig> {
         let url = self.get_flake_ref().to_flake_url().await?;
         let cfg = crate::config::core::ci_config_from_flake_url(cmd, &url).await?;
         tracing::debug!("Config: {cfg:?}");

@@ -40,9 +40,10 @@ pub async fn load_templates<'a>(url: &FlakeUrl) -> anyhow::Result<Vec<FlakeTempl
         refresh: true,
         ..Default::default()
     };
-    let v = OmConfig::<Template>::from_flake_url(NixCmd::get().await, url, &["om.templates"])
-        .await?
-        .config;
+    let om_config = OmConfig::from_flake_url(NixCmd::get().await, url).await?;
+
+    let v = om_config.get_sub_config::<Template>("templates")?;
+
     Ok(v.into_iter()
         .map(|(k, v)| FlakeTemplate {
             flake: url,

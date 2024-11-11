@@ -13,7 +13,7 @@ use check::direnv::Direnv;
 use nix_rs::env::OS;
 use nix_rs::flake::url::FlakeUrl;
 use nix_rs::{command::NixCmd, info::NixInfo};
-use omnix_common::config::{OmConfig, OmConfigError, OmnixConfig};
+use omnix_common::config::{OmConfig, OmConfigError};
 use omnix_common::markdown::render_markdown;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
@@ -62,20 +62,13 @@ impl<'a> IntoIterator for &'a NixHealth {
 }
 
 impl NixHealth {
-    pub fn from_om_config(om_config: &OmnixConfig) -> Result<Self, OmConfigError> {
-        // TODO: handle nix-health
-        let (cfg, _rest) = om_config.get_referenced_for::<Self>("health")?;
-        Ok(cfg.clone())
-    }
     /// Create [NixHealth] using configuration from the given flake
     ///
     /// Fallback to using the default health check config if the flake doesn't
     /// override it.
-    pub async fn from_flake(url: &FlakeUrl) -> Result<Self, OmConfigError> {
-        let cmd = NixCmd::get().await;
-        let cfg =
-            OmConfig::<NixHealth>::from_flake_url(cmd, url, &["om.health", "nix-health"]).await?;
-        let (cfg, _rest) = cfg.get_referenced()?;
+    pub fn from_om_config(om_config: &OmConfig) -> Result<Self, OmConfigError> {
+        // TODO: handle nix-health
+        let (cfg, _rest) = om_config.get_referenced_for::<Self>("health")?;
         Ok(cfg.clone())
     }
 
@@ -116,7 +109,10 @@ pub async fn run_all_checks_with(flake_url: Option<FlakeUrl>) -> anyhow::Result<
         .with_context(|| "Unable to gather nix info")?;
 
     let health: NixHealth = match flake_url.as_ref() {
-        Some(flake_url) => NixHealth::from_flake(flake_url).await,
+        Some(flake_url) => {
+            let om_config = OmConfig::from_flake_url(NixCmd::get().await, flake_url).await?;
+            NixHealth::from_om_config(&om_config)
+        }
         None => Ok(NixHealth::default()),
     }?;
 
