@@ -17,12 +17,10 @@ pub struct CacheConfig {
 
 impl DevelopConfig {
     pub fn from_om_config(om_config: &OmConfig) -> anyhow::Result<Self> {
-        if let Some(v) = om_config.config.get("develop") {
-            let config = v.get("default").cloned().unwrap_or_default();
-            let v1 = serde_json::from_value(config)?;
-            Ok(v1)
-        } else {
-            Ok(Default::default())
-        }
+        let v = om_config.get_sub_config::<Self>("develop")?;
+
+        let config = v.get("default").cloned().unwrap_or_default();
+
+        Ok(config)
     }
 }
