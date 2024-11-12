@@ -46,11 +46,11 @@ impl Command {
         }
     }
 
-    /// Get the flake ref associated with this subcommand
-    fn get_flake_ref(&self) -> FlakeRef {
+    /// Get the [FlakeRef] associated with this subcommand
+    fn get_flake_ref(&self) -> &FlakeRef {
         match self {
-            Command::Run(cmd) => cmd.flake_ref.clone(),
-            Command::DumpGithubActionsMatrix(cmd) => cmd.flake_ref.clone(),
+            Command::Run(cmd) => &cmd.flake_ref,
+            Command::DumpGithubActionsMatrix(cmd) => &cmd.flake_ref,
         }
     }
 
