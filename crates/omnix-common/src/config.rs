@@ -37,14 +37,17 @@ impl OmConfig {
     }
 
     /// Get all the configs of type `T` for a given sub-config
-    pub fn get_sub_config<T>(&self, sub_config: &str) -> Result<BTreeMap<String, T>, OmConfigError>
+    pub fn get_sub_configs<T>(
+        &self,
+        sub_config_name: &str,
+    ) -> Result<BTreeMap<String, T>, OmConfigError>
     where
         T: DeserializeOwned,
     {
         let config = self
             .config
-            .get(sub_config)
-            .ok_or_else(|| OmConfigError::MissingConfigAttribute(sub_config.to_string()))?;
+            .get(sub_config_name)
+            .ok_or_else(|| OmConfigError::MissingConfigAttribute(sub_config_name.to_string()))?;
         config
             .iter()
             .map(|(k, v)| {
