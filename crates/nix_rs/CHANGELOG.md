@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **`flake::url`**:
+  - Remove `qualified_attr` module
 - **`eval::nix_eval`**
   - Display evaluation progress
   - Decrease logging verbosity
