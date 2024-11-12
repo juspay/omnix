@@ -24,15 +24,12 @@ pub struct OmConfig {
 impl OmConfig {
     /// Read the om configuration from the flake url
     pub async fn from_flake_url(cmd: &NixCmd, flake_url: &FlakeUrl) -> Result<Self, OmConfigError> {
-        let qualified_url = flake_url.with_attr("om");
-        let config = nix_eval_attr(cmd, &qualified_url)
-            .await?
-            .unwrap_or_default();
-
         Ok(OmConfig {
             flake_url: flake_url.clone(),
             reference: flake_url.get_attr().as_list(),
-            config,
+            config: nix_eval_attr(cmd, &flake_url.with_attr("om"))
+                .await?
+                .unwrap_or_default(),
         })
     }
 
@@ -47,7 +44,7 @@ impl OmConfig {
         let config = self
             .config
             .get(sub_config_name)
-            .ok_or_else(|| OmConfigError::MissingConfigAttribute(sub_config_name.to_string()))?;
+            .ok_or_else(|| OmConfigError::UnexpectedAttribute(sub_config_name.to_string()))?;
         config
             .iter()
             .map(|(k, v)| {
@@ -82,7 +79,7 @@ impl OmConfig {
             return Ok((serde_json::from_value(value.clone())?, rest));
         }
 
-        // Fall back to default or T::default()
+        // Fall back to `default` attribute or `T::default()`
         let value = config
             .get("default")
             .map(|v| serde_json::from_value(v.clone()))
