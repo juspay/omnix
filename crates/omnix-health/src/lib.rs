@@ -67,7 +67,6 @@ impl NixHealth {
     /// Fallback to using the default health check config if the flake doesn't
     /// override it.
     pub fn from_om_config(om_config: &OmConfig) -> Result<Self, OmConfigError> {
-        // TODO: handle nix-health
         let (cfg, _rest) = om_config.get_referenced_for::<Self>("health")?;
         Ok(cfg.clone())
     }

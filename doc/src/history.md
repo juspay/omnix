@@ -29,6 +29,7 @@
 
 ### Backward-incompatible changes
 
+- `nix-health` and `nixci` flake output configurations are no longer supported.
 - `om ci build` has been renamed to `om ci run`.
 
 ## 0.1.0 (2024-08-08) {#0.1.0}
