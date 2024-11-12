@@ -2,7 +2,6 @@
 use clap::Subcommand;
 use colored::Colorize;
 use nix_rs::command::NixCmd;
-use omnix_common::config::OmConfig;
 use tracing::instrument;
 
 use crate::flake_ref::FlakeRef;
@@ -38,19 +37,13 @@ impl Command {
     #[instrument(name = "run", skip(self))]
     pub async fn run(self, nixcmd: &NixCmd, verbose: bool) -> anyhow::Result<()> {
         tracing::info!("{}", "\n👟 Reading om.ci config from flake".bold());
-        let cfg = self.get_config(nixcmd).await?;
+        let url = self.get_flake_ref().to_flake_url().await?;
+        let cfg = crate::config::core::om_config_from_flake_url(nixcmd, &url).await?;
+        tracing::debug!("OmConfig: {cfg:?}");
         match self {
             Command::Run(cmd) => cmd.run(nixcmd, verbose, cfg).await,
             Command::DumpGithubActionsMatrix(cmd) => cmd.run(cfg).await,
         }
-    }
-
-    /// Get the omnix-ci [config::Config] associated with this subcommand
-    async fn get_config(&self, cmd: &NixCmd) -> anyhow::Result<OmConfig> {
-        let url = self.get_flake_ref().to_flake_url().await?;
-        let cfg = crate::config::core::ci_config_from_flake_url(cmd, &url).await?;
-        tracing::debug!("Config: {cfg:?}");
-        Ok(cfg)
     }
 
     /// Get the flake ref associated with this subcommand

@@ -11,7 +11,7 @@ use omnix_common::config::OmConfig;
 /// let cfg = Config::from_flake_url(&url).await?;
 /// ```
 /// along with the config.
-pub async fn ci_config_from_flake_url(cmd: &NixCmd, url: &FlakeUrl) -> Result<OmConfig> {
+pub async fn om_config_from_flake_url(cmd: &NixCmd, url: &FlakeUrl) -> Result<OmConfig> {
     let v = omnix_common::config::OmConfig::from_flake_url(cmd, url).await?;
     Ok(v)
 }
@@ -30,7 +30,7 @@ mod tests {
             "github:srid/haskell-flake/76214cf8b0d77ed763d1f093ddce16febaf07365#default.dev"
                 .to_string(),
         );
-        let cfg = ci_config_from_flake_url(&NixCmd::default(), url)
+        let cfg = om_config_from_flake_url(&NixCmd::default(), url)
             .await
             .unwrap();
         let (config, attrs) = cfg.get_referenced_for::<SubflakesConfig>("ci").unwrap();
