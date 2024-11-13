@@ -32,7 +32,7 @@ in
         makeWrapper
         tailwindcss
         dioxus-cli
-        pkgs.nix # cargo tests need nix
+        # pkgs.nix # cargo tests need nix
       ];
       inherit (rust-project.crates."omnix-cli".crane.args)
         DEFAULT_FLAKE_SCHEMAS;
