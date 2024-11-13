@@ -13,7 +13,7 @@ in
   crane = {
     args = {
       nativeBuildInputs = with pkgs; [
-        nix # Tests need nix cli
+        # nix # Tests need nix cli
       ];
       DEFAULT_FLAKE_SCHEMAS = lib.cleanSourceWith {
         name = "flake-schemas";

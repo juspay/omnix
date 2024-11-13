@@ -25,7 +25,7 @@ in
         ;
       CACHIX_BIN = pkgs.cachix + /bin/cachix;
       nativeBuildInputs = with pkgs; [
-        nix # Tests need nix cli
+        # nix # Tests need nix cli
       ];
     } // lib.optionalAttrs pkgs.stdenv.isLinux {
       CARGO_BUILD_TARGET = "x86_64-unknown-linux-musl";
