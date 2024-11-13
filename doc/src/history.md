@@ -17,6 +17,7 @@
   - Support for CI steps
     - Run `nix flake check` on all subflakes (#200)
     - Ability to add a custom CI step. For example, to run arbitrary commands.
+  - Add `--accept-flake-config`
   - Add `--results=FILE` to store CI results as JSON in a file
   - Misc
     - Avoid running `nix-store` command multiple times (#224)
