@@ -43,8 +43,8 @@ impl OmConfig {
         T: Default + DeserializeOwned,
     {
         // Get the config map, returning default if it doesn't exist
-        let config = match self.config.get::<T>(root_key) {
-            Some(res) => res?,
+        let config = match self.config.get::<T>(root_key)? {
+            Some(res) => res,
             None => {
                 return if self.reference.is_empty() {
                     Ok((T::default(), &[]))
@@ -81,17 +81,22 @@ pub struct OmConfigTree(BTreeMap<String, BTreeMap<String, serde_json::Value>>);
 
 impl OmConfigTree {
     /// Get all the configs of type `T` for a given sub-config
-    /// Returns None if key doesn't exist, or Some(Err) if deserialization fails
-    pub fn get<T>(&self, key: &str) -> Option<Result<BTreeMap<String, T>, serde_json::Error>>
+    ///
+    /// Return None if key doesn't exist
+    pub fn get<T>(&self, key: &str) -> Result<Option<BTreeMap<String, T>>, serde_json::Error>
     where
         T: DeserializeOwned,
     {
-        self.0.get(key).map(|config| {
-            config
-                .iter()
-                .map(|(k, v)| serde_json::from_value(v.clone()).map(|value| (k.clone(), value)))
-                .collect()
-        })
+        match self.0.get(key) {
+            Some(config) => {
+                let result: Result<BTreeMap<String, T>, _> = config
+                    .iter()
+                    .map(|(k, v)| serde_json::from_value(v.clone()).map(|value| (k.clone(), value)))
+                    .collect();
+                result.map(Some)
+            }
+            None => Ok(None),
+        }
     }
 }
 

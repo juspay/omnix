@@ -36,8 +36,8 @@ pub async fn load_templates<'a>(url: &FlakeUrl) -> anyhow::Result<Vec<FlakeTempl
     let om_config = OmConfig::from_flake_url(NixCmd::get().await, url).await?;
     let templates = om_config
         .config
-        .get::<Template>("templates")
-        .ok_or_else(|| anyhow::anyhow!("No templates found"))??;
+        .get::<Template>("templates")?
+        .ok_or_else(|| anyhow::anyhow!("No templates found"))?;
 
     Ok(templates
         .into_iter()
