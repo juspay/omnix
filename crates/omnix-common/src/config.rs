@@ -8,7 +8,7 @@ use nix_rs::{
 };
 use serde::{de::DeserializeOwned, Deserialize};
 
-/// [Config] with additional metadata about the flake URL and reference.
+/// [OmConfigTree] with additional metadata about the flake URL and reference.
 ///
 /// `reference` here is the part of the flake URL after `#`
 #[derive(Debug)]
@@ -19,8 +19,8 @@ pub struct OmConfig {
     /// The (nested) key reference into the flake config.
     pub reference: Vec<String>,
 
-    /// omnix [Config]
-    pub config: Config,
+    /// The config tree
+    pub config: OmConfigTree,
 }
 
 impl OmConfig {
@@ -74,9 +74,9 @@ impl OmConfig {
 
 /// Represents the whole configuration for `omnix` parsed from JSON
 #[derive(Debug, Default, Deserialize)]
-pub struct Config(BTreeMap<String, BTreeMap<String, serde_json::Value>>);
+pub struct OmConfigTree(BTreeMap<String, BTreeMap<String, serde_json::Value>>);
 
-impl Config {
+impl OmConfigTree {
     /// Get all the configs of type `T` for a given sub-config
     /// Returns None if sub_config doesn't exist, or Some(Err) if deserialization fails
     pub fn get<T>(&self, sub_config: &str) -> Option<Result<BTreeMap<String, T>, serde_json::Error>>
