@@ -55,23 +55,21 @@ impl OmConfig {
             }
         };
 
-        // Try to get value from reference path first
         if let Some((k, rest)) = self.reference.split_first() {
-            return config
+            // If a reference is provied, look up that key.
+            config
                 .into_iter()
                 .find(|(cfg_name, _)| cfg_name == k)
                 .map(|(_, v)| (v, rest))
-                .ok_or_else(|| OmConfigError::MissingConfigAttribute(k.to_string()));
-        }
-
-        // Fall back to `default` attribute or `T::default()`
-        Ok((
-            config
+                .ok_or_else(|| OmConfigError::MissingConfigAttribute(k.to_string()))
+        } else {
+            // Else, fall back to `default` attribute or `T::default()`
+            let v = config
                 .into_iter()
                 .find_map(|(k, v)| if k == "default" { Some(v) } else { None })
-                .unwrap_or_default(),
-            &[],
-        ))
+                .unwrap_or_default();
+            Ok((v, &[]))
+        }
     }
 }
 
