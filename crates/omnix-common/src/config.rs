@@ -44,8 +44,7 @@ impl OmConfig {
     {
         // Get the config map, returning default if it doesn't exist
         let config = match self.config.get::<T>(root_key) {
-            Some(Ok(config)) => config,
-            Some(Err(e)) => return Err(OmConfigError::DecodeErrorJson(e)),
+            Some(res) => res?,
             None => {
                 return match self.flake_url.get_attr().0 {
                     None => Ok((T::default(), &[])),
