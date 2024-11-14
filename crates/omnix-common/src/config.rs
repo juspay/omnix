@@ -27,7 +27,7 @@ impl OmConfig {
     /// Read the om configuration from the flake url
     pub async fn from_flake_url(cmd: &NixCmd, flake_url: &FlakeUrl) -> Result<Self, OmConfigError> {
         Ok(OmConfig {
-            flake_url: flake_url.clone(),
+            flake_url: flake_url.without_attr(),
             reference: flake_url.get_attr().as_list(),
             config: nix_eval_attr(cmd, &flake_url.with_attr("om"))
                 .await?
@@ -46,9 +46,10 @@ impl OmConfig {
         let config = match self.config.get::<T>(root_key) {
             Some(res) => res?,
             None => {
-                return match self.flake_url.get_attr().0 {
-                    None => Ok((T::default(), &[])),
-                    Some(attr) => Err(OmConfigError::UnexpectedAttribute(attr)),
+                return if self.reference.is_empty() {
+                    Ok((T::default(), &[]))
+                } else {
+                    Err(OmConfigError::UnexpectedAttribute(self.reference.join(".")))
                 }
             }
         };
