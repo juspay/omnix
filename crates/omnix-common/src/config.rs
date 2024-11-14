@@ -6,9 +6,31 @@ use nix_rs::{
     command::NixCmd,
     flake::{eval::nix_eval_attr, url::FlakeUrl},
 };
-use serde::de::DeserializeOwned;
+use serde::{de::DeserializeOwned, Deserialize};
 
-/// Reference to the whole `om` configuration in a flake
+/// Represents the whole configuration for `omnix` parsed from JSON
+#[derive(Debug, Default, Deserialize)]
+pub struct Config(BTreeMap<String, BTreeMap<String, serde_json::Value>>);
+
+impl Config {
+    /// Get all the configs of type `T` for a given sub-config
+    /// Returns None if sub_config doesn't exist, or Some(Err) if deserialization fails
+    pub fn get<T>(&self, sub_config: &str) -> Option<Result<BTreeMap<String, T>, serde_json::Error>>
+    where
+        T: DeserializeOwned,
+    {
+        self.0.get(sub_config).map(|config| {
+            config
+                .iter()
+                .map(|(k, v)| serde_json::from_value(v.clone()).map(|value| (k.clone(), value)))
+                .collect()
+        })
+    }
+}
+
+/// [Config] with additional metadata about the flake URL and reference.
+///
+/// `reference` here is the part of the flake URL after `#`
 #[derive(Debug)]
 pub struct OmConfig {
     /// The flake URL used to load this configuration
@@ -17,8 +39,8 @@ pub struct OmConfig {
     /// The (nested) key reference into the flake config.
     pub reference: Vec<String>,
 
-    /// The whole `om` configuration parsed from JSON
-    pub config: BTreeMap<String, BTreeMap<String, serde_json::Value>>,
+    /// omnix [Config]
+    pub config: Config,
 }
 
 impl OmConfig {
@@ -33,36 +55,15 @@ impl OmConfig {
         })
     }
 
-    /// Get all the configs of type `T` for a given sub-config
-    pub fn get_sub_configs<T>(
-        &self,
-        sub_config_name: &str,
-    ) -> Result<BTreeMap<String, T>, OmConfigError>
-    where
-        T: DeserializeOwned,
-    {
-        let config = self
-            .config
-            .get(sub_config_name)
-            .ok_or_else(|| OmConfigError::UnexpectedAttribute(sub_config_name.to_string()))?;
-        config
-            .iter()
-            .map(|(k, v)| {
-                serde_json::from_value(v.clone())
-                    .map_err(OmConfigError::from)
-                    .map(|converted| (k.clone(), converted))
-            })
-            .collect()
-    }
-
     /// Get the user-referenced config value `T` for a given sub-config
     pub fn get_referenced_for<T>(&self, sub_config: &str) -> Result<(T, &[String]), OmConfigError>
     where
         T: Default + DeserializeOwned,
     {
-        // Early return if sub_config doesn't exist
-        let config = match self.config.get(sub_config) {
-            Some(config) => config,
+        // Get the config map, returning default if it doesn't exist
+        let config = match self.config.get::<T>(sub_config) {
+            Some(Ok(config)) => config,
+            Some(Err(e)) => return Err(OmConfigError::DecodeErrorJson(e)),
             None => {
                 return match self.flake_url.get_attr().0 {
                     None => Ok((T::default(), &[])),
@@ -73,20 +74,21 @@ impl OmConfig {
 
         // Try to get value from reference path first
         if let Some((k, rest)) = self.reference.split_first() {
-            let value = config
-                .get(k)
-                .ok_or_else(|| OmConfigError::MissingConfigAttribute(k.to_string()))?;
-            return Ok((serde_json::from_value(value.clone())?, rest));
+            return config
+                .into_iter()
+                .find(|(cfg_name, _)| cfg_name == k)
+                .map(|(_, v)| (v, rest))
+                .ok_or_else(|| OmConfigError::MissingConfigAttribute(k.to_string()));
         }
 
         // Fall back to `default` attribute or `T::default()`
-        let value = config
-            .get("default")
-            .map(|v| serde_json::from_value(v.clone()))
-            .transpose()?
-            .unwrap_or_default();
-
-        Ok((value, &[]))
+        Ok((
+            config
+                .into_iter()
+                .find_map(|(k, v)| if k == "default" { Some(v) } else { None })
+                .unwrap_or_default(),
+            &[],
+        ))
     }
 }
 

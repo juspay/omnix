@@ -17,10 +17,7 @@ pub struct CacheConfig {
 
 impl DevelopConfig {
     pub fn from_om_config(om_config: &OmConfig) -> anyhow::Result<Self> {
-        let v = om_config.get_sub_configs::<Self>("develop")?;
-
-        let config = v.get("default").cloned().unwrap_or_default();
-
+        let (config, _rest) = om_config.get_referenced_for("develop")?;
         Ok(config)
     }
 }
