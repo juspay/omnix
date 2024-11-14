@@ -66,11 +66,8 @@ impl NixHealth {
     ///
     /// Fallback to using the default health check config if the flake doesn't
     /// override it.
-    pub async fn from_flake(url: &FlakeUrl) -> Result<Self, OmConfigError> {
-        let cmd = NixCmd::get().await;
-        let cfg =
-            OmConfig::<NixHealth>::from_flake_url(cmd, url, &["om.health", "nix-health"]).await?;
-        let (cfg, _rest) = cfg.get_referenced()?;
+    pub fn from_om_config(om_config: &OmConfig) -> Result<Self, OmConfigError> {
+        let (cfg, _rest) = om_config.get_sub_config_under::<Self>("health")?;
         Ok(cfg.clone())
     }
 
@@ -111,7 +108,10 @@ pub async fn run_all_checks_with(flake_url: Option<FlakeUrl>) -> anyhow::Result<
         .with_context(|| "Unable to gather nix info")?;
 
     let health: NixHealth = match flake_url.as_ref() {
-        Some(flake_url) => NixHealth::from_flake(flake_url).await,
+        Some(flake_url) => {
+            let om_config = OmConfig::from_flake_url(NixCmd::get().await, flake_url).await?;
+            NixHealth::from_om_config(&om_config)
+        }
         None => Ok(NixHealth::default()),
     }?;
 

@@ -10,8 +10,6 @@ use omnix_common::config::OmConfig;
 use std::path::PathBuf;
 use tokio::process::Command;
 
-use crate::config::subflakes::SubflakesConfig;
-
 use super::run::RunCommand;
 
 /// Path to Rust source corresponding to this (running) instance of Omnix
@@ -21,7 +19,7 @@ const OMNIX_SOURCE: &str = env!("OMNIX_SOURCE");
 pub async fn run_on_remote_store(
     nixcmd: &NixCmd,
     run_cmd: &RunCommand,
-    cfg: &OmConfig<SubflakesConfig>,
+    cfg: &OmConfig,
     store_uri: &StoreURI,
 ) -> anyhow::Result<()> {
     tracing::info!(
@@ -48,10 +46,7 @@ pub async fn run_on_remote_store(
 }
 
 /// Return the locally cached [FlakeUrl] for the given flake url that points to same selected [ConfigRef].
-async fn cache_flake(
-    nixcmd: &NixCmd,
-    cfg: &OmConfig<SubflakesConfig>,
-) -> anyhow::Result<(PathBuf, FlakeUrl)> {
+async fn cache_flake(nixcmd: &NixCmd, cfg: &OmConfig) -> anyhow::Result<(PathBuf, FlakeUrl)> {
     let metadata = FlakeMetadata::from_nix(nixcmd, &cfg.flake_url).await?;
     let path = metadata.path.to_string_lossy().into_owned();
     let attr = cfg.reference.join(".");

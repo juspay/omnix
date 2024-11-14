@@ -1,6 +1,5 @@
 use serde::Deserialize;
 
-use nix_rs::{command::NixCmd, flake::url::FlakeUrl};
 use omnix_common::config::OmConfig;
 
 use crate::readme::Readme;
@@ -17,11 +16,8 @@ pub struct CacheConfig {
 }
 
 impl DevelopConfig {
-    pub async fn from_flake(url: &FlakeUrl) -> anyhow::Result<Self> {
-        let v = OmConfig::<Self>::from_flake_url(NixCmd::get().await, url, &["om.develop"])
-            .await?
-            .config;
-        let config = v.get("default").cloned().unwrap_or_default();
+    pub fn from_om_config(om_config: &OmConfig) -> anyhow::Result<Self> {
+        let (config, _rest) = om_config.get_sub_config_under("develop")?;
         Ok(config)
     }
 }

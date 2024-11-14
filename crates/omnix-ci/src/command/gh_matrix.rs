@@ -22,8 +22,8 @@ pub struct GHMatrixCommand {
 
 impl GHMatrixCommand {
     /// Run the command
-    pub async fn run(&self, cfg: OmConfig<SubflakesConfig>) -> anyhow::Result<()> {
-        let (config, _rest) = cfg.get_referenced()?;
+    pub async fn run(&self, cfg: OmConfig) -> anyhow::Result<()> {
+        let (config, _rest) = cfg.get_sub_config_under::<SubflakesConfig>("ci")?;
         let matrix = github::matrix::GitHubMatrix::from(self.systems.clone(), &config);
         println!("{}", serde_json::to_string(&matrix)?);
         Ok(())

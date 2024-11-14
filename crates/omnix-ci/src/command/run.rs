@@ -65,12 +65,7 @@ impl RunCommand {
     }
 
     /// Run the build command which decides whether to do ci run on current machine or a remote machine
-    pub async fn run(
-        &self,
-        nixcmd: &NixCmd,
-        verbose: bool,
-        cfg: OmConfig<SubflakesConfig>,
-    ) -> anyhow::Result<()> {
+    pub async fn run(&self, nixcmd: &NixCmd, verbose: bool, cfg: OmConfig) -> anyhow::Result<()> {
         match &self.on {
             Some(store_uri) => run_remote::run_on_remote_store(nixcmd, self, &cfg, store_uri).await,
             None => self.run_local(nixcmd, verbose, cfg).await,
@@ -78,12 +73,7 @@ impl RunCommand {
     }
 
     /// Run [RunCommand] on local Nix store.
-    async fn run_local(
-        &self,
-        nixcmd: &NixCmd,
-        verbose: bool,
-        cfg: OmConfig<SubflakesConfig>,
-    ) -> anyhow::Result<()> {
+    async fn run_local(&self, nixcmd: &NixCmd, verbose: bool, cfg: OmConfig) -> anyhow::Result<()> {
         // TODO: We'll refactor this function to use steps
         // https://github.com/juspay/omnix/issues/216
 
@@ -95,7 +85,7 @@ impl RunCommand {
 
         // First, run the necessary health checks
         tracing::info!("{}", "\n🫀 Performing health check".bold());
-        check_nix_version(&cfg.flake_url, nix_info).await?;
+        check_nix_version(&cfg, nix_info).await?;
 
         // Then, do the CI steps
         tracing::info!(
@@ -153,9 +143,11 @@ impl RunCommand {
 }
 
 /// Check that Nix version is not too old.
-pub async fn check_nix_version(flake_url: &FlakeUrl, nix_info: &NixInfo) -> anyhow::Result<()> {
-    let omnix_health = NixHealth::from_flake(flake_url).await?;
-    let checks = omnix_health.nix_version.check(nix_info, Some(flake_url));
+pub async fn check_nix_version(cfg: &OmConfig, nix_info: &NixInfo) -> anyhow::Result<()> {
+    let omnix_health = NixHealth::from_om_config(cfg)?;
+    let checks = omnix_health
+        .nix_version
+        .check(nix_info, Some(&cfg.flake_url));
     let exit_code = NixHealth::print_report_returning_exit_code(&checks).await?;
 
     if exit_code != 0 {
@@ -169,13 +161,14 @@ pub async fn ci_run(
     cmd: &NixCmd,
     verbose: bool,
     run_cmd: &RunCommand,
-    cfg: &OmConfig<SubflakesConfig>,
+    cfg: &OmConfig,
     nix_config: &NixConfig,
 ) -> anyhow::Result<RunResult> {
     let mut res = HashMap::new();
     let systems = run_cmd.get_systems(cmd, nix_config).await?;
 
-    let (config, attrs) = cfg.get_referenced()?;
+    let (config, attrs) = cfg.get_sub_config_under::<SubflakesConfig>("ci")?;
+
     // User's filter by subflake name
     let only_subflake = attrs.first();
 
