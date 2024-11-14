@@ -43,6 +43,10 @@ pub struct NixCmd {
     /// Consider all previously downloaded files out-of-date.
     #[cfg_attr(feature = "clap", arg(long))]
     pub refresh: bool,
+
+    /// Accept `nixConfig` configuration in flake.nix
+    #[cfg_attr(feature = "clap", arg(long))]
+    pub accept_flake_config: bool,
 }
 
 impl Default for NixCmd {
@@ -54,6 +58,7 @@ impl Default for NixCmd {
             extra_experimental_features: vec![],
             extra_access_tokens: vec![],
             refresh: false,
+            accept_flake_config: true,
         }
     }
 }
@@ -204,6 +209,9 @@ impl NixCmd {
         }
         if self.refresh {
             args.push("--refresh".to_string());
+        }
+        if self.accept_flake_config {
+            args.push("--accept-flake-config".to_string());
         }
         args
     }
