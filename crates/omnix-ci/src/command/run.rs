@@ -167,7 +167,7 @@ pub async fn ci_run(
     let mut res = HashMap::new();
     let systems = run_cmd.get_systems(cmd, nix_config).await?;
 
-    let (config, attrs) = cfg.get_referenced_for::<SubflakesConfig>("ci")?;
+    let (config, attrs) = cfg.get_sub_config_under::<SubflakesConfig>("ci")?;
 
     // User's filter by subflake name
     let only_subflake = attrs.first();

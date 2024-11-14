@@ -18,7 +18,7 @@ mod tests {
         let cfg = OmConfig::from_flake_url(&NixCmd::default(), url)
             .await
             .unwrap();
-        let (config, attrs) = cfg.get_referenced_for::<SubflakesConfig>("ci").unwrap();
+        let (config, attrs) = cfg.get_sub_config_under::<SubflakesConfig>("ci").unwrap();
         assert_eq!(attrs, &["dev"]);
         // assert_eq!(cfg.selected_subconfig, Some("dev".to_string()));
         assert_eq!(config.0.len(), 7);

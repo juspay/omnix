@@ -35,13 +35,15 @@ impl OmConfig {
         })
     }
 
-    /// Get the user-referenced config value `T` for a given sub-config
-    pub fn get_referenced_for<T>(&self, sub_config: &str) -> Result<(T, &[String]), OmConfigError>
+    /// Get the user referenced (per `referenced`) sub-tree under the given root key.
+    ///
+    /// get_sub_config_under("ci") will return `ci.default` (or Default instance if config is missing) without a reference. Otherwise, it will use the reference to find the correct sub-tree.
+    pub fn get_sub_config_under<T>(&self, root_key: &str) -> Result<(T, &[String]), OmConfigError>
     where
         T: Default + DeserializeOwned,
     {
         // Get the config map, returning default if it doesn't exist
-        let config = match self.config.get::<T>(sub_config) {
+        let config = match self.config.get::<T>(root_key) {
             Some(Ok(config)) => config,
             Some(Err(e)) => return Err(OmConfigError::DecodeErrorJson(e)),
             None => {
@@ -78,12 +80,12 @@ pub struct OmConfigTree(BTreeMap<String, BTreeMap<String, serde_json::Value>>);
 
 impl OmConfigTree {
     /// Get all the configs of type `T` for a given sub-config
-    /// Returns None if sub_config doesn't exist, or Some(Err) if deserialization fails
-    pub fn get<T>(&self, sub_config: &str) -> Option<Result<BTreeMap<String, T>, serde_json::Error>>
+    /// Returns None if key doesn't exist, or Some(Err) if deserialization fails
+    pub fn get<T>(&self, key: &str) -> Option<Result<BTreeMap<String, T>, serde_json::Error>>
     where
         T: DeserializeOwned,
     {
-        self.0.get(sub_config).map(|config| {
+        self.0.get(key).map(|config| {
             config
                 .iter()
                 .map(|(k, v)| serde_json::from_value(v.clone()).map(|value| (k.clone(), value)))
