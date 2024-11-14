@@ -40,7 +40,7 @@ impl OmConfig {
     /// get_sub_config_under("ci") will return `ci.default` (or Default instance if config is missing) without a reference. Otherwise, it will use the reference to find the correct sub-tree.
     pub fn get_sub_config_under<T>(&self, root_key: &str) -> Result<(T, &[String]), OmConfigError>
     where
-        T: Default + DeserializeOwned,
+        T: Default + DeserializeOwned + Clone,
     {
         // Get the config map, returning default if it doesn't exist
         let config = match self.config.get::<T>(root_key)? {
@@ -55,21 +55,13 @@ impl OmConfig {
             }
         };
 
-        if let Some((k, rest)) = self.reference.split_first() {
-            // If a reference is provied, look up that key.
-            config
-                .into_iter()
-                .find(|(cfg_name, _)| cfg_name == k)
-                .map(|(_, v)| (v, rest))
-                .ok_or_else(|| OmConfigError::MissingConfigAttribute(k.to_string()))
-        } else {
-            // Else, fall back to `default` attribute or `T::default()`
-            let v = config
-                .into_iter()
-                .find_map(|(k, v)| if k == "default" { Some(v) } else { None })
-                .unwrap_or_default();
-            Ok((v, &[]))
-        }
+        let default = "default".to_string();
+        let (k, rest) = self.reference.split_first().unwrap_or((&default, &[]));
+
+        let v: &T = config
+            .get(k)
+            .ok_or(OmConfigError::MissingConfigAttribute(k.to_string()))?;
+        Ok((v.clone(), rest))
     }
 }
 
