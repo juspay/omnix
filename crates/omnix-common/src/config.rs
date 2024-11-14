@@ -49,8 +49,9 @@ impl OmConfig {
                 return if self.reference.is_empty() {
                     Ok((T::default(), &[]))
                 } else {
+                    // Reference requires the config to exist.
                     Err(OmConfigError::UnexpectedAttribute(self.reference.join(".")))
-                }
+                };
             }
         };
 
