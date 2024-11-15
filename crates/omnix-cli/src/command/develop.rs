@@ -28,7 +28,7 @@ impl DevelopCommand {
     pub async fn run(&self) -> anyhow::Result<()> {
         let flake = self.flake_shell.without_attr();
 
-        let om_config = OmConfig::from_flake_url(NixCmd::get().await, &self.flake_shell).await?;
+        let om_config = OmConfig::from_flake_url(NixCmd::get().await, &flake).await?;
 
         tracing::info!("⌨️  Preparing to develop project: {:}", &flake);
         let prj = omnix_develop::core::Project::new(flake, om_config).await?;
