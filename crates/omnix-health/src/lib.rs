@@ -116,8 +116,11 @@ pub async fn run_all_checks_with(flake_url: Option<FlakeUrl>) -> anyhow::Result<
     }?;
 
     tracing::info!(
-        "🩺️ Checking the health of your Nix setup (flake={:?}",
-        flake_url.as_ref()
+        "🩺️ Checking the health of your Nix setup (flake: '{}')",
+        match flake_url.as_ref() {
+            Some(url) => url.to_string(),
+            None => "N/A".to_string(),
+        }
     );
 
     print_info_banner(flake_url.as_ref(), nix_info).await?;
