@@ -63,7 +63,7 @@ ci:
 health:
   default:
     nix-version:
-      min-required: "2.30.0"
+      min-required: "2.16.0"
     caches:
       required:
         - https://om.cachix.org
