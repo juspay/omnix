@@ -109,7 +109,11 @@ pub async fn run_all_checks_with(flake_url: Option<FlakeUrl>) -> anyhow::Result<
 
     let health: NixHealth = match flake_url.as_ref() {
         Some(flake_url) => {
-            let om_config = OmConfig::from_flake_url(NixCmd::get().await, flake_url).await?;
+            let nix_cmd = NixCmd::get().await;
+            let om_config = match OmConfig::from_yaml(nix_cmd, flake_url).await {
+                Err(OmConfigError::ReadYaml(_)) => OmConfig::from_flake(nix_cmd, flake_url).await,
+                other => other,
+            }?;
             NixHealth::from_om_config(&om_config)
         }
         None => Ok(NixHealth::default()),

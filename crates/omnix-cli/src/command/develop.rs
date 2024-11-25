@@ -1,6 +1,6 @@
 use clap::Parser;
 use nix_rs::{command::NixCmd, flake::url::FlakeUrl};
-use omnix_common::config::OmConfig;
+use omnix_common::config::{OmConfig, OmConfigError};
 
 /// Prepare to develop on a flake project
 #[derive(Parser, Debug)]
@@ -28,7 +28,11 @@ impl DevelopCommand {
     pub async fn run(&self) -> anyhow::Result<()> {
         let flake = self.flake_shell.without_attr();
 
-        let om_config = OmConfig::from_flake_url(NixCmd::get().await, &flake).await?;
+        let nix_cmd = NixCmd::get().await;
+        let om_config = match OmConfig::from_yaml(nix_cmd, &flake).await {
+            Err(OmConfigError::ReadYaml(_)) => OmConfig::from_flake(nix_cmd, &flake).await,
+            other => other,
+        }?;
 
         tracing::info!("⌨️  Preparing to develop project: {:}", &flake);
         let prj = omnix_develop::core::Project::new(flake, om_config).await?;

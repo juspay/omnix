@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 
 use nix_rs::{
     command::NixCmd,
-    flake::{eval::nix_eval_attr, url::FlakeUrl},
+    flake::{eval::nix_eval_attr, metadata::FlakeMetadata, url::FlakeUrl},
 };
 use serde::{de::DeserializeOwned, Deserialize};
 
@@ -24,8 +24,26 @@ pub struct OmConfig {
 }
 
 impl OmConfig {
-    /// Read the om configuration from the flake url
-    pub async fn from_flake_url(cmd: &NixCmd, flake_url: &FlakeUrl) -> Result<Self, OmConfigError> {
+    /// Read the configuration from `om.yaml` in flake root
+    pub async fn from_yaml(cmd: &NixCmd, flake_url: &FlakeUrl) -> Result<Self, OmConfigError> {
+        let path = if let Some(local_path) = flake_url.without_attr().as_local_path() {
+            local_path.to_path_buf()
+        } else {
+            FlakeMetadata::from_nix(cmd, flake_url).await?.path
+        }
+        .join("om.yaml");
+
+        let yaml_str = std::fs::read_to_string(path)?;
+        let config: OmConfigTree = serde_yaml::from_str(&yaml_str)?;
+        Ok(OmConfig {
+            flake_url: flake_url.without_attr(),
+            reference: flake_url.get_attr().as_list(),
+            config,
+        })
+    }
+
+    /// Read the configuration from `om` flake output
+    pub async fn from_flake(cmd: &NixCmd, flake_url: &FlakeUrl) -> Result<Self, OmConfigError> {
         Ok(OmConfig {
             flake_url: flake_url.without_attr(),
             reference: flake_url.get_attr().as_list(),
@@ -108,4 +126,12 @@ pub enum OmConfigError {
     /// Failed to parse JSON
     #[error("Failed to decode (json error): {0}")]
     DecodeErrorJson(#[from] serde_json::Error),
+
+    /// Failed to parse yaml
+    #[error("Failed to parse yaml: {0}")]
+    ParseYaml(#[from] serde_yaml::Error),
+
+    /// Failed to read yaml
+    #[error("Failed to read yaml: {0}")]
+    ReadYaml(#[from] std::io::Error),
 }

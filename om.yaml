@@ -1,0 +1,85 @@
+om:
+  ci:
+    default:
+      omnix:
+        dir: .
+        steps:
+          flake-check:
+            enable: false
+          custom:
+            om-show:
+              type: app
+              args:
+                - show
+                - .
+            binary-size-is-small:
+              type: app
+              name: check-closure-size
+              systems:
+                - x86_64-linux
+            omnix-source-is-buildable:
+              type: app
+              name: omnix-source-is-buildable
+            cargo-tests:
+              type: devshell
+              command:
+                - just
+                - cargo-test
+              systems:
+                - x86_64-linux
+                - aarch64-darwin
+            cargo-clippy:
+              type: devshell
+              command:
+                - just
+                - clippy
+              systems:
+                - x86_64-linux
+                - aarch64-darwin
+            cargo-doc:
+              type: devshell
+              command:
+                - just
+                - cargo-doc
+              systems:
+                - x86_64-linux
+                - aarch64-darwin
+      doc:
+        dir: doc
+      registry:
+        dir: crates/omnix-init/registry
+        steps:
+          build:
+            enable: false
+          custom: {}
+      cli-test-dep-cache:
+        dir: crates/omnix-cli/tests
+        steps:
+          lockfile:
+            enable: false
+          flake_check:
+            enable: false
+          custom: {}
+  health:
+    default:
+      nix-version:
+        min-required: "2.16.0"
+      caches:
+        required:
+          - https://om.cachix.org
+      direnv:
+        required: true
+  develop:
+    default:
+      readme: |
+        🍾 Welcome to the **omnix** project
+
+        To run omnix,
+
+        ```sh-session
+        just watch <args>
+        ```
+
+        (Now, as you edit the Rust sources, the above will reload!)
+
+        🍎🍎 Run 'just' to see more commands. See <https://nixos.asia/en/vscode> for IDE setup.
