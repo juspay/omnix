@@ -15,9 +15,7 @@ mod tests {
             "github:srid/haskell-flake/76214cf8b0d77ed763d1f093ddce16febaf07365#default.dev"
                 .to_string(),
         );
-        let cfg = OmConfig::from_flake_url(&NixCmd::default(), url)
-            .await
-            .unwrap();
+        let cfg = OmConfig::from_flake(&NixCmd::default(), url).await.unwrap();
         let (config, attrs) = cfg.get_sub_config_under::<SubflakesConfig>("ci").unwrap();
         assert_eq!(attrs, &["dev"]);
         // assert_eq!(cfg.selected_subconfig, Some("dev".to_string()));
