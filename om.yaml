@@ -1,4 +1,3 @@
-# YAML version of https://github.com/juspay/omnix/blob/main/nix/modules/flake-parts/om.nix
 ci:
   default:
     omnix:
