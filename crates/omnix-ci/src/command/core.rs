@@ -2,7 +2,7 @@
 use clap::Subcommand;
 use colored::Colorize;
 use nix_rs::command::NixCmd;
-use omnix_common::config::{OmConfig, OmConfigError};
+use omnix_common::config::OmConfig;
 use tracing::instrument;
 
 use crate::flake_ref::FlakeRef;
@@ -39,10 +39,8 @@ impl Command {
     pub async fn run(self, nixcmd: &NixCmd, verbose: bool) -> anyhow::Result<()> {
         tracing::info!("{}", "\n👟 Reading om.ci config from flake".bold());
         let url = self.get_flake_ref().to_flake_url().await?;
-        let cfg = match OmConfig::from_yaml(nixcmd, &url).await {
-            Err(OmConfigError::ReadYaml(_)) => OmConfig::from_flake(nixcmd, &url).await,
-            other => other,
-        }?;
+        let cfg = OmConfig::get(nixcmd, &url).await?;
+
         tracing::debug!("OmConfig: {cfg:?}");
         match self {
             Command::Run(cmd) => cmd.run(nixcmd, verbose, cfg).await,

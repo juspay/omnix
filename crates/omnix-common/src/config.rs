@@ -1,6 +1,6 @@
 //! Manage omnix configuration in flake.nix
 
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, path::PathBuf};
 
 use nix_rs::{
     command::NixCmd,
@@ -24,14 +24,26 @@ pub struct OmConfig {
 }
 
 impl OmConfig {
+    /// Fetch the `om` configuration from `om.yaml` if present, falling back to `om` config in flake output
+    pub async fn get(cmd: &NixCmd, flake_url: &FlakeUrl) -> Result<Self, OmConfigError> {
+        match Self::from_yaml(cmd, flake_url).await {
+            Err(OmConfigError::YamlNotFound(_)) => Self::from_flake(cmd, flake_url).await,
+            other => other,
+        }
+    }
+
     /// Read the configuration from `om.yaml` in flake root
-    pub async fn from_yaml(cmd: &NixCmd, flake_url: &FlakeUrl) -> Result<Self, OmConfigError> {
+    async fn from_yaml(cmd: &NixCmd, flake_url: &FlakeUrl) -> Result<Self, OmConfigError> {
         let path = if let Some(local_path) = flake_url.without_attr().as_local_path() {
             local_path.to_path_buf()
         } else {
             FlakeMetadata::from_nix(cmd, flake_url).await?.path
         }
         .join("om.yaml");
+
+        if !path.exists() {
+            return Err(OmConfigError::YamlNotFound(path));
+        }
 
         let yaml_str = std::fs::read_to_string(path)?;
         let config: OmConfigTree = serde_yaml::from_str(&yaml_str)?;
@@ -43,7 +55,7 @@ impl OmConfig {
     }
 
     /// Read the configuration from `om` flake output
-    pub async fn from_flake(cmd: &NixCmd, flake_url: &FlakeUrl) -> Result<Self, OmConfigError> {
+    async fn from_flake(cmd: &NixCmd, flake_url: &FlakeUrl) -> Result<Self, OmConfigError> {
         Ok(OmConfig {
             flake_url: flake_url.without_attr(),
             reference: flake_url.get_attr().as_list(),
@@ -126,6 +138,10 @@ pub enum OmConfigError {
     /// Failed to parse JSON
     #[error("Failed to decode (json error): {0}")]
     DecodeErrorJson(#[from] serde_json::Error),
+
+    /// Yaml config not found
+    #[error("{0} YAML config does not exist")]
+    YamlNotFound(PathBuf),
 
     /// Failed to parse yaml
     #[error("Failed to parse yaml: {0}")]
