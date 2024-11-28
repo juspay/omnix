@@ -2,7 +2,7 @@
 
 #[cfg(test)]
 mod tests {
-    use nix_rs::{command::NixCmd, flake::url::FlakeUrl};
+    use nix_rs::flake::url::FlakeUrl;
     use omnix_common::config::OmConfig;
 
     use crate::config::subflakes::SubflakesConfig;
@@ -15,7 +15,7 @@ mod tests {
             "github:srid/haskell-flake/76214cf8b0d77ed763d1f093ddce16febaf07365#default.dev"
                 .to_string(),
         );
-        let cfg = OmConfig::get(&NixCmd::default(), url).await.unwrap();
+        let cfg = OmConfig::get(url).await.unwrap();
         let (config, attrs) = cfg.get_sub_config_under::<SubflakesConfig>("ci").unwrap();
         assert_eq!(attrs, &["dev"]);
         // assert_eq!(cfg.selected_subconfig, Some("dev".to_string()));
