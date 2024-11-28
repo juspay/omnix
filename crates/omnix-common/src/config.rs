@@ -25,19 +25,21 @@ pub struct OmConfig {
 
 impl OmConfig {
     /// Fetch the `om` configuration from `om.yaml` if present, falling back to `om` config in flake output
-    pub async fn get(cmd: &NixCmd, flake_url: &FlakeUrl) -> Result<Self, OmConfigError> {
-        match Self::from_yaml(cmd, flake_url).await? {
-            None => Self::from_flake(cmd, flake_url).await,
+    pub async fn get(flake_url: &FlakeUrl) -> Result<Self, OmConfigError> {
+        match Self::from_yaml(flake_url).await? {
+            None => Self::from_flake(flake_url).await,
             Some(config) => Ok(config),
         }
     }
 
     /// Read the configuration from `om.yaml` in flake root
-    async fn from_yaml(cmd: &NixCmd, flake_url: &FlakeUrl) -> Result<Option<Self>, OmConfigError> {
+    async fn from_yaml(flake_url: &FlakeUrl) -> Result<Option<Self>, OmConfigError> {
         let path = if let Some(local_path) = flake_url.without_attr().as_local_path() {
             local_path.to_path_buf()
         } else {
-            FlakeMetadata::from_nix(cmd, flake_url).await?.path
+            FlakeMetadata::from_nix(NixCmd::get().await, flake_url)
+                .await?
+                .path
         }
         .join("om.yaml");
 
@@ -55,11 +57,11 @@ impl OmConfig {
     }
 
     /// Read the configuration from `om` flake output
-    async fn from_flake(cmd: &NixCmd, flake_url: &FlakeUrl) -> Result<Self, OmConfigError> {
+    async fn from_flake(flake_url: &FlakeUrl) -> Result<Self, OmConfigError> {
         Ok(OmConfig {
             flake_url: flake_url.without_attr(),
             reference: flake_url.get_attr().as_list(),
-            config: nix_eval_attr(cmd, &flake_url.with_attr("om"))
+            config: nix_eval_attr(NixCmd::get().await, &flake_url.with_attr("om"))
                 .await?
                 .unwrap_or_default(),
         })

@@ -39,7 +39,7 @@ impl Command {
     pub async fn run(self, nixcmd: &NixCmd, verbose: bool) -> anyhow::Result<()> {
         tracing::info!("{}", "\n👟 Reading om.ci config from flake".bold());
         let url = self.get_flake_ref().to_flake_url().await?;
-        let cfg = OmConfig::get(nixcmd, &url).await?;
+        let cfg = OmConfig::get(&url).await?;
 
         tracing::debug!("OmConfig: {cfg:?}");
         match self {
