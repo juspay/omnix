@@ -3,7 +3,7 @@
 The `om develop` should be used indirectly in direnv, via the `use omnix` directive in your `.envrc`:
 
 ```sh
-source_url https://raw.githubusercontent.com/juspay/omnix/4daebcb38082e0f933d6a25284948122ad3a507e/omnixrc 'sha256-6+bGgf1Dw9Ua/7aiFs7RyN8slHZeOsBCmNsIQ5nqHGM='
+source_url https://raw.githubusercontent.com/juspay/omnix/75ed48923835963e2f18baba08f54a8adc307ba2/omnixrc "sha256-8C2Jb5bHx/0cvm1+9gOlBEdWzbikCWT5UsJWewUAFt4="
 
 use omnix
 ```
@@ -15,6 +15,10 @@ use omnix
 - Print a welcome text after spawning the Nix devshell.
 
 The ideal goal here being that switching to a project should do everything necessary to get you started immediately.
+
+## `om.yaml`
+
+You should also create a `om.yaml` (empty file if there's no configuration) so your flake is not evaluated during direnv.
 
 ## Welcome text {#welcome}
 
