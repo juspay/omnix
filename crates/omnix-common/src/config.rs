@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 
 use nix_rs::{
     command::NixCmd,
-    flake::{eval::nix_eval_attr, url::FlakeUrl},
+    flake::{eval::nix_eval_attr, metadata::FlakeMetadata, url::FlakeUrl},
 };
 use serde::{de::DeserializeOwned, Deserialize};
 
@@ -24,12 +24,44 @@ pub struct OmConfig {
 }
 
 impl OmConfig {
-    /// Read the om configuration from the flake url
-    pub async fn from_flake_url(cmd: &NixCmd, flake_url: &FlakeUrl) -> Result<Self, OmConfigError> {
+    /// Fetch the `om` configuration from `om.yaml` if present, falling back to `om` config in flake output
+    pub async fn get(flake_url: &FlakeUrl) -> Result<Self, OmConfigError> {
+        match Self::from_yaml(flake_url).await? {
+            None => Self::from_flake(flake_url).await,
+            Some(config) => Ok(config),
+        }
+    }
+
+    /// Read the configuration from `om.yaml` in flake root
+    async fn from_yaml(flake_url: &FlakeUrl) -> Result<Option<Self>, OmConfigError> {
+        let path = if let Some(local_path) = flake_url.without_attr().as_local_path() {
+            local_path.to_path_buf()
+        } else {
+            FlakeMetadata::from_nix(NixCmd::get().await, flake_url)
+                .await?
+                .path
+        }
+        .join("om.yaml");
+
+        if !path.exists() {
+            return Ok(None);
+        }
+
+        let yaml_str = std::fs::read_to_string(path)?;
+        let config: OmConfigTree = serde_yaml::from_str(&yaml_str)?;
+        Ok(Some(OmConfig {
+            flake_url: flake_url.without_attr(),
+            reference: flake_url.get_attr().as_list(),
+            config,
+        }))
+    }
+
+    /// Read the configuration from `om` flake output
+    async fn from_flake(flake_url: &FlakeUrl) -> Result<Self, OmConfigError> {
         Ok(OmConfig {
             flake_url: flake_url.without_attr(),
             reference: flake_url.get_attr().as_list(),
-            config: nix_eval_attr(cmd, &flake_url.with_attr("om"))
+            config: nix_eval_attr(NixCmd::get().await, &flake_url.with_attr("om"))
                 .await?
                 .unwrap_or_default(),
         })
@@ -108,4 +140,12 @@ pub enum OmConfigError {
     /// Failed to parse JSON
     #[error("Failed to decode (json error): {0}")]
     DecodeErrorJson(#[from] serde_json::Error),
+
+    /// Failed to parse yaml
+    #[error("Failed to parse yaml: {0}")]
+    ParseYaml(#[from] serde_yaml::Error),
+
+    /// Failed to read yaml
+    #[error("Failed to read yaml: {0}")]
+    ReadYaml(#[from] std::io::Error),
 }

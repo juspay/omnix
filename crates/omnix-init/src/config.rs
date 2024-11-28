@@ -1,7 +1,7 @@
 use std::fmt::{self, Display, Formatter};
 
 use colored::Colorize;
-use nix_rs::{command::NixCmd, flake::url::FlakeUrl};
+use nix_rs::flake::url::FlakeUrl;
 use omnix_common::config::OmConfig;
 
 use crate::template::Template;
@@ -33,7 +33,8 @@ impl<'a> Display for FlakeTemplate<'a> {
 
 /// Load templates from the given flake
 pub async fn load_templates<'a>(url: &FlakeUrl) -> anyhow::Result<Vec<FlakeTemplate>> {
-    let om_config = OmConfig::from_flake_url(NixCmd::get().await, url).await?;
+    let om_config = OmConfig::get(url).await?;
+
     let templates = om_config
         .config
         .get::<Template>("templates")?

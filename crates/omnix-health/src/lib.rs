@@ -12,7 +12,7 @@ use colored::Colorize;
 use check::direnv::Direnv;
 use nix_rs::env::OS;
 use nix_rs::flake::url::FlakeUrl;
-use nix_rs::{command::NixCmd, info::NixInfo};
+use nix_rs::info::NixInfo;
 use omnix_common::config::{OmConfig, OmConfigError};
 use omnix_common::markdown::render_markdown;
 use serde::{Deserialize, Serialize};
@@ -109,7 +109,7 @@ pub async fn run_all_checks_with(flake_url: Option<FlakeUrl>) -> anyhow::Result<
 
     let health: NixHealth = match flake_url.as_ref() {
         Some(flake_url) => {
-            let om_config = OmConfig::from_flake_url(NixCmd::get().await, flake_url).await?;
+            let om_config = OmConfig::get(flake_url).await?;
             NixHealth::from_om_config(&om_config)
         }
         None => Ok(NixHealth::default()),
