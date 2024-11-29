@@ -77,7 +77,7 @@ impl OmConfig {
         // Get the config map, returning default if it doesn't exist
         let config = match self.config.get::<T>(root_key)? {
             Some(res) => res,
-            None => return Ok((T::default(), &[]))
+            None => return Ok((T::default(), &[])),
         };
 
         let default = "default".to_string();
