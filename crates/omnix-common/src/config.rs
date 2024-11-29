@@ -77,14 +77,7 @@ impl OmConfig {
         // Get the config map, returning default if it doesn't exist
         let config = match self.config.get::<T>(root_key)? {
             Some(res) => res,
-            None => {
-                return if self.reference.is_empty() {
-                    Ok((T::default(), &[]))
-                } else {
-                    // Reference requires the config to exist.
-                    Err(OmConfigError::UnexpectedAttribute(self.reference.join(".")))
-                };
-            }
+            None => return Ok((T::default(), &[]))
         };
 
         let default = "default".to_string();
@@ -128,10 +121,6 @@ pub enum OmConfigError {
     /// Missing configuration attribute
     #[error("Missing configuration attribute: {0}")]
     MissingConfigAttribute(String),
-
-    /// Unexpected attribute
-    #[error("Unexpected attribute: {0}")]
-    UnexpectedAttribute(String),
 
     /// A [nix_rs::command::NixCmdError]
     #[error("Nix command error: {0}")]
