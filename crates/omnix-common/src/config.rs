@@ -7,6 +7,8 @@ use nix_rs::{
     flake::{eval::nix_eval_attr, metadata::FlakeMetadata, url::FlakeUrl},
 };
 use serde::{de::DeserializeOwned, Deserialize};
+#[cfg(test)]
+use std::str::FromStr;
 
 /// [OmConfigTree] with additional metadata about the flake URL and reference.
 ///
@@ -137,4 +139,29 @@ pub enum OmConfigError {
     /// Failed to read yaml
     #[error("Failed to read yaml: {0}")]
     ReadYaml(#[from] std::io::Error),
+}
+
+#[tokio::test]
+async fn test_get_missing_sub_config() {
+    let om_config = OmConfig {
+        flake_url: FlakeUrl::from_str(".").unwrap(),
+        reference: vec![],
+        config: serde_yaml::from_str("").unwrap(),
+    };
+
+    let (res, _rest) = om_config.get_sub_config_under::<String>("health").unwrap();
+
+    assert_eq!(res, String::default());
+}
+
+#[tokio::test]
+async fn test_get_omconfig_from_remote_flake_with_attr() {
+    let om_config = OmConfig::get(
+        &FlakeUrl::from_str(
+            "github:juspay/omnix/0ed2a389d6b4c8eb78caed778e20e872d2a59973#default.omnix",
+        )
+        .unwrap(),
+    )
+    .await;
+    assert!(om_config.is_ok());
 }
