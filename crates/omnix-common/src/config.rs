@@ -37,7 +37,7 @@ impl OmConfig {
         let path = if let Some(local_path) = flake_url.without_attr().as_local_path() {
             local_path.to_path_buf()
         } else {
-            FlakeMetadata::from_nix(NixCmd::get().await, flake_url)
+            FlakeMetadata::from_nix(NixCmd::get().await, &flake_url.without_attr())
                 .await?
                 .path
         }
