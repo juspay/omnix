@@ -19,6 +19,7 @@ The `om health` command checks the health of your Nix install. Furthermore, indi
 | Nix Caches in use                      | Yes                          |
 | $USER is in `trusted-users`            | -                            |
 | Direnv: installed and activated        | Yes                          |
+| Dotfiles are managed by Nix            | Yes                          |
 | Min RAM / Disk space                   | Yes                          |
 
 [^ros]: This check is only performed on macOS with Apple Silicon.

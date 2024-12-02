@@ -1,13 +1,11 @@
 # Introduction
 
-**Omnix** aims to supplement the [Nix](https://nixos.asia/en/nix) CLI to improve developer experience.
+**Omnix** aims to supplement the [Nix](https://nixos.asia/en/nix) CLI to improve developer experience. View [the Github repo](https://github.com/juspay/omnix) for ongoing progress.
 
 <p style="text-align: center; float: right">
 <img src="favicon.svg" alt="Omnix Logo" width="32px" />
 </p>
 
-> [!WARNING] 
-> 🚧 omnix is in active development. View [the Github repo](https://github.com/juspay/omnix) for ongoing progress.
 
 
 ## Install
