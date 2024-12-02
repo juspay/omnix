@@ -109,7 +109,7 @@ async fn test_services_flake() -> anyhow::Result<()> {
     let expected = vec![
         "/nix/store/ib83flb2pqjb416qrjbs4pqhifa3hhs4-default-test",
         "/nix/store/l9c8y2xx2iffk8l1ipp4mkval8wl8paa-default",
-        "/nix/store/pj2l11lc4kai6av32hgfsrsvmga7vkhf-nix-shell"
+        "/nix/store/pj2l11lc4kai6av32hgfsrsvmga7vkhf-nix-shell",
     ]
     .into_iter()
     .map(|s| PathBuf::from(s.to_string()))
