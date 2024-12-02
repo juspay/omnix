@@ -42,4 +42,4 @@ cargo-doc:
 # Run cargo test for all crates
 [group('ci-steps')]
 cargo-test:
-    cargo doc --release --all-features --workspace
+    cargo test --release --all-features --workspace
