@@ -93,8 +93,7 @@ async fn test_haskell_multi_nix_all_dependencies() -> anyhow::Result<()> {
 /// A test, with config
 async fn test_services_flake() -> anyhow::Result<()> {
     let outs = om_ci_run(&[
-        // TODO: Change after merging https://github.com/juspay/services-flake/pull/51
-        "github:juspay/services-flake/3d764f19d0a121915447641fe49a9b8d02777ff8",
+        "github:juspay/services-flake/23cf162387af041035072ee4a9de20f8408907cb#default.simple-example",
     ])
     .await?;
     let drv_outs: Vec<PathBuf> = outs
@@ -108,23 +107,9 @@ async fn test_services_flake() -> anyhow::Result<()> {
         })
         .collect();
     let expected = vec![
-        "/nix/store/1vlflyqyjnpa9089dgryrhpkypj9zg76-elasticsearch",
-        "/nix/store/20dz7z6pbzpx6sg61lf2sihj286zs3i2-postgres-test",
-        "/nix/store/4h6zn33lk2zpb7ch4ljd7ik6fk4cqdyi-nix-shell",
-        "/nix/store/6r5y4d7bmsqf0dk522rdkjd1q6ffiz2p-treefmt-check",
-        "/nix/store/87mhdmfs479rccyh89ss04ylj7rmbbyl-redis",
-        "/nix/store/8aq4awsrggaflv7lg5bp2qkmx52isqfk-redis-test",
-        "/nix/store/8xm6ccnbxkm2vapk084gmr89x8bvkh7i-redis-cluster-test",
-        "/nix/store/h604nx70yi7ca0zapwls6nlhy7n396lq-zookeeper-test",
-        "/nix/store/ibp162hp3wb3zz3hkwlfbq45ivmymj80-redis-cluster",
-        "/nix/store/ilx0c8gvyqviyn4wy0xsc8l9lmxq2g66-postgres",
-        "/nix/store/mhlzq02nmqn3wn4f2vhyq8sgf44siqkv-zookeeper",
-        "/nix/store/pahcafwnm9hj58wzlgfldm9k2g5794qr-nix-shell",
-        "/nix/store/pcds2jxvqr9ahyyff50r3qv5y5b944xz-default-test",
-        "/nix/store/pczvahjnzp01qzk1z4ixgialbmyxq3f0-apache-kafka-test",
-        "/nix/store/pl6m18fsz16kd59bg4myhvkfv04syb65-elasticsearch-test",
-        "/nix/store/wcvfpxciyv4v3w35fxc9axbvdv0lv13d-apache-kafka",
-        "/nix/store/y3xlr9fnsq43j175b3f69k5s7qw0gh8p-default",
+        "/nix/store/ib83flb2pqjb416qrjbs4pqhifa3hhs4-default-test",
+        "/nix/store/l9c8y2xx2iffk8l1ipp4mkval8wl8paa-default",
+        "/nix/store/pj2l11lc4kai6av32hgfsrsvmga7vkhf-nix-shell",
     ]
     .into_iter()
     .map(|s| PathBuf::from(s.to_string()))
