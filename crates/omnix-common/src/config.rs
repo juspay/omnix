@@ -143,15 +143,26 @@ pub enum OmConfigError {
 
 #[tokio::test]
 async fn test_get_missing_sub_config() {
-    let om_config = OmConfig {
+    let om_config_empty_reference = OmConfig {
         flake_url: FlakeUrl::from_str(".").unwrap(),
         reference: vec![],
         config: serde_yaml::from_str("").unwrap(),
     };
+    let om_config_with_reference = OmConfig {
+        flake_url: FlakeUrl::from_str(".").unwrap(),
+        reference: vec!["foo".to_string()],
+        config: serde_yaml::from_str("").unwrap(),
+    };
 
-    let (res, _rest) = om_config.get_sub_config_under::<String>("health").unwrap();
+    let (res_empty_reference, _rest) = om_config_empty_reference
+        .get_sub_config_under::<String>("health")
+        .unwrap();
+    let (res_with_reference, _rest) = om_config_with_reference
+        .get_sub_config_under::<String>("health")
+        .unwrap();
 
-    assert_eq!(res, String::default());
+    assert_eq!(res_empty_reference, String::default());
+    assert_eq!(res_with_reference, String::default());
 }
 
 #[tokio::test]
