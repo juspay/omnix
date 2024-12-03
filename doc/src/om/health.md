@@ -51,36 +51,32 @@ health:
         - "https://ourproject.cachix.org"
 ```
 
-To see all available configuration options, run `om health --dump-schema`. This will dump the schema of the configuration in JSON format. Convert that to a Nix attrset to see what can be added under the `om.health.default` attrset of your flake.
+To see all available configuration options, run `om health --dump-schema`. This will dump the schema of the configuration in JSON format. Convert that to YAML to see what can be added under the `om.health.default` key of your [`om.yaml`](../config.md).
 
 ```sh-session
-$ om health --dump-schema > schema.json
-$ nix eval --impure --expr 'builtins.fromJSON (builtins.readFile ./schema.json)' \
-  | nix run nixpkgs#alejandra -- --quiet
+$ om health --dump-schema | nix run nixpkgs#yq-go -- -P
 ```
 
 This will output:
 
-```nix
-{
-  caches = {required = ["https://cache.nixos.org/"];};
-  direnv = {
-    enable = true;
-    required = false;
-  };
-  flake-enabled = {};
-  max-jobs = {};
-  nix-version = {min-required = "2.16.0";};
-  rosetta = {
-    enable = true;
-    required = true;
-  };
-  shell = {
-    enable = true;
-    required = false;
-  };
-  trusted-users = {};
-}
+```yaml
+flake-enabled: {}
+nix-version:
+  min-required: 2.16.0
+rosetta:
+  enable: true
+  required: true
+max-jobs: {}
+trusted-users: {}
+caches:
+  required:
+    - https://cache.nixos.org/
+direnv:
+  enable: true
+  required: false
+shell:
+  enable: true
+  required: false
 ```
 
 ### Adding devShell check {#devshell}
