@@ -10,6 +10,7 @@
     - [Develop](om/develop.md)
     - [CI](om/ci.md)
     - [Init](om/init.md)
+- [Configuration](./config.md)
 
 # Meta
 

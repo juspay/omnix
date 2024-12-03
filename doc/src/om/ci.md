@@ -66,7 +66,7 @@ Here's a more advanced example that configures a job matrix. This is useful when
 The `om ci gh-matrix` command outputs the matrix JSON for creating [a matrix of job variations](https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/running-variations-of-jobs-in-a-workflow). An example configuration, using self-hosted runners, is shown below.
 
 > [!NOTE]
-> This currently requires an explicit CI configuration in your flake, viz.: `om.ci.default.root.dir = ".";`.
+> This currently requires an explicit [CI configuration](../config.md) in your flake, setting `om.ci.default.root.dir` to `.`.
 
 ```yaml
 # Run on aarch64-linux and aarch64-darwin
@@ -98,7 +98,7 @@ jobs:
 
 ## Configuring {#config}
 
-By default, `om ci` will build the top-level flake, but you can tell it to build sub-flakes (here, `./dir1` and `./dir2`) by adding the following output to your top-level flake:
+By default, `om ci` will build the top-level flake, but you can tell it to build sub-flakes (here, `./dir1` and `./dir2`) by adding the following to your [Om configuration](../config.md):
 
 ```nix
 # myproject/flake.nix

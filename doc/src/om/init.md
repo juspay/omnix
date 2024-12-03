@@ -43,7 +43,7 @@ If there are multiple templates in the flake (as is the case with the builtin re
 
 ## Configuration spec {#spec}
 
-Omnix templates can be defined by adding a `om.template` flake output. This should be an attrset of templates. The value should contain the keys `template` (referring to original flake template) as well as `params`, defined as follows:
+Omnix templates can be defined by adding a `om.template` flake output [configuration](../config.md). This should be an attrset of templates. The value should contain the keys `template` (referring to original flake template) as well as `params`, defined as follows:
 
 There are two kinds of params. **String params** are defined as follows:
 
@@ -74,7 +74,7 @@ Both parameter types are distinguished by the presence of the relevant keys (`pl
 
 ## Testing templates {#test}
 
-The configuration can also include a `tests` key that defines a list of tests to run on the template. Each test is an attrset with `params` and `asserts` keys that indicates the parameter values to test along with the path existance assertions. [For example](https://github.com/juspay/nixos-unified-template/blob/3c4428ac94a4582a33e6fb3fe18df27bbc1e9eb7/modules/flake-parts/template.nix#L139-L157):
+The [configuration](../config.md) can also include a `tests` key that defines a list of tests to run on the template. Each test is an attrset with `params` and `asserts` keys that indicates the parameter values to test along with the path existance assertions. [For example](https://github.com/juspay/nixos-unified-template/blob/3c4428ac94a4582a33e6fb3fe18df27bbc1e9eb7/modules/flake-parts/template.nix#L139-L157):
 
 ```nix
 {

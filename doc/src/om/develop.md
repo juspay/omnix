@@ -1,43 +1,51 @@
 # Develop
 
-The `om develop` should be used indirectly in direnv, via the `use omnix` directive in your `.envrc`:
+The `om develop` command should be used indirectly in direnv, via the `use omnix` directive in your `.envrc`.
 
-```sh
-source_url https://raw.githubusercontent.com/juspay/omnix/75ed48923835963e2f18baba08f54a8adc307ba2/omnixrc "sha256-8C2Jb5bHx/0cvm1+9gOlBEdWzbikCWT5UsJWewUAFt4="
+## Getting started {#start}
 
-use omnix
-```
+1. Put this in your `.envrc` file:
 
-`use omnix` wraps `use flake` (of nix-direnv) providing additional capabilities:
+    ```sh
+    source_url https://raw.githubusercontent.com/juspay/omnix/75ed48923835963e2f18baba08f54a8adc307ba2/omnixrc "sha256-8C2Jb5bHx/0cvm1+9gOlBEdWzbikCWT5UsJWewUAFt4="
+
+    use omnix
+    ```
+
+2. You should also create an empty (or fleshed out) [`om.yaml`](../config.md) file in your project to avoid Nix evaluation:
+
+    ```sh
+    touch om.yaml
+    ```
+
+
+## What does it do? {#what}
+
+`use omnix` wraps `use flake` (of [nix-direnv](https://nixos.asia/en/direnv)) providing additional capabilities:
 
 - Run [`om health`](health.md) to check the health of the Nix environment.
-- Run `cachix use` automatically if the project uses cachix.
+  - Run `cachix use` automatically if the project uses cachix.
 - Print a welcome text after spawning the Nix devshell.
 
-The ideal goal here being that switching to a project should do everything necessary to get you started immediately.
-
-## `om.yaml`
-
-You should also create a `om.yaml` (empty file if there's no configuration) so your flake is not evaluated during direnv.
+The ideal goal here being that `cd`'ing to a project should do everything necessary to get you started immediately.
 
 ## Welcome text {#welcome}
 
-The welcome text can be configured in your om configuration:
+The welcome text can be configured in your [`om.yaml`](../config.md) file. For example:
 
-```nix
-{
-  om.develop.default = {
-    readme = ''
-      Welcome to our **project**
+```yaml
+develop:
+  default:
+    readme: |
+      🍾 Welcome to the **omnix** project
 
-      To get started, run the following:
+      To run omnix,
 
-      ```sh
-      just run
+      ```sh-session
+      just watch <args>
       ```
 
-      For more, read the README.md
-    '';
-  }
-}
+      (Now, as you edit the Rust sources, the above will reload!)
+
+      🍎🍎 Run 'just' to see more commands. See <https://nixos.asia/en/vscode> for IDE setup.
 ```

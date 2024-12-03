@@ -39,19 +39,16 @@ To run use the health check configuration specified in a project flake, pass tha
 om health github:nammayatri/nammayatri
 ```
 
-## Configuring in `flake.nix` {#conf}
+## Per-project configuration {#conf}
 
-To add project specific health checks or configure health checks, add the following flake output:
+To add project specific health checks or configure health checks, add the following to your [`om.yaml`](../config.md):
 
-```nix
-{
-  outputs = inputs: {
-    om.health.default = {
-      # Add configuration here
-      caches.required = [ "https://ourproject.cachix.org" ];
-    };
-  };
-}
+```yaml
+health:
+  default:
+    caches:
+      required:
+        - "https://ourproject.cachix.org"
 ```
 
 To see all available configuration options, run `om health --dump-schema`. This will dump the schema of the configuration in JSON format. Convert that to a Nix attrset to see what can be added under the `om.health.default` attrset of your flake.
@@ -88,42 +85,4 @@ This will output:
 
 ### Adding devShell check {#devshell}
 
-> [!WARNING]
-> This section needs to be finalized for omnix. See [here](https://github.com/srid/haskell-template/pull/139/files) for the up-to-date proof of concept.
-
-You can automatically run `om health` whenever your Nix dev shell starts. To do this, import the flake module in your flake and use it in your devShell:
-
-```nix
-{
-  inputs = {
-    omnix-flake.url = "github:juspay/omnix?dir=nix/om";
-  };
-  outputs = inputs:
-    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
-      imports = [
-        inputs.omnix-flake.flakeModules.default
-      ];
-      perSystem = { config, pkgs, ... }: {
-        devShells.default = pkgs.mkShell {
-          inputsFrom = [
-            config.om.health.outputs.devShell
-          ]
-        };
-      };
-    };
-}
-```
-
-Now suppose you have Nix 2.18 installed, but your project requires 2.19 or above due to the following config in its `flake.nix`:
-
-```nix
-flake.om.health.default = {
-  nix-version.min-required = "2.19.0";
-};
-```
-
-you can expect the devShell to print a giant message like this:
-
-<img width="501" alt="image" src="https://github.com/juspay/nix-health/assets/3998/9f3b3141-611f-484f-b897-3e375c02dff5">
-
-Note that you will still be dropped into the Nix dev shell (there's no way to abrupt the launching of a dev Shell).
+You can automatically run `om health` as part of direnv invocation; see [`om develop`](develop.md) for details.
