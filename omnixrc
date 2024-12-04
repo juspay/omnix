@@ -1,14 +1,14 @@
 # -*- mode: sh -*-
 # shellcheck shell=bash
 
+
 use_omnix() {
+  : "${OMNIX_BIN:="nix --accept-flake-config --option builders '' -j0 run github:juspay/omnix --"}"
+  echo "Invoking omnix using: ${OMNIX_BIN}"
+
   # Fetch omnix only through binary cache
   # Hence `-j0`, as well as `--option builders ''` for when there are remote builders.
-  nix \
-    --accept-flake-config \
-    --option builders '' \
-    -j0 \
-    run github:juspay/omnix -- develop --stage=pre-shell $* || exit 1
+  ${OMNIX_BIN} develop --stage=pre-shell $* || exit 1
 
   use flake ${*:-.} --accept-flake-config
 
@@ -16,6 +16,6 @@ use_omnix() {
     # Nix shell failed; move on!
     exit
   else
-    nix --accept-flake-config run github:juspay/omnix -- develop --stage=post-shell $*
+    ${OMNIX_BIN} develop --stage=post-shell $*
   fi
 }
