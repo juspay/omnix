@@ -33,6 +33,8 @@ pub struct RunCommand {
     /// Must be a flake reference which, when imported, must return a Nix list
     /// of systems. You may use one of the lists from
     /// <https://github.com/nix-systems>.
+    ///
+    /// You can also pass the individual system name, if they are supported by omnix.
     #[arg(long)]
     pub systems: Option<SystemsListFlakeRef>,
 
