@@ -1667,6 +1667,7 @@ dependencies = [
  "serde_with",
  "shell-words",
  "sysinfo",
+ "tempfile",
  "thiserror",
  "tokio",
  "tracing",
