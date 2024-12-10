@@ -48,7 +48,7 @@ pub async fn run_on_remote_store(
     // If the user requested creation of `om.json`, we copy all built store paths back, so that the resultant om.json available locally contains valid paths. `-o` can thus be used to trick omnix into copying build results back to local store.
     if let Some(results_file) = run_cmd.results.as_ref() {
         // Create a temp file to hold om.json
-        let om_json_path = path_from_bytes(
+        let om_json_path = parse_path_line(
             &run_ssh_with_output(
                 &ssh_uri.to_string(),
                 &[
@@ -120,8 +120,9 @@ pub async fn run_on_remote_store(
     Ok(())
 }
 
-fn path_from_bytes(bytes: &[u8]) -> PathBuf {
-    PathBuf::from(OsString::from_vec(bytes.to_vec()))
+fn parse_path_line(bytes: &[u8]) -> PathBuf {
+    let trimmed_bytes = bytes.trim_ascii_end();
+    PathBuf::from(OsString::from_vec(trimmed_bytes.to_vec()))
 }
 
 /// Return the locally cached [FlakeUrl] for the given flake url that points to same selected [ConfigRef].
