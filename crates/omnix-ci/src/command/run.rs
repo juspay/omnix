@@ -9,12 +9,12 @@ use nix_rs::{
     config::NixConfig,
     flake::{system::System, url::FlakeUrl},
     info::NixInfo,
-    store::uri::StoreURI,
+    store::{path::StorePath, uri::StoreURI},
     system_list::{SystemsList, SystemsListFlakeRef},
 };
 use omnix_common::config::OmConfig;
 use omnix_health::{traits::Checkable, NixHealth};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::{config::subflakes::SubflakesConfig, flake_ref::FlakeRef, step::core::StepsResult};
 
@@ -136,6 +136,11 @@ impl RunCommand {
             args.push(systems.0 .0.clone());
         }
 
+        if let Some(results_file) = self.results.as_ref() {
+            args.push("-o".to_string());
+            args.push(results_file.to_string_lossy().to_string());
+        }
+
         args.push(self.flake_ref.to_string());
 
         args.extend(self.steps_args.to_cli_args());
@@ -212,7 +217,7 @@ pub async fn ci_run(
 }
 
 /// Results of the 'ci run' command
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct RunResult {
     /// The systems we are building for
     systems: Vec<System>,
@@ -220,4 +225,17 @@ pub struct RunResult {
     flake: FlakeUrl,
     /// CI result for each subflake
     result: HashMap<String, StepsResult>,
+}
+
+impl RunResult {
+    /// Get all store paths mentioned in this type.
+    pub fn all_out_paths(&self) -> Vec<StorePath> {
+        let mut res = vec![];
+        for steps_res in self.result.values() {
+            if let Some(build) = steps_res.build_step.as_ref() {
+                res.extend(build.devour_flake_output.out_paths.clone());
+            }
+        }
+        res
+    }
 }

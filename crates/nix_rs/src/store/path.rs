@@ -1,5 +1,10 @@
 //! Store path management
-use std::{convert::Infallible, fmt, path::PathBuf, str::FromStr};
+use std::{
+    convert::Infallible,
+    fmt,
+    path::{Path, PathBuf},
+    str::FromStr,
+};
 
 use serde_with::{DeserializeFromStr, SerializeDisplay};
 
@@ -23,9 +28,15 @@ impl FromStr for StorePath {
     }
 }
 
-impl From<&StorePath> for PathBuf {
-    fn from(sp: &StorePath) -> Self {
-        sp.as_path().clone()
+impl AsRef<Path> for StorePath {
+    fn as_ref(&self) -> &Path {
+        self.as_path().as_ref()
+    }
+}
+
+impl AsRef<std::ffi::OsStr> for StorePath {
+    fn as_ref(&self) -> &std::ffi::OsStr {
+        self.as_path().as_os_str()
     }
 }
 
