@@ -46,7 +46,7 @@ pub struct StepsArgs {
 }
 
 /// Results of [Steps]
-#[derive(Debug, Serialize, Clone, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct StepsResult {
     /// [BuildStepResult]
     #[serde(rename = "build")]

@@ -35,10 +35,6 @@ pub struct DevourFlakeOutput {
     /// Output paths indexed by name (or pname) of the path if any
     #[serde(rename = "byName")]
     pub by_name: HashMap<String, StorePath>,
-
-    /// The devour-flake output store path from which Self is derived.
-    #[serde(skip_deserializing, rename = "devourOutput")]
-    pub devour_output: PathBuf,
 }
 
 impl DevourFlakeOutput {
@@ -46,8 +42,6 @@ impl DevourFlakeOutput {
         // Read drv_out file as JSON, decoding it into DevourFlakeOutput
         let mut out: DevourFlakeOutput = serde_json::from_reader(std::fs::File::open(drv_out)?)
             .context("Failed to parse devour-flake output")?;
-        // Provide the original devour-output store path itself.
-        out.devour_output = drv_out.to_owned();
         // Remove duplicates, which is possible in user's flake
         // e.g., when doing `packages.foo = self'.packages.default`
         out.out_paths.sort();
