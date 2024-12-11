@@ -2,12 +2,18 @@
 
 use colored::Colorize;
 use nix_rs::{
-    command::NixCmd,
+    command::{CommandError, NixCmd},
+    copy::{nix_copy, NixCopyOptions},
     flake::{metadata::FlakeMetadata, url::FlakeUrl},
-    store::uri::StoreURI,
+    store::{command::NixStoreCmd, path::StorePath, uri::StoreURI},
 };
 use omnix_common::config::OmConfig;
-use std::{ffi::OsString, os::unix::ffi::OsStringExt, path::PathBuf};
+use std::{
+    ffi::{OsStr, OsString},
+    fs::File,
+    os::unix::ffi::OsStringExt,
+    path::{Path, PathBuf},
+};
 use tokio::process::Command;
 
 use crate::command::run::RunResult;
@@ -34,95 +40,126 @@ pub async fn run_on_remote_store(
     let StoreURI::SSH(ssh_uri) = store_uri;
 
     // First, copy the flake and omnix source to the remote store, because we will be needing them when running over ssh.
-    nix_rs::copy::nix_copy(
-        nixcmd,
-        nix_rs::copy::NixCopyOptions {
-            to: Some(store_uri.clone()),
-            no_check_sigs: true,
-            ..Default::default()
-        },
-        &[&omnix_source, &local_flake_path],
-    )
-    .await?;
+    nix_copy_to_remote(nixcmd, store_uri, &[&omnix_source, &local_flake_path]).await?;
 
-    // If the user requested creation of `om.json`, we copy all built store paths back, so that the resultant om.json available locally contains valid paths. `-o` can thus be used to trick omnix into copying build results back to local store.
-    if let Some(results_file) = run_cmd.results.as_ref() {
-        // Create a temp file to hold om.json
-        let om_json_path = parse_path_line(
+    // If out-link is requested, we need to copy the results back to local store - so that when we create the out-link *locally* the paths in it refer to valid paths in the local store. Thus, --out-link can be used to trick Omnix into copying all built paths back.
+    if let Some(out_link) = run_cmd.get_out_link() {
+        // A temporary location on ssh remote to hold the result
+        let tmpdir = parse_path_line(
             &run_ssh_with_output(
                 &ssh_uri.to_string(),
-                &[
-                    "nix",
-                    "shell",
-                    "nixpkgs#coreutils",
-                    "-c",
-                    "mktemp",
-                    "-t",
-                    "om.json.XXXXXX",
-                ],
+                &nixpkgs_cmd("coreutils", &["mktemp", "-d", "-t", "om.json.XXXXXX"]),
             )
             .await?,
         );
+        let om_json_path = tmpdir.join("om.json");
 
-        // Then, SSH and run the same `om ci run` CLI but without the `--on` argument.
+        // Then, SSH and run the same `om ci run` CLI but without the `--on` argument but with `--out-link` pointing to the temporary location.
         run_ssh(
             &ssh_uri.to_string(),
-            &om_cli_with(&RunCommand {
-                on: None,
-                flake_ref: local_flake_url.clone().into(),
-                results: Some(om_json_path.clone()),
-                ..run_cmd.clone()
-            }),
+            &om_cli_with(
+                run_cmd.local_with(local_flake_url.clone().into(), Some(om_json_path.clone())),
+            ),
         )
         .await?;
 
-        // Get om.json
-        let om_result: RunResult = serde_json::from_slice(
+        // Get the out-link store path.
+        let om_result_path: StorePath = StorePath::new(parse_path_line(
             &run_ssh_with_output(
                 &ssh_uri.to_string(),
-                &["cat", om_json_path.to_string_lossy().as_ref()],
+                &nixpkgs_cmd(
+                    "coreutils",
+                    &["readlink", om_json_path.to_string_lossy().as_ref()],
+                ),
             )
             .await?,
-        )?;
+        ));
 
-        // Copy the results back to local store
-        tracing::info!("{}", "📦 Copying built paths back to local store".bold());
-        nix_rs::copy::nix_copy(
-            nixcmd,
-            nix_rs::copy::NixCopyOptions {
-                from: Some(store_uri.clone()),
-                no_check_sigs: true,
-                ..Default::default()
-            },
-            om_result.all_out_paths(),
-        )
-        .await?;
+        // Copy the results back to local store, including the out-link.
+        tracing::info!("{}", "📦 Copying results back to local store".bold());
+        nix_copy_from_remote(nixcmd, store_uri, &[&om_result_path]).await?;
+        let om_results: RunResult = serde_json::from_reader(File::open(&om_result_path)?)?;
+        // Copy all paths referenced in results file
+        nix_copy_from_remote(nixcmd, store_uri, om_results.all_out_paths()).await?;
 
-        // Write the om.json to the requested file
-        serde_json::to_writer(std::fs::File::create(results_file)?, &om_result)?;
+        // Write the local out-link
+        let nix_store = NixStoreCmd {};
+        nix_store
+            .nix_store_add_root(out_link, &[&om_result_path])
+            .await?;
         tracing::info!(
-            "Results written to {}",
-            results_file.to_string_lossy().bold()
+            "Results available at {:?} symlinked at {:?}",
+            om_result_path.as_path(),
+            out_link
         );
     } else {
         // Then, SSH and run the same `om ci run` CLI but without the `--on` argument.
         run_ssh(
             &ssh_uri.to_string(),
-            &om_cli_with(&RunCommand {
-                on: None,
-                flake_ref: local_flake_url.clone().into(),
-                results: None,
-                ..run_cmd.clone()
-            }),
+            &om_cli_with(run_cmd.local_with(local_flake_url.clone().into(), None)),
         )
         .await?;
     }
     Ok(())
 }
 
+async fn nix_copy_to_remote<I, P>(
+    nixcmd: &NixCmd,
+    store_uri: &StoreURI,
+    paths: I,
+) -> Result<(), CommandError>
+where
+    I: IntoIterator<Item = P>,
+    P: AsRef<Path> + AsRef<OsStr>,
+{
+    nix_copy(
+        nixcmd,
+        NixCopyOptions {
+            to: Some(store_uri.to_owned()),
+            no_check_sigs: true,
+            ..Default::default()
+        },
+        paths,
+    )
+    .await
+}
+
+async fn nix_copy_from_remote<I, P>(
+    nixcmd: &NixCmd,
+    store_uri: &StoreURI,
+    paths: I,
+) -> Result<(), CommandError>
+where
+    I: IntoIterator<Item = P>,
+    P: AsRef<Path> + AsRef<OsStr>,
+{
+    nix_copy(
+        nixcmd,
+        NixCopyOptions {
+            from: Some(store_uri.to_owned()),
+            no_check_sigs: true,
+            ..Default::default()
+        },
+        paths,
+    )
+    .await
+}
+
 fn parse_path_line(bytes: &[u8]) -> PathBuf {
     let trimmed_bytes = bytes.trim_ascii_end();
     PathBuf::from(OsString::from_vec(trimmed_bytes.to_vec()))
+}
+
+/// Construct CLI arguments for running a program from nixpkgs using given arguments
+fn nixpkgs_cmd(package: &str, cmd: &[&str]) -> Vec<String> {
+    let mut args = vec![
+        "nix".to_owned(),
+        "shell".to_owned(),
+        format!("nixpkgs#{}", package),
+    ];
+    args.push("-c".to_owned());
+    args.extend(cmd.iter().map(|s| s.to_string()));
+    args
 }
 
 /// Return the locally cached [FlakeUrl] for the given flake url that points to same selected [ConfigRef].
@@ -141,7 +178,7 @@ async fn cache_flake(nixcmd: &NixCmd, cfg: &OmConfig) -> anyhow::Result<(PathBuf
 /// Construct a `nix run ...` based CLI that runs Omnix using given arguments.
 ///
 /// Omnix itself will be compiled from source ([OMNIX_SOURCE]) if necessary. Thus, this invocation is totally independent and can be run on remote machines, as long as the paths exista on the nix store.
-fn om_cli_with(run_cmd: &RunCommand) -> Vec<String> {
+fn om_cli_with(run_cmd: RunCommand) -> Vec<String> {
     let mut args: Vec<String> = vec![];
 
     let omnix_flake = format!("{}#default", OMNIX_SOURCE);
