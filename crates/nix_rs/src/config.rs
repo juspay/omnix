@@ -63,7 +63,12 @@ impl NixConfig {
     pub async fn get() -> &'static Result<NixConfig, NixConfigError> {
         NIX_CONFIG
             .get_or_init(|| async {
-                let mut cmd = NixCmd::default();
+                let mut cmd = NixCmd {
+                    extra_experimental_features: vec![],
+                    extra_access_tokens: vec![],
+                    refresh: false,
+                    accept_flake_config: false,
+                };
                 cmd.with_nix_command(); // Enable nix-command, since don't yet know if it is already enabled.
                 let nix_ver = NixVersion::get().await.as_ref()?;
                 let cfg = NixConfig::from_nix(&cmd, nix_ver).await?;

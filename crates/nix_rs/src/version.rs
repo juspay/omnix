@@ -66,7 +66,12 @@ impl NixVersion {
     pub async fn get() -> &'static Result<NixVersion, NixCmdError> {
         NIX_VERSION
             .get_or_init(|| async {
-                let cmd = NixCmd::default();
+                let cmd = NixCmd {
+                    extra_experimental_features: vec![],
+                    extra_access_tokens: vec![],
+                    refresh: false,
+                    accept_flake_config: false,
+                };
                 let nix_ver = NixVersion::from_nix(&cmd).await?;
                 Ok(nix_ver)
             })
