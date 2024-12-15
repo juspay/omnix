@@ -71,8 +71,8 @@ pub async fn lock(
     url: &FlakeUrl,
 ) -> Result<(), NixCmdError> {
     cmd.run_with(|c| {
-        opts.use_in_command(c);
         c.args(["flake", "lock", url]);
+        opts.use_in_command(c);
         c.args(args);
     })
     .await?;
@@ -82,8 +82,8 @@ pub async fn lock(
 /// Run `nix flake check`
 pub async fn check(cmd: &NixCmd, opts: &FlakeOptions, url: &FlakeUrl) -> Result<(), NixCmdError> {
     cmd.run_with(|c| {
-        opts.use_in_command(c);
         c.args(["flake", "check", url]);
+        opts.use_in_command(c);
     })
     .await?;
     Ok(())
