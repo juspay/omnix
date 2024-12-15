@@ -58,7 +58,7 @@ impl Default for NixCmd {
             extra_experimental_features: vec![],
             extra_access_tokens: vec![],
             refresh: false,
-            accept_flake_config: true,
+            accept_flake_config: false,
         }
     }
 }
@@ -101,6 +101,7 @@ impl NixCmd {
 
     /// Enable flakes on this [NixCmd] configuration
     pub fn with_flakes(&mut self) {
+        self.accept_flake_config = true;
         self.extra_experimental_features
             .append(vec!["nix-command".to_string(), "flakes".to_string()].as_mut());
     }
