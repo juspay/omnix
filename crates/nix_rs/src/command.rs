@@ -29,7 +29,7 @@ use crate::config::NixConfig;
 ///
 /// See [available global
 /// options](https://nixos.org/manual/nix/stable/command-ref/new-cli/nix#options)
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Hash)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Hash)]
 #[cfg_attr(feature = "clap", derive(clap::Parser))]
 pub struct NixCmd {
     /// Append to the experimental-features setting of Nix.
@@ -43,24 +43,6 @@ pub struct NixCmd {
     /// Consider all previously downloaded files out-of-date.
     #[cfg_attr(feature = "clap", arg(long))]
     pub refresh: bool,
-
-    /// Accept `nixConfig` configuration in flake.nix
-    #[cfg_attr(feature = "clap", arg(long))]
-    pub accept_flake_config: bool,
-}
-
-impl Default for NixCmd {
-    /// The default `nix` command
-    ///
-    /// See [NixCmd::get] for the flakes enabled version.
-    fn default() -> Self {
-        Self {
-            extra_experimental_features: vec![],
-            extra_access_tokens: vec![],
-            refresh: false,
-            accept_flake_config: false,
-        }
-    }
 }
 
 static NIXCMD: OnceCell<NixCmd> = OnceCell::const_new();
@@ -101,7 +83,6 @@ impl NixCmd {
 
     /// Enable flakes on this [NixCmd] configuration
     pub fn with_flakes(&mut self) {
-        self.accept_flake_config = true;
         self.extra_experimental_features
             .append(vec!["nix-command".to_string(), "flakes".to_string()].as_mut());
     }
@@ -210,9 +191,6 @@ impl NixCmd {
         }
         if self.refresh {
             args.push("--refresh".to_string());
-        }
-        if self.accept_flake_config {
-            args.push("--accept-flake-config".to_string());
         }
         args
     }
