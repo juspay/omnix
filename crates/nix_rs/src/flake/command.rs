@@ -48,10 +48,19 @@ pub async fn develop(
 }
 
 /// Run `nix build`
-pub async fn build(cmd: &NixCmd, url: FlakeUrl) -> Result<Vec<OutPath>, NixCmdError> {
-    // TODO: Make this accept `FlakeOptions`
-    cmd.run_with_args_expecting_json(&["build", "--no-link", "--json", &url])
-        .await
+pub async fn build(
+    cmd: &NixCmd,
+    opts: &FlakeOptions,
+    url: FlakeUrl,
+) -> Result<Vec<OutPath>, NixCmdError> {
+    let stdout: Vec<u8> = cmd
+        .run_with_returning_stdout(|c| {
+            opts.use_in_command(c);
+            c.args(["build", "--no-link", "--json", &url]);
+        })
+        .await?;
+    let v = serde_json::from_slice::<Vec<OutPath>>(&stdout)?;
+    Ok(v)
 }
 
 /// A path built by nix, as returned by --print-out-paths
@@ -72,7 +81,7 @@ impl OutPath {
 }
 
 /// Nix CLI options when interacting with a flake
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Clone)]
 pub struct FlakeOptions {
     /// The --override-input option to pass to Nix
     pub override_inputs: BTreeMap<String, FlakeUrl>,
@@ -83,8 +92,23 @@ pub struct FlakeOptions {
     /// Pass --refresh
     pub refresh: bool,
 
+    /// Accept `nixConfig` configuration in flake.nix
+    pub accept_flake_config: bool,
+
     /// The directory from which to run our nix command (such that relative flake URLs resolve properly)
     pub current_dir: Option<PathBuf>,
+}
+
+impl Default for FlakeOptions {
+    fn default() -> Self {
+        Self {
+            override_inputs: BTreeMap::new(),
+            no_write_lock_file: false,
+            refresh: false,
+            accept_flake_config: true, // --accept-flake-config is the default
+            current_dir: None,
+        }
+    }
 }
 
 impl FlakeOptions {
@@ -101,6 +125,9 @@ impl FlakeOptions {
         }
         if self.refresh {
             cmd.arg("--refresh");
+        }
+        if self.accept_flake_config {
+            cmd.arg("--accept-flake-config");
         }
     }
 }
