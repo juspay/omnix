@@ -1,6 +1,9 @@
 //! The cachix step
 use colored::Colorize;
-use nix_rs::{command::NixCmd, flake::url::FlakeUrl};
+use nix_rs::{
+    command::NixCmd,
+    flake::{self, command::FlakeOptions, url::FlakeUrl},
+};
 use serde::Deserialize;
 
 use crate::config::subflake::SubflakeConfig;
@@ -33,15 +36,11 @@ impl FlakeCheckStep {
             format!("🩺 Running flake check on: {}", subflake.dir).bold()
         );
         let sub_flake_url = url.sub_flake_url(subflake.dir.clone());
-        let mut args = vec!["flake", "check", &sub_flake_url];
-        for (k, v) in &subflake.override_inputs {
-            args.extend(["--override-input", k, v]);
-        }
-        nixcmd
-            .run_with(|cmd| {
-                cmd.args(args);
-            })
-            .await?;
+        let opts = FlakeOptions {
+            override_inputs: subflake.override_inputs.clone(),
+            ..Default::default()
+        };
+        flake::command::check(nixcmd, &opts, &sub_flake_url).await?;
         Ok(())
     }
 }

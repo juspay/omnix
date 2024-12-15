@@ -79,6 +79,16 @@ pub async fn lock(
     Ok(())
 }
 
+/// Run `nix flake check`
+pub async fn check(cmd: &NixCmd, opts: &FlakeOptions, url: &FlakeUrl) -> Result<(), NixCmdError> {
+    cmd.run_with(|c| {
+        opts.use_in_command(c);
+        c.args(["flake", "check", url]);
+    })
+    .await?;
+    Ok(())
+}
+
 /// A path built by nix, as returned by --print-out-paths
 #[derive(Serialize, Deserialize)]
 pub struct OutPath {
