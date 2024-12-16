@@ -22,12 +22,17 @@ alias w := watch
 # Run CI locally
 [group('ci')]
 ci:
-    nix run . ci
+    nix --accept-flake-config run . ci
 
 # Run CI locally in devShell (using cargo)
 [group('ci')]
 ci-cargo:
     cargo run -p omnix-cli -- ci run
+
+# Run CI locally in devShell (using cargo) on a simple flake with subflakes
+[group('ci')]
+ci-cargo-ext:
+    cargo run -p omnix-cli -- ci run github:srid/nixos-unified
 
 # Do clippy checks for all crates
 [group('ci-steps')]
