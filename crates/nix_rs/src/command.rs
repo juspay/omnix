@@ -148,9 +148,9 @@ impl NixCmd {
         if out.status.success() {
             Ok(out.stdout)
         } else {
-            let stderr = String::from_utf8(out.stderr)?;
+            let stderr = String::from_utf8_lossy(&out.stderr).to_string();
             Err(CommandError::ProcessFailed {
-                stderr: Some(stderr),
+                stderr,
                 exit_code: out.status.code(),
             })
         }
@@ -170,8 +170,9 @@ impl NixCmd {
         if out.status.success() {
             Ok(out.stdout)
         } else {
+            let stderr = String::from_utf8_lossy(&out.stderr).to_string();
             Err(CommandError::ProcessFailed {
-                stderr: None,
+                stderr,
                 exit_code: out.status.code(),
             })
         }
@@ -255,16 +256,13 @@ pub enum CommandError {
 
     /// Child process exited unsuccessfully
     #[error(
-        "Process exited unsuccessfully. exit_code={:?}{}",
+        "Process exited unsuccessfully. exit_code={:?} stderr={}",
         exit_code,
-        match stderr {
-            Some(s) => format!(" stderr={}", s),
-            None => "".to_string()
-        },
+        stderr
     )]
     ProcessFailed {
         /// The stderr of the process, if available.
-        stderr: Option<String>,
+        stderr: String,
         /// The exit code of the process
         exit_code: Option<i32>,
     },
