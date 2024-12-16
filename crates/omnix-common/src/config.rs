@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 
 use nix_rs::{
     command::NixCmd,
-    flake::{eval::nix_eval_attr, metadata::FlakeMetadata, url::FlakeUrl},
+    flake::{command::FlakeOptions, eval::nix_eval_maybe, metadata::FlakeMetadata, url::FlakeUrl},
 };
 use serde::{de::DeserializeOwned, Deserialize};
 #[cfg(test)]
@@ -63,9 +63,13 @@ impl OmConfig {
         Ok(OmConfig {
             flake_url: flake_url.without_attr(),
             reference: flake_url.get_attr().as_list(),
-            config: nix_eval_attr(NixCmd::get().await, &flake_url.with_attr("om"))
-                .await?
-                .unwrap_or_default(),
+            config: nix_eval_maybe(
+                NixCmd::get().await,
+                &FlakeOptions::default(),
+                &flake_url.with_attr("om"),
+            )
+            .await?
+            .unwrap_or_default(),
         })
     }
 
