@@ -3,19 +3,22 @@
 
 
 use_omnix() {
+  # Fetch omnix only through binary cache
+  # Hence `-j0`, as well as `--option builders ''` for when there are remote builders.
   : "${OMNIX_BIN:="nix --accept-flake-config --option builders '' -j0 run github:juspay/omnix --"}"
   echo "Invoking omnix using: ${OMNIX_BIN}"
 
-  # Fetch omnix only through binary cache
-  # Hence `-j0`, as well as `--option builders ''` for when there are remote builders.
+  # Run pre-shell stage, which runs health checks and applies changes as necessary.
   ${OMNIX_BIN} develop --stage=pre-shell $* || exit 1
 
+  # Defer to nix-direnv now.
   use flake ${*:-.} --accept-flake-config
 
   if [[ ! -z "${NIX_DIRENV_DID_FALLBACK:-}" ]]; then
-    # Nix shell failed; move on!
+    # Nix shell failed (direnv fell back to previous instance); move on!
     exit
   else
+    # Run post-shell stage (prints 'readme')
     ${OMNIX_BIN} develop --stage=post-shell $*
   fi
 }

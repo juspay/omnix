@@ -5,7 +5,13 @@
 use anyhow::{bail, Context, Result};
 use nix_rs::{command::NixCmd, flake::url::FlakeUrl, store::path::StorePath};
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, process::Stdio};
+use std::{
+    collections::HashMap,
+    ffi::OsString,
+    os::unix::ffi::OsStringExt,
+    path::{Path, PathBuf},
+    process::Stdio,
+};
 use tokio::io::{AsyncBufReadExt, BufReader};
 
 /// Absolute path to the devour-flake flake source
@@ -32,7 +38,7 @@ pub struct DevourFlakeOutput {
 }
 
 impl DevourFlakeOutput {
-    fn from_drv(drv_out: &str) -> anyhow::Result<Self> {
+    fn from_drv(drv_out: &Path) -> anyhow::Result<Self> {
         // Read drv_out file as JSON, decoding it into DevourFlakeOutput
         let mut out: DevourFlakeOutput = serde_json::from_reader(std::fs::File::open(drv_out)?)
             .context("Failed to parse devour-flake output")?;
@@ -96,8 +102,8 @@ pub async fn devour_flake(
         .await
         .context("Unable to spawn devour-flake process")?;
     if output.status.success() {
-        let drv_out = String::from_utf8(output.stdout)?;
-        let v = DevourFlakeOutput::from_drv(drv_out.trim())?;
+        let drv_out = PathBuf::from(OsString::from_vec(output.stdout.trim_ascii_end().into()));
+        let v = DevourFlakeOutput::from_drv(&drv_out)?;
         Ok(v)
     } else {
         let exit_code = output.status.code().unwrap_or(1);

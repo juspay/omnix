@@ -1,8 +1,9 @@
 //! Rust wrapper for `nix-store`
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use crate::command::{CommandError, NixCmdError};
 use serde::{Deserialize, Serialize};
+use tempfile::TempDir;
 use thiserror::Error;
 use tokio::process::Command;
 
@@ -51,25 +52,15 @@ impl NixStoreCmd {
         cmd.args(["--query", "--valid-derivers"])
             .args(out_paths.iter().map(StorePath::as_path));
 
-        crate::command::trace_cmd(&cmd);
-
-        let out = cmd.output().await?;
-        if out.status.success() {
-            let drv_paths: Vec<PathBuf> = String::from_utf8(out.stdout)?
-                .lines()
-                .map(PathBuf::from)
-                .collect();
-            if drv_paths.contains(&PathBuf::from("unknown-deriver")) {
-                return Err(NixStoreCmdError::UnknownDeriver);
-            }
-            Ok(drv_paths)
-        } else {
-            // TODO(refactor): When upstreaming this module to nix-rs, create a
-            // nicer and unified way to create `ProcessFailed`
-            let stderr = Some(String::from_utf8_lossy(&out.stderr).to_string());
-            let exit_code = out.status.code();
-            Err(CommandError::ProcessFailed { stderr, exit_code }.into())
+        let stdout = run_awaiting_stdout(&mut cmd).await?;
+        let drv_paths: Vec<PathBuf> = String::from_utf8(stdout)?
+            .lines()
+            .map(PathBuf::from)
+            .collect();
+        if drv_paths.contains(&PathBuf::from("unknown-deriver")) {
+            return Err(NixStoreCmdError::UnknownDeriver);
         }
+        Ok(drv_paths)
     }
 
     /// Given the derivation paths, this function recursively queries and return all
@@ -82,20 +73,67 @@ impl NixStoreCmd {
         cmd.args(["--query", "--requisites", "--include-outputs"])
             .args(drv_paths);
 
-        crate::command::trace_cmd(&cmd);
+        let stdout = run_awaiting_stdout(&mut cmd).await?;
+        Ok(String::from_utf8(stdout)?
+            .lines()
+            .map(|line| StorePath::new(PathBuf::from(line)))
+            .collect())
+    }
 
-        let out = cmd.output().await?;
-        if out.status.success() {
-            Ok(String::from_utf8(out.stdout)?
-                .lines()
-                .map(|line| StorePath::new(PathBuf::from(line)))
-                .collect())
-        } else {
-            // TODO(refactor): see above
-            let stderr = Some(String::from_utf8_lossy(&out.stderr).to_string());
-            let exit_code = out.status.code();
-            Err(CommandError::ProcessFailed { stderr, exit_code }.into())
-        }
+    /// Create a file in the Nix store such that it escapes garbage collection.
+    ///
+    /// Return the nix store path added.
+    pub async fn add_file_permanently(
+        &self,
+        symlink: &Path,
+        contents: &str,
+    ) -> Result<StorePath, NixStoreCmdError> {
+        let temp_dir = TempDir::with_prefix("omnix-ci-")?;
+        let temp_file = temp_dir.path().join("om.json");
+        std::fs::write(&temp_file, contents)?;
+
+        let path = self.nix_store_add(&temp_file).await?;
+        self.nix_store_add_root(symlink, &[&path]).await?;
+        Ok(path)
+    }
+
+    /// Run `nix-store --add` on the give path and return the store path added.
+    pub async fn nix_store_add(&self, path: &Path) -> Result<StorePath, NixStoreCmdError> {
+        let mut cmd = self.command();
+        cmd.arg("--add").arg(path);
+
+        let stdout = run_awaiting_stdout(&mut cmd).await?;
+        Ok(StorePath::new(PathBuf::from(
+            String::from_utf8(stdout)?.trim_end(),
+        )))
+    }
+
+    /// Run `nix-store --add-root` on the given paths and return the store path added.
+    pub async fn nix_store_add_root(
+        &self,
+        symlink: &Path,
+        paths: &[&StorePath],
+    ) -> Result<(), NixStoreCmdError> {
+        let mut cmd = self.command();
+        cmd.arg("--add-root")
+            .arg(symlink)
+            .arg("--realise")
+            .args(paths);
+
+        run_awaiting_stdout(&mut cmd).await?;
+        Ok(())
+    }
+}
+
+async fn run_awaiting_stdout(cmd: &mut Command) -> Result<Vec<u8>, NixStoreCmdError> {
+    crate::command::trace_cmd(cmd);
+    let out = cmd.output().await?;
+    if out.status.success() {
+        Ok(out.stdout)
+    } else {
+        let stderr = Some(String::from_utf8_lossy(&out.stderr).to_string());
+        let exit_code = out.status.code();
+        Err(CommandError::ProcessFailed { stderr, exit_code }.into())
     }
 }
 

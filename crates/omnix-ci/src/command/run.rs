@@ -9,12 +9,12 @@ use nix_rs::{
     config::NixConfig,
     flake::{system::System, url::FlakeUrl},
     info::NixInfo,
-    store::uri::StoreURI,
+    store::{command::NixStoreCmd, path::StorePath, uri::StoreURI},
     system_list::{SystemsList, SystemsListFlakeRef},
 };
 use omnix_common::config::OmConfig;
 use omnix_health::{traits::Checkable, NixHealth};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::{config::subflakes::SubflakesConfig, flake_ref::FlakeRef, step::core::StepsResult};
 
@@ -33,12 +33,24 @@ pub struct RunCommand {
     /// Must be a flake reference which, when imported, must return a Nix list
     /// of systems. You may use one of the lists from
     /// <https://github.com/nix-systems>.
+    ///
+    /// You can also pass the individual system name, if they are supported by omnix.
     #[arg(long)]
     pub systems: Option<SystemsListFlakeRef>,
 
-    /// Path to write the results of the CI run (in JSON) to
-    #[arg(long, short = 'o')]
-    pub results: Option<PathBuf>,
+    /// Symlink to create to build results JSON. Defaults to `result`
+    #[arg(
+        long,
+        short = 'o',
+        default_value = "result",
+        conflicts_with = "no_out_link",
+        alias = "results" // For backwards compat
+    )]
+    out_link: Option<PathBuf>,
+
+    /// Do not create a symlink to build results JSON
+    #[arg(long)]
+    no_out_link: bool,
 
     /// Flake URL or github URL
     ///
@@ -62,6 +74,25 @@ impl RunCommand {
     /// Preprocess this command
     pub fn preprocess(&mut self) {
         self.steps_args.build_step_args.preprocess();
+    }
+
+    /// Get the out-link path
+    pub fn get_out_link(&self) -> Option<&PathBuf> {
+        if self.no_out_link {
+            None
+        } else {
+            self.out_link.as_ref()
+        }
+    }
+
+    /// Override the flake_ref and out_link for building locally.
+    pub fn local_with(&self, flake_ref: FlakeRef, out_link: Option<PathBuf>) -> Self {
+        let mut new = self.clone();
+        new.on = None; // Disable remote building
+        new.flake_ref = flake_ref;
+        new.no_out_link = out_link.is_none();
+        new.out_link = out_link;
+        new
     }
 
     /// Run the build command which decides whether to do ci run on current machine or a remote machine
@@ -94,11 +125,14 @@ impl RunCommand {
         );
         let res = ci_run(nixcmd, verbose, self, &cfg, &nix_info.nix_config).await?;
 
-        if let Some(results_file) = self.results.as_ref() {
-            serde_json::to_writer(std::fs::File::create(results_file)?, &res)?;
+        if let Some(out_link) = self.get_out_link() {
+            let s = serde_json::to_string(&res)?;
+            let nix_store = NixStoreCmd {};
+            let results_path = nix_store.add_file_permanently(out_link, &s).await?;
             tracing::info!(
-                "Results written to {}",
-                results_file.to_string_lossy().bold()
+                "Result available at {:?} and symlinked at {:?}",
+                results_path.as_path(),
+                out_link
             );
         }
 
@@ -132,6 +166,15 @@ impl RunCommand {
         if let Some(systems) = self.systems.as_ref() {
             args.push("--systems".to_string());
             args.push(systems.0 .0.clone());
+        }
+
+        if let Some(out_link) = self.out_link.as_ref() {
+            args.push("--out-link".to_string());
+            args.push(out_link.to_string_lossy().to_string());
+        }
+
+        if self.no_out_link {
+            args.push("--no-out-link".to_string());
         }
 
         args.push(self.flake_ref.to_string());
@@ -210,7 +253,7 @@ pub async fn ci_run(
 }
 
 /// Results of the 'ci run' command
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct RunResult {
     /// The systems we are building for
     systems: Vec<System>,
@@ -218,4 +261,17 @@ pub struct RunResult {
     flake: FlakeUrl,
     /// CI result for each subflake
     result: HashMap<String, StepsResult>,
+}
+
+impl RunResult {
+    /// Get all store paths mentioned in this type.
+    pub fn all_out_paths(&self) -> Vec<StorePath> {
+        let mut res = vec![];
+        for steps_res in self.result.values() {
+            if let Some(build) = steps_res.build_step.as_ref() {
+                res.extend(build.devour_flake_output.out_paths.clone());
+            }
+        }
+        res
+    }
 }

@@ -11,8 +11,6 @@
   - Don't hardcode flake schema types
 - **`config`**
   - Don't enable flakes during `NixConfig::get`
-- **`env`**:
-  - use `whoami` crate to find the current user instead of depending on environment variable `USER`
 - Support Nix 2.20
 - **`flake::url`**
   - Add `without_attr`, `get_attr`
@@ -26,7 +24,10 @@
   - Add module (upstreamed from nixci)
   - Add `StoreURI`
   - Avoid running `nix-store` multiple times.
+- **`copy`**:
+  - Takes `NixCopyOptions` now.
 - **`env`**:
+  - use `whoami` crate to find the current user instead of depending on environment variable `USER`
   - `NixEnv::detect`'s logging uses DEBUG level now (formerly INFO)
   - Add Nix installer to `NixEnv`
 - **`command`

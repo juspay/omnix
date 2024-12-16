@@ -21,10 +21,22 @@ in
       };
       INSPECT_FLAKE = inputs.inspect;
       NIX_SYSTEMS = builtins.toJSON {
-        x86_64-linux = inputs.nix-systems-x86_64-linux;
-        aarch64-linux = inputs.nix-systems-aarch64-linux;
-        x86_64-darwin = inputs.nix-systems-x86_64-darwin;
-        aarch64-darwin = inputs.nix-systems-aarch64-darwin;
+        x86_64-linux = lib.cleanSourceWith {
+          name = "x86_64-linux";
+          src = inputs.nix-systems-x86_64-linux;
+        };
+        aarch64-linux = lib.cleanSourceWith {
+          name = "aarch64-linux";
+          src = inputs.nix-systems-aarch64-linux;
+        };
+        aarch64-darwin = lib.cleanSourceWith {
+          name = "aarch64-darwin";
+          src = inputs.nix-systems-aarch64-darwin;
+        };
+        x86_64-darwin = lib.cleanSourceWith {
+          name = "x86_64-darwin";
+          src = inputs.nix-systems-x86_64-darwin;
+        };
       };
     };
   };
