@@ -14,32 +14,19 @@ pub async fn nix_eval<T>(
 where
     T: serde::de::DeserializeOwned,
 {
-    let stdout = nixcmd
-        .run_with(|cmd| {
-            cmd.stdout(Stdio::piped());
-            cmd.args(["eval", "--json"]);
-            opts.use_in_command(cmd);
-            cmd.arg(url.to_string());
-            // Avoid Nix from dumping logs related to `--override-input` use. Yes, this requires *double* use of `--quiet`. Also, `-qq` won't work until https://github.com/NixOS/nix/pull/11652
-            cmd.args(["--quiet", "--quiet"]);
-        })
-        .await?;
-    let v = serde_json::from_slice::<T>(&stdout)?;
-    Ok(v)
+    nix_eval_(nixcmd, opts, url, false).await
 }
 
-/// Like [nix_eval] but takes an attribute to evaluate.
-///
-/// If the attribute is missing, return None.
-///
-/// TODO: Remove this function in favour of [nix_eval]
-pub async fn nix_eval_attr<T>(cmd: &NixCmd, url: &FlakeUrl) -> Result<Option<T>, NixCmdError>
+/// Like [nix_eval] but return `None` if the attribute is missing
+pub async fn nix_eval_maybe<T>(
+    cmd: &NixCmd,
+    opts: &FlakeOptions,
+    url: &FlakeUrl,
+) -> Result<Option<T>, NixCmdError>
 where
     T: Default + serde::de::DeserializeOwned,
 {
-    let result = cmd
-        .run_with_args_expecting_json(&["eval", &url.0, "--json"])
-        .await;
+    let result = nix_eval_(cmd, opts, url, true).await;
     match result {
         Ok(v) => Ok(Some(v)),
         Err(err) if error_is_missing_attribute(&err) => {
@@ -49,17 +36,38 @@ where
     }
 }
 
+async fn nix_eval_<T>(
+    nixcmd: &NixCmd,
+    opts: &FlakeOptions,
+    url: &FlakeUrl,
+    capture_stderr: bool,
+) -> Result<T, NixCmdError>
+where
+    T: serde::de::DeserializeOwned,
+{
+    let stdout = nixcmd
+        .run_with(|cmd| {
+            cmd.stdout(Stdio::piped());
+            if capture_stderr {
+                cmd.stderr(Stdio::piped());
+            }
+            cmd.args(["eval", "--json"]);
+            opts.use_in_command(cmd);
+            cmd.arg(url.to_string());
+            // Avoid Nix from dumping logs related to `--override-input` use. Yes, this requires *double* use of `--quiet`.
+            cmd.args(["--quiet", "--quiet"]);
+        })
+        .await?;
+    let v = serde_json::from_slice::<T>(&stdout)?;
+    Ok(v)
+}
+
 /// Check that [NixCmdError] is a missing attribute error
 fn error_is_missing_attribute(err: &NixCmdError) -> bool {
-    match err {
-        NixCmdError::CmdError(CommandError::ProcessFailed { stderr, .. }) => {
-            if let Some(stderr) = stderr {
-                if stderr.contains("does not provide attribute") {
-                    return true;
-                }
-            }
-            false
+    if let NixCmdError::CmdError(CommandError::ProcessFailed { stderr, .. }) = err {
+        if stderr.contains("does not provide attribute") {
+            return true;
         }
-        _ => false,
     }
+    false
 }

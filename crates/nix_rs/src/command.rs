@@ -29,7 +29,7 @@ use crate::config::NixConfig;
 ///
 /// See [available global
 /// options](https://nixos.org/manual/nix/stable/command-ref/new-cli/nix#options)
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Hash)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Hash)]
 #[cfg_attr(feature = "clap", derive(clap::Parser))]
 pub struct NixCmd {
     /// Append to the experimental-features setting of Nix.
@@ -43,24 +43,6 @@ pub struct NixCmd {
     /// Consider all previously downloaded files out-of-date.
     #[cfg_attr(feature = "clap", arg(long))]
     pub refresh: bool,
-
-    /// Accept `nixConfig` configuration in flake.nix
-    #[cfg_attr(feature = "clap", arg(long))]
-    pub accept_flake_config: bool,
-}
-
-impl Default for NixCmd {
-    /// The default `nix` command
-    ///
-    /// See [NixCmd::get] for the flakes enabled version.
-    fn default() -> Self {
-        Self {
-            extra_experimental_features: vec![],
-            extra_access_tokens: vec![],
-            refresh: false,
-            accept_flake_config: true,
-        }
-    }
 }
 
 static NIXCMD: OnceCell<NixCmd> = OnceCell::const_new();
@@ -166,9 +148,9 @@ impl NixCmd {
         if out.status.success() {
             Ok(out.stdout)
         } else {
-            let stderr = String::from_utf8(out.stderr)?;
+            let stderr = String::from_utf8_lossy(&out.stderr).to_string();
             Err(CommandError::ProcessFailed {
-                stderr: Some(stderr),
+                stderr,
                 exit_code: out.status.code(),
             })
         }
@@ -188,8 +170,9 @@ impl NixCmd {
         if out.status.success() {
             Ok(out.stdout)
         } else {
+            let stderr = String::from_utf8_lossy(&out.stderr).to_string();
             Err(CommandError::ProcessFailed {
-                stderr: None,
+                stderr,
                 exit_code: out.status.code(),
             })
         }
@@ -209,9 +192,6 @@ impl NixCmd {
         }
         if self.refresh {
             args.push("--refresh".to_string());
-        }
-        if self.accept_flake_config {
-            args.push("--accept-flake-config".to_string());
         }
         args
     }
@@ -276,16 +256,13 @@ pub enum CommandError {
 
     /// Child process exited unsuccessfully
     #[error(
-        "Process exited unsuccessfully. exit_code={:?}{}",
+        "Process exited unsuccessfully. exit_code={:?} stderr={}",
         exit_code,
-        match stderr {
-            Some(s) => format!(" stderr={}", s),
-            None => "".to_string()
-        },
+        stderr
     )]
     ProcessFailed {
         /// The stderr of the process, if available.
-        stderr: Option<String>,
+        stderr: String,
         /// The exit code of the process
         exit_code: Option<i32>,
     },

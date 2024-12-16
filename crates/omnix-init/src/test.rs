@@ -3,7 +3,7 @@ use std::{collections::HashMap, path::Path};
 use anyhow::Context;
 use nix_rs::{
     command::NixCmd,
-    flake::{system::System, url::FlakeUrl},
+    flake::{command::FlakeOptions, system::System, url::FlakeUrl},
 };
 use serde::Deserialize;
 use serde_json::Value;
@@ -102,6 +102,7 @@ impl Asserts {
         for (attr, package) in self.packages.iter() {
             let paths = nix_rs::flake::command::build(
                 &NixCmd::default(),
+                &FlakeOptions::default(),
                 FlakeUrl::from(dir).with_attr(attr),
             )
             .await?;

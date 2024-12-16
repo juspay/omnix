@@ -131,7 +131,7 @@ async fn run_awaiting_stdout(cmd: &mut Command) -> Result<Vec<u8>, NixStoreCmdEr
     if out.status.success() {
         Ok(out.stdout)
     } else {
-        let stderr = Some(String::from_utf8_lossy(&out.stderr).to_string());
+        let stderr = String::from_utf8_lossy(&out.stderr).to_string();
         let exit_code = out.status.code();
         Err(CommandError::ProcessFailed { stderr, exit_code }.into())
     }
