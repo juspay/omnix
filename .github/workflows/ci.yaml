@@ -138,3 +138,26 @@ jobs:
             echo "om binary failed due to lack of nix installation, as expected."
             exit 0
           fi
+
+  # Does omnix run on standard github runners?
+  github-actions-runners:
+    needs: main
+    runs-on: ${{ matrix.system }}
+    strategy:
+      matrix:
+        system: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+      - name: Donwload om static binary
+        uses: actions/download-artifact@v4
+        with:
+          name: om-${{ matrix.system == 'ubuntu-latest' && 'x86_64-linux' || matrix.system == 'macos-latest' && 'aarch64-darwin' || matrix.system }}
+      - name: Cache omnix source in Nix store
+        run: |
+          nix flake metadata .
+          nix flake show .
+      - name: Run omnix
+        run: |
+          chmod +x ./om
+          ./om ci run github:srid/haskell-multi-nix
