@@ -100,7 +100,17 @@ impl NixStoreCmd {
     /// Run `nix-store --add` on the give path and return the store path added.
     pub async fn nix_store_add(&self, path: &Path) -> Result<StorePath, NixStoreCmdError> {
         let mut cmd = self.command();
-        cmd.arg("--add").arg(path);
+        cmd.arg("--add");
+
+        // nix-store is unable to accept absolute paths if it involves a symlink
+        // https://github.com/juspay/omnix/issues/363
+        // To workaround this, we pass the file directly.
+        if let Some(parent) = path.parent() {
+            cmd.current_dir(parent);
+            cmd.arg(path.file_name().unwrap());
+        } else {
+            cmd.arg(path);
+        }
 
         let stdout = run_awaiting_stdout(&mut cmd).await?;
         Ok(StorePath::new(PathBuf::from(
