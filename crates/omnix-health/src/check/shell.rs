@@ -60,7 +60,8 @@ impl Checkable for ShellCheck {
             "Shell={:?}; HOME={:?}; Managed: {:?}; Unmanaged: {:?}",
             user_shell_env.shell, user_shell_env.home, managed, unmanaged
         );
-        let result = if !managed.is_empty() {
+        let result = if !managed.is_empty() && unmanaged.is_empty() {
+            // If *all* dotfiles are managed, then we are good
             CheckResult::Green
         } else {
             CheckResult::Red {
