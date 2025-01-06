@@ -45,24 +45,32 @@ impl Checkable for ShellCheck {
         let mut managed: HashMap<PathBuf, PathBuf> = HashMap::new();
         let mut unmanaged: Vec<PathBuf> = Vec::new();
         for path in &shell.get_dotfiles() {
-            match std::fs::read_link(path) {
-                Ok(target) => {
+            match resolve_symlink(path) {
+                Ok(Some(target)) => {
                     if super::direnv::is_path_in_nix_store(&target) {
                         managed.insert(path.clone(), target);
                     } else {
+                        // A symlink to a non-nix path
                         unmanaged.push(path.clone());
-                    };
+                    }
+                }
+                Ok(None) => {
+                    // Not a symlink; cannot be managed by nix
+                    unmanaged.push(path.clone());
                 }
                 Err(err) => {
-                    tracing::warn!("Dotfile {:?} symlink error: {:?}; ignoring.", path, err);
+                    panic!("Dotfile {:?} symlink error: {:?}.", path, err);
                 }
             }
         }
 
         let title = "Shell dotfiles".to_string();
         let info = format!(
-            "Shell={:?}; Managed: {:?}; Unmanaged: {:?}",
-            shell, managed, unmanaged
+            "Shell={:?}; HOME={:?}; Managed: {:?}; Unmanaged: {:?}",
+            shell,
+            get_home_dir(),
+            managed,
+            unmanaged
         );
         let result = if !managed.is_empty() {
             CheckResult::Green
@@ -127,12 +135,27 @@ impl Shell {
 
     /// Get the currently existing dotfiles under $HOME
     fn get_dotfiles(&self) -> Vec<PathBuf> {
-        let home_dir =
-            PathBuf::from(std::env::var("HOME").expect("Environment variable `HOME` not set"));
         self.dotfile_names()
             .iter()
-            .map(|dotfile| home_dir.join(dotfile))
+            .map(|dotfile| get_home_dir().join(dotfile))
             .filter(|path| path.exists())
             .collect()
+    }
+}
+
+fn get_home_dir() -> PathBuf {
+    PathBuf::from(std::env::var("HOME").expect("Environment variable `HOME` not set"))
+}
+
+/// Resolve symlink to its target path.
+///
+/// Returns `None` if the path is not a symlink. This function can thus be used to both resolve and check if a path is a symlink.
+fn resolve_symlink(path: &PathBuf) -> std::io::Result<Option<PathBuf>> {
+    let meta = std::fs::symlink_metadata(path)?;
+    if meta.file_type().is_symlink() {
+        let target = std::fs::read_link(path)?;
+        Ok(Some(target))
+    } else {
+        Ok(None)
     }
 }
