@@ -46,12 +46,12 @@ impl Checkable for ShellCheck {
 
         // Iterate over each dotfile and check if it is managed by Nix
         let mut managed: HashMap<&'static str, PathBuf> = HashMap::new();
-        let mut unmanaged: Vec<PathBuf> = Vec::new();
+        let mut unmanaged: HashMap<&'static str, PathBuf> = HashMap::new();
         for (name, path) in user_shell_env.dotfiles {
             if super::direnv::is_path_in_nix_store(&path) {
                 managed.insert(name, path.clone());
             } else {
-                unmanaged.push(path.clone());
+                unmanaged.insert(name, path.clone());
             }
         }
 
