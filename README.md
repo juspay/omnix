@@ -6,8 +6,7 @@
 
 *Pronounced [`/ɒmˈnɪks/`](http://ipa-reader.xyz/?text=%C9%92m%CB%88n%C9%AAks&voice=Geraint)*
 
-> [!NOTE]
-> 🚧 omnix is in active development. It aims to supplement the [Nix](https://nixos.asia/en/nix) CLI to improve developer experience.
+Omnix aims to supplement the [Nix](https://nixos.asia/en/nix) CLI to improve developer experience.
 
 ## Usage
 
