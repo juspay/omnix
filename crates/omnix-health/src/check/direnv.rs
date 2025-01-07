@@ -56,7 +56,7 @@ fn install_check(
     direnv_install_result: &Result<direnv::DirenvInstall, direnv::DirenvInstallError>,
     required: bool,
 ) -> Check {
-    let setup_url = "https://github.com/juspay/nixos-unified-template#nixos-unified-template";
+    let setup_url = "https://github.com/juspay/nixos-unified-template";
     Check {
         title: "Direnv installation".to_string(),
         info: format!(
