@@ -99,7 +99,12 @@ impl RunCommand {
     pub async fn run(&self, nixcmd: &NixCmd, verbose: bool, cfg: OmConfig) -> anyhow::Result<()> {
         match &self.on {
             Some(store_uri) => run_remote::run_on_remote_store(nixcmd, self, &cfg, store_uri).await,
-            None => self.run_local(nixcmd, verbose, cfg).await,
+            None => {
+                // preprocess the command when running ci locally
+                let mut cmd = self.clone();
+                cmd.preprocess();
+                cmd.run_local(nixcmd, verbose, cfg).await
+            }
         }
     }
 
