@@ -3,6 +3,7 @@ use std::{fmt, str::FromStr};
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
+use url::Url;
 
 /// Nix Store URI
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -23,9 +24,9 @@ pub struct SSHStoreURI {
 /// Error parsing a store URI
 #[derive(Error, Debug)]
 pub enum StoreURIParseError {
-    /// Invalid URI format
-    #[error("Invalid URI format")]
-    InvalidFormat,
+    /// Parse error
+    #[error(transparent)]
+    ParseError(#[from] url::ParseError),
     /// Unsupported scheme
     #[error("Unsupported scheme: {0}")]
     UnsupportedScheme(String),
@@ -39,28 +40,23 @@ impl StoreURI {
     ///
     /// Currently only supports `ssh` scheme
     pub fn parse(uri: &str) -> Result<Self, StoreURIParseError> {
-        let (scheme, rest) = uri
-            .split_once("://")
-            .ok_or(StoreURIParseError::InvalidFormat)?;
-
-        match scheme {
+        let url = Url::parse(uri)?;
+        match url.scheme() {
             "ssh" => {
-                let (user, host) = rest
-                    .split_once('@')
-                    .map(|(u, h)| (Some(u.to_string()), h))
-                    .unwrap_or((None, rest));
-
-                if host.is_empty() {
-                    return Err(StoreURIParseError::MissingHost);
-                }
-
-                Ok(StoreURI::SSH(SSHStoreURI {
-                    user,
-                    host: host.to_string(),
-                }))
+                let host = url
+                    .host_str()
+                    .ok_or(StoreURIParseError::MissingHost)?
+                    .to_string();
+                let user = if !url.username().is_empty() {
+                    Some(url.username().to_string())
+                } else {
+                    None
+                };
+                let store_uri = SSHStoreURI { user, host };
+                Ok(StoreURI::SSH(store_uri))
             }
             // Add future schemes here
-            _ => Err(StoreURIParseError::UnsupportedScheme(scheme.to_string())),
+            scheme => Err(StoreURIParseError::UnsupportedScheme(scheme.to_string())),
         }
     }
 }
