@@ -3,8 +3,6 @@ ci:
     omnix:
       dir: .
       steps:
-        flake-check:
-          enable: false
         custom:
           om-show:
             type: app
@@ -50,13 +48,14 @@ ci:
       steps:
         build:
           enable: false
+        # Run `nix flake check` for checking the 'templates' outputs
+        flake-check:
+          enable: true
         custom: {}
     cli-test-dep-cache:
       dir: crates/omnix-cli/tests
       steps:
         lockfile:
-          enable: false
-        flake_check:
           enable: false
         custom: {}
 health:
