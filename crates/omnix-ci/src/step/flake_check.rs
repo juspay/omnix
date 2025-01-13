@@ -11,16 +11,12 @@ use crate::config::subflake::SubflakeConfig;
 /// Run `nix flake check`
 ///
 /// Note: `nix build ...` does not evaluate all the checks that `nix flake check` does. So, enabling this steps allows `om ci` to run those evaluation checks.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Default, Deserialize)]
 pub struct FlakeCheckStep {
     /// Whether to enable this step
+    ///
+    /// Disabled by default, since only a handful of flakes need this (for others, it will unnecessarily slow down the build)
     pub enable: bool,
-}
-
-impl Default for FlakeCheckStep {
-    fn default() -> Self {
-        FlakeCheckStep { enable: true }
-    }
 }
 
 impl FlakeCheckStep {
