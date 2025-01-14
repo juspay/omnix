@@ -1,4 +1,7 @@
-use std::{collections::HashMap, path::Path};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+};
 
 use anyhow::Context;
 use nix_rs::{
@@ -102,8 +105,11 @@ impl Asserts {
         for (attr, package) in self.packages.iter() {
             let paths = nix_rs::flake::command::build(
                 &NixCmd::default(),
-                &FlakeOptions::default(),
-                FlakeUrl::from(dir).with_attr(attr),
+                &FlakeOptions {
+                    current_dir: Some(dir.to_path_buf()),
+                    ..Default::default()
+                },
+                FlakeUrl::from(PathBuf::from(".")).with_attr(attr),
             )
             .await?;
             assert_matches!(paths.first().and_then(|v| v.first_output()), Some(path) => {
