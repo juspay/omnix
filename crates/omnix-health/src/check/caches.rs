@@ -62,7 +62,7 @@ impl Checkable for Caches {
             required: true,
         };
 
-        [("caches", check)].into_iter().collect()
+        vec![("caches", check)]
     }
 }
 

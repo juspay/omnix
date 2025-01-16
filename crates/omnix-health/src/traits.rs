@@ -7,7 +7,7 @@ pub trait Checkable {
     /// Run and create the health check
     ///
     /// NOTE: Some checks may perform impure actions (IO, etc.). Returning an
-    /// empty hashmap indicates that the check is skipped on this environment.
+    /// empty vector indicates that the check is skipped on this environment.
     fn check(
         &self,
         nix_info: &nix_rs::info::NixInfo,
