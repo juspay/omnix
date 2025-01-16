@@ -35,12 +35,15 @@ pub async fn run_on_remote_store(
         format!("\n🛜 Running CI remotely on {}", store_uri).bold()
     );
 
-    let (local_flake_path, local_flake_url) = cache_flake(nixcmd, cfg).await?;
+    let (local_paths, local_flake_url) = cache_flake(nixcmd, cfg).await?;
     let omnix_source = PathBuf::from(OMNIX_SOURCE);
     let StoreURI::SSH(ssh_uri) = store_uri;
 
+    let mut paths_to_push = local_paths.clone();
+    paths_to_push.push(omnix_source.clone());
+
     // First, copy the flake and omnix source to the remote store, because we will be needing them when running over ssh.
-    nix_copy_to_remote(nixcmd, store_uri, &[&omnix_source, &local_flake_path]).await?;
+    nix_copy_to_remote(nixcmd, store_uri, &paths_to_push).await?;
 
     // If out-link is requested, we need to copy the results back to local store - so that when we create the out-link *locally* the paths in it refer to valid paths in the local store. Thus, --out-link can be used to trick Omnix into copying all built paths back.
     if let Some(out_link) = run_cmd.get_out_link() {
@@ -163,16 +166,19 @@ fn nixpkgs_cmd(package: &str, cmd: &[&str]) -> Vec<String> {
 }
 
 /// Return the locally cached [FlakeUrl] for the given flake url that points to same selected [ConfigRef].
-async fn cache_flake(nixcmd: &NixCmd, cfg: &OmConfig) -> anyhow::Result<(PathBuf, FlakeUrl)> {
+async fn cache_flake(nixcmd: &NixCmd, cfg: &OmConfig) -> anyhow::Result<(Vec<PathBuf>, FlakeUrl)> {
     let metadata = FlakeMetadata::from_nix(nixcmd, &cfg.flake_url).await?;
-    let path = metadata.flake.to_string_lossy().into_owned();
+    let mut paths = vec![];
+    // The flake itself
+    paths.push(metadata.flake.clone());
+    // Its inputs
+    paths.extend(metadata.inputs.values().cloned());
     let attr = cfg.reference.join(".");
-    let local_flake_url = if !attr.is_empty() {
-        FlakeUrl(path).with_attr(&attr)
-    } else {
-        FlakeUrl(path)
-    };
-    Ok((metadata.flake, local_flake_url))
+    let mut local_flake_url = Into::<FlakeUrl>::into(metadata.flake.clone());
+    if !attr.is_empty() {
+        local_flake_url = local_flake_url.with_attr(&attr);
+    }
+    Ok((paths, local_flake_url))
 }
 
 /// Construct a `nix run ...` based CLI that runs Omnix using given arguments.
