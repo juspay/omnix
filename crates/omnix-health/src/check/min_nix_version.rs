@@ -31,7 +31,7 @@ impl Checkable for MinNixVersion {
         &self,
         nix_info: &info::NixInfo,
         _: Option<&nix_rs::flake::url::FlakeUrl>,
-    ) -> HashMap<String, Check> {
+    ) -> HashMap<&'static str, Check> {
         let val = &nix_info.nix_version;
         let check = Check {
             title: "Minimum Nix Version".to_string(),
@@ -47,8 +47,6 @@ impl Checkable for MinNixVersion {
             required: true,
         };
 
-        let mut checks_map = HashMap::new();
-        checks_map.insert("nix-version".to_string(), check);
-        checks_map
+        [("nix-version", check)].into_iter().collect()
     }
 }

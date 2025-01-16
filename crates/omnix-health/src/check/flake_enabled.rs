@@ -15,7 +15,7 @@ impl Checkable for FlakeEnabled {
         &self,
         nix_info: &info::NixInfo,
         _: Option<&nix_rs::flake::url::FlakeUrl>,
-    ) -> HashMap<String, Check> {
+    ) -> HashMap<&'static str, Check> {
         let val = &nix_info.nix_config.experimental_features.value;
         let check = Check {
             title: "Flakes Enabled".to_string(),
@@ -33,8 +33,6 @@ impl Checkable for FlakeEnabled {
             required: true,
         };
 
-        let mut checks_map = HashMap::new();
-        checks_map.insert("flake-enabled".to_string(), check);
-        checks_map
+        [("flake-enabled", check)].into_iter().collect()
     }
 }

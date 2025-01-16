@@ -32,8 +32,8 @@ impl Checkable for Rosetta {
         &self,
         nix_info: &info::NixInfo,
         _: Option<&nix_rs::flake::url::FlakeUrl>,
-    ) -> HashMap<String, Check> {
-        let mut checks_map = HashMap::new();
+    ) -> HashMap<&'static str, Check> {
+        let mut checks = HashMap::new();
         if let (true, Some(emulation)) = (self.enable, get_apple_emulation(&nix_info.nix_env.os)) {
             let check = Check {
                 title: "Rosetta Not Active".to_string(),
@@ -48,9 +48,9 @@ impl Checkable for Rosetta {
                 },
                 required: self.required,
             };
-            checks_map.insert("rosetta".to_string(), check);
+            checks.insert("rosetta", check);
         };
-        checks_map
+        checks
     }
 }
 

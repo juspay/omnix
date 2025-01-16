@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use std::{
-    collections::HashMap, hash::Hash, path::{Path, PathBuf}
+    collections::HashMap,
+    hash::Hash,
+    path::{Path, PathBuf},
 };
 
 use crate::traits::{Check, CheckResult, Checkable};
@@ -26,10 +28,10 @@ impl Checkable for ShellCheck {
         &self,
         _nix_info: &nix_rs::info::NixInfo,
         _flake: Option<&nix_rs::flake::url::FlakeUrl>,
-    ) -> HashMap<String, Check> {
-        let mut checks_map = HashMap::new();
+    ) -> HashMap<&'static str, Check> {
+        let mut checks = HashMap::new();
         if !self.enable {
-            return checks_map;
+            return checks;
         }
         let user_shell_env = match CurrentUserShellEnv::new() {
             Ok(shell) => shell,
@@ -39,7 +41,7 @@ impl Checkable for ShellCheck {
                     panic!("Unable to determine user's shell environment (see above)");
                 } else {
                     tracing::warn!("Skipping shell dotfile check! (see above)");
-                    return checks_map;
+                    return checks;
                 }
             }
         };
@@ -76,8 +78,8 @@ impl Checkable for ShellCheck {
             required: self.required,
         };
 
-        checks_map.insert("shell".to_string(), check);
-        checks_map
+        checks.insert("shell", check);
+        checks
     }
 }
 

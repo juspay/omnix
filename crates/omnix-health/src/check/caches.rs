@@ -27,7 +27,7 @@ impl Checkable for Caches {
         &self,
         nix_info: &info::NixInfo,
         _: Option<&nix_rs::flake::url::FlakeUrl>,
-    ) -> HashMap<String, Check> {
+    ) -> HashMap<&'static str, Check> {
         let missing_caches = self.get_missing_caches(nix_info);
         let result = if missing_caches.is_empty() {
             CheckResult::Green
@@ -64,9 +64,7 @@ impl Checkable for Caches {
             required: true,
         };
 
-        let mut checks_map = HashMap::new();
-        checks_map.insert("caches".to_string(), check);
-        checks_map
+        [("caches", check)].into_iter().collect()
     }
 }
 

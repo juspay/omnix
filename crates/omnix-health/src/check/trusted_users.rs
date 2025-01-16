@@ -15,7 +15,7 @@ impl Checkable for TrustedUsers {
         &self,
         nix_info: &nix_rs::info::NixInfo,
         _: Option<&nix_rs::flake::url::FlakeUrl>,
-    ) -> HashMap<String, Check> {
+    ) -> HashMap<&'static str, Check> {
         let result = if is_current_user_trusted(nix_info) {
             CheckResult::Green
         } else {
@@ -43,9 +43,7 @@ impl Checkable for TrustedUsers {
             required: true,
         };
 
-        let mut checks_map = HashMap::new();
-        checks_map.insert("trusted-users".to_string(), check);
-        checks_map
+        [("trusted-users", check)].into_iter().collect()
     }
 }
 
