@@ -27,13 +27,6 @@ impl Default for Command {
 }
 
 impl Command {
-    /// Pre-process `Command`
-    pub fn preprocess(&mut self) {
-        if let Command::Run(cmd) = self {
-            cmd.preprocess()
-        }
-    }
-
     /// Run the command
     #[instrument(name = "run", skip(self))]
     pub async fn run(self, nixcmd: &NixCmd, verbose: bool) -> anyhow::Result<()> {
