@@ -25,12 +25,8 @@ impl HealthCommand {
             println!("{}", NixHealth::schema()?);
             return Ok(());
         }
-        let checks_map = run_all_checks_with(self.flake_url.clone()).await?;
-        let exit_code = if self.json {
-            NixHealth::print_json_report_returning_exit_code(&checks_map).await?
-        } else {
-            NixHealth::print_report_returning_exit_code(&checks_map).await?
-        };
+        let checks = run_all_checks_with(self.flake_url.clone()).await?;
+        let exit_code = NixHealth::print_report_returning_exit_code(&checks, self.json).await?;
         if exit_code != 0 {
             std::process::exit(exit_code);
         }

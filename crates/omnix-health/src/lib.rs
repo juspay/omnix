@@ -85,33 +85,25 @@ impl NixHealth {
             .collect()
     }
 
-    pub async fn print_json_report_returning_exit_code(
-        checks_map: &HashMap<&'static str, Check>,
-    ) -> anyhow::Result<i32> {
-        let mut res = AllChecksResult::new();
-        for check in checks_map.values() {
-            if !check.result.green() {
-                res.register_failure(check.required);
-            };
-        }
-
-        let code = res.report();
-        println!("{}", serde_json::to_string_pretty(checks_map)?);
-        Ok(code)
-    }
-
     pub async fn print_report_returning_exit_code(
         checks_map: &HashMap<&'static str, Check>,
+        json_only: bool,
     ) -> anyhow::Result<i32> {
         let mut res = AllChecksResult::new();
         for check in checks_map.values() {
-            check.tracing_log().await?;
+            if !json_only {
+                check.tracing_log().await?;
+            }
             if !check.result.green() {
                 res.register_failure(check.required);
             };
         }
 
         let code = res.report();
+
+        if json_only {
+            println!("{}", serde_json::to_string_pretty(checks_map)?);
+        }
         Ok(code)
     }
 
