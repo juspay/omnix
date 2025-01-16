@@ -20,6 +20,10 @@
   - **`attr`**:
     - Add `FlakeAttr::new` and `FlakeAttr::none` constructors
   - `qualified_attr` - vastly simplify module
+- `flake::functions`:
+  - Add new module
+- **`flake::command`**:
+  - Add module, for `nix run`, `nix build` and `nix develop`
 - **`store`**:
   - Add module (upstreamed from nixci)
   - Add `StoreURI`
@@ -33,8 +37,6 @@
 - **`command`
   - `run_with_args` is now `run_with`, and takes a function that mutates the `Command` at will.
   - Add `trace_cmd_with`
-- **`flake::command`**:
-  - Add module, for `nix run`, `nix build` and `nix develop`
 - **`version`**:
   - Add `NixVersion::get`
 - **`system_list`**: New module
