@@ -21,7 +21,7 @@ pub trait FlakeFn {
     fn flake() -> &'static FlakeUrl;
 
     /// Initialize the type after reading from Nix build
-    fn init(out: &mut Self::Output);
+    fn init(_out: &mut Self::Output) {}
 
     /// Call the flake function, taking `Self::Input`, returning `Self::Output`
     fn call(

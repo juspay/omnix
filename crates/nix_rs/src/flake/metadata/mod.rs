@@ -1,21 +1,47 @@
 //! Retrieve metadata for a flake.
+use super::{functions::FlakeFn, url::FlakeUrl};
+use crate::command::NixCmd;
+use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
+use std::{collections::HashMap, path::PathBuf, path::Path};
 
-use super::url::FlakeUrl;
-use crate::command::{NixCmd, NixCmdError};
+/// Flake metadata
+pub struct FlakeMetadataFn;
+
+lazy_static! {
+    /// devour flake URL
+    static ref FLAKE_METADATA: FlakeUrl = {
+        let path = env!("FLAKE_METADATA");
+        Into::<FlakeUrl>::into(Path::new(path)).with_attr("default")
+    };
+}
+
+impl FlakeFn for FlakeMetadataFn {
+    type Input = FlakeMetadataInput;
+    type Output = FlakeMetadata;
+
+    fn flake() -> &'static FlakeUrl {
+        &FLAKE_METADATA
+    }
+}
+
+/// Input to FlakeMetadata
+#[derive(Serialize, Deserialize, Debug)]
+pub struct FlakeMetadataInput {
+    /// The flake to operate on
+    pub flake: FlakeUrl,
+}
 
 /// Flake metadata
 ///
 /// See [Nix doc](https://nix.dev/manual/nix/2.18/command-ref/new-cli/nix3-flake-metadata)
 #[derive(Serialize, Deserialize, Debug)]
 pub struct FlakeMetadata {
-    /// Original flake URL
-    #[serde(rename = "originalUrl")]
-    pub original_url: FlakeUrl,
+    /// Store path to this flake
+    pub flake: PathBuf,
 
-    /// Locally cached path for the flake.
-    pub path: PathBuf,
+    /// Store path to each flake input
+    pub inputs: HashMap<String, PathBuf>,
 }
 
 impl FlakeMetadata {
@@ -23,10 +49,16 @@ impl FlakeMetadata {
     pub async fn from_nix(
         cmd: &NixCmd,
         flake_url: &FlakeUrl,
-    ) -> Result<FlakeMetadata, NixCmdError> {
-        cmd.run_with_args_expecting_json::<FlakeMetadata>(&[
-            "flake", "metadata", "--json", flake_url,
-        ])
-        .await
+    ) -> Result<FlakeMetadata, crate::flake::functions::Error> {
+        let v = FlakeMetadataFn::call(
+            cmd,
+            false,
+            vec![],
+            FlakeMetadataInput {
+                flake: flake_url.clone(),
+            },
+        )
+        .await?;
+        Ok(v)
     }
 }

@@ -41,7 +41,7 @@ impl OmConfig {
         } else {
             FlakeMetadata::from_nix(NixCmd::get().await, &flake_url.without_attr())
                 .await?
-                .path
+                .flake
         }
         .join("om.yaml");
 
@@ -131,6 +131,10 @@ pub enum OmConfigError {
     /// A [nix_rs::command::NixCmdError]
     #[error("Nix command error: {0}")]
     NixCmdError(#[from] nix_rs::command::NixCmdError),
+
+    /// Flake function error
+    #[error("Flake function error: {0}")]
+    FlakeFnError(#[from] nix_rs::flake::functions::Error),
 
     /// Failed to parse JSON
     #[error("Failed to decode (json error): {0}")]

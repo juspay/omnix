@@ -165,14 +165,14 @@ fn nixpkgs_cmd(package: &str, cmd: &[&str]) -> Vec<String> {
 /// Return the locally cached [FlakeUrl] for the given flake url that points to same selected [ConfigRef].
 async fn cache_flake(nixcmd: &NixCmd, cfg: &OmConfig) -> anyhow::Result<(PathBuf, FlakeUrl)> {
     let metadata = FlakeMetadata::from_nix(nixcmd, &cfg.flake_url).await?;
-    let path = metadata.path.to_string_lossy().into_owned();
+    let path = metadata.flake.to_string_lossy().into_owned();
     let attr = cfg.reference.join(".");
     let local_flake_url = if !attr.is_empty() {
         FlakeUrl(path).with_attr(&attr)
     } else {
         FlakeUrl(path)
     };
-    Ok((metadata.path, local_flake_url))
+    Ok((metadata.flake, local_flake_url))
 }
 
 /// Construct a `nix run ...` based CLI that runs Omnix using given arguments.

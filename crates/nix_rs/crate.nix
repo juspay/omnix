@@ -19,6 +19,10 @@ in
         name = "flake-schemas";
         src = flake.inputs.self + /nix/flake-schemas;
       };
+      FLAKE_METADATA = lib.cleanSourceWith {
+        name = "nix-rs-flake-metadata";
+        src = flake.inputs.self + /crates/nix_rs/src/flake/metadata;
+      };
       INSPECT_FLAKE = inputs.inspect;
       NIX_SYSTEMS = builtins.toJSON {
         x86_64-linux = lib.cleanSourceWith {
