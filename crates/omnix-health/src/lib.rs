@@ -102,7 +102,7 @@ impl NixHealth {
         let code = res.report();
 
         if json_only {
-            println!("{}", serde_json::to_string_pretty(checks_map)?);
+            println!("{}", serde_json::to_string(checks_map)?);
         }
         Ok(code)
     }
