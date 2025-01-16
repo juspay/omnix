@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use nix_rs::info;
 use serde::{Deserialize, Serialize};
 
@@ -13,7 +15,7 @@ impl Checkable for FlakeEnabled {
         &self,
         nix_info: &info::NixInfo,
         _: Option<&nix_rs::flake::url::FlakeUrl>,
-    ) -> Vec<Check> {
+    ) -> HashMap<String, Check> {
         let val = &nix_info.nix_config.experimental_features.value;
         let check = Check {
             title: "Flakes Enabled".to_string(),
@@ -30,6 +32,9 @@ impl Checkable for FlakeEnabled {
             },
             required: true,
         };
-        vec![check]
+
+        let mut checks_map = HashMap::new();
+        checks_map.insert("flake-enabled".to_string(), check);
+        checks_map
     }
 }

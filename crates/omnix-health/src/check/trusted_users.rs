@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use nix_rs::config::TrustedUserValue;
 use serde::{Deserialize, Serialize};
@@ -15,7 +15,7 @@ impl Checkable for TrustedUsers {
         &self,
         nix_info: &nix_rs::info::NixInfo,
         _: Option<&nix_rs::flake::url::FlakeUrl>,
-    ) -> Vec<Check> {
+    ) -> HashMap<String, Check> {
         let result = if is_current_user_trusted(nix_info) {
             CheckResult::Green
         } else {
@@ -42,7 +42,10 @@ impl Checkable for TrustedUsers {
             result,
             required: true,
         };
-        vec![check]
+
+        let mut checks_map = HashMap::new();
+        checks_map.insert("trusted-users".to_string(), check);
+        checks_map
     }
 }
 

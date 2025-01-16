@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use nix_rs::info;
 use serde::{Deserialize, Serialize};
 
@@ -13,7 +15,7 @@ impl Checkable for MaxJobs {
         &self,
         nix_info: &info::NixInfo,
         _: Option<&nix_rs::flake::url::FlakeUrl>,
-    ) -> Vec<Check> {
+    ) -> HashMap<String, Check> {
         let max_jobs = nix_info.nix_config.max_jobs.value;
         let check = Check {
             title: "Max Jobs".to_string(),
@@ -31,6 +33,9 @@ impl Checkable for MaxJobs {
             },
             required: true,
         };
-        vec![check]
+
+        let mut checks_map = HashMap::new();
+        checks_map.insert("max-jobs".to_string(), check);
+        checks_map
     }
 }

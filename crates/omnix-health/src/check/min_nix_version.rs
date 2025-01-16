@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use nix_rs::version::NixVersion;
 
 use nix_rs::info;
@@ -29,7 +31,7 @@ impl Checkable for MinNixVersion {
         &self,
         nix_info: &info::NixInfo,
         _: Option<&nix_rs::flake::url::FlakeUrl>,
-    ) -> Vec<Check> {
+    ) -> HashMap<String, Check> {
         let val = &nix_info.nix_version;
         let check = Check {
             title: "Minimum Nix Version".to_string(),
@@ -44,6 +46,9 @@ impl Checkable for MinNixVersion {
             },
             required: true,
         };
-        vec![check]
+
+        let mut checks_map = HashMap::new();
+        checks_map.insert("nix-version".to_string(), check);
+        checks_map
     }
 }

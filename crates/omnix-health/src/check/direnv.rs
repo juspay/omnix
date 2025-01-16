@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use nix_rs::{flake::url::FlakeUrl, info};
 use serde::{Deserialize, Serialize};
 
@@ -22,17 +24,17 @@ impl Default for Direnv {
 }
 
 impl Checkable for Direnv {
-    fn check(&self, _nix_info: &info::NixInfo, flake_url: Option<&FlakeUrl>) -> Vec<Check> {
-        let mut checks = vec![];
+    fn check(&self, _nix_info: &info::NixInfo, flake_url: Option<&FlakeUrl>) -> HashMap<String, Check> {
+        let mut checks_map = HashMap::new();
         if !self.enable {
-            return checks;
+            return checks_map;
         }
 
         let direnv_install_result = direnv::DirenvInstall::detect();
-        checks.push(install_check(&direnv_install_result, self.required));
+        checks_map.insert("direnv-install-check".to_string(), install_check(&direnv_install_result, self.required));
 
         match direnv_install_result.as_ref() {
-            Err(_) => return checks,
+            Err(_) => return checks_map,
             Ok(direnv_install) => {
                 // If direnv is installed, check for version and then allowed_check
                 // This check is currently only relevant if the flake is local and an `.envrc` exists.
@@ -40,14 +42,14 @@ impl Checkable for Direnv {
                     None => {}
                     Some(local_path) => {
                         if local_path.join(".envrc").exists() {
-                            checks.push(allowed_check(direnv_install, local_path, self.required));
+                            checks_map.insert("direnv-allowed-check".to_string(), allowed_check(direnv_install, local_path, self.required));
                         }
                     }
                 }
             }
         }
 
-        checks
+        checks_map
     }
 }
 

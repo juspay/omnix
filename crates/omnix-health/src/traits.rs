@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use colored::Colorize;
 use serde::{Deserialize, Serialize};
 
@@ -7,7 +9,7 @@ pub trait Checkable {
     /// Run and create the health check
     ///
     /// NOTE: Some checks may perform impure actions (IO, etc.). Returning an
-    /// empty vector indicates that the check is skipped on this environment.
+    /// empty hashmap indicates that the check is skipped on this environment.
     fn check(
         &self,
         nix_info: &nix_rs::info::NixInfo,
@@ -16,7 +18,7 @@ pub trait Checkable {
         // If None, the check is run against the current environment, with no
         // specific configuration from a flake.
         flake: Option<&nix_rs::flake::url::FlakeUrl>,
-    ) -> Vec<Check>;
+    ) -> HashMap<String, Check>;
 }
 
 /// A health check

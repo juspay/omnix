@@ -5,6 +5,8 @@ pub mod check;
 pub mod report;
 pub mod traits;
 
+use std::collections::HashMap;
+
 use anyhow::Context;
 use check::shell::ShellCheck;
 use colored::Colorize;
@@ -75,22 +77,36 @@ impl NixHealth {
     #[instrument(skip_all)]
     pub fn run_all_checks(
         &self,
-        nix_info: &nix_rs::info::NixInfo,
+        nix_info: &NixInfo,
         flake_url: Option<FlakeUrl>,
-    ) -> Vec<traits::Check> {
+    ) -> HashMap<String, Check> {
         self.into_iter()
             .flat_map(|c| c.check(nix_info, flake_url.as_ref()))
             .collect()
     }
 
-    pub async fn print_report_returning_exit_code(checks: &[traits::Check]) -> anyhow::Result<i32> {
+    pub async fn print_json_report_returning_exit_code(checks_map: &HashMap<String, Check>) -> anyhow::Result<i32> {
         let mut res = AllChecksResult::new();
-        for check in checks {
+        for check in checks_map.values() {
+            if !check.result.green() {
+                res.register_failure(check.required);
+            };
+        }
+        
+        let code = res.report();
+        println!("{}", serde_json::to_string_pretty(checks_map)?);
+        Ok(code)
+    }
+
+    pub async fn print_report_returning_exit_code(checks_map: &HashMap<String, Check>) -> anyhow::Result<i32> {
+        let mut res = AllChecksResult::new();
+        for check in checks_map.values() {
             check.tracing_log().await?;
             if !check.result.green() {
                 res.register_failure(check.required);
             };
         }
+        
         let code = res.report();
         Ok(code)
     }
@@ -101,7 +117,7 @@ impl NixHealth {
 }
 
 /// Run all health checks, optionally using the given flake's configuration
-pub async fn run_all_checks_with(flake_url: Option<FlakeUrl>) -> anyhow::Result<Vec<Check>> {
+pub async fn run_all_checks_with(flake_url: Option<FlakeUrl>) -> anyhow::Result<HashMap<String, Check>> {
     let nix_info = NixInfo::get()
         .await
         .as_ref()
@@ -125,8 +141,8 @@ pub async fn run_all_checks_with(flake_url: Option<FlakeUrl>) -> anyhow::Result<
 
     print_info_banner(flake_url.as_ref(), nix_info).await?;
 
-    let checks = health.run_all_checks(nix_info, flake_url);
-    Ok(checks)
+    let checks_map = health.run_all_checks(nix_info, flake_url);
+    Ok(checks_map)
 }
 
 async fn print_info_banner(flake_url: Option<&FlakeUrl>, nix_info: &NixInfo) -> anyhow::Result<()> {
