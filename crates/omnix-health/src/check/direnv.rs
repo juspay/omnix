@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use nix_rs::{flake::url::FlakeUrl, info};
 use serde::{Deserialize, Serialize};
 
@@ -28,17 +26,17 @@ impl Checkable for Direnv {
         &self,
         _nix_info: &info::NixInfo,
         flake_url: Option<&FlakeUrl>,
-    ) -> HashMap<&'static str, Check> {
-        let mut checks = HashMap::new();
+    ) -> Vec<(&'static str, Check)> {
+        let mut checks = vec![];
         if !self.enable {
             return checks;
         }
 
         let direnv_install_result = direnv::DirenvInstall::detect();
-        checks.insert(
+        checks.push((
             "direnv-install-check",
             install_check(&direnv_install_result, self.required),
-        );
+        ));
 
         match direnv_install_result.as_ref() {
             Err(_) => return checks,
@@ -49,10 +47,10 @@ impl Checkable for Direnv {
                     None => {}
                     Some(local_path) => {
                         if local_path.join(".envrc").exists() {
-                            checks.insert(
+                            checks.push((
                                 "direnv-allowed-check",
                                 allowed_check(direnv_install, local_path, self.required),
-                            );
+                            ));
                         }
                     }
                 }

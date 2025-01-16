@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use nix_rs::info;
 use serde::{Deserialize, Serialize};
 use url::Url;
@@ -27,7 +25,7 @@ impl Checkable for Caches {
         &self,
         nix_info: &info::NixInfo,
         _: Option<&nix_rs::flake::url::FlakeUrl>,
-    ) -> HashMap<&'static str, Check> {
+    ) -> Vec<(&'static str, Check)> {
         let missing_caches = self.get_missing_caches(nix_info);
         let result = if missing_caches.is_empty() {
             CheckResult::Green

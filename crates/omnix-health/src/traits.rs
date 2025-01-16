@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use colored::Colorize;
 use serde::{Deserialize, Serialize};
 
@@ -18,7 +16,7 @@ pub trait Checkable {
         // If None, the check is run against the current environment, with no
         // specific configuration from a flake.
         flake: Option<&nix_rs::flake::url::FlakeUrl>,
-    ) -> HashMap<&'static str, Check>;
+    ) -> Vec<(&'static str, Check)>;
 }
 
 /// A health check

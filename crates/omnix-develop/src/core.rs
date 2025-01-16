@@ -73,7 +73,7 @@ pub async fn develop_on_pre_shell(prj: &Project) -> anyhow::Result<()> {
     };
 
     for check_kind in relevant_checks.into_iter() {
-        for check in check_kind.check(nix_info, Some(&prj.flake)).values() {
+        for (_, check) in check_kind.check(nix_info, Some(&prj.flake)) {
             if !check.result.green() {
                 check.tracing_log().await?;
                 if !check.result.green() && check.required {

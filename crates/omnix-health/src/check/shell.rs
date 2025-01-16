@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::{
-    collections::HashMap,
+    collections::{BTreeMap, HashMap},
     hash::Hash,
     path::{Path, PathBuf},
 };
@@ -28,10 +28,9 @@ impl Checkable for ShellCheck {
         &self,
         _nix_info: &nix_rs::info::NixInfo,
         _flake: Option<&nix_rs::flake::url::FlakeUrl>,
-    ) -> HashMap<&'static str, Check> {
-        let mut checks = HashMap::new();
+    ) -> Vec<(&'static str, Check)> {
         if !self.enable {
-            return checks;
+            return vec![];
         }
         let user_shell_env = match CurrentUserShellEnv::new() {
             Ok(shell) => shell,
@@ -41,7 +40,7 @@ impl Checkable for ShellCheck {
                     panic!("Unable to determine user's shell environment (see above)");
                 } else {
                     tracing::warn!("Skipping shell dotfile check! (see above)");
-                    return checks;
+                    return vec![];
                 }
             }
         };
@@ -78,8 +77,7 @@ impl Checkable for ShellCheck {
             required: self.required,
         };
 
-        checks.insert("shell", check);
-        checks
+        vec![("shell", check)]
     }
 }
 
@@ -90,7 +88,7 @@ struct CurrentUserShellEnv {
     /// Current shell
     shell: Shell,
     /// *Absolute* paths to the dotfiles
-    dotfiles: HashMap<&'static str, PathBuf>,
+    dotfiles: BTreeMap<&'static str, PathBuf>,
 }
 
 impl CurrentUserShellEnv {
@@ -164,8 +162,8 @@ impl Shell {
     /// Get the currently existing dotfiles under $HOME
     ///
     /// Returned paths will be absolute (i.e., symlinks are resolved).
-    fn get_dotfiles(&self, home_dir: &Path) -> std::io::Result<HashMap<&'static str, PathBuf>> {
-        let mut paths = HashMap::new();
+    fn get_dotfiles(&self, home_dir: &Path) -> std::io::Result<BTreeMap<&'static str, PathBuf>> {
+        let mut paths = BTreeMap::new();
         for dotfile in self.dotfile_names() {
             match std::fs::canonicalize(home_dir.join(dotfile)) {
                 Ok(path) => {

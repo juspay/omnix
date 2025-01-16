@@ -79,18 +79,18 @@ impl NixHealth {
         &self,
         nix_info: &NixInfo,
         flake_url: Option<FlakeUrl>,
-    ) -> HashMap<&'static str, Check> {
+    ) -> Vec<(&'static str, Check)> {
         self.into_iter()
             .flat_map(|c| c.check(nix_info, flake_url.as_ref()))
             .collect()
     }
 
     pub async fn print_report_returning_exit_code(
-        checks_map: &HashMap<&'static str, Check>,
+        checks: &Vec<(&'static str, Check)>,
         json_only: bool,
     ) -> anyhow::Result<i32> {
         let mut res = AllChecksResult::new();
-        for check in checks_map.values() {
+        for (_, check) in checks {
             if !json_only {
                 check.tracing_log().await?;
             }
@@ -102,7 +102,8 @@ impl NixHealth {
         let code = res.report();
 
         if json_only {
-            println!("{}", serde_json::to_string(checks_map)?);
+            let json: HashMap<_, _> = checks.iter().map(|(k, v)| (*k, v)).collect();
+            println!("{}", serde_json::to_string(&json)?);
         }
         Ok(code)
     }
@@ -115,7 +116,7 @@ impl NixHealth {
 /// Run all health checks, optionally using the given flake's configuration
 pub async fn run_all_checks_with(
     flake_url: Option<FlakeUrl>,
-) -> anyhow::Result<HashMap<&'static str, Check>> {
+) -> anyhow::Result<Vec<(&'static str, Check)>> {
     let nix_info = NixInfo::get()
         .await
         .as_ref()
@@ -139,8 +140,8 @@ pub async fn run_all_checks_with(
 
     print_info_banner(flake_url.as_ref(), nix_info).await?;
 
-    let checks_map = health.run_all_checks(nix_info, flake_url);
-    Ok(checks_map)
+    let checks = health.run_all_checks(nix_info, flake_url);
+    Ok(checks)
 }
 
 async fn print_info_banner(flake_url: Option<&FlakeUrl>, nix_info: &NixInfo) -> anyhow::Result<()> {
