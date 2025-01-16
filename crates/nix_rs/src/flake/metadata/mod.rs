@@ -1,4 +1,4 @@
-//! Work with `nix flake metadata`
+//! Retrieve metadata for a flake.
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
