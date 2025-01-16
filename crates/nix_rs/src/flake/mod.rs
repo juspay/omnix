@@ -2,6 +2,7 @@
 
 pub mod command;
 pub mod eval;
+pub mod functions;
 pub mod metadata;
 pub mod outputs;
 pub mod schema;

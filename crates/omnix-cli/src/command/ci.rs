@@ -27,8 +27,6 @@ impl CICommand {
     ///
     /// If the user has not provided one, return the build command by default.
     fn command(&self) -> Command {
-        let mut cmd = self.command.clone().unwrap_or_default();
-        cmd.preprocess();
-        cmd
+        self.command.clone().unwrap_or_default()
     }
 }

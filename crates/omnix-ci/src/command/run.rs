@@ -71,18 +71,6 @@ impl Default for RunCommand {
 }
 
 impl RunCommand {
-    /// Preprocess this command
-    pub fn preprocess(&mut self) {
-        if !self.is_remote() {
-            self.steps_args.build_step_args.preprocess();
-        }
-    }
-
-    /// Whether this command is to be run remotely
-    pub fn is_remote(&self) -> bool {
-        self.on.is_some()
-    }
-
     /// Get the out-link path
     pub fn get_out_link(&self) -> Option<&PathBuf> {
         if self.no_out_link {

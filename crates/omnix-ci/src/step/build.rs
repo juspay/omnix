@@ -3,7 +3,7 @@ use clap::Parser;
 use colored::Colorize;
 use nix_rs::{
     command::NixCmd,
-    flake::url::FlakeUrl,
+    flake::{functions::FlakeFn, url::FlakeUrl},
     store::{command::NixStoreCmd, path::StorePath},
 };
 use serde::{Deserialize, Serialize};
@@ -11,10 +11,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     command::run::RunCommand,
     config::subflake::SubflakeConfig,
-    nix::{
-        self,
-        devour_flake::{self, DevourFlakeInput},
-    },
+    nix::devour_flake::{DevourFlake, DevourFlakeInput, DevourFlakeOutput},
 };
 
 /// Represents a build step in the CI pipeline
@@ -48,12 +45,16 @@ impl BuildStep {
             format!("⚒️  Building subflake: {}", subflake.dir).bold()
         );
         let nix_args = subflake_extra_args(subflake, &run_cmd.steps_args.build_step_args);
-        let devour_input = DevourFlakeInput {
-            flake: url.sub_flake_url(subflake.dir.clone()),
-            systems: run_cmd.systems.clone().map(|l| l.0),
-        };
-        let output =
-            nix::devour_flake::devour_flake(nixcmd, verbose, devour_input, nix_args).await?;
+        let output = DevourFlake::call(
+            nixcmd,
+            verbose,
+            nix_args,
+            DevourFlakeInput {
+                flake: url.sub_flake_url(subflake.dir.clone()),
+                systems: run_cmd.systems.clone().map(|l| l.0),
+            },
+        )
+        .await?;
 
         let mut res = BuildStepResult {
             devour_flake_output: output,
@@ -79,7 +80,7 @@ fn subflake_extra_args(subflake: &SubflakeConfig, build_step_args: &BuildStepArg
     for (k, v) in &subflake.override_inputs {
         args.extend([
             "--override-input".to_string(),
-            format!("flake/{}", k),
+            k.to_string(),
             v.0.to_string(),
         ])
     }
@@ -109,12 +110,6 @@ pub struct BuildStepArgs {
 }
 
 impl BuildStepArgs {
-    /// Preprocess the arguments
-    pub fn preprocess(&mut self) {
-        // Adjust to devour_flake's expectations
-        devour_flake::transform_override_inputs(&mut self.extra_nix_build_args);
-    }
-
     /// Convert this type back to the user-facing command line arguments
     pub fn to_cli_args(&self) -> Vec<String> {
         let mut args = vec![];
@@ -139,7 +134,7 @@ impl BuildStepArgs {
 pub struct BuildStepResult {
     /// Output of devour-flake
     #[serde(flatten)]
-    pub devour_flake_output: devour_flake::DevourFlakeOutput,
+    pub devour_flake_output: DevourFlakeOutput,
 
     /// All dependencies of the out paths, if available
     #[serde(skip_serializing_if = "Option::is_none", rename = "allDeps")]
