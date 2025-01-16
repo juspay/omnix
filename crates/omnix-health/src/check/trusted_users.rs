@@ -15,7 +15,7 @@ impl Checkable for TrustedUsers {
         &self,
         nix_info: &nix_rs::info::NixInfo,
         _: Option<&nix_rs::flake::url::FlakeUrl>,
-    ) -> Vec<Check> {
+    ) -> Vec<(&'static str, Check)> {
         let result = if is_current_user_trusted(nix_info) {
             CheckResult::Green
         } else {
@@ -42,7 +42,8 @@ impl Checkable for TrustedUsers {
             result,
             required: true,
         };
-        vec![check]
+
+        vec![("trusted-users", check)]
     }
 }
 

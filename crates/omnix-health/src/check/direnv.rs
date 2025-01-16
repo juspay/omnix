@@ -22,14 +22,21 @@ impl Default for Direnv {
 }
 
 impl Checkable for Direnv {
-    fn check(&self, _nix_info: &info::NixInfo, flake_url: Option<&FlakeUrl>) -> Vec<Check> {
+    fn check(
+        &self,
+        _nix_info: &info::NixInfo,
+        flake_url: Option<&FlakeUrl>,
+    ) -> Vec<(&'static str, Check)> {
         let mut checks = vec![];
         if !self.enable {
             return checks;
         }
 
         let direnv_install_result = direnv::DirenvInstall::detect();
-        checks.push(install_check(&direnv_install_result, self.required));
+        checks.push((
+            "direnv-install-check",
+            install_check(&direnv_install_result, self.required),
+        ));
 
         match direnv_install_result.as_ref() {
             Err(_) => return checks,
@@ -40,7 +47,10 @@ impl Checkable for Direnv {
                     None => {}
                     Some(local_path) => {
                         if local_path.join(".envrc").exists() {
-                            checks.push(allowed_check(direnv_install, local_path, self.required));
+                            checks.push((
+                                "direnv-allowed-check",
+                                allowed_check(direnv_install, local_path, self.required),
+                            ));
                         }
                     }
                 }

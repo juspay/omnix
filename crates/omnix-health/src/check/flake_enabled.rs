@@ -13,7 +13,7 @@ impl Checkable for FlakeEnabled {
         &self,
         nix_info: &info::NixInfo,
         _: Option<&nix_rs::flake::url::FlakeUrl>,
-    ) -> Vec<Check> {
+    ) -> Vec<(&'static str, Check)> {
         let val = &nix_info.nix_config.experimental_features.value;
         let check = Check {
             title: "Flakes Enabled".to_string(),
@@ -30,6 +30,7 @@ impl Checkable for FlakeEnabled {
             },
             required: true,
         };
-        vec![check]
+
+        vec![("flake-enabled", check)]
     }
 }

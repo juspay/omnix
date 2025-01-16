@@ -5,6 +5,8 @@ pub mod check;
 pub mod report;
 pub mod traits;
 
+use std::collections::HashMap;
+
 use anyhow::Context;
 use check::shell::ShellCheck;
 use colored::Colorize;
@@ -75,23 +77,34 @@ impl NixHealth {
     #[instrument(skip_all)]
     pub fn run_all_checks(
         &self,
-        nix_info: &nix_rs::info::NixInfo,
+        nix_info: &NixInfo,
         flake_url: Option<FlakeUrl>,
-    ) -> Vec<traits::Check> {
+    ) -> Vec<(&'static str, Check)> {
         self.into_iter()
             .flat_map(|c| c.check(nix_info, flake_url.as_ref()))
             .collect()
     }
 
-    pub async fn print_report_returning_exit_code(checks: &[traits::Check]) -> anyhow::Result<i32> {
+    pub async fn print_report_returning_exit_code(
+        checks: &Vec<(&'static str, Check)>,
+        json_only: bool,
+    ) -> anyhow::Result<i32> {
         let mut res = AllChecksResult::new();
-        for check in checks {
-            check.tracing_log().await?;
+        for (_, check) in checks {
+            if !json_only {
+                check.tracing_log().await?;
+            }
             if !check.result.green() {
                 res.register_failure(check.required);
             };
         }
+
         let code = res.report();
+
+        if json_only {
+            let json: HashMap<_, _> = checks.iter().map(|(k, v)| (*k, v)).collect();
+            println!("{}", serde_json::to_string(&json)?);
+        }
         Ok(code)
     }
 
@@ -101,7 +114,9 @@ impl NixHealth {
 }
 
 /// Run all health checks, optionally using the given flake's configuration
-pub async fn run_all_checks_with(flake_url: Option<FlakeUrl>) -> anyhow::Result<Vec<Check>> {
+pub async fn run_all_checks_with(
+    flake_url: Option<FlakeUrl>,
+) -> anyhow::Result<Vec<(&'static str, Check)>> {
     let nix_info = NixInfo::get()
         .await
         .as_ref()

@@ -13,6 +13,10 @@ pub struct HealthCommand {
     /// a flake.nix)
     #[arg(long = "dump-schema")]
     pub dump_schema: bool,
+
+    /// Print output in JSON
+    #[arg(long)]
+    json: bool,
 }
 
 impl HealthCommand {
@@ -22,7 +26,7 @@ impl HealthCommand {
             return Ok(());
         }
         let checks = run_all_checks_with(self.flake_url.clone()).await?;
-        let exit_code = NixHealth::print_report_returning_exit_code(&checks).await?;
+        let exit_code = NixHealth::print_report_returning_exit_code(&checks, self.json).await?;
         if exit_code != 0 {
             std::process::exit(exit_code);
         }

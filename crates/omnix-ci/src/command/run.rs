@@ -198,7 +198,7 @@ pub async fn check_nix_version(cfg: &OmConfig, nix_info: &NixInfo) -> anyhow::Re
     let checks = omnix_health
         .nix_version
         .check(nix_info, Some(&cfg.flake_url));
-    let exit_code = NixHealth::print_report_returning_exit_code(&checks).await?;
+    let exit_code = NixHealth::print_report_returning_exit_code(&checks, false).await?;
 
     if exit_code != 0 {
         std::process::exit(exit_code);

@@ -29,7 +29,7 @@ impl Checkable for MinNixVersion {
         &self,
         nix_info: &info::NixInfo,
         _: Option<&nix_rs::flake::url::FlakeUrl>,
-    ) -> Vec<Check> {
+    ) -> Vec<(&'static str, Check)> {
         let val = &nix_info.nix_version;
         let check = Check {
             title: "Minimum Nix Version".to_string(),
@@ -44,6 +44,7 @@ impl Checkable for MinNixVersion {
             },
             required: true,
         };
-        vec![check]
+
+        vec![("nix-version", check)]
     }
 }

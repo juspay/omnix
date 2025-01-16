@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
+    hash::Hash,
     path::{Path, PathBuf},
 };
 
@@ -27,7 +28,7 @@ impl Checkable for ShellCheck {
         &self,
         _nix_info: &nix_rs::info::NixInfo,
         _flake: Option<&nix_rs::flake::url::FlakeUrl>,
-    ) -> Vec<Check> {
+    ) -> Vec<(&'static str, Check)> {
         if !self.enable {
             return vec![];
         }
@@ -76,7 +77,7 @@ impl Checkable for ShellCheck {
             required: self.required,
         };
 
-        vec![check]
+        vec![("shell", check)]
     }
 }
 
