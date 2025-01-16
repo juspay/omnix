@@ -181,7 +181,7 @@ Some real-world examples of how `om ci` is used with specific configurations:
     - Check that `flake.lock` is up to date, if applicable.
     - Build all flake outputs, using [devour-flake](https://github.com/srid/devour-flake)[^schema]
       - Then, print the built store paths to stdout
-    - Run `nix flake check`
+    - If the `flake-check` step is enabled ([example](https://github.com/juspay/omnix/pull/376/files)), run `nix flake check`
     - Run user defined [custom steps](#custom)
 
 [^schema]: Support for [flake-schemas](https://github.com/srid/devour-flake/pull/11) is planned
