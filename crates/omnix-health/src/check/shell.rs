@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::{
-    collections::{BTreeMap, HashMap},
+    collections::HashMap,
     hash::Hash,
     path::{Path, PathBuf},
 };
@@ -88,7 +88,7 @@ struct CurrentUserShellEnv {
     /// Current shell
     shell: Shell,
     /// *Absolute* paths to the dotfiles
-    dotfiles: BTreeMap<&'static str, PathBuf>,
+    dotfiles: HashMap<&'static str, PathBuf>,
 }
 
 impl CurrentUserShellEnv {
@@ -162,8 +162,8 @@ impl Shell {
     /// Get the currently existing dotfiles under $HOME
     ///
     /// Returned paths will be absolute (i.e., symlinks are resolved).
-    fn get_dotfiles(&self, home_dir: &Path) -> std::io::Result<BTreeMap<&'static str, PathBuf>> {
-        let mut paths = BTreeMap::new();
+    fn get_dotfiles(&self, home_dir: &Path) -> std::io::Result<HashMap<&'static str, PathBuf>> {
+        let mut paths = HashMap::new();
         for dotfile in self.dotfile_names() {
             match std::fs::canonicalize(home_dir.join(dotfile)) {
                 Ok(path) => {
