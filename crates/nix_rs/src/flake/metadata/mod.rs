@@ -49,6 +49,7 @@ impl FlakeMetadata {
     pub fn all_paths(&self) -> Vec<PathBuf> {
         let mut paths = vec![self.flake.clone()];
         paths.extend(self.inputs.iter().map(|i| i.path.clone()));
+        paths.sort();
         paths.dedup();
         paths
     }
