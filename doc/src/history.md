@@ -12,6 +12,7 @@
   - Display information in Markdown
   - Remove RAM/disk space checks, moving them to "information" section
   - Add shell check, to ensure its dotfiles are managed by Nix.
+  - Add `--json` that returns the health check results as JSON
 - `om ci`
   - Support for remote builds over SSH (via `--on` option)
   - Support for CI steps
