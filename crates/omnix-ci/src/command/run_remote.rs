@@ -168,11 +168,7 @@ fn nixpkgs_cmd(package: &str, cmd: &[&str]) -> Vec<String> {
 /// Return the locally cached [FlakeUrl] for the given flake url that points to same selected [ConfigRef].
 async fn cache_flake(nixcmd: &NixCmd, cfg: &OmConfig) -> anyhow::Result<(Vec<PathBuf>, FlakeUrl)> {
     let metadata = FlakeMetadata::from_nix(nixcmd, &cfg.flake_url).await?;
-    let mut paths = vec![];
-    // The flake itself
-    paths.push(metadata.flake.clone());
-    // Its inputs
-    paths.extend(metadata.inputs.values().cloned());
+    let paths = metadata.all_paths();
     let attr = cfg.reference.join(".");
     let mut local_flake_url = Into::<FlakeUrl>::into(metadata.flake.clone());
     if !attr.is_empty() {

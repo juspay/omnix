@@ -3,7 +3,7 @@ use super::{functions::FlakeFn, url::FlakeUrl};
 use crate::command::NixCmd;
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, path::PathBuf, path::Path};
+use std::{path::Path, path::PathBuf};
 
 /// Flake metadata
 pub struct FlakeMetadataFn;
@@ -41,7 +41,26 @@ pub struct FlakeMetadata {
     pub flake: PathBuf,
 
     /// Store path to each flake input
-    pub inputs: HashMap<String, PathBuf>,
+    pub inputs: Vec<FlakeInput>,
+}
+
+impl FlakeMetadata {
+    /// Returns all paths
+    pub fn all_paths(&self) -> Vec<PathBuf> {
+        let mut paths = vec![self.flake.clone()];
+        paths.extend(self.inputs.iter().map(|i| i.path.clone()));
+        paths.dedup();
+        paths
+    }
+}
+
+/// Flake input
+#[derive(Serialize, Deserialize, Debug)]
+pub struct FlakeInput {
+    /// Name
+    pub name: String,
+    /// Path
+    pub path: PathBuf,
 }
 
 impl FlakeMetadata {
