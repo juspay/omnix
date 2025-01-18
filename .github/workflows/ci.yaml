@@ -82,16 +82,6 @@ jobs:
           path: ${{ steps.omci.outputs.OMCIJSON_PATH }}
           if-no-files-found: error
 
-      # Upload static binary for the next job.
-      # TODO: This should ideally be in a separate workflow file, running parallel to the main job.
-      - name: "static-binary: Upload"
-        if: matrix.system != 'x86_64-darwin'
-        uses: actions/upload-artifact@v4
-        with:
-          name: om-${{ matrix.system }}
-          path: ${{ steps.omci.outputs.OMPACKAGE }}/bin/om
-          if-no-files-found: error
-
       # Push the Nix cache
       - name: Push to cachix
         env:
