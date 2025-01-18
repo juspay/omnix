@@ -5,11 +5,11 @@ use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 use std::{path::Path, path::PathBuf};
 
-/// Flake metadata
+/// Flake metadata computed in Nix.
 pub struct FlakeMetadataFn;
 
 lazy_static! {
-    /// devour flake URL
+    /// URL to our flake function
     static ref FLAKE_METADATA: FlakeUrl = {
         let path = env!("FLAKE_METADATA");
         Into::<FlakeUrl>::into(Path::new(path)).with_attr("default")
@@ -49,28 +49,19 @@ impl FlakeMetadata {
     pub fn get_inputs_paths(&self) -> Vec<PathBuf> {
         self.inputs.iter().map(|i| i.path.clone()).collect()
     }
-
-    /// Returns all paths
-    pub fn all_paths(&self) -> Vec<PathBuf> {
-        let mut paths = vec![self.flake.clone()];
-        paths.extend(self.get_inputs_paths());
-        paths.sort();
-        paths.dedup();
-        paths
-    }
 }
 
-/// Flake input
+/// A flake input
 #[derive(Serialize, Deserialize, Debug)]
 pub struct FlakeInput {
-    /// Name
+    /// Unique identifier
     pub name: String,
-    /// Path
+    /// Local path to the input
     pub path: PathBuf,
 }
 
 impl FlakeMetadata {
-    /// Runs `nix flake metadata --json` for a given flake url
+    /// Get the [FlakeMetadata] for the given flake
     pub async fn from_nix(
         cmd: &NixCmd,
         flake_url: &FlakeUrl,
