@@ -5,11 +5,29 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use url::Url;
 
-/// Nix Store URI
+/// Refers to a Nix store somewhere.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum StoreURI {
-    /// Remote SSH store
-    SSH(SSHStoreURI),
+    /// Nix store accessible over SSH.
+    SSH(SSHStoreURI, Opts),
+}
+
+/// User passed options for a store URI
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Opts {
+    /// Whether to copy all flake inputs recursively
+    ///
+    /// If disabled, we copy only the flake source itself. Enabling this option is useful when there are private Git inputs but the target machine does not have access to them.
+    #[serde(rename = "copy-inputs", default = "bool::default")]
+    pub copy_inputs: bool,
+
+    /// Whether to copy built outputs back to local store
+    #[serde(rename = "copy-outputs", default = "bool_true")]
+    pub copy_outputs: bool,
+}
+
+fn bool_true() -> bool {
+    true
 }
 
 /// Remote SSH store URI
@@ -33,6 +51,9 @@ pub enum StoreURIParseError {
     /// Missing host
     #[error("Missing host")]
     MissingHost,
+    /// Query string parse error
+    #[error(transparent)]
+    QueryParseError(#[from] serde_qs::Error),
 }
 
 impl StoreURI {
@@ -52,11 +73,20 @@ impl StoreURI {
                 } else {
                     None
                 };
-                let store_uri = SSHStoreURI { user, host };
-                Ok(StoreURI::SSH(store_uri))
+                let opts = serde_qs::from_str(url.query().unwrap_or(""))?;
+                let ssh_uri = SSHStoreURI { user, host };
+                let store_uri = StoreURI::SSH(ssh_uri, opts);
+                Ok(store_uri)
             }
             // Add future schemes here
             scheme => Err(StoreURIParseError::UnsupportedScheme(scheme.to_string())),
+        }
+    }
+
+    /// Get the options for this store URI
+    pub fn get_options(&self) -> &Opts {
+        match self {
+            StoreURI::SSH(_, opts) => opts,
         }
     }
 }
@@ -81,7 +111,8 @@ impl fmt::Display for SSHStoreURI {
 impl fmt::Display for StoreURI {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            StoreURI::SSH(uri) => {
+            StoreURI::SSH(uri, _opts) => {
+                // This should construct a valid store URI.
                 write!(f, "ssh://{}", uri)
             }
         }

@@ -156,6 +156,24 @@ You can define custom CI actions in your flake, which will be run as part of `om
 
 For a real-world example of custom steps, checkout [Omnix's configuration](https://github.com/juspay/omnix/blob/5322235ce4069e72fd5eb477353ee5d1f5100243/nix/modules/om.nix#L16-L33).
 
+## Remote CI {#remote}
+
+Omnix can run CI over SSH.
+
+```sh
+om ci run --on ssh://myname@myserver ~/code/myproject
+```
+
+What this does:
+
+1. Copy the flake source to the remote server, and run `om ci` there
+2. Copy the built paths back to local store
+
+### Options
+
+- Pass `copy-inputs=true` if you wish to copy all flake inputs recursively. This is useful if you have private Git inputs. For example, `om ci run --on "ssh://myname@myserver?copy-inputs=true" ~/code/myproject`
+- Omnix copies the results back to local store. You can disable this using `copy-outputs=true`. For example, `om ci run --on "ssh://myname@myserver?copy-outputs=false" ~/code/myproject`
+
 ## Examples
 
 Some real-world examples of how `om ci` is used with specific configurations:
