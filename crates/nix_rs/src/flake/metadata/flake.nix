@@ -14,7 +14,7 @@
             let
               inputsFor = prefix: f:
                 lib.concatLists (lib.mapAttrsToList
-                  (k: v: [{ name = "${prefix}__k"; path = v.outPath; }] ++
+                  (k: v: [{ name = "${prefix}__${k}"; path = v.outPath; }] ++
                     (lib.optionals (lib.hasAttr "inputs" v))
                       (inputsFor k v))
                   f.inputs);

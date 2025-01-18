@@ -30,18 +30,20 @@ pub async fn run_on_remote_store(
     cfg: &OmConfig,
     store_uri: &StoreURI,
 ) -> anyhow::Result<()> {
+    let StoreURI::SSH(ssh_uri, opts) = store_uri;
     tracing::info!(
         "{}",
-        format!("\n🛜 Running CI remotely on {}", store_uri).bold()
+        format!("\n🛜 Running CI remotely on {} ({:?})", ssh_uri, opts).bold()
     );
 
-    let (local_paths, local_flake_url) = cache_flake(nixcmd, cfg).await?;
+    let (flake_metadata, local_flake_url) = &cache_flake(nixcmd, cfg).await?;
     let omnix_source = PathBuf::from(OMNIX_SOURCE);
-    let StoreURI::SSH(ssh_uri) = store_uri;
 
-    let mut paths_to_push = local_paths.clone();
-    paths_to_push.push(omnix_source.clone());
+    let mut paths_to_push = vec![omnix_source, flake_metadata.flake.clone()];
 
+    if opts.copy_inputs {
+        paths_to_push.extend(flake_metadata.get_inputs_paths());
+    }
     // First, copy the flake and omnix source to the remote store, because we will be needing them when running over ssh.
     nix_copy_to_remote(nixcmd, store_uri, &paths_to_push).await?;
 
@@ -79,11 +81,19 @@ pub async fn run_on_remote_store(
         ));
 
         // Copy the results back to local store, including the out-link.
-        tracing::info!("{}", "📦 Copying results back to local store".bold());
-        nix_copy_from_remote(nixcmd, store_uri, &[&om_result_path]).await?;
-        let om_results: RunResult = serde_json::from_reader(File::open(&om_result_path)?)?;
-        // Copy all paths referenced in results file
-        nix_copy_from_remote(nixcmd, store_uri, om_results.all_out_paths()).await?;
+        if opts.copy_outputs {
+            tracing::info!("{}", "📦 Copying all results back to local store".bold());
+            nix_copy_from_remote(nixcmd, store_uri, &[&om_result_path]).await?;
+            let om_results: RunResult = serde_json::from_reader(File::open(&om_result_path)?)?;
+            // Copy all paths referenced in results file
+            nix_copy_from_remote(nixcmd, store_uri, om_results.all_out_paths()).await?;
+        } else {
+            tracing::info!(
+                "{}",
+                "📦 Copying only omnix result back to local store".bold()
+            );
+            nix_copy_from_remote(nixcmd, store_uri, &[&om_result_path]).await?;
+        }
 
         // Write the local out-link
         let nix_store = NixStoreCmd {};
@@ -166,15 +176,14 @@ fn nixpkgs_cmd(package: &str, cmd: &[&str]) -> Vec<String> {
 }
 
 /// Return the locally cached [FlakeUrl] for the given flake url that points to same selected [ConfigRef].
-async fn cache_flake(nixcmd: &NixCmd, cfg: &OmConfig) -> anyhow::Result<(Vec<PathBuf>, FlakeUrl)> {
+async fn cache_flake(nixcmd: &NixCmd, cfg: &OmConfig) -> anyhow::Result<(FlakeMetadata, FlakeUrl)> {
     let metadata = FlakeMetadata::from_nix(nixcmd, &cfg.flake_url).await?;
-    let paths = metadata.all_paths();
     let attr = cfg.reference.join(".");
     let mut local_flake_url = Into::<FlakeUrl>::into(metadata.flake.clone());
     if !attr.is_empty() {
         local_flake_url = local_flake_url.with_attr(&attr);
     }
-    Ok((paths, local_flake_url))
+    Ok((metadata, local_flake_url))
 }
 
 /// Construct a `nix run ...` based CLI that runs Omnix using given arguments.
