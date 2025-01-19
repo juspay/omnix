@@ -33,7 +33,7 @@ pub struct Steps {
     pub flake_check_step: FlakeCheckStep,
 
     /// Custom steps
-    #[serde(rename = "custom")]
+    #[serde(default, rename = "custom")]
     pub custom_steps: CustomSteps,
 }
 
