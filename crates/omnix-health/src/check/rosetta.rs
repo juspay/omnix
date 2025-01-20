@@ -39,7 +39,9 @@ impl Checkable for Rosetta {
                 result: if emulation {
                     CheckResult::Red {
                     msg: "Rosetta emulation will slow down Nix builds".to_string(),
-                    suggestion: "Disable Rosetta for your terminal (Right-click on your terminal icon in `Finder`, choose `Get Info` and un-check `Open using Rosetta`).<br> Uninstall nix: <https://nixos.asia/en/gotchas/macos-upgrade>. And re-install for `aarch64-darwin`: https://nixos.asia/en/install".to_string(),
+                    // NOTE: This check assumes that `omnix` was installed via `nix`, thus assuming `nix` is also translated using Rosetta.
+                    // Hence, the suggestion to re-install nix.
+                    suggestion: "Disable Rosetta for your terminal (Right-click on your terminal icon in `Finder`, choose `Get Info` and un-check `Open using Rosetta`).\n Uninstall nix: <https://nixos.asia/en/gotchas/macos-upgrade>. And re-install for `aarch64-darwin`: https://nixos.asia/en/install".to_string(),
                 }
                 } else {
                     CheckResult::Green
