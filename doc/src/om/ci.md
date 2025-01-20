@@ -172,7 +172,7 @@ What this does:
 ### Options
 
 - Pass `copy-inputs=true` if you wish to copy all flake inputs recursively. This is useful if you have private Git inputs. For example, `om ci run --on "ssh://myname@myserver?copy-inputs=true" ~/code/myproject`
-- Omnix copies the results back to local store. You can disable this using `copy-outputs=true`. For example, `om ci run --on "ssh://myname@myserver?copy-outputs=false" ~/code/myproject`
+- Omnix copies the results back to local store. You can disable this using `copy-outputs=false`. For example, `om ci run --on "ssh://myname@myserver?copy-outputs=false" ~/code/myproject`
 
 ## Examples
 
