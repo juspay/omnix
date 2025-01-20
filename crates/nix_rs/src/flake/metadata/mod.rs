@@ -62,7 +62,9 @@ pub struct FlakeInput {
 
 impl FlakeMetadata {
     /// Get the [FlakeMetadata] for the given flake
-    pub async fn from_nix(
+    ///
+    /// NOTE: This will be `O(n)` where `n` is the count of all flake inputs (transitive). Therefore, this function will be expensive when used in large flakes.
+    pub async fn recursive_evaluate(
         cmd: &NixCmd,
         flake_url: &FlakeUrl,
     ) -> Result<(PathBuf, FlakeMetadata), crate::flake::functions::Error> {

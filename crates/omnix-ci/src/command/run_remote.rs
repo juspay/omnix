@@ -182,7 +182,7 @@ async fn cache_flake(
     nixcmd: &NixCmd,
     cfg: &OmConfig,
 ) -> anyhow::Result<((PathBuf, FlakeMetadata), FlakeUrl)> {
-    let metadata = FlakeMetadata::from_nix(nixcmd, &cfg.flake_url).await?;
+    let metadata = FlakeMetadata::recursive_evaluate(nixcmd, &cfg.flake_url).await?;
     let attr = cfg.reference.join(".");
     let mut local_flake_url = Into::<FlakeUrl>::into(metadata.1.flake.clone());
     if !attr.is_empty() {
