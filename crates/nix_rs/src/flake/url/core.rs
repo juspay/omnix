@@ -57,7 +57,7 @@ impl FlakeUrl {
         }
     }
 
-    /// Return the flake as local path. If the flake is a remote reference, catch it to local store first using `nix flake metadata`
+    /// Return the flake as local path. If the flake is a remote reference, catch it to local Nix store first.
     pub async fn as_local_path_or_fetch(
         &self,
         cmd: &NixCmd,
@@ -69,7 +69,7 @@ impl FlakeUrl {
                 cmd,
                 FlakeMetadataInput {
                     flake: self.clone(),
-                    include_inputs: false,
+                    include_inputs: false, // Don't care about inputs
                 },
             )
             .await?;
