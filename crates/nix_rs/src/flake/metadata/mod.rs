@@ -47,6 +47,8 @@ pub struct FlakeMetadata {
     pub flake: PathBuf,
 
     /// Store path to each flake input
+    ///
+    /// Only available if `FlakeInput::include_inputs` is enabled.
     pub inputs: Option<Vec<FlakeInput>>,
 }
 
@@ -61,13 +63,10 @@ pub struct FlakeInput {
 
 impl FlakeMetadata {
     /// Get the [FlakeMetadata] for the given flake
-    ///
-    /// NOTE: This will be `O(n)` where `n` is the count of all flake inputs (transitive). Therefore, this function will be expensive when used in large flakes.
-    pub async fn recursive_evaluate(
+    pub async fn from_nix(
         cmd: &NixCmd,
         input: FlakeMetadataInput,
     ) -> Result<(PathBuf, FlakeMetadata), crate::flake::functions::Error> {
-        let (store_path, v) = FlakeMetadataFn::call(cmd, false, vec![], input).await?;
-        Ok((store_path, v))
+        FlakeMetadataFn::call(cmd, false, vec![], input).await
     }
 }

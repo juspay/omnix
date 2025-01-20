@@ -4,10 +4,28 @@
 
 use super::url::FlakeUrl;
 use crate::command::NixCmd;
+use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::{ffi::OsString, os::unix::ffi::OsStringExt, path::PathBuf, process::Stdio};
+use std::{
+    env,
+    ffi::OsString,
+    os::unix::ffi::OsStringExt,
+    path::{Path, PathBuf},
+    process::Stdio,
+};
 use tokio::io::{AsyncBufReadExt, BufReader};
+
+lazy_static! {
+    static ref TRUE_FLAKE: FlakeUrl = {
+        let path = env!("TRUE_FLAKE");
+        Into::<FlakeUrl>::into(Path::new(path))
+    };
+    static ref FALSE_FLAKE: FlakeUrl = {
+        let path = env!("FALSE_FLAKE");
+        Into::<FlakeUrl>::into(Path::new(path))
+    };
+}
 
 /// Trait for flake functions
 pub trait FlakeFn {
@@ -136,9 +154,9 @@ where
             Value::Bool(b) => Some((
                 k,
                 if b {
-                    "github:boolean-option/true"
+                    TRUE_FLAKE.to_string()
                 } else {
-                    "github:boolean-option/false"
+                    FALSE_FLAKE.to_string()
                 }
                 .to_string(),
             )),

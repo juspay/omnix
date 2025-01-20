@@ -65,7 +65,7 @@ impl FlakeUrl {
         if let Some(path) = self.as_local_path() {
             Ok(path.to_path_buf())
         } else {
-            let (path, _) = FlakeMetadata::recursive_evaluate(
+            let (path, _) = FlakeMetadata::from_nix(
                 cmd,
                 FlakeMetadataInput {
                     flake: self.clone(),

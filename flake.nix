@@ -22,6 +22,8 @@
     nix-systems-aarch64-darwin.url = "github:nix-systems/aarch64-darwin";
     nix-systems-x86_64-linux.url = "github:nix-systems/x86_64-linux";
     nix-systems-aarch64-linux.url = "github:nix-systems/aarch64-linux";
+    true.url = "github:boolean-option/true";
+    false.url = "github:boolean-option/false";
 
     inspect.url = "github:juspay/inspect/inventory-for-systems";
     inspect.flake = false;

@@ -39,6 +39,8 @@ in
         DEFAULT_FLAKE_SCHEMAS
         FLAKE_METADATA
         INSPECT_FLAKE
+        TRUE_FLAKE
+        FALSE_FLAKE
         NIX_SYSTEMS
         ;
       inherit (rust-project.crates."omnix-ci".crane.args)
