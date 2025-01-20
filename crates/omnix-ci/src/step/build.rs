@@ -54,7 +54,8 @@ impl BuildStep {
                 systems: run_cmd.systems.clone().map(|l| l.0),
             },
         )
-        .await?;
+        .await?
+        .1;
 
         let mut res = BuildStepResult {
             devour_flake_output: output,

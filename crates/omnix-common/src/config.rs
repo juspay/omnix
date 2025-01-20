@@ -41,6 +41,7 @@ impl OmConfig {
         } else {
             FlakeMetadata::from_nix(NixCmd::get().await, &flake_url.without_attr())
                 .await?
+                .1
                 .flake
         }
         .join("om.yaml");

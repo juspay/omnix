@@ -65,8 +65,8 @@ impl FlakeMetadata {
     pub async fn from_nix(
         cmd: &NixCmd,
         flake_url: &FlakeUrl,
-    ) -> Result<FlakeMetadata, crate::flake::functions::Error> {
-        let v = FlakeMetadataFn::call(
+    ) -> Result<(PathBuf, FlakeMetadata), crate::flake::functions::Error> {
+        let (store_path, v) = FlakeMetadataFn::call(
             cmd,
             false,
             vec![],
@@ -75,6 +75,6 @@ impl FlakeMetadata {
             },
         )
         .await?;
-        Ok(v)
+        Ok((store_path, v))
     }
 }

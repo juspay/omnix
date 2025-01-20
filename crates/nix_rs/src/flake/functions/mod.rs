@@ -34,7 +34,7 @@ pub trait FlakeFn {
         extra_args: Vec<String>,
         // The input arguments to the flake function.
         input: Self::Input,
-    ) -> impl std::future::Future<Output = Result<Self::Output, Error>> + Send
+    ) -> impl std::future::Future<Output = Result<(PathBuf, Self::Output), Error>> + Send
     where
         Self::Input: Serialize + Send + Sync,
         Self::Output: Sync + for<'de> Deserialize<'de>,
@@ -82,11 +82,12 @@ pub trait FlakeFn {
             });
             let output = output_fut.wait_with_output().await?;
             if output.status.success() {
-                let drv_out =
+                let store_path =
                     PathBuf::from(OsString::from_vec(output.stdout.trim_ascii_end().into()));
-                let mut v: Self::Output = serde_json::from_reader(std::fs::File::open(drv_out)?)?;
+                let mut v: Self::Output =
+                    serde_json::from_reader(std::fs::File::open(&store_path)?)?;
                 Self::init(&mut v);
-                Ok(v)
+                Ok((store_path, v))
             } else {
                 Err(Error::NixBuildFailed(output.status.code()))
             }
