@@ -95,59 +95,14 @@ pub enum OS {
     MacOS {
         /// Using nix-darwin
         nix_darwin: bool,
-        /// Architecture
-        arch: MacOSArch,
+        arch: Option<String>,
+        /// https://developer.apple.com/documentation/apple-silicon/about-the-rosetta-translation-environment
+        proc_translated: bool,
     },
     /// On NixOS
     NixOS,
     /// Nix is individually installed on Linux or macOS
     Other(os_info::Type),
-}
-
-/// macOS CPU architecture
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub enum MacOSArch {
-    /// Apple Silicon
-    Arm64(AppleEmulation),
-    /// Other architecture
-    Other(Option<String>),
-}
-
-/// Apple emulation mode
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub enum AppleEmulation {
-    /// Not running on Apple Silicon
-    None,
-    /// Running under Rosetta
-    Rosetta,
-}
-
-impl AppleEmulation {
-    /// Detect Apple emulation mode for current process
-    pub fn new() -> Self {
-        use is_proc_translated::is_proc_translated;
-        if is_proc_translated() {
-            AppleEmulation::Rosetta
-        } else {
-            AppleEmulation::None
-        }
-    }
-}
-
-impl Default for AppleEmulation {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl MacOSArch {
-    /// Create a [MacOSArch] from an OS architecture string
-    pub fn from(os_arch: Option<&str>) -> MacOSArch {
-        match os_arch {
-            Some("arm64") => MacOSArch::Arm64(AppleEmulation::new()),
-            other => MacOSArch::Other(other.map(|s| s.to_string())),
-        }
-    }
 }
 
 // The [Display] instance affects how [OS] is displayed to the app user
@@ -157,6 +112,7 @@ impl Display for OS {
             OS::MacOS {
                 nix_darwin,
                 arch: _,
+                proc_translated: _,
             } => {
                 if *nix_darwin {
                     write!(f, "macOS (nix-darwin)")
@@ -175,7 +131,7 @@ impl OS {
     pub async fn detect() -> Self {
         let os_info = tokio::task::spawn_blocking(os_info::get).await.unwrap();
         let os_type = os_info.os_type();
-        let arch = MacOSArch::from(os_info.architecture());
+        let arch = os_info.architecture();
         async fn is_symlink(file_path: &str) -> std::io::Result<bool> {
             let metadata = tokio::fs::symlink_metadata(file_path).await?;
             Ok(metadata.file_type().is_symlink())
@@ -185,7 +141,11 @@ impl OS {
                 // To detect that we are on NixDarwin, we check if /etc/nix/nix.conf
                 // is a symlink (which nix-darwin manages like NixOS does)
                 let nix_darwin = is_symlink("/etc/nix/nix.conf").await.unwrap_or(false);
-                OS::MacOS { nix_darwin, arch }
+                OS::MacOS {
+                    nix_darwin,
+                    arch: arch.map(|s| s.to_string()),
+                    proc_translated: is_proc_translated::is_proc_translated(),
+                }
             }
             os_info::Type::NixOS => OS::NixOS,
             _ => OS::Other(os_type),
@@ -199,6 +159,7 @@ impl OS {
             OS::MacOS {
                 nix_darwin,
                 arch: _,
+                proc_translated: _,
             } if *nix_darwin => Some("nix-darwin configuration".to_string()),
             OS::NixOS => Some("nixos configuration".to_string()),
             _ => None,

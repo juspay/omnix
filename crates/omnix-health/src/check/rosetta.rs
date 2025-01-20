@@ -52,14 +52,14 @@ impl Checkable for Rosetta {
     }
 }
 
-/// Return [AppleEmulation]. Return None if not an ARM mac.
-
-fn get_apple_emulation(system: &OS) -> Option<AppleEmulation> {
+/// Return [true] if the current binary is translated using Rosetta. Return None if not an ARM mac.
+fn get_apple_emulation(system: &OS) -> Option<bool> {
     match system {
         OS::MacOS {
             nix_darwin: _,
-            arch: MacOSArch::Arm64(apple_emulation),
-        } => Some(apple_emulation.clone()),
+            arch: _,
+            proc_translated: is_proc_translated,
+        } => Some(is_proc_translated.clone()),
         _ => None,
     }
 }
