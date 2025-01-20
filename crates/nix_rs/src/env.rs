@@ -1,14 +1,17 @@
 //! Information about the environment in which Nix will run
 // TODO: Make this a package, and split (alongn with detsys_installer.rs)
-use std::{fmt::Display, path::{Path, PathBuf}};
+use std::{
+    fmt::Display,
+    path::{Path, PathBuf},
+};
 
 use bytesize::ByteSize;
 use os_info;
 use serde::{Deserialize, Serialize};
 use std::process::Command;
 use tracing::instrument;
-use whoami;
 use which::which;
+use whoami;
 
 /// The environment in which Nix operates
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -226,7 +229,9 @@ impl Display for NixInstaller {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             NixInstaller::DetSys(installer) => write!(f, "{}", installer),
-            NixInstaller::Other(nix_path) => write!(f, "Unknown installer for {}", nix_path.display()),
+            NixInstaller::Other(nix_path) => {
+                write!(f, "Unknown installer for {}", nix_path.display())
+            }
         }
     }
 }
