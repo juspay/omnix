@@ -170,7 +170,7 @@ where
     // First, ensure that flake is locally available.
     let local_path = match url.as_local_path() {
         Some(local_path) => local_path.to_path_buf(),
-        None => FlakeMetadata::from_nix(nixcmd, url).await?.flake,
+        None => FlakeMetadata::from_nix(nixcmd, url).await?.1.flake,
     };
 
     // Then, ensure that it is writeable by the user

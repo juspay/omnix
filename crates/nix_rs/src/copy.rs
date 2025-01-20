@@ -22,7 +22,7 @@ pub struct NixCopyOptions {
 ///
 /// * `cmd` - The `nix` command
 /// * `host` - The remote host to copy to
-/// * `paths` - The (locally available) store paths to copy
+/// * `paths` - The paths to copy. Limit this to be within the limit of Unix process arguments size limit.
 pub async fn nix_copy<I, P>(
     cmd: &NixCmd,
     options: NixCopyOptions,

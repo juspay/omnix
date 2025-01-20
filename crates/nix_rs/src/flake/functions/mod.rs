@@ -23,18 +23,21 @@ pub trait FlakeFn {
     /// Initialize the type after reading from Nix build
     fn init(_out: &mut Self::Output) {}
 
-    /// Call the flake function, taking `Self::Input`, returning `Self::Output`
+    /// Call the flake function, taking `Self::Input`, returning `Self::Output` along with the built store path output as `PathBuf`.
+    ///
+    /// The store path output can be useful for further processing, if you need it with its entire closure (for e.g., to `nix copy` everything in `Self::Output` at once).
+    ///
+    /// Arguments:
+    /// - `nixcmd`: The Nix command to use
+    /// - `verbose`: Whether to avoid the --override-input noise suppression.
+    /// - `extra_args`: Extra arguments to pass to `nix build`. --override-input is treated specially, to account for the flake input named `flake` (as defined in `Self::Input`)
+    /// - `input`: The input arguments to the flake function.
     fn call(
         nixcmd: &NixCmd,
-        // Whther to avoid the --override-input noise suppression.
         verbose: bool,
-        // Extra arguments to pass to `nix build`
-        //
-        // --override-input is treated specially, to account for the flake input named `flake` (as defined in `Self::Input`)
         extra_args: Vec<String>,
-        // The input arguments to the flake function.
         input: Self::Input,
-    ) -> impl std::future::Future<Output = Result<Self::Output, Error>> + Send
+    ) -> impl std::future::Future<Output = Result<(PathBuf, Self::Output), Error>> + Send
     where
         Self::Input: Serialize + Send + Sync,
         Self::Output: Sync + for<'de> Deserialize<'de>,
@@ -82,11 +85,12 @@ pub trait FlakeFn {
             });
             let output = output_fut.wait_with_output().await?;
             if output.status.success() {
-                let drv_out =
+                let store_path =
                     PathBuf::from(OsString::from_vec(output.stdout.trim_ascii_end().into()));
-                let mut v: Self::Output = serde_json::from_reader(std::fs::File::open(drv_out)?)?;
+                let mut v: Self::Output =
+                    serde_json::from_reader(std::fs::File::open(&store_path)?)?;
                 Self::init(&mut v);
-                Ok(v)
+                Ok((store_path, v))
             } else {
                 Err(Error::NixBuildFailed(output.status.code()))
             }
