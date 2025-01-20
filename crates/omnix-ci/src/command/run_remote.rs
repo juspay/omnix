@@ -39,7 +39,8 @@ pub async fn run_on_remote_store(
         format!("\n🛜 Running CI remotely on {} ({:?})", ssh_uri, opts).bold()
     );
 
-    let ((flake_closure, flake_metadata), local_flake_url) = &cache_flake(nixcmd, cfg).await?;
+    let ((flake_closure, flake_metadata), local_flake_url) =
+        &cache_flake(nixcmd, cfg, opts.copy_inputs).await?;
     let omnix_source = PathBuf::from(OMNIX_SOURCE);
 
     let mut paths_to_push = vec![omnix_source];
@@ -184,12 +185,13 @@ fn nixpkgs_cmd(package: &str, cmd: &[&str]) -> Vec<String> {
 async fn cache_flake(
     nixcmd: &NixCmd,
     cfg: &OmConfig,
+    include_inputs: bool,
 ) -> anyhow::Result<((PathBuf, FlakeMetadata), FlakeUrl)> {
     let metadata = FlakeMetadata::from_nix(
         nixcmd,
         FlakeMetadataInput {
             flake: cfg.flake_url.clone(),
-            include_inputs: true,
+            include_inputs,
         },
     )
     .await?;
