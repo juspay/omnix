@@ -10,7 +10,10 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 
-use crate::command::{NixCmd, NixCmdError};
+use crate::{
+    command::NixCmd,
+    flake::metadata::{FlakeMetadata, FlakeMetadataInput},
+};
 
 use super::attr::FlakeAttr;
 
@@ -55,18 +58,22 @@ impl FlakeUrl {
     }
 
     /// Return the flake as local path. If the flake is a remote reference, catch it to local store first using `nix flake metadata`
-    pub async fn as_local_path_or_fetch(&self, cmd: &NixCmd) -> Result<PathBuf, NixCmdError> {
+    pub async fn as_local_path_or_fetch(
+        &self,
+        cmd: &NixCmd,
+    ) -> Result<PathBuf, crate::flake::functions::Error> {
         if let Some(path) = self.as_local_path() {
             Ok(path.to_path_buf())
         } else {
-            #[derive(Deserialize)]
-            struct Metadata {
-                path: PathBuf,
-            }
-            let v = cmd
-                .run_with_args_expecting_json::<Metadata>(&["flake", "metadata", "--json", self])
-                .await?;
-            Ok(v.path)
+            let (path, _) = FlakeMetadata::recursive_evaluate(
+                cmd,
+                FlakeMetadataInput {
+                    flake: self.clone(),
+                    include_inputs: false,
+                },
+            )
+            .await?;
+            Ok(path)
         }
     }
 
