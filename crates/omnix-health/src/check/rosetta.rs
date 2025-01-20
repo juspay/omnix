@@ -1,7 +1,4 @@
-use nix_rs::{
-    env::OS,
-    info,
-};
+use nix_rs::{env::OS, info};
 use serde::{Deserialize, Serialize};
 
 use crate::traits::{Check, CheckResult, Checkable};
