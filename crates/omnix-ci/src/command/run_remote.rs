@@ -39,7 +39,7 @@ pub async fn run_on_remote_store(
     let ((flake_closure, flake_metadata), local_flake_url) = &cache_flake(nixcmd, cfg).await?;
     let omnix_source = PathBuf::from(OMNIX_SOURCE);
 
-    let mut paths_to_push = vec![omnix_source, flake_closure.clone()];
+    let mut paths_to_push = vec![omnix_source];
 
     if opts.copy_inputs {
         paths_to_push.push(flake_closure.clone());
