@@ -12,7 +12,7 @@ lazy_static! {
     /// URL to our flake function
     static ref FLAKE_METADATA: FlakeUrl = {
         let path = env!("FLAKE_METADATA");
-        Into::<FlakeUrl>::into(Path::new(path)).with_attr("all")
+        Into::<FlakeUrl>::into(Path::new(path)).with_attr("default")
     };
 }
 

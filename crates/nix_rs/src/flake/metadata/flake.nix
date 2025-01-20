@@ -11,10 +11,11 @@
       perSystem = { pkgs, lib, ... }:
         let
           include-inputs = inputs.include-inputs.value;
+          fn = if include-inputs then "nix_rs-metadata-full.json" else "nix_rs-metadata-flakeonly.json";
         in
         {
           packages = {
-            all = pkgs.writeText "nix_rs-metadata.json" (builtins.toJSON {
+            default = pkgs.writeText fn (builtins.toJSON {
               # *All* nested inputs are flattened into a single list of inputs.
               inputs = if !include-inputs then null else
               let
