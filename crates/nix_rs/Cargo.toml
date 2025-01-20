@@ -34,6 +34,7 @@ clap = { workspace = true, optional = true }
 nonempty = { workspace = true }
 whoami = { workspace = true }
 lazy_static = { workspace = true }
+which = { workspace = true }
 
 [features]
 clap = ["dep:clap"]
