@@ -1,5 +1,5 @@
 use nix_rs::{
-    env::{AppleEmulation, MacOSArch, OS},
+    env::OS,
     info,
 };
 use serde::{Deserialize, Serialize};
@@ -36,10 +36,10 @@ impl Checkable for Rosetta {
             let check = Check {
                 title: "Rosetta Not Active".to_string(),
                 info: format!("apple emulation = {:?}", emulation),
-                result: if emulation == AppleEmulation::Rosetta {
+                result: if emulation {
                     CheckResult::Red {
                     msg: "Rosetta emulation will slow down Nix builds".to_string(),
-                    suggestion: "Remove rosetta, see the comment by @hruan here: https://developer.apple.com/forums/thread/669486".to_string(),
+                    suggestion: "Disable Rosetta for your terminal (Right-click on your terminal icon in `Finder`, choose `Get Info` and un-check `Open using Rosetta`).<br> Uninstall nix: <https://nixos.asia/en/gotchas/macos-upgrade>. And re-install for `aarch64-darwin`: https://nixos.asia/en/install".to_string(),
                 }
                 } else {
                     CheckResult::Green

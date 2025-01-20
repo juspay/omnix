@@ -95,6 +95,7 @@ pub enum OS {
     MacOS {
         /// Using nix-darwin
         nix_darwin: bool,
+        /// Architecture
         arch: Option<String>,
         /// https://developer.apple.com/documentation/apple-silicon/about-the-rosetta-translation-environment
         proc_translated: bool,
