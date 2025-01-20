@@ -80,7 +80,7 @@ impl RunCommand {
         }
     }
 
-    /// Override the flake_ref and out_link for building locally.
+    /// Override the `flake_ref` and `out_link`` for building locally.
     pub fn local_with(&self, flake_ref: FlakeRef, out_link: Option<PathBuf>) -> Self {
         let mut new = self.clone();
         new.on = None; // Disable remote building
