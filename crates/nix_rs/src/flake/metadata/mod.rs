@@ -30,6 +30,12 @@ impl FlakeFn for FlakeMetadataFn {
 pub struct FlakeMetadataInput {
     /// The flake to operate on
     pub flake: FlakeUrl,
+
+    /// Included flake inputs transitively in the result
+    ///
+    /// NOTE: This makes evaluation more expensive.
+    #[serde(rename = "include-inputs")]
+    pub include_inputs: bool,
 }
 
 /// Flake metadata
@@ -41,14 +47,7 @@ pub struct FlakeMetadata {
     pub flake: PathBuf,
 
     /// Store path to each flake input
-    pub inputs: Vec<FlakeInput>,
-}
-
-impl FlakeMetadata {
-    /// Get all inputs
-    pub fn get_inputs_paths(&self) -> Vec<PathBuf> {
-        self.inputs.iter().map(|i| i.path.clone()).collect()
-    }
+    pub inputs: Option<Vec<FlakeInput>>,
 }
 
 /// A flake input
@@ -66,17 +65,9 @@ impl FlakeMetadata {
     /// NOTE: This will be `O(n)` where `n` is the count of all flake inputs (transitive). Therefore, this function will be expensive when used in large flakes.
     pub async fn recursive_evaluate(
         cmd: &NixCmd,
-        flake_url: &FlakeUrl,
+        input: FlakeMetadataInput,
     ) -> Result<(PathBuf, FlakeMetadata), crate::flake::functions::Error> {
-        let (store_path, v) = FlakeMetadataFn::call(
-            cmd,
-            false,
-            vec![],
-            FlakeMetadataInput {
-                flake: flake_url.clone(),
-            },
-        )
-        .await?;
+        let (store_path, v) = FlakeMetadataFn::call(cmd, false, vec![], input).await?;
         Ok((store_path, v))
     }
 }

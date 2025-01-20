@@ -4,7 +4,10 @@ use colored::Colorize;
 use nix_rs::{
     command::{CommandError, NixCmd},
     copy::{nix_copy, NixCopyOptions},
-    flake::{metadata::FlakeMetadata, url::FlakeUrl},
+    flake::{
+        metadata::{FlakeMetadata, FlakeMetadataInput},
+        url::FlakeUrl,
+    },
     store::{command::NixStoreCmd, path::StorePath, uri::StoreURI},
 };
 use omnix_common::config::OmConfig;
@@ -182,7 +185,14 @@ async fn cache_flake(
     nixcmd: &NixCmd,
     cfg: &OmConfig,
 ) -> anyhow::Result<((PathBuf, FlakeMetadata), FlakeUrl)> {
-    let metadata = FlakeMetadata::recursive_evaluate(nixcmd, &cfg.flake_url).await?;
+    let metadata = FlakeMetadata::recursive_evaluate(
+        nixcmd,
+        FlakeMetadataInput {
+            flake: cfg.flake_url.clone(),
+            include_inputs: true,
+        },
+    )
+    .await?;
     let attr = cfg.reference.join(".");
     let mut local_flake_url = Into::<FlakeUrl>::into(metadata.1.flake.clone());
     if !attr.is_empty() {

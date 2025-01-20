@@ -5,6 +5,7 @@
 use super::url::FlakeUrl;
 use crate::command::NixCmd;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use std::{ffi::OsString, os::unix::ffi::OsStringExt, path::PathBuf, process::Stdio};
 use tokio::io::{AsyncBufReadExt, BufReader};
 
@@ -130,7 +131,19 @@ where
         .clone();
 
     map.into_iter()
-        .filter_map(|(k, v)| v.as_str().map(|v| (k, v.to_string())))
+        .filter_map(|(k, v)| match v {
+            Value::String(s) => Some((k, s.to_string())),
+            Value::Bool(b) => Some((
+                k,
+                if b {
+                    "github:boolean-option/true"
+                } else {
+                    "github:boolean-option/false"
+                }
+                .to_string(),
+            )),
+            _ => None,
+        })
         .collect()
 }
 
