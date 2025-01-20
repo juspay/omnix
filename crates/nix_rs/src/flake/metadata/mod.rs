@@ -12,7 +12,7 @@ lazy_static! {
     /// URL to our flake function
     static ref FLAKE_METADATA: FlakeUrl = {
         let path = env!("FLAKE_METADATA");
-        Into::<FlakeUrl>::into(Path::new(path)).with_attr("all")
+        Into::<FlakeUrl>::into(Path::new(path)).with_attr("default")
     };
 }
 
@@ -30,6 +30,12 @@ impl FlakeFn for FlakeMetadataFn {
 pub struct FlakeMetadataInput {
     /// The flake to operate on
     pub flake: FlakeUrl,
+
+    /// Included flake inputs transitively in the result
+    ///
+    /// NOTE: This makes evaluation more expensive.
+    #[serde(rename = "include-inputs")]
+    pub include_inputs: bool,
 }
 
 /// Flake metadata
@@ -41,14 +47,9 @@ pub struct FlakeMetadata {
     pub flake: PathBuf,
 
     /// Store path to each flake input
-    pub inputs: Vec<FlakeInput>,
-}
-
-impl FlakeMetadata {
-    /// Get all inputs
-    pub fn get_inputs_paths(&self) -> Vec<PathBuf> {
-        self.inputs.iter().map(|i| i.path.clone()).collect()
-    }
+    ///
+    /// Only available if `FlakeInput::include_inputs` is enabled.
+    pub inputs: Option<Vec<FlakeInput>>,
 }
 
 /// A flake input
@@ -64,17 +65,8 @@ impl FlakeMetadata {
     /// Get the [FlakeMetadata] for the given flake
     pub async fn from_nix(
         cmd: &NixCmd,
-        flake_url: &FlakeUrl,
+        input: FlakeMetadataInput,
     ) -> Result<(PathBuf, FlakeMetadata), crate::flake::functions::Error> {
-        let (store_path, v) = FlakeMetadataFn::call(
-            cmd,
-            false,
-            vec![],
-            FlakeMetadataInput {
-                flake: flake_url.clone(),
-            },
-        )
-        .await?;
-        Ok((store_path, v))
+        FlakeMetadataFn::call(cmd, false, vec![], input).await
     }
 }

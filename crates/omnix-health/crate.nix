@@ -22,10 +22,12 @@ in
         DEFAULT_FLAKE_SCHEMAS
         FLAKE_METADATA
         INSPECT_FLAKE
+        TRUE_FLAKE
+        FALSE_FLAKE
         NIX_SYSTEMS
         ;
       CACHIX_BIN = pkgs.cachix + /bin/cachix;
-      nativeBuildInputs = with pkgs; [
+      nativeBuildInputs = [
         # nix # Tests need nix cli
       ];
     } // lib.optionalAttrs pkgs.stdenv.isLinux {

@@ -20,6 +20,8 @@ in
         DEFAULT_FLAKE_SCHEMAS
         FLAKE_METADATA
         INSPECT_FLAKE
+        TRUE_FLAKE
+        FALSE_FLAKE
         OMNIX_SOURCE
         OM_INIT_REGISTRY
         CACHIX_BIN

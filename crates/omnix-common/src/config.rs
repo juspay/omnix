@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 
 use nix_rs::{
     command::NixCmd,
-    flake::{command::FlakeOptions, eval::nix_eval_maybe, metadata::FlakeMetadata, url::FlakeUrl},
+    flake::{command::FlakeOptions, eval::nix_eval_maybe, url::FlakeUrl},
 };
 use serde::{de::DeserializeOwned, Deserialize};
 #[cfg(test)]
@@ -39,10 +39,9 @@ impl OmConfig {
         let path = if let Some(local_path) = flake_url.without_attr().as_local_path() {
             local_path.to_path_buf()
         } else {
-            FlakeMetadata::from_nix(NixCmd::get().await, &flake_url.without_attr())
+            (flake_url.without_attr())
+                .as_local_path_or_fetch(NixCmd::get().await)
                 .await?
-                .1
-                .flake
         }
         .join("om.yaml");
 

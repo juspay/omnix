@@ -10,6 +10,11 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 
+use crate::{
+    command::NixCmd,
+    flake::metadata::{FlakeMetadata, FlakeMetadataInput},
+};
+
 use super::attr::FlakeAttr;
 
 /// A flake URL
@@ -49,6 +54,26 @@ impl FlakeUrl {
             Some(Path::new(s))
         } else {
             None
+        }
+    }
+
+    /// Return the flake as local path. If the flake is a remote reference, catch it to local Nix store first.
+    pub async fn as_local_path_or_fetch(
+        &self,
+        cmd: &NixCmd,
+    ) -> Result<PathBuf, crate::flake::functions::Error> {
+        if let Some(path) = self.as_local_path() {
+            Ok(path.to_path_buf())
+        } else {
+            let (path, _) = FlakeMetadata::from_nix(
+                cmd,
+                FlakeMetadataInput {
+                    flake: self.clone(),
+                    include_inputs: false, // Don't care about inputs
+                },
+            )
+            .await?;
+            Ok(path)
         }
     }
 

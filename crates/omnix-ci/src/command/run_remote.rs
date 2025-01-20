@@ -4,7 +4,10 @@ use colored::Colorize;
 use nix_rs::{
     command::{CommandError, NixCmd},
     copy::{nix_copy, NixCopyOptions},
-    flake::{metadata::FlakeMetadata, url::FlakeUrl},
+    flake::{
+        metadata::{FlakeMetadata, FlakeMetadataInput},
+        url::FlakeUrl,
+    },
     store::{command::NixStoreCmd, path::StorePath, uri::StoreURI},
 };
 use omnix_common::config::OmConfig;
@@ -36,16 +39,11 @@ pub async fn run_on_remote_store(
         format!("\n🛜 Running CI remotely on {} ({:?})", ssh_uri, opts).bold()
     );
 
-    let ((flake_closure, flake_metadata), local_flake_url) = &cache_flake(nixcmd, cfg).await?;
+    let (flake_closure, local_flake_url) = &cache_flake(nixcmd, cfg, opts.copy_inputs).await?;
     let omnix_source = PathBuf::from(OMNIX_SOURCE);
 
-    let mut paths_to_push = vec![omnix_source];
+    let paths_to_push = vec![omnix_source, flake_closure.clone()];
 
-    if opts.copy_inputs {
-        paths_to_push.push(flake_closure.clone());
-    } else {
-        paths_to_push.push(flake_metadata.flake.clone());
-    }
     // First, copy the flake and omnix source to the remote store, because we will be needing them when running over ssh.
     nix_copy_to_remote(nixcmd, store_uri, &paths_to_push).await?;
 
@@ -181,14 +179,22 @@ fn nixpkgs_cmd(package: &str, cmd: &[&str]) -> Vec<String> {
 async fn cache_flake(
     nixcmd: &NixCmd,
     cfg: &OmConfig,
-) -> anyhow::Result<((PathBuf, FlakeMetadata), FlakeUrl)> {
-    let metadata = FlakeMetadata::from_nix(nixcmd, &cfg.flake_url).await?;
+    include_inputs: bool,
+) -> anyhow::Result<(PathBuf, FlakeUrl)> {
+    let (closure, metadata) = FlakeMetadata::from_nix(
+        nixcmd,
+        FlakeMetadataInput {
+            flake: cfg.flake_url.clone(),
+            include_inputs,
+        },
+    )
+    .await?;
     let attr = cfg.reference.join(".");
-    let mut local_flake_url = Into::<FlakeUrl>::into(metadata.1.flake.clone());
+    let mut local_flake_url = Into::<FlakeUrl>::into(metadata.flake.clone());
     if !attr.is_empty() {
         local_flake_url = local_flake_url.with_attr(&attr);
     }
-    Ok((metadata, local_flake_url))
+    Ok((closure, local_flake_url))
 }
 
 /// Construct a `nix run ...` based CLI that runs Omnix using given arguments.

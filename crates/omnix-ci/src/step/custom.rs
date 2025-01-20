@@ -8,7 +8,6 @@ use nix_rs::{
     command::NixCmd,
     flake::{
         self,
-        metadata::FlakeMetadata,
         system::System,
         url::{attr::FlakeAttr, FlakeUrl},
     },
@@ -170,7 +169,7 @@ where
     // First, ensure that flake is locally available.
     let local_path = match url.as_local_path() {
         Some(local_path) => local_path.to_path_buf(),
-        None => FlakeMetadata::from_nix(nixcmd, url).await?.1.flake,
+        None => url.as_local_path_or_fetch(nixcmd).await?,
     };
 
     // Then, ensure that it is writeable by the user

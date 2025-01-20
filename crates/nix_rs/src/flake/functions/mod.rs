@@ -4,9 +4,28 @@
 
 use super::url::FlakeUrl;
 use crate::command::NixCmd;
+use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
-use std::{ffi::OsString, os::unix::ffi::OsStringExt, path::PathBuf, process::Stdio};
+use serde_json::Value;
+use std::{
+    env,
+    ffi::OsString,
+    os::unix::ffi::OsStringExt,
+    path::{Path, PathBuf},
+    process::Stdio,
+};
 use tokio::io::{AsyncBufReadExt, BufReader};
+
+lazy_static! {
+    static ref TRUE_FLAKE: FlakeUrl = {
+        let path = env!("TRUE_FLAKE");
+        Into::<FlakeUrl>::into(Path::new(path))
+    };
+    static ref FALSE_FLAKE: FlakeUrl = {
+        let path = env!("FALSE_FLAKE");
+        Into::<FlakeUrl>::into(Path::new(path))
+    };
+}
 
 /// Trait for flake functions
 pub trait FlakeFn {
@@ -130,7 +149,19 @@ where
         .clone();
 
     map.into_iter()
-        .filter_map(|(k, v)| v.as_str().map(|v| (k, v.to_string())))
+        .filter_map(|(k, v)| match v {
+            Value::String(s) => Some((k, s.to_string())),
+            Value::Bool(b) => Some((
+                k,
+                if b {
+                    TRUE_FLAKE.to_string()
+                } else {
+                    FALSE_FLAKE.to_string()
+                }
+                .to_string(),
+            )),
+            _ => None,
+        })
         .collect()
 }
 

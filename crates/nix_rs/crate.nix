@@ -12,7 +12,7 @@ in
   autoWire = [ ];
   crane = {
     args = {
-      nativeBuildInputs = with pkgs; [
+      nativeBuildInputs = [
         # nix # Tests need nix cli
       ];
       DEFAULT_FLAKE_SCHEMAS = lib.cleanSourceWith {
@@ -24,6 +24,8 @@ in
         src = flake.inputs.self + /crates/nix_rs/src/flake/metadata;
       };
       INSPECT_FLAKE = inputs.inspect;
+      TRUE_FLAKE = inputs.true;
+      FALSE_FLAKE = inputs.false;
       NIX_SYSTEMS = builtins.toJSON {
         x86_64-linux = lib.cleanSourceWith {
           name = "x86_64-linux";

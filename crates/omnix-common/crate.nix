@@ -13,6 +13,8 @@
         DEFAULT_FLAKE_SCHEMAS
         FLAKE_METADATA
         INSPECT_FLAKE
+        TRUE_FLAKE
+        FALSE_FLAKE
         NIX_SYSTEMS
         ;
     };
