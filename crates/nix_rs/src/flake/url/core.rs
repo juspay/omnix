@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     command::NixCmd,
-    flake::metadata::{FlakeMetadata, FlakeMetadataInput},
+    flake::functions::metadata::{FlakeMetadata, FlakeMetadataInput},
 };
 
 use super::attr::FlakeAttr;
@@ -61,7 +61,7 @@ impl FlakeUrl {
     pub async fn as_local_path_or_fetch(
         &self,
         cmd: &NixCmd,
-    ) -> Result<PathBuf, crate::flake::functions::Error> {
+    ) -> Result<PathBuf, crate::flake::functions::core::Error> {
         if let Some(path) = self.as_local_path() {
             Ok(path.to_path_buf())
         } else {

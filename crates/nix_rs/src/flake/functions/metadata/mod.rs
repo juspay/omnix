@@ -1,6 +1,6 @@
 //! Retrieve metadata for a flake.
-use super::{functions::FlakeFn, url::FlakeUrl};
-use crate::command::NixCmd;
+use super::core::FlakeFn;
+use crate::{command::NixCmd, flake::url::FlakeUrl};
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 use std::{path::Path, path::PathBuf};
@@ -66,7 +66,7 @@ impl FlakeMetadata {
     pub async fn from_nix(
         cmd: &NixCmd,
         input: FlakeMetadataInput,
-    ) -> Result<(PathBuf, FlakeMetadata), crate::flake::functions::Error> {
+    ) -> Result<(PathBuf, FlakeMetadata), super::core::Error> {
         FlakeMetadataFn::call(cmd, false, vec![], input).await
     }
 }

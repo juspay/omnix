@@ -3,7 +3,7 @@ use clap::Parser;
 use colored::Colorize;
 use nix_rs::{
     command::NixCmd,
-    flake::{functions::FlakeFn, url::FlakeUrl},
+    flake::{functions::core::FlakeFn, url::FlakeUrl},
     store::{command::NixStoreCmd, path::StorePath},
 };
 use serde::{Deserialize, Serialize};

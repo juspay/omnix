@@ -134,7 +134,7 @@ pub enum OmConfigError {
 
     /// Flake function error
     #[error("Flake function error: {0}")]
-    FlakeFnError(#[from] nix_rs::flake::functions::Error),
+    FlakeFnError(#[from] nix_rs::flake::functions::core::Error),
 
     /// Failed to parse JSON
     #[error("Failed to decode (json error): {0}")]

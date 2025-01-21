@@ -21,7 +21,7 @@ in
       };
       FLAKE_METADATA = lib.cleanSourceWith {
         name = "nix-rs-flake-metadata";
-        src = flake.inputs.self + /crates/nix_rs/src/flake/metadata;
+        src = flake.inputs.self + /crates/nix_rs/src/flake/functions/metadata;
       };
       INSPECT_FLAKE = inputs.inspect;
       TRUE_FLAKE = inputs.true;

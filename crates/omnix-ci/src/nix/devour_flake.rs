@@ -2,7 +2,7 @@
 
 use lazy_static::lazy_static;
 use nix_rs::{
-    flake::{functions::FlakeFn, url::FlakeUrl},
+    flake::{functions::core::FlakeFn, url::FlakeUrl},
     store::path::StorePath,
 };
 use serde::{Deserialize, Serialize};

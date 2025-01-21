@@ -5,7 +5,7 @@ use nix_rs::{
     command::{CommandError, NixCmd},
     copy::{nix_copy, NixCopyOptions},
     flake::{
-        metadata::{FlakeMetadata, FlakeMetadataInput},
+        functions::metadata::{FlakeMetadata, FlakeMetadataInput},
         url::FlakeUrl,
     },
     store::{command::NixStoreCmd, path::StorePath, uri::StoreURI},
