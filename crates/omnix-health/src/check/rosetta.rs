@@ -58,7 +58,7 @@ fn get_apple_emulation(system: &OS) -> Option<bool> {
             nix_darwin: _,
             arch: _,
             proc_translated: is_proc_translated,
-        } => Some(is_proc_translated.clone()),
+        } => Some(*is_proc_translated),
         _ => None,
     }
 }
