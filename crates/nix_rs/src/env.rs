@@ -1,12 +1,16 @@
 //! Information about the environment in which Nix will run
 // TODO: Make this a package, and split (alongn with detsys_installer.rs)
-use std::{fmt::Display, path::Path};
+use std::{
+    fmt::Display,
+    path::{Path, PathBuf},
+};
 
 use bytesize::ByteSize;
 use os_info;
 use serde::{Deserialize, Serialize};
 use std::process::Command;
 use tracing::instrument;
+use which::which;
 use whoami;
 
 /// The environment in which Nix operates
@@ -180,14 +184,16 @@ pub enum NixInstaller {
     /// The Determinate Systems installer
     DetSys(super::detsys_installer::DetSysNixInstaller),
     /// Either offical installer or from a different package manager
-    Other,
+    Other(PathBuf),
 }
 
 impl Display for NixInstaller {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             NixInstaller::DetSys(installer) => write!(f, "{}", installer),
-            NixInstaller::Other => write!(f, "Unknown installer"),
+            NixInstaller::Other(nix_path) => {
+                write!(f, "Unknown installer for {}", nix_path.display())
+            }
         }
     }
 }
@@ -197,7 +203,7 @@ impl NixInstaller {
     pub fn detect() -> Result<Self, NixEnvError> {
         match super::detsys_installer::DetSysNixInstaller::detect()? {
             Some(installer) => Ok(NixInstaller::DetSys(installer)),
-            None => Ok(NixInstaller::Other),
+            None => Ok(NixInstaller::Other(which("nix")?)),
         }
     }
 }
@@ -216,6 +222,10 @@ pub enum NixEnvError {
     /// Unable to find Nix installer
     #[error("Failed to detect Nix installer: {0}")]
     InstallerError(#[from] super::detsys_installer::BadInstallerVersion),
+
+    /// `nix` command not found
+    #[error("`nix` not found in PATH: {0}")]
+    NixPathError(#[from] which::Error),
 }
 
 /// Convert bytes to a closest [ByteSize]
