@@ -1,7 +1,4 @@
-use nix_rs::{
-    env::{AppleEmulation, MacOSArch, OS},
-    info,
-};
+use nix_rs::{env::OS, info};
 use serde::{Deserialize, Serialize};
 
 use crate::traits::{Check, CheckResult, Checkable};
@@ -36,10 +33,12 @@ impl Checkable for Rosetta {
             let check = Check {
                 title: "Rosetta Not Active".to_string(),
                 info: format!("apple emulation = {:?}", emulation),
-                result: if emulation == AppleEmulation::Rosetta {
+                result: if emulation {
                     CheckResult::Red {
                     msg: "Rosetta emulation will slow down Nix builds".to_string(),
-                    suggestion: "Remove rosetta, see the comment by @hruan here: https://developer.apple.com/forums/thread/669486".to_string(),
+                    // NOTE: This check assumes that `omnix` was installed via `nix`, thus assuming `nix` is also translated using Rosetta.
+                    // Hence, the suggestion to re-install nix.
+                    suggestion: "Disable Rosetta for your terminal (Right-click on your terminal icon in `Finder`, choose `Get Info` and un-check `Open using Rosetta`). Uninstall nix: <https://nixos.asia/en/gotchas/macos-upgrade>. And re-install for `aarch64-darwin`: <https://nixos.asia/en/install>".to_string(),
                 }
                 } else {
                     CheckResult::Green
@@ -52,14 +51,14 @@ impl Checkable for Rosetta {
     }
 }
 
-/// Return [AppleEmulation]. Return None if not an ARM mac.
-
-fn get_apple_emulation(system: &OS) -> Option<AppleEmulation> {
+/// Return [true] if the current binary is translated using Rosetta. Return None if not an ARM mac.
+fn get_apple_emulation(system: &OS) -> Option<bool> {
     match system {
         OS::MacOS {
             nix_darwin: _,
-            arch: MacOSArch::Arm64(apple_emulation),
-        } => Some(apple_emulation.clone()),
+            arch: _,
+            proc_translated: is_proc_translated,
+        } => Some(*is_proc_translated),
         _ => None,
     }
 }
