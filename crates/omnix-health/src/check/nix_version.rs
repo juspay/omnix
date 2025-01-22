@@ -1,4 +1,3 @@
-
 use nix_rs::version::NixVersion;
 
 use nix_rs::info;
@@ -23,9 +22,7 @@ impl Default for NixVersionCheck {
                 minor: 16,
                 patch: 0,
             },
-            supported: vec! [
-                VersionReq::parse(">=2.16.0").unwrap(),
-            ],
+            supported: vec![VersionReq::parse(">=2.16.0").unwrap()],
         }
     }
 }
@@ -51,11 +48,14 @@ impl Checkable for NixVersionCheck {
             required: true,
         };
 
-        let matches_supported = self.supported.iter()
-            .all(|req| Version::parse(&val.to_string())
-            .map_or(false, |v| req.matches(&v)));
-        
-        let supported_versions = self.supported.iter()
+        let matches_supported = self
+            .supported
+            .iter()
+            .all(|req| Version::parse(&val.to_string()).map_or(false, |v| req.matches(&v)));
+
+        let supported_versions = self
+            .supported
+            .iter()
             .map(ToString::to_string)
             .collect::<Vec<_>>()
             .join(", ");
@@ -67,14 +67,21 @@ impl Checkable for NixVersionCheck {
                 CheckResult::Green
             } else {
                 CheckResult::Red {
-                    msg: format!("Your Nix version ({}) doesn't satisfy the supported bounds: {}", val, supported_versions),
+                    msg: format!(
+                        "Your Nix version ({}) doesn't satisfy the supported bounds: {}",
+                        val, supported_versions
+                    ),
                     // TODO: Link to a blog post here that lists various ways to use a specific version of Nix
-                    suggestion: "Set `nix.package` in home-manager to the desired Nix version".into(),
+                    suggestion: "Set `nix.package` in home-manager to the desired Nix version"
+                        .into(),
                 }
             },
             required: true,
         };
 
-        vec![("min-nix-version", min_version_check), ("supported-nix-versions", supported_version_check)]
+        vec![
+            ("min-nix-version", min_version_check),
+            ("supported-nix-versions", supported_version_check),
+        ]
     }
 }
