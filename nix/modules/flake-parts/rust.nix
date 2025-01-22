@@ -38,6 +38,8 @@
             || lib.hasSuffix "registry/flake.lock" path
             || lib.hasSuffix "flake-schemas/flake.nix" path
             || lib.hasSuffix "flake-schemas/flake.lock" path
+            || lib.hasSuffix "addstringcontext/flake.nix" path
+            || lib.hasSuffix "addstringcontext/flake.lock" path
           ;
         };
     };

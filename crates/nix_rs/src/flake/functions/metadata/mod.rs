@@ -67,6 +67,6 @@ impl FlakeMetadata {
         cmd: &NixCmd,
         input: FlakeMetadataInput,
     ) -> Result<(PathBuf, FlakeMetadata), super::core::Error> {
-        FlakeMetadataFn::call(cmd, false, vec![], input).await
+        FlakeMetadataFn::call(cmd, false, false, None, None, vec![], input).await
     }
 }

@@ -1,5 +1,5 @@
 //! The run command
-use std::{collections::HashMap, path::PathBuf};
+use std::{collections::HashMap, io::Write, path::PathBuf};
 
 use anyhow::{Context, Result};
 use clap::Parser;
@@ -7,9 +7,9 @@ use colored::Colorize;
 use nix_rs::{
     command::NixCmd,
     config::NixConfig,
-    flake::{system::System, url::FlakeUrl},
+    flake::{functions::addstringcontext, system::System, url::FlakeUrl},
     info::NixInfo,
-    store::{command::NixStoreCmd, path::StorePath, uri::StoreURI},
+    store::{path::StorePath, uri::StoreURI},
     system_list::{SystemsList, SystemsListFlakeRef},
 };
 use omnix_common::config::OmConfig;
@@ -122,8 +122,14 @@ impl RunCommand {
 
         if let Some(out_link) = self.get_out_link() {
             let s = serde_json::to_string(&res)?;
-            let nix_store = NixStoreCmd {};
-            let results_path = nix_store.add_file_permanently(out_link, &s).await?;
+            let mut path = tempfile::Builder::new()
+                .prefix("om-ci-results-")
+                .suffix(".json")
+                .tempfile()?;
+            path.write_all(s.as_bytes())?;
+
+            let results_path =
+                addstringcontext::addstringcontext(nixcmd, path.path(), out_link).await?;
             tracing::info!(
                 "Result available at {:?} and symlinked at {:?}",
                 results_path.as_path(),
