@@ -13,13 +13,10 @@ use nix_rs::{
 use omnix_common::config::OmConfig;
 use std::{
     ffi::{OsStr, OsString},
-    fs::File,
     os::unix::ffi::OsStringExt,
     path::{Path, PathBuf},
 };
 use tokio::process::Command;
-
-use crate::command::run::RunResult;
 
 use super::run::RunCommand;
 
@@ -80,20 +77,9 @@ pub async fn run_on_remote_store(
             .await?,
         ));
 
-        // Copy the results back to local store, including the out-link.
-        if opts.copy_outputs {
-            tracing::info!("{}", "📦 Copying all results back to local store".bold());
-            nix_copy_from_remote(nixcmd, store_uri, &[&om_result_path]).await?;
-            let om_results: RunResult = serde_json::from_reader(File::open(&om_result_path)?)?;
-            // Copy all paths referenced in results file
-            nix_copy_from_remote(nixcmd, store_uri, om_results.all_out_paths()).await?;
-        } else {
-            tracing::info!(
-                "{}",
-                "📦 Copying only omnix result back to local store".bold()
-            );
-            nix_copy_from_remote(nixcmd, store_uri, &[&om_result_path]).await?;
-        }
+        // Copy the results back to local store (the out-link).
+        tracing::info!("{}", "📦 Copying results back to local store".bold());
+        nix_copy_from_remote(nixcmd, store_uri, &[&om_result_path]).await?;
 
         // Write the local out-link
         let nix_store = NixStoreCmd {};

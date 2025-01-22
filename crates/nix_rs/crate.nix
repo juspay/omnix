@@ -23,6 +23,10 @@ in
         name = "nix-rs-flake-metadata";
         src = flake.inputs.self + /crates/nix_rs/src/flake/functions/metadata;
       };
+      FLAKE_ADDSTRINGCONTEXT = lib.cleanSourceWith {
+        name = "nix-rs-flake-addstringcontext";
+        src = flake.inputs.self + /crates/nix_rs/src/flake/functions/addstringcontext;
+      };
       INSPECT_FLAKE = inputs.inspect;
       TRUE_FLAKE = inputs.true;
       FALSE_FLAKE = inputs.false;

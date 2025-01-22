@@ -50,6 +50,10 @@ pub trait FlakeFn {
     fn call(
         nixcmd: &NixCmd,
         verbose: bool,
+        // FIXME: Don't do this; instead take dyn trait options
+        impure: bool,
+        pwd: Option<&Path>,
+        m_out_link: Option<&Path>,
         extra_args: Vec<String>,
         input: Self::Input,
     ) -> impl std::future::Future<Output = Result<(PathBuf, Self::Output), Error>> + Send
@@ -59,13 +63,18 @@ pub trait FlakeFn {
     {
         async move {
             let mut cmd = nixcmd.command();
-            cmd.args([
-                "build",
-                Self::flake(),
-                "-L",
-                "--no-link",
-                "--print-out-paths",
-            ]);
+            cmd.args(["build", Self::flake(), "-L", "--print-out-paths"]);
+
+            if impure {
+                cmd.arg("--impure");
+            }
+
+            if let Some(out_link) = m_out_link {
+                cmd.arg("--out-link");
+                cmd.arg(out_link);
+            } else {
+                cmd.arg("--no-link");
+            }
 
             let input_vec = to_vec(&input);
             for (k, v) in input_vec {
@@ -75,6 +84,10 @@ pub trait FlakeFn {
             }
 
             cmd.args(transform_override_inputs(&extra_args));
+
+            if let Some(pwd) = pwd {
+                cmd.current_dir(pwd);
+            }
 
             crate::command::trace_cmd(&cmd);
 

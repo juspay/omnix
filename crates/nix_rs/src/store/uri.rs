@@ -20,14 +20,6 @@ pub struct Opts {
     /// If disabled, we copy only the flake source itself. Enabling this option is useful when there are private Git inputs but the target machine does not have access to them.
     #[serde(rename = "copy-inputs", default = "bool::default")]
     pub copy_inputs: bool,
-
-    /// Whether to copy built outputs back to local store
-    #[serde(rename = "copy-outputs", default = "bool_true")]
-    pub copy_outputs: bool,
-}
-
-fn bool_true() -> bool {
-    true
 }
 
 /// Remote SSH store URI

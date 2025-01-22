@@ -48,6 +48,9 @@ impl BuildStep {
         let output = DevourFlake::call(
             nixcmd,
             verbose,
+            false,
+            None,
+            None,
             nix_args,
             DevourFlakeInput {
                 flake: url.sub_flake_url(subflake.dir.clone()),
