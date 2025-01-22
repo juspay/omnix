@@ -10,7 +10,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::{path::Path, path::PathBuf};
 
-/// Flake metadata computed in Nix.
 struct AddStringContextFn;
 
 lazy_static! {
