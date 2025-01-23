@@ -1,7 +1,7 @@
 //! Rust module for `nix --version`
 use regex::Regex;
 use serde_with::{DeserializeFromStr, SerializeDisplay};
-use std::{fmt, str::FromStr};
+use std::{cmp::Ordering, fmt, str::FromStr};
 use thiserror::Error;
 use tokio::sync::OnceCell;
 
@@ -10,14 +10,14 @@ use tracing::instrument;
 use crate::command::{NixCmd, NixCmdError};
 
 /// Nix version as parsed from `nix --version`
-#[derive(Clone, Copy, PartialOrd, PartialEq, Eq, Debug, SerializeDisplay, DeserializeFromStr)]
+#[derive(Clone, Copy, Debug, SerializeDisplay, DeserializeFromStr)]
 pub struct NixVersion {
     /// Major version
     pub major: u32,
     /// Minor version
-    pub minor: u32,
+    pub minor: Option<u32>,
     /// Patch version
-    pub patch: u32,
+    pub patch: Option<u32>,
 }
 
 /// Error type for parsing `nix --version`
@@ -43,12 +43,18 @@ impl FromStr for NixVersion {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         // NOTE: The parser is lenient in allowing pure nix version (produced
         // by [Display] instance), so as to work with serde_with instances.
-        let re = Regex::new(r"(?:nix \(Nix\) )?(\d+)\.(\d+)\.(\d+)")?;
+        let re = Regex::new(r"(?:nix \(Nix\) )?(\d+)(?:\.(\d+))?(?:\.(\d+))?")?;
 
         let captures = re.captures(s).ok_or(BadNixVersion::Command)?;
         let major = captures[1].parse::<u32>()?;
-        let minor = captures[2].parse::<u32>()?;
-        let patch = captures[3].parse::<u32>()?;
+        let minor = captures
+            .get(2)
+            .map(|m| m.as_str().parse::<u32>())
+            .transpose()?;
+        let patch = captures
+            .get(3)
+            .map(|m| m.as_str().parse::<u32>())
+            .transpose()?;
 
         Ok(NixVersion {
             major,
@@ -78,11 +84,54 @@ impl NixVersion {
         let v = cmd.run_with_args_expecting_fromstr(&["--version"]).await?;
         Ok(v)
     }
+
+    fn normalized_minor(&self) -> u32 {
+        self.minor.unwrap_or(0)
+    }
+
+    fn normalized_patch(&self) -> u32 {
+        self.patch.unwrap_or(0)
+    }
 }
+
+impl PartialEq for NixVersion {
+    fn eq(&self, other: &Self) -> bool {
+        self.major == other.major
+            && self.normalized_minor() == other.normalized_minor()
+            && self.normalized_patch() == other.normalized_patch()
+    }
+}
+
+impl Eq for NixVersion {}
+
+impl PartialOrd for NixVersion {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for NixVersion {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match self.major.cmp(&other.major) {
+            Ordering::Equal => match self.normalized_minor().cmp(&other.normalized_minor()) {
+                Ordering::Equal => self.normalized_patch().cmp(&other.normalized_patch()),
+                ord => ord,
+            },
+            ord => ord,
+        }
+    }
+}
+
 /// The String view for [NixVersion]
 impl fmt::Display for NixVersion {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}.{}.{}", self.major, self.minor, self.patch)
+        write!(
+            f,
+            "{}.{}.{}",
+            self.major,
+            self.normalized_minor(),
+            self.normalized_patch()
+        )
     }
 }
 
@@ -92,24 +141,42 @@ async fn test_run_nix_version() {
     println!("Nix version: {}", nix_version);
 }
 
-#[tokio::test]
-async fn test_parse_nix_version() {
-    assert_eq!(
-        NixVersion::from_str("nix (Nix) 2.13.0"),
-        Ok(NixVersion {
-            major: 2,
-            minor: 13,
-            patch: 0
-        })
-    );
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-    // Parse simple nix version
-    assert_eq!(
-        NixVersion::from_str("2.13.0"),
-        Ok(NixVersion {
-            major: 2,
-            minor: 13,
-            patch: 0
-        })
-    );
+    #[test]
+    fn test_version_parse() {
+        assert_eq!(
+            NixVersion::from_str("nix (Nix) 2.13.0").unwrap(),
+            NixVersion {
+                major: 2,
+                minor: Some(13),
+                patch: Some(0)
+            }
+        );
+    }
+
+    #[test]
+    fn test_version_equality() {
+        assert_eq!(
+            NixVersion::from_str("2").unwrap(),
+            NixVersion::from_str("2.0").unwrap()
+        );
+        assert_eq!(
+            NixVersion::from_str("2.1").unwrap(),
+            NixVersion::from_str("2.1.0").unwrap()
+        );
+    }
+
+    #[test]
+    fn test_version_ordering() {
+        let v1 = NixVersion::from_str("2").unwrap();
+        let v2 = NixVersion::from_str("2.1").unwrap();
+        let v3 = NixVersion::from_str("2.1.1").unwrap();
+
+        assert!(v1 < v2);
+        assert!(v2 < v3);
+        assert!(v1 < v3);
+    }
 }
