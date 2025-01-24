@@ -156,7 +156,7 @@ impl fmt::Display for NixVersionSpec {
 impl fmt::Display for NixVersionReq {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut specs = self.specs.iter();
-        
+
         if let Some(first) = specs.next() {
             write!(f, "{}", first)?;
             for spec in specs {
@@ -192,7 +192,6 @@ mod tests {
         assert!(req.specs.iter().all(|spec| spec.matches(&version)));
         let version = NixVersion::from_str("2.7.0").unwrap();
         assert!(!req.specs.iter().all(|spec| spec.matches(&version)));
-
 
         let req = NixVersionReq::parse("!=2.9, >2.8").unwrap();
 
