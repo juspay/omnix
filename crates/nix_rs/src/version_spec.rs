@@ -50,7 +50,8 @@ impl NixVersionReq {
     ///
     /// # Examples
     /// ```
-    /// let req = NixVersionReq::parse(">2.8, <3.0, !=2.9")?;
+    /// use nix_rs::version_spec::NixVersionReq;
+    /// let req = NixVersionReq::parse(">2.8, <3.0, !=2.9").unwrap();
     /// ```
     pub fn parse(s: &str) -> Result<Self, BadNixVersionSpec> {
         let specs = s
