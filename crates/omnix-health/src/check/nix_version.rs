@@ -9,13 +9,13 @@ use crate::traits::*;
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 #[serde(default, rename_all = "kebab-case")]
 pub struct NixVersionCheck {
-    pub supported: NixVersionReq,
+    pub supported: String,
 }
 
 impl Default for NixVersionCheck {
     fn default() -> Self {
         NixVersionCheck {
-            supported: NixVersionReq::parse(">=2.16.0").unwrap(),
+            supported: ">=2.16.0".to_string(),
         }
     }
 }
@@ -28,12 +28,12 @@ impl Checkable for NixVersionCheck {
     ) -> Vec<(&'static str, Check)> {
         let val = &nix_info.nix_version;
 
-        let matches_supported = self.supported.specs.iter().all(|spec| spec.matches(val));
+        let supported_req = NixVersionReq::parse(&self.supported).unwrap();
 
         let supported_version_check = Check {
             title: "Supported Nix Versions".to_string(),
             info: format!("nix version = {}", val),
-            result: if matches_supported {
+            result: if supported_req.specs.iter().all(|spec| spec.matches(val)) {
                 CheckResult::Green
             } else {
                 CheckResult::Red {
