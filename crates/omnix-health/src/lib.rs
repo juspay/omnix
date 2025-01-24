@@ -222,6 +222,8 @@ impl AllChecksResult {
 
 #[cfg(test)]
 mod tests {
+    use nix_rs::version_spec::NixVersionReq;
+
     use crate::check::{caches::Caches, nix_version::NixVersionCheck};
 
     #[test]
@@ -237,7 +239,10 @@ mod tests {
     fn test_json_deserialize_nix_version() {
         let json = r#"{ "nix-version": { "supported": ">=2.17.0" } }"#;
         let v: super::NixHealth = serde_json::from_str(json).unwrap();
-        assert_eq!(v.nix_version.supported, ">=2.17.0");
+        assert_eq!(
+            v.nix_version.supported,
+            NixVersionReq::parse(">=2.17.0").unwrap()
+        );
         assert_eq!(v.caches, Caches::default());
     }
 
