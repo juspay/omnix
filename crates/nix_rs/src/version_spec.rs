@@ -48,7 +48,7 @@ pub enum BadNixVersionSpec {
 impl NixVersionReq {
     /// Parses a comma-separated string of version requirements
     ///
-    /// # Examples
+    /// # Example
     /// ```
     /// use nix_rs::version_spec::NixVersionReq;
     /// let req = NixVersionReq::parse(">2.8, <3.0, !=2.9").unwrap();
