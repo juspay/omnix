@@ -235,9 +235,9 @@ mod tests {
 
     #[test]
     fn test_json_deserialize_nix_version() {
-        let json = r#"{ "nix-version": { "min-required": "2.17.0" } }"#;
+        let json = r#"{ "nix-version": { "supported": ">=2.17.0" } }"#;
         let v: super::NixHealth = serde_json::from_str(json).unwrap();
-        assert_eq!(v.nix_version.min_required.to_string(), "2.17.0");
+        assert_eq!(v.nix_version.supported, ">=2.17.0");
         assert_eq!(v.caches, Caches::default());
     }
 
