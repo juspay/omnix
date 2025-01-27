@@ -38,7 +38,7 @@ $ om ci run --on ssh://myname@myserver ~/code/myproject
 
 ## Results JSON and closure {#out-link}
 
-Just like `nix build`, `om ci` will produce a `result` symlink that contains a JSON of all store paths built. Use options `--out-link <PATH>` and `--no-out-link` to control this behaviour.
+Just like `nix build`, `om ci` will produce a `result` symlink that contains a JSON of all store paths built. Use options `--out-link <PATH>` and `--no-link` to control this behaviour.
 
 As long as this symlink exists, your built paths will survive garbage collection.
 
@@ -173,7 +173,7 @@ What this does:
 ### Options
 
 - Pass `copy-inputs=true` if you wish to copy all flake inputs recursively. This is useful if you have private Git inputs. For example, `om ci run --on "ssh://myname@myserver?copy-inputs=true" ~/code/myproject`
-- Omnix copies the results back to local store, unless `--no-out-link` was passed.
+- Omnix copies the results back to local store, unless `--no-link` was passed.
 
 ## Examples
 

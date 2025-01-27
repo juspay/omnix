@@ -38,19 +38,20 @@ pub struct RunCommand {
     #[arg(long)]
     pub systems: Option<SystemsListFlakeRef>,
 
-    /// Symlink to create to build results JSON. Defaults to `result`
+    /// Symlink to build results (as JSON)
     #[arg(
         long,
         short = 'o',
         default_value = "result",
-        conflicts_with = "no_out_link",
-        alias = "results" // For backwards compat
+        conflicts_with = "no_link",
+        alias = "results", // For backwards compat
+        name = "PATH"
     )]
     out_link: Option<PathBuf>,
 
     /// Do not create a symlink to build results JSON
     #[arg(long)]
-    no_out_link: bool,
+    no_link: bool,
 
     /// Flake URL or github URL
     ///
@@ -73,7 +74,7 @@ impl Default for RunCommand {
 impl RunCommand {
     /// Get the out-link path
     pub fn get_out_link(&self) -> Option<&PathBuf> {
-        if self.no_out_link {
+        if self.no_link {
             None
         } else {
             self.out_link.as_ref()
@@ -85,7 +86,7 @@ impl RunCommand {
         let mut new = self.clone();
         new.on = None; // Disable remote building
         new.flake_ref = flake_ref;
-        new.no_out_link = out_link.is_none();
+        new.no_link = out_link.is_none();
         new.out_link = out_link;
         new
     }
@@ -174,8 +175,8 @@ impl RunCommand {
             args.push(out_link.to_string_lossy().to_string());
         }
 
-        if self.no_out_link {
-            args.push("--no-out-link".to_string());
+        if self.no_link {
+            args.push("--no-link".to_string());
         }
 
         args.push(self.flake_ref.to_string());
