@@ -1,13 +1,15 @@
-//! Rust module defining the spec for [NixVersion]
+//! Version requirement spec for [NixVersion]
 
 use std::{fmt, str::FromStr};
 
+use regex::Regex;
 use serde::{Deserialize, Serialize};
+use serde_with::DeserializeFromStr;
 use thiserror::Error;
 
-use crate::version::{BadNixVersion, NixVersion};
+use crate::version::NixVersion;
 
-/// Specifies a version requirement for Nix
+/// A specification for version requirement
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum NixVersionSpec {
     /// Version must be greater than the specified version
@@ -22,8 +24,13 @@ pub enum NixVersionSpec {
     Neq(NixVersion),
 }
 
-/// A collection of version requirements
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// Version requirement for [NixVersion]
+///
+/// Example:
+/// ```
+/// ">=2.8, <2.14, 12.13.4"
+/// ```
+#[derive(Debug, Clone, PartialEq, Serialize, DeserializeFromStr)]
 pub struct NixVersionReq {
     /// List of version specifications
     pub specs: Vec<NixVersionSpec>,
@@ -32,82 +39,34 @@ pub struct NixVersionReq {
 /// Errors that can occur while parsing or validating version specifications
 #[derive(Error, Debug)]
 pub enum BadNixVersionSpec {
-    /// Error occurred while parsing the Nix version
-    #[error("Nix version error while parsing spec: {0}")]
-    NixVersion(#[from] BadNixVersion),
+    /// Regex error
+    #[error("Regex error: {0}")]
+    Regex(#[from] regex::Error),
 
-    /// The version requirements cannot be satisfied together
-    #[error("Version bounds are not satisfiable")]
-    UnsatisfiableBounds,
+    /// Invalid [NixVersionSpec]
+    #[error("Parse error(regex): Invalid version spec format")]
+    InvalidFormat,
+
+    /// Parse error (Int)
+    #[error("Parse error(int): Invalid version spec format")]
+    Parse(#[from] std::num::ParseIntError),
 
     /// An unknown comparison operator was used
     #[error("Unknown operator in the Nix version spec: {0}")]
     UnknownOperator(String),
 }
 
-impl NixVersionReq {
-    /// Parses a comma-separated string of version requirements
-    ///
-    /// # Example
-    /// ```
-    /// use nix_rs::version_spec::NixVersionReq;
-    /// let req = NixVersionReq::parse(">2.8, <3.0, !=2.9").unwrap();
-    /// ```
-    pub fn parse(s: &str) -> Result<Self, BadNixVersionSpec> {
+impl FromStr for NixVersionReq {
+    type Err = BadNixVersionSpec;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         let specs = s
             .split(',')
             .map(str::trim)
             .map(NixVersionSpec::from_str)
             .collect::<Result<Vec<_>, _>>()?;
 
-        Self::check(&specs)?;
         Ok(NixVersionReq { specs })
-    }
-
-    /// Checks if all version specifications are satisfiable
-    ///
-    /// Returns Err if the requirements are logically impossible to satisfy
-    fn check(specs: &[NixVersionSpec]) -> Result<(), BadNixVersionSpec> {
-        let max_lower = specs
-            .iter()
-            .filter_map(|spec| match spec {
-                NixVersionSpec::Gt(v) => Some(v),
-                _ => None,
-            })
-            .max();
-
-        let min_upper = specs
-            .iter()
-            .filter_map(|spec| match spec {
-                NixVersionSpec::Lt(v) => Some(v),
-                _ => None,
-            })
-            .min();
-
-        // Check basic bounds
-        if let (Some(lower), Some(upper)) = (max_lower, min_upper) {
-            if lower >= upper {
-                return Err(BadNixVersionSpec::UnsatisfiableBounds);
-            }
-        }
-
-        // Check if all the versions part of neq spec fall within the bounds
-        for spec in specs {
-            if let NixVersionSpec::Neq(v) = spec {
-                if let Some(lower) = max_lower {
-                    if v <= lower {
-                        return Err(BadNixVersionSpec::UnsatisfiableBounds);
-                    }
-                }
-                if let Some(upper) = min_upper {
-                    if v >= upper {
-                        return Err(BadNixVersionSpec::UnsatisfiableBounds);
-                    }
-                }
-            }
-        }
-
-        Ok(())
     }
 }
 
@@ -118,7 +77,7 @@ impl NixVersionSpec {
             NixVersionSpec::Gt(v) => version > v,
             NixVersionSpec::Gteq(v) => version >= v,
             NixVersionSpec::Lt(v) => version < v,
-            NixVersionSpec::Lteq(v) => version < v,
+            NixVersionSpec::Lteq(v) => version <= v,
             NixVersionSpec::Neq(v) => version != v,
         }
     }
@@ -129,15 +88,52 @@ impl FromStr for NixVersionSpec {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         use NixVersionSpec::{Gt, Gteq, Lt, Lteq, Neq};
+        let re = Regex::new(
+            r#"(?x)
+            ^
+            (?P<op>>=|<=|>|<|!=)
+            (?P<major>\d+)
+            (?:\.
+                (?P<minor>\d+)
+            )?
+            (?:\.
+                (?P<patch>\d+)
+            )?
+            $
+            "#,
+        )?;
 
-        let s = s.trim();
-        match s.get(..2) {
-            Some("!=") => Ok(Neq(NixVersion::from_str(&s[2..])?)),
-            Some(">=") => Ok(Gteq(NixVersion::from_str(&s[2..])?)),
-            Some("<=") => Ok(Lteq(NixVersion::from_str(&s[2..])?)),
-            Some(s2) if s2.starts_with('>') => Ok(Gt(NixVersion::from_str(&s[1..])?)),
-            Some(s2) if s2.starts_with('<') => Ok(Lt(NixVersion::from_str(&s[1..])?)),
-            _ => Err(BadNixVersionSpec::UnknownOperator(s.to_string())),
+        let captures = re.captures(s).ok_or(BadNixVersionSpec::InvalidFormat)?;
+
+        let op = captures
+            .name("op")
+            .ok_or(BadNixVersionSpec::InvalidFormat)?
+            .as_str();
+        let major: u32 = captures
+            .name("major")
+            .ok_or(BadNixVersionSpec::InvalidFormat)?
+            .as_str()
+            .parse()?;
+        let minor = captures
+            .name("minor")
+            .map_or(Ok(0), |m| m.as_str().parse::<u32>())?;
+        let patch = captures
+            .name("patch")
+            .map_or(Ok(0), |m| m.as_str().parse::<u32>())?;
+
+        let nix_version = NixVersion {
+            major,
+            minor,
+            patch,
+        };
+
+        match op {
+            ">=" => Ok(Gteq(nix_version)),
+            "<=" => Ok(Lteq(nix_version)),
+            ">" => Ok(Gt(nix_version)),
+            "<" => Ok(Lt(nix_version)),
+            "!=" => Ok(Neq(nix_version)),
+            unknown_op => Err(BadNixVersionSpec::UnknownOperator(unknown_op.to_string())),
         }
     }
 }
@@ -156,15 +152,15 @@ impl fmt::Display for NixVersionSpec {
 
 impl fmt::Display for NixVersionReq {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut specs = self.specs.iter();
-
-        if let Some(first) = specs.next() {
-            write!(f, "{}", first)?;
-            for spec in specs {
-                write!(f, ", {}", spec)?;
-            }
-        }
-        Ok(())
+        write!(
+            f,
+            "{}",
+            self.specs
+                .iter()
+                .map(|s| s.to_string())
+                .collect::<Vec<_>>()
+                .join(", ")
+        )
     }
 }
 
@@ -173,28 +169,28 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_unsatisfiable_bounds() {
-        assert!(matches!(
-            NixVersionReq::parse(">2.8, <2.6"),
-            Err(BadNixVersionSpec::UnsatisfiableBounds)
-        ));
-
-        assert!(matches!(
-            NixVersionReq::parse(">2.8, <2.23, !=2.24"),
-            Err(BadNixVersionSpec::UnsatisfiableBounds)
-        ));
+    fn test_parse() {
+        assert_eq!(
+            NixVersionSpec::from_str(">2.8").unwrap(),
+            NixVersionSpec::Gt(NixVersion {
+                major: 2,
+                minor: 8,
+                patch: 0
+            })
+        );
+        assert_eq!(
+            NixVersionSpec::from_str(">2").unwrap(),
+            NixVersionSpec::Gt(NixVersion {
+                major: 2,
+                minor: 0,
+                patch: 0
+            })
+        );
     }
 
     #[test]
     fn test_matches() {
-        let req = NixVersionReq::parse(">2.8").unwrap();
-
-        let version = NixVersion::from_str("2.9.0").unwrap();
-        assert!(req.specs.iter().all(|spec| spec.matches(&version)));
-        let version = NixVersion::from_str("2.7.0").unwrap();
-        assert!(!req.specs.iter().all(|spec| spec.matches(&version)));
-
-        let req = NixVersionReq::parse("!=2.9, >2.8").unwrap();
+        let req = NixVersionReq::from_str("!=2.9, >2.8").unwrap();
 
         let version = NixVersion::from_str("2.9.0").unwrap();
         assert!(!req.specs.iter().all(|spec| spec.matches(&version)));

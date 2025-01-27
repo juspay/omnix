@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use nix_rs::version_spec::NixVersionReq;
 
 use nix_rs::info;
@@ -9,22 +11,13 @@ use crate::traits::*;
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 #[serde(default, rename_all = "kebab-case")]
 pub struct NixVersionCheck {
-    #[serde(deserialize_with = "deserialize_version_req")]
     pub supported: NixVersionReq,
-}
-
-fn deserialize_version_req<'de, D>(deserializer: D) -> Result<NixVersionReq, D::Error>
-where
-    D: serde::Deserializer<'de>,
-{
-    let s = String::deserialize(deserializer)?;
-    NixVersionReq::parse(&s).map_err(serde::de::Error::custom)
 }
 
 impl Default for NixVersionCheck {
     fn default() -> Self {
         NixVersionCheck {
-            supported: NixVersionReq::parse(">=2.16.0").unwrap(),
+            supported: NixVersionReq::from_str(">=2.16.0").unwrap(),
         }
     }
 }
@@ -40,7 +33,7 @@ impl Checkable for NixVersionCheck {
         let is_supported = self.supported.specs.iter().all(|spec| spec.matches(val));
 
         let supported_version_check = Check {
-            title: "Supported Nix Versions".to_string(),
+            title: "Nix Version is supported".to_string(),
             info: format!("nix version = {}", val),
             result: if is_supported {
                 CheckResult::Green

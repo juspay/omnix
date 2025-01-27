@@ -53,8 +53,8 @@ static NIX_CONFIG: OnceCell<Result<NixConfig, NixConfigError>> = OnceCell::const
 
 static NIX_2_20_0: NixVersion = NixVersion {
     major: 2,
-    minor: Some(20),
-    patch: Some(0),
+    minor: 20,
+    patch: 0,
 };
 
 impl NixConfig {
