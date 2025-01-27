@@ -43,8 +43,7 @@ impl Checkable for NixVersionCheck {
                         "Your Nix version ({}) doesn't satisfy the supported bounds: {}",
                         val, self.supported
                     ),
-                    // TODO: Link to a blog post here that lists various ways to use a specific version of Nix
-                    suggestion: "Set `nix.package` in home-manager to the desired Nix version"
+                    suggestion: "To use a specific version of Nix, see <https://nixos.asia/en/howto/nix-package>"
                         .into(),
                 }
             },
