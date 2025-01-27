@@ -5,6 +5,7 @@
 - Crate renamed to `omnix-health`
 - Remove unused `logging` module
 - Display Nix installer used
+- `nix-version.min-required` -> `nix-version.supported`
 
 ## 1.0.0
 

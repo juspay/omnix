@@ -4,7 +4,7 @@ use std::{fmt, str::FromStr};
 
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use serde_with::DeserializeFromStr;
+use serde_with::{DeserializeFromStr, SerializeDisplay};
 use thiserror::Error;
 
 use crate::version::NixVersion;
@@ -28,7 +28,7 @@ pub enum NixVersionSpec {
 ///
 /// Example:
 /// ">=2.8, <2.14, 12.13.4"
-#[derive(Debug, Clone, PartialEq, Serialize, DeserializeFromStr)]
+#[derive(Debug, Clone, PartialEq, SerializeDisplay, DeserializeFromStr)]
 pub struct NixVersionReq {
     /// List of version specifications
     pub specs: Vec<NixVersionSpec>,
