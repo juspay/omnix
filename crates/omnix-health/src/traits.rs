@@ -2,7 +2,6 @@ use colored::Colorize;
 use serde::{Deserialize, Serialize};
 
 /// Types that can do specific "health check" for Nix
-
 pub trait Checkable {
     /// Run and create the health check
     ///

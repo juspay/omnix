@@ -103,7 +103,7 @@ pub async fn run(
     Ok(())
 }
 
-async fn initialize_template<'a>(path: &Path, template: &FlakeTemplate<'a>) -> anyhow::Result<()> {
+async fn initialize_template(path: &Path, template: &FlakeTemplate<'_>) -> anyhow::Result<()> {
     tracing::info!("Initializing template at {}", path.display());
     let path = template
         .template

@@ -15,7 +15,7 @@ pub struct FlakeTemplate<'a> {
 }
 
 // This instance is used during user prompting.
-impl<'a> Display for FlakeTemplate<'a> {
+impl Display for FlakeTemplate<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
             f,
@@ -32,7 +32,7 @@ impl<'a> Display for FlakeTemplate<'a> {
 }
 
 /// Load templates from the given flake
-pub async fn load_templates<'a>(url: &FlakeUrl) -> anyhow::Result<Vec<FlakeTemplate>> {
+pub async fn load_templates(url: &FlakeUrl) -> anyhow::Result<Vec<FlakeTemplate>> {
     let om_config = OmConfig::get(url).await?;
 
     let templates = om_config

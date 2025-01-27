@@ -231,7 +231,6 @@ pub enum NixEnvError {
 /// Convert bytes to a closest [ByteSize]
 ///
 /// Useful for displaying disk space and memory which are typically in GBs / TBs
-
 fn to_bytesize(bytes: u64) -> ByteSize {
     let kb = bytes / 1024;
     let mb = kb / 1024;

@@ -38,10 +38,10 @@ impl OmInitTest {
     }
 
     /// Run this test on a temporary directory
-    pub async fn run_test<'a>(
+    pub async fn run_test(
         &self,
         url: &FlakeUrl,
-        template: &FlakeTemplate<'a>,
+        template: &FlakeTemplate<'_>,
     ) -> anyhow::Result<()> {
         let temp_dir = assert_fs::TempDir::new().unwrap();
         let out_dir = temp_dir.path().join("output");
