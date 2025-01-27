@@ -62,7 +62,7 @@ This will output:
 ```yaml
 flake-enabled: {}
 nix-version:
-  supported: ">=2.16.0"
+  supported: '>=2.16.0'
 rosetta:
   enable: true
   required: true

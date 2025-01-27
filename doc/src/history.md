@@ -13,6 +13,7 @@
   - Remove RAM/disk space checks, moving them to "information" section
   - Add shell check, to ensure its dotfiles are managed by Nix.
   - Add `--json` that returns the health check results as JSON
+  - Switch from `nix-version.min-required` to more flexible `nix-version.supported`.
 - `om ci`
   - Support for remote builds over SSH (via `--on` option)
   - Support for CI steps
