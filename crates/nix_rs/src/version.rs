@@ -10,7 +10,7 @@ use tracing::instrument;
 use crate::command::{NixCmd, NixCmdError};
 
 /// Nix version as parsed from `nix --version`
-#[derive(Clone, Copy, Debug, SerializeDisplay, DeserializeFromStr, PartialEq, Eq, PartialOrd)]
+#[derive(Clone, Copy, PartialOrd, PartialEq, Eq, Debug, SerializeDisplay, DeserializeFromStr)]
 pub struct NixVersion {
     /// Major version
     pub major: u32,
@@ -43,7 +43,7 @@ impl FromStr for NixVersion {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         // NOTE: The parser is lenient in allowing pure nix version (produced
         // by [Display] instance), so as to work with serde_with instances.
-        let re = Regex::new(r"(?:nix \(Nix\) )?(\d+)(?:\.(\d+))?(?:\.(\d+))?")?;
+        let re = Regex::new(r"(?:nix \(Nix\) )?(\d+)\.(\d+)\.(\d+)")?;
 
         let captures = re.captures(s).ok_or(BadNixVersion::Command)?;
         let major = captures[1].parse::<u32>()?;
@@ -79,7 +79,6 @@ impl NixVersion {
         Ok(v)
     }
 }
-
 /// The String view for [NixVersion]
 impl fmt::Display for NixVersion {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
