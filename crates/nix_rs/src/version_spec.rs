@@ -9,7 +9,7 @@ use thiserror::Error;
 
 use crate::version::NixVersion;
 
-/// A specification for version requirement
+/// An individual component of [NixVersionReq]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum NixVersionSpec {
     /// Version must be greater than the specified version
