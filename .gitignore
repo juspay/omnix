@@ -5,3 +5,5 @@ dist
 .direnv
 
 /assets/tailwind.css
+
+/.vscode/spellright.dict

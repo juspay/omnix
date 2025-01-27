@@ -1,12 +1,12 @@
 # `om health`
 
-The `om health` command checks the health of your Nix install. Furthermore, individual projects can configure their own health checks in their `flake.nix`. For example, the nammayatri project checks that [the cachix cache is in use](https://github.com/nammayatri/nammayatri/blob/2201f618af69dc78070fefeb4f082420b1d226cc/flake.nix#L29-L31).
+The `om health` command checks the health of your Nix install. Furthermore, individual projects can configure their own health checks in their `flake.nix`. For example, the nammayatri project checks that [the cachix cache is in use][ny-cache].
+
+[ny-cache]: https://github.com/nammayatri/nammayatri/blob/e25e0931e698a4eb369da0eba7f5a02dd03f59a6/om.yaml#L4-L6
 
 
 ![](https://github.com/juspay/omnix/assets/3998/abbbc54b-d888-42fb-a2a8-31d9ae142d6a)
 
-> [!NOTE]
-> **History**: `om health` was formerly called [`nix-health`](https://github.com/juspay/nix-health).
 
 ## Checks performed
 

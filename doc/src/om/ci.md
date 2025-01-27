@@ -1,6 +1,6 @@
 # `om ci`
 
-`om ci` runs CI for your project. It builds all outputs in the flake, or optionally its [sub-flakes](https://github.com/hercules-ci/flake-parts/issues/119). You can run `om ci` locally or in an actual CI envirnoment, like GitHub Actions. Using [devour-flake] it will automatically build the following outputs:
+`om ci` runs continuous integration (CI)-friendly builds for your project. It builds all outputs in the flake, or optionally its [sub-flakes](https://github.com/hercules-ci/flake-parts/issues/119). You can run `om ci` locally or in an actual CI envirnoment, like GitHub Actions. Using [devour-flake] it will automatically build the following outputs:
 
 | Type                   | Output Key                                      |
 | ---------------------- | ----------------------------------------------- |
@@ -9,12 +9,7 @@
 | nix-darwin             | `darwinConfigurations.*`                        |
 | home-manager           | `legacyPackages.${system}.homeConfigurations.*` |
 
-The [stdout] of `om ci run` will be a list of store paths built.
-
-[stdout]: https://en.wikipedia.org/wiki/Standard_streams#Standard_output_(stdout)
-
-> [!TIP]
-> If you are familiar with [nixci](https://github.com/srid/nixci), `om ci` is basically the successor to `nixci`.
+A `result` symlink is also produced, containing a JSON of all built paths. See [here](#out-link).
 
 ## Basic Usage {#usage}
 
@@ -44,6 +39,8 @@ $ om ci run --on ssh://myname@myserver ~/code/myproject
 ## Results JSON and closure {#out-link}
 
 Just like `nix build`, `om ci` will produce a `result` symlink that contains a JSON of all store paths built. Use options `--out-link <PATH>` and `--no-out-link` to control this behaviour.
+
+As long as this symlink exists, your built paths will survive garbage collection.
 
 ## Using in Github Actions {#gh}
 
@@ -181,9 +178,6 @@ What this does:
 ## Examples
 
 Some real-world examples of how `om ci` is used with specific configurations:
-
-> [!WARNING]
-> These examples use the predecessor, `nixci`, so you want to replace `nixci` with `om ci` wherever applicable.
 
 - [omnix](https://github.com/juspay/omnix/blob/5322235ce4069e72fd5eb477353ee5d1f5100243/nix/modules/om.nix#L16-L33)
 - [services-flake](https://github.com/juspay/services-flake/blob/197fc1c4d07d09f4e01dd935450608c35393b102/flake.nix#L10-L24)
