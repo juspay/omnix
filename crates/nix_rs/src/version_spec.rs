@@ -27,9 +27,7 @@ pub enum NixVersionSpec {
 /// Version requirement for [NixVersion]
 ///
 /// Example:
-/// ```
 /// ">=2.8, <2.14, 12.13.4"
-/// ```
 #[derive(Debug, Clone, PartialEq, Serialize, DeserializeFromStr)]
 pub struct NixVersionReq {
     /// List of version specifications
