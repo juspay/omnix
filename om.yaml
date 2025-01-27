@@ -59,7 +59,7 @@ ci:
 health:
   default:
     nix-version:
-      min-required: "2.16.0"
+      supported: ">=2.16.0"
     caches:
       required:
         - https://om.cachix.org

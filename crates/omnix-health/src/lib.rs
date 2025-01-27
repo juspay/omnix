@@ -22,7 +22,7 @@ use tracing::instrument;
 use traits::Check;
 
 use self::check::{
-    caches::Caches, flake_enabled::FlakeEnabled, max_jobs::MaxJobs, min_nix_version::MinNixVersion,
+    caches::Caches, flake_enabled::FlakeEnabled, max_jobs::MaxJobs, nix_version::NixVersionCheck,
     rosetta::Rosetta, trusted_users::TrustedUsers,
 };
 
@@ -33,7 +33,7 @@ use self::check::{
 #[serde(default, rename_all = "kebab-case")]
 pub struct NixHealth {
     pub flake_enabled: FlakeEnabled,
-    pub nix_version: MinNixVersion,
+    pub nix_version: NixVersionCheck,
     pub rosetta: Rosetta,
     pub max_jobs: MaxJobs,
     pub trusted_users: TrustedUsers,
@@ -222,22 +222,29 @@ impl AllChecksResult {
 
 #[cfg(test)]
 mod tests {
-    use crate::check::{caches::Caches, min_nix_version::MinNixVersion};
+    use std::str::FromStr;
+
+    use nix_rs::version_spec::NixVersionReq;
+
+    use crate::check::{caches::Caches, nix_version::NixVersionCheck};
 
     #[test]
     fn test_json_deserialize_empty() {
         let json = r#"{}"#;
         let v: super::NixHealth = serde_json::from_str(json).unwrap();
-        assert_eq!(v.nix_version, MinNixVersion::default());
+        assert_eq!(v.nix_version, NixVersionCheck::default());
         assert_eq!(v.caches, Caches::default());
         println!("{:?}", v);
     }
 
     #[test]
     fn test_json_deserialize_nix_version() {
-        let json = r#"{ "nix-version": { "min-required": "2.17.0" } }"#;
+        let json = r#"{ "nix-version": { "supported": ">=2.17.0" } }"#;
         let v: super::NixHealth = serde_json::from_str(json).unwrap();
-        assert_eq!(v.nix_version.min_required.to_string(), "2.17.0");
+        assert_eq!(
+            v.nix_version.supported,
+            NixVersionReq::from_str(">=2.17.0").unwrap()
+        );
         assert_eq!(v.caches, Caches::default());
     }
 
@@ -249,6 +256,6 @@ mod tests {
             v.caches.required,
             vec![url::Url::parse("https://foo.cachix.org").unwrap()]
         );
-        assert_eq!(v.nix_version, MinNixVersion::default());
+        assert_eq!(v.nix_version, NixVersionCheck::default());
     }
 }

@@ -40,6 +40,7 @@
 - **`version`**:
   - Add `NixVersion::get`
 - **`system_list`**: New module
+- **version_spec**: New `NixVersion` spec module
 
 ## 1.0.0
 

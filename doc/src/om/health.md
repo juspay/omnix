@@ -13,7 +13,7 @@ The `om health` command checks the health of your Nix install. Furthermore, indi
 | Check                                  | Configurable in `flake.nix`? |
 | -------------------------------------- | ---------------------------- |
 | Flakes are enabled                     | -                            |
-| Nix version is not too old             | Yes                          |
+| Nix version is supported               | Yes                          |
 | Nix runs natively (no rosetta)[^ros]   | Yes                          |
 | Builds use multiple cores (`max-jobs`) | Yes                          |
 | Nix Caches in use                      | Yes                          |
@@ -62,7 +62,7 @@ This will output:
 ```yaml
 flake-enabled: {}
 nix-version:
-  min-required: 2.16.0
+  supported: '>=2.16.0'
 rosetta:
   enable: true
   required: true
