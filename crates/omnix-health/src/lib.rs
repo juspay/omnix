@@ -1,4 +1,3 @@
-#![feature(async_closure)]
 //! Health checks for the user's Nix install
 
 pub mod check;
