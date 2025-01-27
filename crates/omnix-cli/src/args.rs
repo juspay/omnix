@@ -3,11 +3,9 @@ use clap_verbosity_flag::{InfoLevel, Verbosity};
 
 use crate::command::core::Command;
 
-/// Omnix <https://omnix.page/>
-//
-// NOTE: Should we put this in `omnix` crate, and share with `omnix-gui` (see
-// `omnix-gui/src/cli.rs`)?
+/// Omnix CLI entrypoint <https://omnix.page/>
 #[derive(Parser, Debug)]
+#[command(version, about)]
 pub struct Args {
     #[command(flatten)]
     pub verbosity: Verbosity<InfoLevel>,
