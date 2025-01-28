@@ -51,10 +51,20 @@ pub async fn addstringcontext(
     let jsonfile_name = jsonfile.file_name().unwrap().to_string_lossy();
     let pwd = Some(jsonfile_parent);
 
+    let current_pwd = std::env::current_dir()?;
+
     let input = AddStringContextInput {
         jsonfile: FlakeUrl(format!("path:{}", jsonfile_name)),
     };
-    let (path_with_string_context, _json_value) =
-        AddStringContextFn::call(cmd, false, IMPURE, pwd, Some(out_link), vec![], input).await?;
+    let (path_with_string_context, _json_value) = AddStringContextFn::call(
+        cmd,
+        false,
+        IMPURE,
+        pwd,
+        Some(&current_pwd.join(out_link)),
+        vec![],
+        input,
+    )
+    .await?;
     Ok(path_with_string_context)
 }
