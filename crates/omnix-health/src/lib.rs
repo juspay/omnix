@@ -101,7 +101,26 @@ impl NixHealth {
         let code = res.report();
 
         if json_only {
-            let json: HashMap<_, _> = checks.iter().map(|(k, v)| (*k, v)).collect();
+            let nix_info = NixInfo::get()
+                .await
+                .as_ref()
+                .with_context(|| "Unable to gather nix info")?;
+            
+            let sysinfo_json: serde_json::Value = vec![
+                ("system", nix_info.nix_config.system.value.to_string()),
+                ("os", nix_info.nix_env.os.to_string()),
+                ("nix-installer", nix_info.nix_env.installer.to_string()),
+                ("ram", nix_info.nix_env.total_memory.to_string()),
+                ("disk-space", nix_info.nix_env.total_disk_space.to_string())
+            ].into_iter().collect();
+
+            let checks: HashMap<_, _> = checks.iter().map(|(k, v)| (*k, v)).collect();
+            
+            let json: HashMap<_,_> = vec![
+                ("sysinfo", sysinfo_json),
+                ("checks", serde_json::to_value(checks)?),
+            ].into_iter().collect();
+
             println!("{}", serde_json::to_string(&json)?);
         }
         Ok(code)
@@ -115,6 +134,7 @@ impl NixHealth {
 /// Run all health checks, optionally using the given flake's configuration
 pub async fn run_all_checks_with(
     flake_url: Option<FlakeUrl>,
+    json_only: bool,
 ) -> anyhow::Result<Vec<(&'static str, Check)>> {
     let nix_info = NixInfo::get()
         .await
@@ -137,7 +157,9 @@ pub async fn run_all_checks_with(
         }
     );
 
-    print_info_banner(flake_url.as_ref(), nix_info).await?;
+    if !json_only {
+        print_info_banner(flake_url.as_ref(), nix_info).await?;
+    }
 
     let checks = health.run_all_checks(nix_info, flake_url);
     Ok(checks)
