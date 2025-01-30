@@ -105,21 +105,22 @@ impl NixHealth {
                 .await
                 .as_ref()
                 .with_context(|| "Unable to gather nix info")?;
-            
+
             let sysinfo_json: serde_json::Value = vec![
                 ("system", nix_info.nix_config.system.value.to_string()),
                 ("os", nix_info.nix_env.os.to_string()),
                 ("nix-installer", nix_info.nix_env.installer.to_string()),
                 ("ram", nix_info.nix_env.total_memory.to_string()),
-                ("disk-space", nix_info.nix_env.total_disk_space.to_string())
-            ].into_iter().collect();
+                ("disk-space", nix_info.nix_env.total_disk_space.to_string()),
+            ]
+            .into_iter()
+            .collect();
 
             let checks: HashMap<_, _> = checks.iter().map(|(k, v)| (*k, v)).collect();
-            
-            let json: HashMap<_,_> = vec![
-                ("sysinfo", sysinfo_json),
-                ("checks", serde_json::to_value(checks)?),
-            ].into_iter().collect();
+
+            let mut json = HashMap::new();
+            json.insert("sysinfo", sysinfo_json);
+            json.insert("checks", serde_json::to_value(checks)?);
 
             println!("{}", serde_json::to_string(&json)?);
         }
