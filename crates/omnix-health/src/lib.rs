@@ -1,16 +1,16 @@
 //! Health checks for the user's Nix install
 
 pub mod check;
+pub mod json;
 pub mod report;
 pub mod traits;
-
-use std::collections::HashMap;
 
 use anyhow::Context;
 use check::shell::ShellCheck;
 use colored::Colorize;
 
 use check::direnv::Direnv;
+use json::HealthOutput;
 use nix_rs::env::OS;
 use nix_rs::flake::url::FlakeUrl;
 use nix_rs::info::NixInfo;
@@ -101,27 +101,7 @@ impl NixHealth {
         let code = res.report();
 
         if json_only {
-            let nix_info = NixInfo::get()
-                .await
-                .as_ref()
-                .with_context(|| "Unable to gather nix info")?;
-
-            let sysinfo_json: serde_json::Value = vec![
-                ("system", nix_info.nix_config.system.value.to_string()),
-                ("os", nix_info.nix_env.os.to_string()),
-                ("nix-installer", nix_info.nix_env.installer.to_string()),
-                ("ram", nix_info.nix_env.total_memory.to_string()),
-                ("disk-space", nix_info.nix_env.total_disk_space.to_string()),
-            ]
-            .into_iter()
-            .collect();
-
-            let checks: HashMap<_, _> = checks.iter().map(|(k, v)| (*k, v)).collect();
-
-            let mut json = HashMap::new();
-            json.insert("sysinfo", sysinfo_json);
-            json.insert("checks", serde_json::to_value(checks)?);
-
+            let json = HealthOutput::get(checks.to_vec()).await?;
             println!("{}", serde_json::to_string(&json)?);
         }
         Ok(code)
