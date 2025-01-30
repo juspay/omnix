@@ -37,15 +37,14 @@ pub struct HealthEnvInfo {
 }
 
 impl HealthEnvInfo {
-    /// Gathers current system environment information
+    /// Get system environment information
     ///
-    /// # Errors
-    /// Returns error if Nix information cannot be retrieved
+    /// Returns error if [NixInfo] cannot be retrieved
     pub async fn get() -> anyhow::Result<Self> {
         let nix_info = NixInfo::get()
             .await
             .as_ref()
-            .context("Failed to gather Nix system information")?;
+            .context("Unable to gather nix info")?;
 
         Ok(Self {
             nix_installer: nix_info.nix_env.installer.clone().into(),
