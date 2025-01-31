@@ -1,16 +1,16 @@
 //! Health checks for the user's Nix install
 
 pub mod check;
+pub mod json;
 pub mod report;
 pub mod traits;
-
-use std::collections::HashMap;
 
 use anyhow::Context;
 use check::shell::ShellCheck;
 use colored::Colorize;
 
 use check::direnv::Direnv;
+use json::HealthOutput;
 use nix_rs::env::OS;
 use nix_rs::flake::url::FlakeUrl;
 use nix_rs::info::NixInfo;
@@ -101,7 +101,7 @@ impl NixHealth {
         let code = res.report();
 
         if json_only {
-            let json: HashMap<_, _> = checks.iter().map(|(k, v)| (*k, v)).collect();
+            let json = HealthOutput::get(checks.to_vec()).await?;
             println!("{}", serde_json::to_string(&json)?);
         }
         Ok(code)
@@ -115,6 +115,7 @@ impl NixHealth {
 /// Run all health checks, optionally using the given flake's configuration
 pub async fn run_all_checks_with(
     flake_url: Option<FlakeUrl>,
+    json_only: bool,
 ) -> anyhow::Result<Vec<(&'static str, Check)>> {
     let nix_info = NixInfo::get()
         .await
@@ -137,7 +138,9 @@ pub async fn run_all_checks_with(
         }
     );
 
-    print_info_banner(flake_url.as_ref(), nix_info).await?;
+    if !json_only {
+        print_info_banner(flake_url.as_ref(), nix_info).await?;
+    }
 
     let checks = health.run_all_checks(nix_info, flake_url);
     Ok(checks)

@@ -8,6 +8,7 @@ use std::{
 use bytesize::ByteSize;
 use os_info;
 use serde::{Deserialize, Serialize};
+use serde_with::SerializeDisplay;
 use std::process::Command;
 use tracing::instrument;
 use which::which;
@@ -93,7 +94,7 @@ fn get_nix_disk(sys: &sysinfo::System) -> Result<&sysinfo::Disk, NixEnvError> {
 }
 
 /// The system under which Nix is installed and operates
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, SerializeDisplay, Deserialize)]
 pub enum OS {
     /// On macOS
     MacOS {
