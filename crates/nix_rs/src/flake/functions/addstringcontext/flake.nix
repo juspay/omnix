@@ -11,7 +11,7 @@
         let
           json = builtins.fromJSON (builtins.readFile inputs.jsonfile);
           jsonWithPathContext = lib.flip lib.mapAttrsRecursive json (k: v:
-            if lib.lists.last k == "outPaths" then
+            if lib.lists.last k == "outPaths" || lib.lists.last k == "allDeps" then
               builtins.map (path: builtins.storePath path) v
             else
               v
