@@ -65,8 +65,8 @@ impl BuildStep {
             all_deps: None,
         };
 
-        if run_cmd.steps_args.build_step_args.print_all_dependencies {
-            // Handle --print-all-dependencies
+        if run_cmd.steps_args.build_step_args.include_all_dependencies {
+            // Handle --include-all-dependencies
             let all_paths = NixStoreCmd
                 .fetch_all_deps(&res.devour_flake_output.out_paths)
                 .await?;
@@ -97,12 +97,12 @@ fn subflake_extra_args(subflake: &SubflakeConfig, build_step_args: &BuildStepArg
 /// CLI arguments for [BuildStep]
 #[derive(Parser, Debug, Clone)]
 pub struct BuildStepArgs {
-    /// Print build and runtime dependencies along with out paths
+    /// Include build and runtime dependencies along with out paths in the result JSON
     ///
-    /// By default, `om ci run` prints only the out paths. This option is
+    /// By default, `om ci run` includes only the out paths. This option is
     /// useful to explicitly push all dependencies to a cache.
     #[clap(long, short = 'd')]
-    pub print_all_dependencies: bool,
+    pub include_all_dependencies: bool,
 
     /// Additional arguments to pass through to `nix build`
     #[arg(last = true, default_values_t = vec![
@@ -118,8 +118,8 @@ impl BuildStepArgs {
     pub fn to_cli_args(&self) -> Vec<String> {
         let mut args = vec![];
 
-        if self.print_all_dependencies {
-            args.push("--print-all-dependencies".to_owned());
+        if self.include_all_dependencies {
+            args.push("--include-all-dependencies".to_owned());
         }
 
         if !self.extra_nix_build_args.is_empty() {
