@@ -42,6 +42,14 @@ Just like `nix build`, `om ci` will produce a `result` symlink that contains a J
 
 As long as this symlink exists, your built paths will survive garbage collection, because the closure of this symlink contains the entire build closure.
 
+Note that in order to include all build dependencies, you should pass `--include-all-dependencies`, viz.:
+
+```
+om ci run --include-all-dependencies | xargs cachix push mycache
+```
+
+The above command will push the *entire* build closure (runtime and build dependencies) to the given cache.
+
 ## Using in Github Actions {#gh}
 
 In addition to serving the purpose of being a "local CI", `om ci` can be used in Github Actions to enable CI for your GitHub repositories.
