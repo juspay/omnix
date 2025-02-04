@@ -119,7 +119,7 @@ pub struct FlakeOptions {
     pub refresh: bool,
 
     /// Accept `nixConfig` configuration in flake.nix
-    pub accept_flake_config: bool,
+    pub accept_flake_config: Option<bool>,
 
     /// The directory from which to run our nix command (such that relative flake URLs resolve properly)
     pub current_dir: Option<PathBuf>,
@@ -131,7 +131,8 @@ impl Default for FlakeOptions {
             override_inputs: BTreeMap::new(),
             no_write_lock_file: false,
             refresh: false,
-            accept_flake_config: true, // --accept-flake-config is the default
+            // Do not enable this by default since it is not secure; https://github.com/NixOS/nix/issues/9649
+            accept_flake_config: None,
             current_dir: None,
         }
     }
@@ -152,8 +153,12 @@ impl FlakeOptions {
         if self.refresh {
             cmd.arg("--refresh");
         }
-        if self.accept_flake_config {
-            cmd.arg("--accept-flake-config");
+        if let Some(accept) = self.accept_flake_config {
+            if accept {
+                cmd.arg("--accept-flake-config");
+            } else {
+                cmd.arg("--no-accept-flake-config");
+            }
         }
     }
 }
