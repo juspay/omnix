@@ -1,5 +1,9 @@
 //! The run command
-use std::{collections::HashMap, io::Write, path::PathBuf};
+use std::{
+    collections::HashMap,
+    io::Write,
+    path::{Path, PathBuf},
+};
 
 use anyhow::{Context, Result};
 use clap::Parser;
@@ -73,11 +77,11 @@ impl Default for RunCommand {
 
 impl RunCommand {
     /// Get the out-link path
-    pub fn get_out_link(&self) -> Option<&PathBuf> {
+    pub fn get_out_link(&self) -> Option<&Path> {
         if self.no_link {
             None
         } else {
-            self.out_link.as_ref()
+            self.out_link.as_ref().map(PathBuf::as_ref)
         }
     }
 
@@ -121,20 +125,22 @@ impl RunCommand {
         );
         let res = ci_run(nixcmd, verbose, self, &cfg, &nix_info.nix_config).await?;
 
-        if let Some(out_link) = self.get_out_link() {
-            let s = serde_json::to_string(&res)?;
-            let mut path = tempfile::Builder::new()
-                .prefix("om-ci-results-")
-                .suffix(".json")
-                .tempfile()?;
-            path.write_all(s.as_bytes())?;
+        let m_out_link = self.get_out_link();
+        let s = serde_json::to_string(&res)?;
+        let mut path = tempfile::Builder::new()
+            .prefix("om-ci-results-")
+            .suffix(".json")
+            .tempfile()?;
+        path.write_all(s.as_bytes())?;
 
-            let results_path =
-                addstringcontext::addstringcontext(nixcmd, path.path(), out_link).await?;
+        let results_path =
+            addstringcontext::addstringcontext(nixcmd, path.path(), m_out_link).await?;
+        println!("{}", results_path.display());
+        if let Some(m_out_link) = m_out_link {
             tracing::info!(
                 "Result available at {:?} and symlinked at {:?}",
                 results_path.as_path(),
-                out_link
+                m_out_link
             );
         }
 

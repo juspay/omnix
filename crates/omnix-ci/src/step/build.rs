@@ -144,17 +144,3 @@ pub struct BuildStepResult {
     #[serde(skip_serializing_if = "Option::is_none", rename = "allDeps")]
     pub all_deps: Option<Vec<StorePath>>,
 }
-
-impl BuildStepResult {
-    /// Print the result to stdout
-    pub fn print(&self) {
-        let paths = if let Some(paths) = &self.all_deps {
-            paths
-        } else {
-            &self.devour_flake_output.out_paths
-        };
-        for path in paths {
-            println!("{}", path.as_path().display());
-        }
-    }
-}

@@ -42,7 +42,7 @@ struct AddStringContextInput {
 pub async fn addstringcontext(
     cmd: &NixCmd,
     jsonfile: &Path,
-    out_link: &Path,
+    out_link: Option<&Path>,
 ) -> Result<PathBuf, super::core::Error> {
     const IMPURE: bool = true; // Our flake.nix uses builtin.storePath
 
@@ -52,6 +52,7 @@ pub async fn addstringcontext(
     let pwd = Some(jsonfile_parent);
 
     let current_pwd = std::env::current_dir()?;
+    let out_link_absolute: Option<PathBuf> = out_link.map(|p| current_pwd.join(p));
 
     let input = AddStringContextInput {
         jsonfile: FlakeUrl(format!("path:{}", jsonfile_name)),
@@ -61,7 +62,7 @@ pub async fn addstringcontext(
         false,
         IMPURE,
         pwd,
-        Some(&current_pwd.join(out_link)),
+        out_link_absolute.as_ref().map(PathBuf::as_ref),
         vec![],
         input,
     )

@@ -40,7 +40,7 @@ $ om ci run --on ssh://myname@myserver ~/code/myproject
 
 Just like `nix build`, `om ci` will produce a `result` symlink that contains a JSON of all store paths built. Use options `--out-link <PATH>` and `--no-link` to control this behaviour.
 
-As long as this symlink exists, your built paths will survive garbage collection.
+As long as this symlink exists, your built paths will survive garbage collection, because the closure of this symlink contains the entire build closure.
 
 ## Using in Github Actions {#gh}
 
