@@ -1998,6 +1998,7 @@ dependencies = [
  "omnix-init",
  "predicates",
  "regex",
+ "serde",
  "serde_json",
  "tabled",
  "tokio",

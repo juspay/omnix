@@ -33,6 +33,7 @@ tokio = { workspace = true }
 tracing = { workspace = true }
 clap_complete = { workspace = true }
 clap_complete_nushell = { workspace = true }
+serde = { workspace = true }
 serde_json = { workspace = true }
 
 [dev-dependencies]

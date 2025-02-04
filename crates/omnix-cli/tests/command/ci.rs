@@ -3,11 +3,13 @@ use std::path::{Path, PathBuf};
 use anyhow::bail;
 use nix_rs::store::path::StorePath;
 use regex::Regex;
+use serde::de::DeserializeOwned;
+use serde_json::Value;
 
 use super::core::om;
 
 /// Run `om ci run` passing given arguments, returning its stdout (parsed).
-async fn om_ci_run(args: &[&str]) -> anyhow::Result<Vec<StorePath>> {
+async fn om_ci_run(args: &[&str]) -> anyhow::Result<StorePath> {
     let mut cmd = om()?;
     cmd.arg("ci").arg("run").args(args);
 
@@ -19,27 +21,22 @@ async fn om_ci_run(args: &[&str]) -> anyhow::Result<Vec<StorePath>> {
         );
     }
     let stdout = String::from_utf8_lossy(&output.stdout);
-    let lines = stdout.lines();
-    let outs = lines
-        .map(|line| StorePath::new(PathBuf::from(line)))
-        .collect();
-    Ok(outs)
+    let out = StorePath::new(PathBuf::from(stdout.trim()));
+    Ok(out)
 }
 
 #[tokio::test]
 /// Run `om ci build` and check if the stdout consists of only /nix/store/* paths
 async fn build_flake_output() -> anyhow::Result<()> {
-    let outs =
+    let out =
         om_ci_run(&["github:srid/haskell-multi-nix/c85563721c388629fa9e538a1d97274861bc8321"])
             .await?;
 
-    for out in outs {
-        assert!(
-            out.as_path().starts_with("/nix/store/"),
-            "Unexpected line in stdout: {}",
-            out
-        );
-    }
+    assert!(
+        out.as_path().starts_with("/nix/store/"),
+        "Unexpected line in stdout: {}",
+        out
+    );
 
     Ok(())
 }
@@ -47,19 +44,11 @@ async fn build_flake_output() -> anyhow::Result<()> {
 #[tokio::test]
 /// A simple test, without config
 async fn test_haskell_multi_nix() -> anyhow::Result<()> {
-    let outs =
+    let out =
         om_ci_run(&["github:srid/haskell-multi-nix/c85563721c388629fa9e538a1d97274861bc8321"])
             .await?;
-    let drv_outs: Vec<PathBuf> = outs
-        .into_iter()
-        .filter_map(|drv_result| {
-            if let StorePath::Other(drv_out) = drv_result {
-                Some(drv_out)
-            } else {
-                None
-            }
-        })
-        .collect();
+    let v: Value = serde_json::from_reader(std::fs::File::open(&out)?)?;
+    let paths: Vec<PathBuf> = lookup_path(&v, &["result", "ROOT", "build", "outPaths"]).unwrap();
     let expected = vec![
         "/nix/store/3x2kpymc1qmd05da20wnmdyam38jkl7s-ghc-shell-for-packages-0",
         "/nix/store/dzhf0i3wi69568m5nvyckck8bbs9yrfd-foo-0.1.0.0",
@@ -69,43 +58,36 @@ async fn test_haskell_multi_nix() -> anyhow::Result<()> {
     .into_iter()
     .map(|s| PathBuf::from(s.to_string()))
     .collect::<Vec<_>>();
-    assert_same_drvs(drv_outs, expected);
+    assert_same_drvs(paths, expected);
     Ok(())
 }
 
 #[tokio::test]
 async fn test_haskell_multi_nix_all_dependencies() -> anyhow::Result<()> {
-    let outs = om_ci_run(&[
-        "--print-all-dependencies",
+    let out = om_ci_run(&[
+        "--include-all-dependencies",
         "github:srid/haskell-multi-nix/c85563721c388629fa9e538a1d97274861bc8321",
     ])
     .await?;
+    let v: Value = serde_json::from_reader(std::fs::File::open(&out)?)?;
+    let paths: Vec<PathBuf> = lookup_path(&v, &["result", "ROOT", "build", "allDeps"]).unwrap();
     // Since the number of dependencies is huge, we just check for the presence of system-independent
     // source of the `foo` sub-package in `haskell-multi-nix`.
-    let expected = StorePath::Other(PathBuf::from(
-        "/nix/store/bpybsny4gd5jnw0lvk5khpq7md6nwg5f-source-foo",
-    ));
-    assert!(outs.contains(&expected));
+    let expected = PathBuf::from("/nix/store/bpybsny4gd5jnw0lvk5khpq7md6nwg5f-source-foo");
+    assert!(paths.contains(&expected));
     Ok(())
 }
 
 #[tokio::test]
 /// A test, with config
 async fn test_services_flake() -> anyhow::Result<()> {
-    let outs = om_ci_run(&[
+    let out = om_ci_run(&[
         "github:juspay/services-flake/23cf162387af041035072ee4a9de20f8408907cb#default.simple-example",
     ])
     .await?;
-    let drv_outs: Vec<PathBuf> = outs
-        .into_iter()
-        .filter_map(|drv_result| {
-            if let StorePath::Other(drv_out) = drv_result {
-                Some(drv_out)
-            } else {
-                None
-            }
-        })
-        .collect();
+    let v: Value = serde_json::from_reader(std::fs::File::open(&out)?)?;
+    let paths: Vec<PathBuf> =
+        lookup_path(&v, &["result", "simple-example", "build", "outPaths"]).unwrap();
     let expected = vec![
         "/nix/store/ib83flb2pqjb416qrjbs4pqhifa3hhs4-default-test",
         "/nix/store/l9c8y2xx2iffk8l1ipp4mkval8wl8paa-default",
@@ -114,7 +96,7 @@ async fn test_services_flake() -> anyhow::Result<()> {
     .into_iter()
     .map(|s| PathBuf::from(s.to_string()))
     .collect::<Vec<_>>();
-    assert_same_drvs(drv_outs, expected);
+    assert_same_drvs(paths, expected);
     Ok(())
 }
 
@@ -137,4 +119,18 @@ pub fn without_hash(out_path: &Path) -> String {
     let re = Regex::new(r".+\-(.+)").unwrap();
     let captures = re.captures(out_path.to_str().unwrap()).unwrap();
     captures.get(1).unwrap().as_str().to_string()
+}
+
+/// Lookup a path in the [`serde_json::Value`]
+fn lookup_path<T>(v: &Value, path: &[&str]) -> Option<T>
+where
+    T: DeserializeOwned,
+{
+    match path {
+        [] => None,
+        [key] => v
+            .get(key)
+            .and_then(|v| serde_json::from_value(v.clone()).ok()),
+        [key, rest @ ..] => v.get(key).and_then(|v| lookup_path(v, rest)),
+    }
 }
