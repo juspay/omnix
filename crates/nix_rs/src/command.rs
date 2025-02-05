@@ -71,7 +71,9 @@ impl NixCmd {
     pub async fn get() -> &'static NixCmd {
         NIXCMD
             .get_or_init(|| async {
-                let cfg = NixConfig::get().await.as_ref().unwrap();
+                let cfg = NixConfig::get().await.as_ref().unwrap_or_else(|err| {
+                    panic!("Unable to get Nix config. Is your nix.conf valid?\n{}", err)
+                });
                 let mut cmd = NixCmd::default();
                 if !cfg.is_flakes_enabled() {
                     cmd.with_flakes()
