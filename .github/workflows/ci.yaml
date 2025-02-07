@@ -57,7 +57,7 @@ jobs:
             --extra-access-tokens ${{ secrets.GITHUB_TOKEN }} \
             run \
               --systems "${{ matrix.system }}" \
-              --results=$HOME/omci.json
+              --results=$HOME/omci.json \
               --github-output
 
       - name: Omnix results
