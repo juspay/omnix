@@ -64,6 +64,10 @@ pub struct RunCommand {
     #[arg(default_value = ".")]
     pub flake_ref: FlakeRef,
 
+    /// Whether to format CI output for GitHub Actions
+    #[arg(long)]
+    pub github_output: bool,
+
     /// Arguments for all steps
     #[command(flatten)]
     pub steps_args: crate::step::core::StepsArgs,
@@ -123,7 +127,15 @@ impl RunCommand {
             "{}",
             format!("\n🤖 Running CI for {}", self.flake_ref).bold()
         );
-        let res = ci_run(nixcmd, verbose, self, &cfg, &nix_info.nix_config).await?;
+        let res = ci_run(
+            nixcmd,
+            verbose,
+            self,
+            &cfg,
+            &nix_info.nix_config,
+            self.github_output,
+        )
+        .await?;
 
         let m_out_link = self.get_out_link();
         let s = serde_json::to_string(&res)?;
@@ -214,6 +226,7 @@ pub async fn ci_run(
     run_cmd: &RunCommand,
     cfg: &OmConfig,
     nix_config: &NixConfig,
+    github_output: bool,
 ) -> anyhow::Result<RunResult> {
     let mut res = HashMap::new();
     let systems = run_cmd.get_systems(cmd, nix_config).await?;
@@ -243,12 +256,19 @@ pub async fn ci_run(
             continue;
         }
 
+        if github_output {
+            println!("::group::Running {}", name);
+        }
+
         tracing::info!("\n🍎 {}", name);
         let steps_res = subflake
             .steps
             .run(cmd, verbose, run_cmd, &systems, &cfg.flake_url, subflake)
             .await?;
         res.insert(subflake_name.clone(), steps_res);
+        if github_output {
+            println!("::endgroup::");
+        }
     }
 
     tracing::info!("\n🥳 Success!");
