@@ -67,6 +67,10 @@ pub struct RunCommand {
     /// Arguments for all steps
     #[command(flatten)]
     pub steps_args: crate::step::core::StepsArgs,
+
+    /// Whether to format CI output for GitHub Actions
+    #[arg(long)]
+    pub github_output: bool,
 }
 
 impl Default for RunCommand {
@@ -123,7 +127,15 @@ impl RunCommand {
             "{}",
             format!("\n🤖 Running CI for {}", self.flake_ref).bold()
         );
-        let res = ci_run(nixcmd, verbose, self, &cfg, &nix_info.nix_config).await?;
+        let res = ci_run(
+            nixcmd,
+            verbose,
+            self,
+            &cfg,
+            &nix_info.nix_config,
+            self.github_output,
+        )
+        .await?;
 
         let m_out_link = self.get_out_link();
         let s = serde_json::to_string(&res)?;
@@ -207,6 +219,21 @@ pub async fn check_nix_version(cfg: &OmConfig, nix_info: &NixInfo) -> anyhow::Re
     Ok(())
 }
 
+async fn grouped_log_async<T, F>(github_output: bool, name: &str, f: F) -> T
+where
+    F: std::future::Future<Output = T>,
+{
+    match github_output {
+        true => {
+            println!("::group::Running {}", name);
+            let res = f.await;
+            println!("::endgroup::");
+            res
+        }
+        false => f.await,
+    }
+}
+
 /// Run CI fo all subflakes
 pub async fn ci_run(
     cmd: &NixCmd,
@@ -214,6 +241,7 @@ pub async fn ci_run(
     run_cmd: &RunCommand,
     cfg: &OmConfig,
     nix_config: &NixConfig,
+    github_output: bool,
 ) -> anyhow::Result<RunResult> {
     let mut res = HashMap::new();
     let systems = run_cmd.get_systems(cmd, nix_config).await?;
@@ -243,12 +271,16 @@ pub async fn ci_run(
             continue;
         }
 
-        tracing::info!("\n🍎 {}", name);
-        let steps_res = subflake
-            .steps
-            .run(cmd, verbose, run_cmd, &systems, &cfg.flake_url, subflake)
-            .await?;
-        res.insert(subflake_name.clone(), steps_res);
+        grouped_log_async(github_output, subflake_name, async {
+            tracing::info!("\n🍎 {}", name);
+            let steps_res = subflake
+                .steps
+                .run(cmd, verbose, run_cmd, &systems, &cfg.flake_url, subflake)
+                .await?;
+            res.insert(subflake_name.clone(), steps_res);
+            Ok::<(), anyhow::Error>(())
+        })
+        .await?;
     }
 
     tracing::info!("\n🥳 Success!");
