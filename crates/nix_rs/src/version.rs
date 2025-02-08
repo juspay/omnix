@@ -34,6 +34,10 @@ pub enum BadNixVersion {
     /// Command error
     #[error("Parse error (int): `nix --version` cannot be parsed")]
     Command,
+
+    /// Infallible
+    #[error("Infallible")]
+    Infallible(#[from] std::convert::Infallible),
 }
 
 impl FromStr for NixVersion {
@@ -43,12 +47,20 @@ impl FromStr for NixVersion {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         // NOTE: The parser is lenient in allowing pure nix version (produced
         // by [Display] instance), so as to work with serde_with instances.
-        let re = Regex::new(r"(?:nix \(Nix\) )?(\d+)\.(\d+)\.(\d+)")?;
+        let re = Regex::new(r"(?:nix \(([^\)]+)\) )?(\d+)\.(\d+)\.(\d+).*")?;
 
         let captures = re.captures(s).ok_or(BadNixVersion::Command)?;
-        let major = captures[1].parse::<u32>()?;
-        let minor = captures[2].parse::<u32>()?;
-        let patch = captures[3].parse::<u32>()?;
+        let name = captures[1].parse::<String>()?;
+        let major = captures[2].parse::<u32>()?;
+        let minor = captures[3].parse::<u32>()?;
+        let patch = captures[4].parse::<u32>()?;
+
+        // We expect `name` to be exactly "Nix", but some implementations (e.g.:
+        // Lix) are known to hijack the global Nix command fooling the caller
+        // about it being Nix.
+        if name != "Nix" {
+            panic!("Your `nix` binary appears to have been hijacked by something other than the official implementation (we found '{}'). Install Nix using <https://nixos.asia/en/install>", name);
+        }
 
         Ok(NixVersion {
             major,
