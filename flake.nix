@@ -11,8 +11,8 @@
 
     rust-flake.url = "github:juspay/rust-flake";
     rust-flake.inputs.nixpkgs.follows = "nixpkgs";
-    treefmt-nix.url = "github:numtide/treefmt-nix";
-    treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
+    git-hooks.url = "github:cachix/git-hooks.nix";
+    git-hooks.flake = false;
     cachix-push.url = "github:juspay/cachix-push";
 
     # We cache these inputs locally, and then have Omnix reference the catched inputs.

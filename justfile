@@ -4,11 +4,9 @@ mod doc
 default:
     @just --list
 
-# Auto-format the source tree
-fmt:
-    treefmt
-
-alias f := fmt
+# Run all pre-commit hooks on all files
+pca:
+    pre-commit run -a
 
 # Run omnix-cli locally
 watch *ARGS:
