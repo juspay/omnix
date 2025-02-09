@@ -7,3 +7,5 @@ dist
 /assets/tailwind.css
 
 /.vscode/spellright.dict
+
+/.pre-commit-config.yaml
