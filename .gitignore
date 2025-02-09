@@ -1,9 +1,14 @@
-/target
-result
-result-lib
-dist
-.direnv
-
 /assets/tailwind.css
 
+# VSCode
 /.vscode/spellright.dict
+
+# Nix
+/.direnv
+/.pre-commit-config.yaml
+result
+result-lib
+
+# Rust
+/target
+/dist
