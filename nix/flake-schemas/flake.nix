@@ -79,6 +79,30 @@
             })
           output);
       };
+      processComposeSchema = {
+        version = 1;
+        doc = ''
+          The `apps` output provides commands available via `nix run`.
+        '';
+        inventory = output:
+          flake-schemas.lib.mkChildren (builtins.listToAttrs (map
+            (system: {
+              name = system;
+              value = flake-schemas.lib.mkChildren (builtins.mapAttrs
+                (processes: definition:
+                  {
+                    evalChecks.isValidProcess =
+                      definition ? settings &&
+                      definition ? package;
+                    derivation = definition.package;
+                    what = "Process Compose";
+                    evalOnAllSystems = true;
+                  })
+                (output.${system}.process-compose or { }));
+            })
+            [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" ]));
+      };
+
     in
     {
       schemas = flake-schemas.schemas // {
@@ -87,6 +111,7 @@
         nixosConfigurations = nixosConfigurationsSchema;
         homeConfigurations = homeConfigurationsSchema;
         darwinConfigurations = darwinConfigurationsSchema;
+        allSystems = processComposeSchema;
       };
     };
 }
