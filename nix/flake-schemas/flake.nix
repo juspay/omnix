@@ -92,9 +92,7 @@
                 (processes: definition:
                   {
                     evalChecks.isValidProcess =
-                      definition ? settings &&
-                      definition ? package;
-                    derivation = definition.package;
+                      definition ? settings;
                     what = "Process Compose";
                     evalOnAllSystems = true;
                   })
