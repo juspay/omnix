@@ -80,6 +80,10 @@
           output);
       };
       processComposeSchema = {
+        # Enabling flake-parts `debug` flag is required for this schema to work.
+        # https://flake.parts/options/flake-parts.html#opt-debug
+        # TODO: https://github.com/Platonic-Systems/process-compose-flake should provide schema for it self
+        # So that omnix at runtime can fetch and merge the schema from the flake
         version = 1;
         doc = ''
           The `apps` output provides commands available via `nix run`.
