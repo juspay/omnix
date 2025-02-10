@@ -23,7 +23,7 @@ use tracing::instrument;
 #[cfg(feature = "clap")]
 use clap;
 
-use crate::config::NixConfig;
+use crate::{arg::NixArgs, config::NixConfig};
 
 /// The `nix` command's global options.
 ///
@@ -32,17 +32,9 @@ use crate::config::NixConfig;
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Hash)]
 #[cfg_attr(feature = "clap", derive(clap::Parser))]
 pub struct NixCmd {
-    /// Append to the experimental-features setting of Nix.
-    #[cfg_attr(feature = "clap", arg(long))]
-    pub extra_experimental_features: Vec<String>,
-
-    /// Append to the access-tokens setting of Nix.
-    #[cfg_attr(feature = "clap", arg(long))]
-    pub extra_access_tokens: Vec<String>,
-
-    /// Consider all previously downloaded files out-of-date.
-    #[cfg_attr(feature = "clap", arg(long))]
-    pub refresh: bool,
+    /// The arguments to pass to `nix`
+    #[clap(flatten)]
+    pub args: NixArgs,
 }
 
 static NIXCMD: OnceCell<NixCmd> = OnceCell::const_new();
@@ -76,30 +68,18 @@ impl NixCmd {
                 });
                 let mut cmd = NixCmd::default();
                 if !cfg.is_flakes_enabled() {
-                    cmd.with_flakes()
+                    cmd.args.with_flakes()
                 }
                 cmd
             })
             .await
     }
 
-    /// Enable flakes on this [NixCmd] configuration
-    pub fn with_flakes(&mut self) {
-        self.extra_experimental_features
-            .append(vec!["nix-command".to_string(), "flakes".to_string()].as_mut());
-    }
-
-    /// Enable nix-command on this [NixCmd] configuration
-    pub fn with_nix_command(&mut self) {
-        self.extra_experimental_features
-            .append(vec!["nix-command".to_string()].as_mut());
-    }
-
     /// Return a [Command] for this [NixCmd] configuration
     pub fn command(&self) -> Command {
         let mut cmd = Command::new("nix");
         cmd.kill_on_drop(true);
-        cmd.args(self.args());
+        cmd.args(self.args.into_iter());
         cmd
     }
 
@@ -178,24 +158,6 @@ impl NixCmd {
                 exit_code: out.status.code(),
             })
         }
-    }
-
-    /// Convert this [NixCmd] configuration into a list of arguments for
-    /// [Command]
-    fn args(&self) -> Vec<String> {
-        let mut args = vec![];
-        if !self.extra_experimental_features.is_empty() {
-            args.push("--extra-experimental-features".to_string());
-            args.push(self.extra_experimental_features.join(" "));
-        }
-        if !self.extra_access_tokens.is_empty() {
-            args.push("--extra-access-tokens".to_string());
-            args.push(self.extra_access_tokens.join(" "));
-        }
-        if self.refresh {
-            args.push("--refresh".to_string());
-        }
-        args
     }
 }
 
