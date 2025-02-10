@@ -53,11 +53,10 @@ jobs:
       # Run omnix using self.
       - name: Omnix CI
         run: |
-          nix run . -- ci \
+          nix run . -- ci run \
             --extra-access-tokens ${{ secrets.GITHUB_TOKEN }} \
-            run \
-              --systems "${{ matrix.system }}" \
-              --results=$HOME/omci.json
+            --systems "${{ matrix.system }}" \
+            --results=$HOME/omci.json
 
       - name: Omnix results
         id: omci
@@ -86,7 +85,7 @@ jobs:
       - name: Push to cachix
         env:
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
-          BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
         if: env.BRANCH_NAME == 'main'
         run: |
           nix run github:juspay/cachix-push -- \

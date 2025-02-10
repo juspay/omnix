@@ -22,6 +22,9 @@ $ om ci # Or `om ci run` or `om ci run .`
 # Run CI on a local flake (default is $PWD)
 $ om ci run ~/code/myproject
 
+# Pass custom arguments to `nix` after '--'
+$ om ci run ~/code/myproject -- --accept-flake-config
+
 # Run CI on a github repo
 $ om ci run github:hercules-ci/hercules-ci-agent
 
