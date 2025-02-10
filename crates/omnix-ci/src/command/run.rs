@@ -1,6 +1,7 @@
 //! The run command
 use std::{
     collections::HashMap,
+    env,
     io::Write,
     path::{Path, PathBuf},
 };
@@ -65,7 +66,7 @@ pub struct RunCommand {
     pub flake_ref: FlakeRef,
 
     /// Whether to format CI output for GitHub Actions
-    #[arg(long)]
+    #[clap(long, default_value_t = env::var("GITHUB_ACTION").is_ok())]
     pub github_output: bool,
 
     /// Arguments for all steps
@@ -266,6 +267,7 @@ pub async fn ci_run(
             .run(cmd, verbose, run_cmd, &systems, &cfg.flake_url, subflake)
             .await?;
         res.insert(subflake_name.clone(), steps_res);
+
         if github_output {
             println!("::endgroup::");
         }
