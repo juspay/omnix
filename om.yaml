@@ -25,14 +25,16 @@ ci:
             systems:
               - x86_64-linux
               - aarch64-darwin
-          cargo-clippy:
-            type: devshell
-            command:
-              - just
-              - clippy
-            systems:
-              - x86_64-linux
-              - aarch64-darwin
+          # Disabled until upstream bug is fixed,
+          # https://github.com/rust-lang/rust-clippy/issues/14045
+          # cargo-clippy:
+          #   type: devshell
+          #   command:
+          #     - just
+          #     - clippy
+          #   systems:
+          #     - x86_64-linux
+          #     - aarch64-darwin
           cargo-doc:
             type: devshell
             command:
