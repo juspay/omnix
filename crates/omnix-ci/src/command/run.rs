@@ -72,6 +72,10 @@ pub struct RunCommand {
     /// Arguments for all steps
     #[command(flatten)]
     pub steps_args: crate::step::core::StepsArgs,
+
+    /// Nix command global options
+    #[command(flatten)]
+    pub nixcmd: NixCmd,
 }
 
 impl Default for RunCommand {
@@ -101,15 +105,17 @@ impl RunCommand {
     }
 
     /// Run the build command which decides whether to do ci run on current machine or a remote machine
-    pub async fn run(&self, nixcmd: &NixCmd, verbose: bool, cfg: OmConfig) -> anyhow::Result<()> {
+    pub async fn run(&self, verbose: bool, cfg: OmConfig) -> anyhow::Result<()> {
         match &self.on {
-            Some(store_uri) => run_remote::run_on_remote_store(nixcmd, self, &cfg, store_uri).await,
-            None => self.run_local(nixcmd, verbose, cfg).await,
+            Some(store_uri) => {
+                run_remote::run_on_remote_store(&self.nixcmd, self, &cfg, store_uri).await
+            }
+            None => self.run_local(verbose, cfg).await,
         }
     }
 
     /// Run [RunCommand] on local Nix store.
-    async fn run_local(&self, nixcmd: &NixCmd, verbose: bool, cfg: OmConfig) -> anyhow::Result<()> {
+    async fn run_local(&self, verbose: bool, cfg: OmConfig) -> anyhow::Result<()> {
         // TODO: We'll refactor this function to use steps
         // https://github.com/juspay/omnix/issues/216
 
@@ -129,7 +135,7 @@ impl RunCommand {
             format!("\n🤖 Running CI for {}", self.flake_ref).bold()
         );
         let res = ci_run(
-            nixcmd,
+            &self.nixcmd,
             verbose,
             self,
             &cfg,
@@ -147,7 +153,7 @@ impl RunCommand {
         path.write_all(s.as_bytes())?;
 
         let results_path =
-            addstringcontext::addstringcontext(nixcmd, path.path(), m_out_link).await?;
+            addstringcontext::addstringcontext(&self.nixcmd, path.path(), m_out_link).await?;
         println!("{}", results_path.display());
         if let Some(m_out_link) = m_out_link {
             tracing::info!(

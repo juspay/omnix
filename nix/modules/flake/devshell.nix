@@ -11,7 +11,7 @@ in
       name = "omnix-devshell";
       meta.description = "Omnix development environment";
       inputsFrom = [
-        config.treefmt.build.devShell
+        config.pre-commit.devShell
         self'.devShells.rust
       ];
       inherit (config.rust-project.crates."omnix-cli".crane.args)

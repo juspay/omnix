@@ -44,7 +44,7 @@ impl BuildStep {
             "{}",
             format!("⚒️  Building subflake: {}", subflake.dir).bold()
         );
-        let nix_args = subflake_extra_args(subflake, &run_cmd.steps_args.build_step_args);
+        let nix_args = subflake_extra_args(subflake);
         let output = DevourFlake::call(
             nixcmd,
             verbose,
@@ -78,7 +78,7 @@ impl BuildStep {
 }
 
 /// Extra args to pass to devour-flake
-fn subflake_extra_args(subflake: &SubflakeConfig, build_step_args: &BuildStepArgs) -> Vec<String> {
+fn subflake_extra_args(subflake: &SubflakeConfig) -> Vec<String> {
     let mut args = vec![];
 
     for (k, v) in &subflake.override_inputs {
@@ -88,8 +88,6 @@ fn subflake_extra_args(subflake: &SubflakeConfig, build_step_args: &BuildStepArg
             v.0.to_string(),
         ])
     }
-
-    args.extend(build_step_args.extra_nix_build_args.iter().cloned());
 
     args
 }
@@ -103,14 +101,6 @@ pub struct BuildStepArgs {
     /// useful to explicitly push all dependencies to a cache.
     #[clap(long, short = 'd')]
     pub include_all_dependencies: bool,
-
-    /// Additional arguments to pass through to `nix build`
-    #[arg(last = true, default_values_t = vec![
-    "--refresh".to_string(),
-    "-j".to_string(),
-    "auto".to_string(),
-    ])]
-    pub extra_nix_build_args: Vec<String>,
 }
 
 impl BuildStepArgs {
@@ -120,13 +110,6 @@ impl BuildStepArgs {
 
         if self.include_all_dependencies {
             args.push("--include-all-dependencies".to_owned());
-        }
-
-        if !self.extra_nix_build_args.is_empty() {
-            args.push("--".to_owned());
-            for arg in &self.extra_nix_build_args {
-                args.push(arg.clone());
-            }
         }
 
         args

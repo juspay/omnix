@@ -11,8 +11,8 @@
 
     rust-flake.url = "github:juspay/rust-flake";
     rust-flake.inputs.nixpkgs.follows = "nixpkgs";
-    treefmt-nix.url = "github:numtide/treefmt-nix";
-    treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
+    git-hooks.url = "github:cachix/git-hooks.nix";
+    git-hooks.flake = false;
     cachix-push.url = "github:juspay/cachix-push";
 
     # We cache these inputs locally, and then have Omnix reference the catched inputs.
@@ -32,10 +32,10 @@
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       systems = import inputs.systems;
 
-      # See ./nix/modules/flake-parts/*.nix for the modules that are imported here.
+      # See ./nix/modules/flake/*.nix for the modules that are imported here.
       imports = with builtins;
         map
-          (fn: ./nix/modules/flake-parts/${fn})
-          (attrNames (readDir ./nix/modules/flake-parts));
+          (fn: ./nix/modules/flake/${fn})
+          (attrNames (readDir ./nix/modules/flake));
     };
 }
