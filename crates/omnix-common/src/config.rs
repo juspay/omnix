@@ -29,7 +29,7 @@ impl OmConfig {
     /// Fetch the `om` configuration from `om.yaml` if present, falling back to `om` config in flake output
     pub async fn get(nixcmd: &NixCmd, flake_url: &FlakeUrl) -> Result<Self, OmConfigError> {
         match Self::from_yaml(nixcmd, flake_url).await? {
-            None => Self::from_flake(flake_url).await,
+            None => Self::from_flake(nixcmd, flake_url).await,
             Some(config) => Ok(config),
         }
     }
@@ -62,17 +62,13 @@ impl OmConfig {
     }
 
     /// Read the configuration from `om` flake output
-    async fn from_flake(flake_url: &FlakeUrl) -> Result<Self, OmConfigError> {
+    async fn from_flake(nixcmd: &NixCmd, flake_url: &FlakeUrl) -> Result<Self, OmConfigError> {
         Ok(OmConfig {
             flake_url: flake_url.without_attr(),
             reference: flake_url.get_attr().as_list(),
-            config: nix_eval_maybe(
-                NixCmd::get().await,
-                &FlakeOptions::default(),
-                &flake_url.with_attr("om"),
-            )
-            .await?
-            .unwrap_or_default(),
+            config: nix_eval_maybe(nixcmd, &FlakeOptions::default(), &flake_url.with_attr("om"))
+                .await?
+                .unwrap_or_default(),
         })
     }
 

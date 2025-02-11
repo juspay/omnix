@@ -80,7 +80,7 @@ impl InitCommand {
     async fn registry_choose(&self) -> anyhow::Result<FlakeUrl> {
         match self.flake {
             Some(ref flake) => Ok(flake.clone()),
-            None => omnix_init::core::select_from_registry().await,
+            None => omnix_init::core::select_from_registry(&self.nixcmd).await,
         }
     }
 }

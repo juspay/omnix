@@ -16,20 +16,16 @@ lazy_static! {
 }
 
 /// Our builtin registry of templates
-pub static BUILTIN_REGISTRY: OnceCell<Result<Registry, NixCmdError>> = OnceCell::const_new();
+static BUILTIN_REGISTRY: OnceCell<Result<Registry, NixCmdError>> = OnceCell::const_new();
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Deserialize, serde::Serialize)]
 pub struct Registry(pub HashMap<String, FlakeUrl>);
 
-pub async fn get() -> &'static Result<Registry, NixCmdError> {
+pub async fn get(nixcmd: &NixCmd) -> &'static Result<Registry, NixCmdError> {
     BUILTIN_REGISTRY
         .get_or_init(|| async {
-            let registry = nix_eval::<Registry>(
-                NixCmd::get().await,
-                &FlakeOptions::default(),
-                &OM_INIT_REGISTRY,
-            )
-            .await?;
+            let registry =
+                nix_eval::<Registry>(nixcmd, &FlakeOptions::default(), &OM_INIT_REGISTRY).await?;
             Ok(registry)
         })
         .await
