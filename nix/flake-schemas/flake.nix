@@ -1,8 +1,9 @@
 {
   inputs = {
     flake-schemas.url = "github:DeterminateSystems/flake-schemas";
+    systems.url = "github:nix-systems/default";
   };
-  outputs = { flake-schemas, ... }:
+  outputs = inputs@{ flake-schemas, ... }:
     let
       appsSchema = {
         version = 1;
@@ -102,7 +103,7 @@
                   })
                 (output.${system}.process-compose or { }));
             })
-            [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" ]));
+            (import inputs.systems)));
       };
 
     in
