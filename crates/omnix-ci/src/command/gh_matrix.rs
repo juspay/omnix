@@ -1,6 +1,6 @@
 //! The gh-matrix command
 use clap::Parser;
-use nix_rs::flake::system::System;
+use nix_rs::{command::NixCmd, flake::system::System};
 use omnix_common::config::OmConfig;
 
 use crate::{config::subflakes::SubflakesConfig, flake_ref::FlakeRef, github};
@@ -18,6 +18,10 @@ pub struct GHMatrixCommand {
     /// Systems to include in the matrix
     #[arg(long, value_parser, value_delimiter = ',')]
     pub systems: Vec<System>,
+
+    /// Nix command global options
+    #[command(flatten)]
+    pub nixcmd: NixCmd,
 }
 
 impl GHMatrixCommand {

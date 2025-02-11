@@ -27,20 +27,23 @@ pub struct OmConfig {
 
 impl OmConfig {
     /// Fetch the `om` configuration from `om.yaml` if present, falling back to `om` config in flake output
-    pub async fn get(flake_url: &FlakeUrl) -> Result<Self, OmConfigError> {
-        match Self::from_yaml(flake_url).await? {
+    pub async fn get(nixcmd: &NixCmd, flake_url: &FlakeUrl) -> Result<Self, OmConfigError> {
+        match Self::from_yaml(nixcmd, flake_url).await? {
             None => Self::from_flake(flake_url).await,
             Some(config) => Ok(config),
         }
     }
 
     /// Read the configuration from `om.yaml` in flake root
-    async fn from_yaml(flake_url: &FlakeUrl) -> Result<Option<Self>, OmConfigError> {
+    async fn from_yaml(
+        nixcmd: &NixCmd,
+        flake_url: &FlakeUrl,
+    ) -> Result<Option<Self>, OmConfigError> {
         let path = if let Some(local_path) = flake_url.without_attr().as_local_path() {
             local_path.to_path_buf()
         } else {
             (flake_url.without_attr())
-                .as_local_path_or_fetch(NixCmd::get().await)
+                .as_local_path_or_fetch(nixcmd)
                 .await?
         }
         .join("om.yaml");
@@ -176,6 +179,7 @@ async fn test_get_missing_sub_config() {
 #[tokio::test]
 async fn test_get_omconfig_from_remote_flake_with_attr() {
     let om_config = OmConfig::get(
+        NixCmd::get().await,
         &FlakeUrl::from_str(
             "github:juspay/omnix/0ed2a389d6b4c8eb78caed778e20e872d2a59973#default.omnix",
         )
