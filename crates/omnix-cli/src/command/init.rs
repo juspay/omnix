@@ -1,7 +1,7 @@
 use std::{collections::HashMap, path::PathBuf, str::FromStr};
 
 use clap::Parser;
-use nix_rs::{config::NixConfig, flake::url::FlakeUrl};
+use nix_rs::{command::NixCmd, config::NixConfig, flake::url::FlakeUrl};
 use serde_json::Value;
 
 /// Initialize a new flake project
@@ -39,13 +39,22 @@ pub struct InitCommand {
         conflicts_with = "OUTPUT_DIR"
     )]
     test: bool,
+
+    /// Nix command global options
+    #[command(flatten)]
+    pub nixcmd: NixCmd,
 }
 
 impl InitCommand {
     pub async fn run(&self) -> anyhow::Result<()> {
         if self.test {
             let cfg = NixConfig::get().await.as_ref()?;
-            omnix_init::core::run_tests(&cfg.system.value, &self.registry_choose().await?).await?;
+            omnix_init::core::run_tests(
+                &self.nixcmd,
+                &cfg.system.value,
+                &self.registry_choose().await?,
+            )
+            .await?;
         } else {
             let path = self.path.as_ref().unwrap(); // unwrap is okay, because of `required_unless_present`
             if path.exists() {
@@ -58,6 +67,7 @@ impl InitCommand {
                 .as_ref()
                 .map_or_else(HashMap::new, |hm| hm.0.clone());
             omnix_init::core::run(
+                &self.nixcmd,
                 path,
                 &self.registry_choose().await?,
                 &params,
