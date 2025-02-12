@@ -49,6 +49,7 @@ impl OmConfig {
         .join("om.yaml");
 
         if !path.exists() {
+            tracing::debug!("{:?} does not exist; evaluating flake", path);
             return Ok(None);
         }
 
