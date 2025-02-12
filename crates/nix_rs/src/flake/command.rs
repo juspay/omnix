@@ -115,14 +115,6 @@ pub struct FlakeOptions {
     /// Pass --no-write-lock-file
     pub no_write_lock_file: bool,
 
-    /// Pass --refresh
-    pub refresh: bool,
-
-    /// Accept `nixConfig` configuration in flake.nix
-    ///
-    /// Do not enable this by default since it is not secure; https://github.com/NixOS/nix/issues/9649
-    pub accept_flake_config: Option<bool>,
-
     /// The directory from which to run our nix command (such that relative flake URLs resolve properly)
     pub current_dir: Option<PathBuf>,
 }
@@ -138,16 +130,6 @@ impl FlakeOptions {
         }
         if self.no_write_lock_file {
             cmd.arg("--no-write-lock-file");
-        }
-        if self.refresh {
-            cmd.arg("--refresh");
-        }
-        if let Some(accept) = self.accept_flake_config {
-            if accept {
-                cmd.arg("--accept-flake-config");
-            } else {
-                cmd.arg("--no-accept-flake-config");
-            }
         }
     }
 }
