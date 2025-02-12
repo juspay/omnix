@@ -264,7 +264,7 @@ pub async fn ci_run(
         }
 
         if github_output {
-            println!("::group::Running {}", name);
+            eprintln!("::group::Running {}", name);
         }
 
         tracing::info!("\n🍎 {}", name);
@@ -275,7 +275,7 @@ pub async fn ci_run(
         res.insert(subflake_name.clone(), steps_res);
 
         if github_output {
-            println!("::endgroup::");
+            eprintln!("::endgroup::");
         }
     }
 
