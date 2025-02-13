@@ -18,7 +18,6 @@ where
 
     if enable {
         eprintln!("::endgroup::");
-        std::io::stderr().flush().unwrap_or_default();
     }
 
     result
