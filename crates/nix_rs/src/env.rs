@@ -185,15 +185,15 @@ pub enum NixInstaller {
     /// The Determinate Systems installer
     DetSys(super::detsys_installer::DetSysNixInstaller),
     /// Either offical installer or from a different package manager
-    Other(PathBuf),
+    Other,
 }
 
 impl Display for NixInstaller {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             NixInstaller::DetSys(installer) => write!(f, "{}", installer),
-            NixInstaller::Other(nix_path) => {
-                write!(f, "Unknown installer for {}", nix_path.display())
+            NixInstaller::Other => {
+                write!(f, "Unknown installer")
             }
         }
     }
@@ -204,7 +204,7 @@ impl NixInstaller {
     pub fn detect() -> Result<Self, NixEnvError> {
         match super::detsys_installer::DetSysNixInstaller::detect()? {
             Some(installer) => Ok(NixInstaller::DetSys(installer)),
-            None => Ok(NixInstaller::Other(which("nix")?)),
+            None => Ok(NixInstaller::Other),
         }
     }
 }
