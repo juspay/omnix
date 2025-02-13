@@ -1,6 +1,6 @@
 //! Working with GitHub Actions
 
-use std::future::Future;
+use std::{future::Future, io::Write};
 
 /// Group log lines in GitHub Actions
 ///
@@ -18,6 +18,7 @@ where
 
     if enable {
         eprintln!("::endgroup::");
+        std::io::stderr().flush().unwrap_or_default();
     }
 
     result
