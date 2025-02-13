@@ -227,6 +227,7 @@ pub async fn check_nix_version(cfg: &OmConfig, nix_info: &NixInfo) -> anyhow::Re
 }
 
 /// Run CI fo all subflakes
+/// Run CI for all subflakes
 pub async fn ci_run(
     cmd: &NixCmd,
     verbose: bool,
