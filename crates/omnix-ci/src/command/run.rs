@@ -2,6 +2,7 @@
 use std::{
     collections::HashMap,
     env,
+    future::Future,
     io::Write,
     path::{Path, PathBuf},
 };
@@ -24,6 +25,25 @@ use serde::{Deserialize, Serialize};
 use crate::{config::subflakes::SubflakesConfig, flake_ref::FlakeRef, step::core::StepsResult};
 
 use super::run_remote;
+
+/// Runs the given async function within a GitHub Actions log group if `github_output` is enabled.
+pub async fn in_github_group<F, Fut, T>(name: &str, github_output: bool, f: F) -> T
+where
+    F: FnOnce() -> Fut,
+    Fut: Future<Output = T>,
+{
+    if github_output {
+        eprintln!("::group::Running {}", name);
+    }
+
+    let result = f().await;
+
+    if github_output {
+        eprintln!("::endgroup::");
+    }
+
+    result
+}
 
 /// Run all CI steps for all or given subflakes
 /// Command to run all CI steps
@@ -126,23 +146,19 @@ impl RunCommand {
             .with_context(|| "Unable to gather nix info")?;
 
         // First, run the necessary health checks
-        tracing::info!("{}", "\n🫀 Performing health check".bold());
-        check_nix_version(&cfg, nix_info).await?;
+        in_github_group("Health check", self.github_output, || async {
+            tracing::info!("{}", "\n🫀 Performing health check".bold());
+            // check_nix_version(&cfg, nix_info).await?;
+            check_nix_version(&cfg, nix_info).await
+        })
+        .await?;
 
         // Then, do the CI steps
         tracing::info!(
             "{}",
             format!("\n🤖 Running CI for {}", self.flake_ref).bold()
         );
-        let res = ci_run(
-            &self.nixcmd,
-            verbose,
-            self,
-            &cfg,
-            &nix_info.nix_config,
-            self.github_output,
-        )
-        .await?;
+        let res = ci_run(&self.nixcmd, verbose, self, &cfg, &nix_info.nix_config).await?;
 
         let m_out_link = self.get_out_link();
         let s = serde_json::to_string(&res)?;
@@ -226,7 +242,6 @@ pub async fn check_nix_version(cfg: &OmConfig, nix_info: &NixInfo) -> anyhow::Re
     Ok(())
 }
 
-/// Run CI fo all subflakes
 /// Run CI for all subflakes
 pub async fn ci_run(
     cmd: &NixCmd,
@@ -234,7 +249,6 @@ pub async fn ci_run(
     run_cmd: &RunCommand,
     cfg: &OmConfig,
     nix_config: &NixConfig,
-    github_output: bool,
 ) -> anyhow::Result<RunResult> {
     let mut res = HashMap::new();
     let systems = run_cmd.get_systems(cmd, nix_config).await?;
@@ -264,20 +278,15 @@ pub async fn ci_run(
             continue;
         }
 
-        if github_output {
-            eprintln!("::group::Running {}", name);
-        }
-
-        tracing::info!("\n🍎 {}", name);
-        let steps_res = subflake
-            .steps
-            .run(cmd, verbose, run_cmd, &systems, &cfg.flake_url, subflake)
-            .await?;
+        let steps_res = in_github_group(&name.to_string(), run_cmd.github_output, || async {
+            tracing::info!("\n🍎 {}", name);
+            subflake
+                .steps
+                .run(cmd, verbose, run_cmd, &systems, &cfg.flake_url, subflake)
+                .await
+        })
+        .await?;
         res.insert(subflake_name.clone(), steps_res);
-
-        if github_output {
-            eprintln!("::endgroup::");
-        }
     }
 
     tracing::info!("\n🥳 Success!");
