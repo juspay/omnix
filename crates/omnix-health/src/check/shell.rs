@@ -1,5 +1,7 @@
+use nix_rs::env::OS;
 use serde::{Deserialize, Serialize};
 use std::{
+    borrow::Cow,
     collections::HashMap,
     hash::Hash,
     path::{Path, PathBuf},
@@ -26,13 +28,14 @@ impl Default for ShellCheck {
 impl Checkable for ShellCheck {
     fn check(
         &self,
-        _nix_info: &nix_rs::info::NixInfo,
+        nix_info: &nix_rs::info::NixInfo,
         _flake: Option<&nix_rs::flake::url::FlakeUrl>,
     ) -> Vec<(&'static str, Check)> {
         if !self.enable {
             return vec![];
         }
-        let user_shell_env = match CurrentUserShellEnv::new() {
+        let os = &nix_info.nix_env.os;
+        let user_shell_env = match CurrentUserShellEnv::new(os) {
             Ok(shell) => shell,
             Err(err) => {
                 tracing::error!("Skipping shell dotfile check! {:?}", err);
@@ -46,8 +49,8 @@ impl Checkable for ShellCheck {
         };
 
         // Iterate over each dotfile and check if it is managed by Nix
-        let mut managed: HashMap<&'static str, PathBuf> = HashMap::new();
-        let mut unmanaged: HashMap<&'static str, PathBuf> = HashMap::new();
+        let mut managed: HashMap<String, PathBuf> = HashMap::new();
+        let mut unmanaged: HashMap<String, PathBuf> = HashMap::new();
         for (name, path) in user_shell_env.dotfiles {
             if super::direnv::is_path_in_nix_store(&path) {
                 managed.insert(name, path.clone());
@@ -88,15 +91,15 @@ struct CurrentUserShellEnv {
     /// Current shell
     shell: Shell,
     /// *Absolute* paths to the dotfiles
-    dotfiles: HashMap<&'static str, PathBuf>,
+    dotfiles: HashMap<String, PathBuf>,
 }
 
 impl CurrentUserShellEnv {
     /// Get the current user's shell environment
-    fn new() -> Result<Self, ShellError> {
+    fn new(os: &OS) -> Result<Self, ShellError> {
         let home = PathBuf::from(std::env::var("HOME")?);
         let shell = Shell::current_shell()?;
-        let dotfiles = shell.get_dotfiles(&home)?;
+        let dotfiles = shell.get_dotfiles(os, &home)?;
         let v = CurrentUserShellEnv {
             home,
             shell,
@@ -127,6 +130,7 @@ enum ShellError {
 enum Shell {
     Zsh,
     Bash,
+    Nushell,
 }
 
 impl Shell {
@@ -147,25 +151,43 @@ impl Shell {
         match shell_name.as_ref() {
             "zsh" => Ok(Shell::Zsh),
             "bash" => Ok(Shell::Bash),
+            "nu" => Ok(Shell::Nushell),
             _ => Err(ShellError::UnsupportedShell),
         }
     }
 
     /// Get shell dotfiles
-    fn dotfile_names(&self) -> Vec<&'static str> {
+    fn dotfile_names(&self, os: &OS) -> Vec<String> {
         match &self {
-            Shell::Zsh => vec![".zshrc", ".zshenv", ".zprofile", ".zlogin", ".zlogout"],
-            Shell::Bash => vec![".bashrc", ".bash_profile", ".profile"],
+            Shell::Zsh => vec![
+                ".zshrc".into(),
+                ".zshenv".into(),
+                ".zprofile".into(),
+                ".zlogin".into(),
+                ".zlogout".into(),
+            ],
+            Shell::Bash => vec![".bashrc".into(), ".bash_profile".into(), ".profile".into()],
+            Shell::Nushell => {
+                let base = match os {
+                    // https://www.nushell.sh/book/configuration.html#configuration-overview
+                    OS::MacOS { .. } => "Library/Application Support/nushell",
+                    _ => ".config/nushell",
+                };
+                vec!["env.nu", "config.nu", "login.nu"]
+                    .iter()
+                    .map(|f| format!("{}/{}", base, f).into())
+                    .collect()
+            }
         }
     }
 
     /// Get the currently existing dotfiles under $HOME
     ///
     /// Returned paths will be absolute (i.e., symlinks are resolved).
-    fn get_dotfiles(&self, home_dir: &Path) -> std::io::Result<HashMap<&'static str, PathBuf>> {
+    fn get_dotfiles(&self, os: &OS, home_dir: &Path) -> std::io::Result<HashMap<String, PathBuf>> {
         let mut paths = HashMap::new();
-        for dotfile in self.dotfile_names() {
-            match std::fs::canonicalize(home_dir.join(dotfile)) {
+        for dotfile in self.dotfile_names(os) {
+            match std::fs::canonicalize(home_dir.join(&dotfile)) {
                 Ok(path) => {
                     paths.insert(dotfile, path);
                 }
