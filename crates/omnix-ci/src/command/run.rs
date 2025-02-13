@@ -22,28 +22,12 @@ use omnix_common::config::OmConfig;
 use omnix_health::{traits::Checkable, NixHealth};
 use serde::{Deserialize, Serialize};
 
-use crate::{config::subflakes::SubflakesConfig, flake_ref::FlakeRef, step::core::StepsResult};
+use crate::{
+    config::subflakes::SubflakesConfig, flake_ref::FlakeRef, github::actions::in_github_log_group,
+    step::core::StepsResult,
+};
 
 use super::run_remote;
-
-/// Runs the given async function within a GitHub Actions log group if `github_output` is enabled.
-pub async fn in_github_group<T, F, Fut>(name: &str, github_output: bool, f: F) -> T
-where
-    F: FnOnce() -> Fut,
-    Fut: Future<Output = T>,
-{
-    if github_output {
-        eprintln!("::group::{}", name);
-    }
-
-    let result = f().await;
-
-    if github_output {
-        eprintln!("::endgroup::");
-    }
-
-    result
-}
 
 /// Run all CI steps for all or given subflakes
 /// Command to run all CI steps
@@ -85,7 +69,7 @@ pub struct RunCommand {
     #[arg(default_value = ".")]
     pub flake_ref: FlakeRef,
 
-    /// Whether to format CI output for GitHub Actions
+    /// Print Github Actions log groups (enabled by default when run in Github Actions)
     #[clap(long, default_value_t = env::var("GITHUB_ACTION").is_ok())]
     pub github_output: bool,
 
@@ -139,7 +123,7 @@ impl RunCommand {
         // TODO: We'll refactor this function to use steps
         // https://github.com/juspay/omnix/issues/216
 
-        let nix_info = in_github_group("info", self.github_output, || async {
+        let nix_info = in_github_log_group("info", self.github_output, || async {
             tracing::info!("{}", "\n👟 Gathering NixInfo".bold());
             NixInfo::get()
                 .await
@@ -149,7 +133,7 @@ impl RunCommand {
         .await?;
 
         // First, run the necessary health checks
-        in_github_group("health", self.github_output, || async {
+        in_github_log_group("health", self.github_output, || async {
             tracing::info!("{}", "\n🫀 Performing health check".bold());
             // check_nix_version(&cfg, nix_info).await?;
             check_nix_version(&cfg, nix_info).await
@@ -163,7 +147,7 @@ impl RunCommand {
         );
         let res = ci_run(&self.nixcmd, verbose, self, &cfg, &nix_info.nix_config).await?;
 
-        let msg = in_github_group::<anyhow::Result<String>, _, _>(
+        let msg = in_github_log_group::<anyhow::Result<String>, _, _>(
             "outlink",
             self.github_output,
             || async {
@@ -293,7 +277,7 @@ pub async fn ci_run(
             continue;
         }
 
-        let steps_res = in_github_group(
+        let steps_res = in_github_log_group(
             &format!("subflake={}", name),
             run_cmd.github_output,
             || async {
