@@ -11,6 +11,7 @@ use colored::Colorize;
 
 use check::direnv::Direnv;
 use json::HealthOutput;
+use nix_rs::command::NixCmd;
 use nix_rs::env::OS;
 use nix_rs::flake::url::FlakeUrl;
 use nix_rs::info::NixInfo;
@@ -114,6 +115,7 @@ impl NixHealth {
 
 /// Run all health checks, optionally using the given flake's configuration
 pub async fn run_all_checks_with(
+    nixcmd: &NixCmd,
     flake_url: Option<FlakeUrl>,
     json_only: bool,
 ) -> anyhow::Result<Vec<(&'static str, Check)>> {
@@ -124,7 +126,7 @@ pub async fn run_all_checks_with(
 
     let health: NixHealth = match flake_url.as_ref() {
         Some(flake_url) => {
-            let om_config = OmConfig::get(flake_url).await?;
+            let om_config = OmConfig::get(nixcmd, flake_url).await?;
             NixHealth::from_om_config(&om_config)
         }
         None => Ok(NixHealth::default()),

@@ -8,7 +8,11 @@ use crate::traits::*;
 /// Check that [nix_rs::config::NixConfig::trusted_users] is set to a good value.
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
 #[serde(default)]
-pub struct TrustedUsers {}
+pub struct TrustedUsers {
+    /// This check is disabled by default due to security concerns
+    /// See https://github.com/juspay/omnix/issues/409
+    pub(crate) enable: bool,
+}
 
 impl Checkable for TrustedUsers {
     fn check(
@@ -16,6 +20,9 @@ impl Checkable for TrustedUsers {
         nix_info: &nix_rs::info::NixInfo,
         _: Option<&nix_rs::flake::url::FlakeUrl>,
     ) -> Vec<(&'static str, Check)> {
+        if !self.enable {
+            return vec![];
+        }
         let result = if is_current_user_trusted(nix_info) {
             CheckResult::Green
         } else {

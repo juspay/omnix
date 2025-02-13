@@ -65,7 +65,7 @@ impl FlakeUrl {
         if let Some(path) = self.as_local_path() {
             Ok(path.to_path_buf())
         } else {
-            let (path, _) = FlakeMetadata::from_nix(
+            let (_, meta) = FlakeMetadata::from_nix(
                 cmd,
                 FlakeMetadataInput {
                     flake: self.clone(),
@@ -73,7 +73,7 @@ impl FlakeUrl {
                 },
             )
             .await?;
-            Ok(path)
+            Ok(meta.flake)
         }
     }
 
@@ -138,16 +138,24 @@ impl From<&Path> for FlakeUrl {
 }
 
 impl FromStr for FlakeUrl {
-    type Err = String;
+    type Err = FlakeUrlError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let s = s.trim();
         if s.is_empty() {
-            Err("Empty string is not a valid Flake URL".to_string())
+            Err(FlakeUrlError::Empty)
         } else {
             Ok(FlakeUrl(s.to_string()))
         }
     }
+}
+
+/// Error type for parsing a [FlakeUrl]
+#[derive(thiserror::Error, Debug)]
+pub enum FlakeUrlError {
+    /// Empty string is not a valid Flake URL
+    #[error("Empty string is not a valid Flake URL")]
+    Empty,
 }
 
 impl Display for FlakeUrl {

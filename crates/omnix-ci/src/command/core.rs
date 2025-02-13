@@ -1,6 +1,7 @@
 //! The `om ci` subcommands
 use clap::Subcommand;
 use colored::Colorize;
+use nix_rs::command::NixCmd;
 use omnix_common::config::OmConfig;
 use tracing::instrument;
 
@@ -31,12 +32,19 @@ impl Command {
     pub async fn run(self, verbose: bool) -> anyhow::Result<()> {
         tracing::info!("{}", "\n👟 Reading om.ci config from flake".bold());
         let url = self.get_flake_ref().to_flake_url().await?;
-        let cfg = OmConfig::get(&url).await?;
+        let cfg = OmConfig::get(self.nixcmd(), &url).await?;
 
         tracing::debug!("OmConfig: {cfg:?}");
         match self {
             Command::Run(cmd) => cmd.run(verbose, cfg).await,
             Command::DumpGithubActionsMatrix(cmd) => cmd.run(cfg).await,
+        }
+    }
+
+    fn nixcmd(&self) -> &NixCmd {
+        match self {
+            Command::Run(cmd) => &cmd.nixcmd,
+            Command::DumpGithubActionsMatrix(cmd) => &cmd.nixcmd,
         }
     }
 

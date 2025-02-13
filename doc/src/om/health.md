@@ -17,7 +17,6 @@ The `om health` command checks the health of your Nix install. Furthermore, indi
 | Nix runs natively (no rosetta)[^ros]   | Yes                          |
 | Builds use multiple cores (`max-jobs`) | Yes                          |
 | Nix Caches in use                      | Yes                          |
-| $USER is in `trusted-users`            | -                            |
 | Direnv: installed and activated        | Yes                          |
 | Dotfiles are managed by Nix            | Yes                          |
 | Min RAM / Disk space                   | Yes                          |
@@ -67,7 +66,8 @@ rosetta:
   enable: true
   required: true
 max-jobs: {}
-trusted-users: {}
+trusted-users:
+  enable: false
 caches:
   required:
     - https://cache.nixos.org/
