@@ -27,13 +27,13 @@ use crate::{config::subflakes::SubflakesConfig, flake_ref::FlakeRef, step::core:
 use super::run_remote;
 
 /// Runs the given async function within a GitHub Actions log group if `github_output` is enabled.
-pub async fn in_github_group<F, Fut, T>(name: &str, github_output: bool, f: F) -> T
+pub async fn in_github_group<T, F, Fut>(name: &str, github_output: bool, f: F) -> T
 where
     F: FnOnce() -> Fut,
     Fut: Future<Output = T>,
 {
     if github_output {
-        eprintln!("::group::Running {}", name);
+        eprintln!("::group::{}", name);
     }
 
     let result = f().await;
@@ -139,14 +139,17 @@ impl RunCommand {
         // TODO: We'll refactor this function to use steps
         // https://github.com/juspay/omnix/issues/216
 
-        tracing::info!("{}", "\n👟 Gathering NixInfo".bold());
-        let nix_info = NixInfo::get()
-            .await
-            .as_ref()
-            .with_context(|| "Unable to gather nix info")?;
+        let nix_info = in_github_group("info", self.github_output, || async {
+            tracing::info!("{}", "\n👟 Gathering NixInfo".bold());
+            NixInfo::get()
+                .await
+                .as_ref()
+                .with_context(|| "Unable to gather nix info")
+        })
+        .await?;
 
         // First, run the necessary health checks
-        in_github_group("Health check", self.github_output, || async {
+        in_github_group("health", self.github_output, || async {
             tracing::info!("{}", "\n🫀 Performing health check".bold());
             // check_nix_version(&cfg, nix_info).await?;
             check_nix_version(&cfg, nix_info).await
@@ -160,24 +163,36 @@ impl RunCommand {
         );
         let res = ci_run(&self.nixcmd, verbose, self, &cfg, &nix_info.nix_config).await?;
 
-        let m_out_link = self.get_out_link();
-        let s = serde_json::to_string(&res)?;
-        let mut path = tempfile::Builder::new()
-            .prefix("om-ci-results-")
-            .suffix(".json")
-            .tempfile()?;
-        path.write_all(s.as_bytes())?;
+        let msg = in_github_group::<anyhow::Result<String>, _, _>(
+            "outlink",
+            self.github_output,
+            || async {
+                let m_out_link = self.get_out_link();
+                let s = serde_json::to_string(&res)?;
+                let mut path = tempfile::Builder::new()
+                    .prefix("om-ci-results-")
+                    .suffix(".json")
+                    .tempfile()?;
+                path.write_all(s.as_bytes())?;
 
-        let results_path =
-            addstringcontext::addstringcontext(&self.nixcmd, path.path(), m_out_link).await?;
-        println!("{}", results_path.display());
-        if let Some(m_out_link) = m_out_link {
-            tracing::info!(
-                "Result available at {:?} and symlinked at {:?}",
-                results_path.as_path(),
-                m_out_link
-            );
-        }
+                let results_path =
+                    addstringcontext::addstringcontext(&self.nixcmd, path.path(), m_out_link)
+                        .await?;
+                println!("{}", results_path.display());
+
+                let msg = format!(
+                    "Result available at {:?}{}",
+                    results_path.as_path(),
+                    m_out_link
+                        .map(|p| format!(" and symlinked at {:?}", p))
+                        .unwrap_or_default()
+                );
+                Ok(msg)
+            },
+        )
+        .await?;
+
+        tracing::info!("{}", msg);
 
         Ok(())
     }
@@ -278,13 +293,17 @@ pub async fn ci_run(
             continue;
         }
 
-        let steps_res = in_github_group(&name.to_string(), run_cmd.github_output, || async {
-            tracing::info!("\n🍎 {}", name);
-            subflake
-                .steps
-                .run(cmd, verbose, run_cmd, &systems, &cfg.flake_url, subflake)
-                .await
-        })
+        let steps_res = in_github_group(
+            &format!("subflake={}", name),
+            run_cmd.github_output,
+            || async {
+                tracing::info!("\n🍎 {}", name);
+                subflake
+                    .steps
+                    .run(cmd, verbose, run_cmd, &systems, &cfg.flake_url, subflake)
+                    .await
+            },
+        )
         .await?;
         res.insert(subflake_name.clone(), steps_res);
     }
