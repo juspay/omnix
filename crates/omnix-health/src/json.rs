@@ -2,9 +2,13 @@
 use crate::traits::Check;
 use anyhow::Context;
 use bytesize::ByteSize;
-use nix_rs::{detsys_installer::DetSysNixInstaller, env::OS, flake::system::System, info::NixInfo};
+use nix_rs::{
+    env::{NixInstaller, OS},
+    flake::system::System,
+    info::NixInfo,
+};
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, path::PathBuf};
+use std::collections::HashMap;
 
 /// Entire JSON health check output
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -53,21 +57,5 @@ impl HealthEnvInfo {
             total_memory: nix_info.nix_env.total_memory,
             total_disk_space: nix_info.nix_env.total_disk_space,
         })
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(tag = "type")]
-enum NixInstaller {
-    DetSys(DetSysNixInstaller),
-    Other(PathBuf),
-}
-
-impl From<nix_rs::env::NixInstaller> for NixInstaller {
-    fn from(installer: nix_rs::env::NixInstaller) -> Self {
-        match installer {
-            nix_rs::env::NixInstaller::DetSys(installer) => Self::DetSys(installer),
-            nix_rs::env::NixInstaller::Other(path) => Self::Other(path),
-        }
     }
 }
