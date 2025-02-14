@@ -2,7 +2,6 @@
 use std::{
     collections::HashMap,
     env,
-    future::Future,
     io::Write,
     path::{Path, PathBuf},
 };

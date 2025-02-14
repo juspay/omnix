@@ -1,6 +1,6 @@
 //! Working with GitHub Actions
 
-use std::{future::Future, io::Write};
+use std::future::Future;
 
 /// Group log lines in GitHub Actions
 ///

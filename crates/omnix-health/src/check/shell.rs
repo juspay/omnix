@@ -1,7 +1,6 @@
 use nix_rs::env::OS;
 use serde::{Deserialize, Serialize};
 use std::{
-    borrow::Cow,
     collections::HashMap,
     hash::Hash,
     path::{Path, PathBuf},
