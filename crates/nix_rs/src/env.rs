@@ -181,6 +181,7 @@ impl OS {
 
 /// The installer used to install Nix (applicable only for non-NixOS systems)
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
+#[serde(tag = "type")]
 pub enum NixInstaller {
     /// The Determinate Systems installer
     DetSys(super::detsys_installer::DetSysNixInstaller),
