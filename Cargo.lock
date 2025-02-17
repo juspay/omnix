@@ -1797,7 +1797,7 @@ dependencies = [
 
 [[package]]
 name = "nix_rs"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "bytesize",
  "cfg-if",
@@ -1950,7 +1950,7 @@ dependencies = [
 
 [[package]]
 name = "omnix-ci"
-version = "1.1.0"
+version = "1.0.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -1977,7 +1977,7 @@ dependencies = [
 
 [[package]]
 name = "omnix-cli"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "anyhow",
  "assert_cmd",
@@ -2007,7 +2007,7 @@ dependencies = [
 
 [[package]]
 name = "omnix-common"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "anyhow",
  "async-walkdir",
@@ -2031,7 +2031,7 @@ dependencies = [
 
 [[package]]
 name = "omnix-develop"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "anyhow",
  "lazy_static",
@@ -2049,7 +2049,7 @@ dependencies = [
 
 [[package]]
 name = "omnix-health"
-version = "1.1.0"
+version = "1.0.0"
 dependencies = [
  "anyhow",
  "bytesize",
@@ -2075,7 +2075,7 @@ dependencies = [
 
 [[package]]
 name = "omnix-init"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "anyhow",
  "assert_fs",

@@ -23,10 +23,10 @@ pub struct NixArgs {
     pub refresh: bool,
 
     /// Additional arguments to pass through to `nix`
-    #[arg(last = true, default_values_t = vec![
+    #[cfg_attr(feature = "clap", arg(last = true, default_values_t = vec![
     "-j".to_string(),
     "auto".to_string(),
-    ])]
+    ]))]
     pub extra_nix_args: Vec<String>,
 }
 

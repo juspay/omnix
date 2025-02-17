@@ -1,9 +1,6 @@
 //! Information about the environment in which Nix will run
 // TODO: Make this a package, and split (alongn with detsys_installer.rs)
-use std::{
-    fmt::Display,
-    path::{Path, PathBuf},
-};
+use std::{fmt::Display, path::Path};
 
 use bytesize::ByteSize;
 use os_info;
@@ -11,7 +8,6 @@ use serde::{Deserialize, Serialize};
 use serde_with::SerializeDisplay;
 use std::process::Command;
 use tracing::instrument;
-use which::which;
 use whoami;
 
 /// The environment in which Nix operates
