@@ -5,10 +5,10 @@
 # Reference
 
 - [CLI](om/index.md)
-    - [Show](om/show.md)
+    - [CI](om/ci.md)
     - [Health](om/health.md)
     - [Develop](om/develop.md)
-    - [CI](om/ci.md)
+    - [Show](om/show.md)
     - [Init](om/init.md)
 - [Configuration](./config.md)
 
