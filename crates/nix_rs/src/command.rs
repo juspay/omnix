@@ -33,7 +33,7 @@ use crate::{arg::NixArgs, config::NixConfig};
 #[cfg_attr(feature = "clap", derive(clap::Parser))]
 pub struct NixCmd {
     /// The arguments to pass to `nix`
-    #[clap(flatten)]
+    #[cfg_attr(feature = "clap", clap(flatten))]
     pub args: NixArgs,
 }
 
