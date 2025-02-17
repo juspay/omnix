@@ -1,6 +1,6 @@
 # Release history
 
-## Unreleased
+## 1.0.0 (2025-02-??) {#1.0.0}
 
 ### Enhancements
 
