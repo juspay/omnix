@@ -1,5 +1,11 @@
 # Release history
 
+## Unreleased
+
+### Chores
+
+- Allow building on stable version of Rust (#427)
+
 ## 1.0.0 (2025-02-17) {#1.0.0}
 
 ### Enhancements
