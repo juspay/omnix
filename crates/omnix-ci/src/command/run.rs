@@ -259,11 +259,11 @@ pub async fn ci_run(
     for (subflake_name, subflake) in &config.0 {
         let name = subflake_name.italic();
 
-        if let Some(s) = only_subflake
-            && s != subflake_name
-        {
-            tracing::info!("\n🍊 {} {}", name, "skipped (deselected out)".dimmed());
-            continue;
+        if let Some(s) = only_subflake {
+            if s != subflake_name {
+                tracing::info!("\n🍊 {} {}", name, "skipped (deselected out)".dimmed());
+                continue;
+            }
         }
 
         let compatible_system = subflake.can_run_on(&systems);

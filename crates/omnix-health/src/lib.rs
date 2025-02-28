@@ -150,7 +150,6 @@ pub async fn run_all_checks_with(
 
 async fn print_info_banner(flake_url: Option<&FlakeUrl>, nix_info: &NixInfo) -> anyhow::Result<()> {
     let pwd = std::env::current_dir()?;
-    let md = async |s: &str| render_markdown(&pwd, s).await;
 
     let mut table = String::from("| Property | Value |\n|----------|-------|\n");
     table.push_str(&format!(
@@ -177,7 +176,7 @@ async fn print_info_banner(flake_url: Option<&FlakeUrl>, nix_info: &NixInfo) -> 
         nix_info.nix_env.total_disk_space
     ));
 
-    tracing::info!("{}", md(&table).await?);
+    tracing::info!("{}", render_markdown(&pwd, &table).await?);
     Ok(())
 }
 

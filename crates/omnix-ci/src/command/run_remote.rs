@@ -213,10 +213,11 @@ async fn run_ssh(host: &str, args: &[String]) -> anyhow::Result<()> {
 
     nix_rs::command::trace_cmd_with("🐌", &cmd);
 
-    cmd.status()
-        .await?
-        .exit_ok()
-        .map_err(|e| anyhow::anyhow!("SSH command failed: {}", e))
+    let status = cmd.status().await?;
+    if !status.success() {
+        return Err(anyhow::anyhow!("SSH command failed: {}", status));
+    }
+    Ok(())
 }
 
 /// Run SSH command with given arguments and return the stdout.
