@@ -29,6 +29,7 @@
             || "${inputs.self}/flake.lock" == path
             || "${inputs.self}/rust-toolchain.toml" == path
             # Select *only* the non-Rust files necessary to build omnix package.
+            || lib.hasSuffix "envs/default.nix" path
             || lib.hasSuffix "flake/nixpkgs.nix" path
             || lib.hasSuffix "flake/rust.nix" path
             || lib.hasSuffix "tests/flake.nix" path
@@ -40,6 +41,8 @@
             || lib.hasSuffix "flake-schemas/flake.lock" path
             || lib.hasSuffix "addstringcontext/flake.nix" path
             || lib.hasSuffix "addstringcontext/flake.lock" path
+            || lib.hasSuffix "metadata/flake.nix" path
+            || lib.hasSuffix "metadata/flake.lock" path
           ;
         };
       defaultCraneArgs = import "${inputs.self}/nix/envs" { inherit (config.rust-project) src; inherit (pkgs) cachix fetchFromGitHub lib; };
