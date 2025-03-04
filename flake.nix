@@ -9,7 +9,7 @@
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
     systems.url = "github:nix-systems/default";
 
-    rust-flake.url = "github:juspay/rust-flake/default-crane-args";
+    rust-flake.url = "github:juspay/rust-flake";
     rust-flake.inputs.nixpkgs.follows = "nixpkgs";
     git-hooks.url = "github:cachix/git-hooks.nix";
     git-hooks.flake = false;
