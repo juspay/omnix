@@ -5,6 +5,7 @@
 ### Chores
 
 - Allow building on stable version of Rust (#427)
+- Define ENVs in a single place and import them as default for all crates (#430)
 
 ## 1.0.0 (2025-02-17) {#1.0.0}
 
