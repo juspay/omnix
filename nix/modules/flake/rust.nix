@@ -42,6 +42,7 @@
             || lib.hasSuffix "addstringcontext/flake.lock" path
           ;
         };
+      defaultCraneArgs = pkgs.callPackage "${inputs.self}/nix/envs" { inherit (config.rust-project) src; };
     };
 
     packages =

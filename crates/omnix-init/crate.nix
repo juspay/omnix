@@ -1,7 +1,5 @@
-{ flake
-, pkgs
+{ pkgs
 , lib
-, rust-project
 , ...
 }:
 
@@ -13,19 +11,5 @@
         IOKit
       ]
     );
-    inherit (rust-project.crates."nix_rs".crane.args)
-      DEFAULT_FLAKE_SCHEMAS
-      FLAKE_METADATA
-      FLAKE_ADDSTRINGCONTEXT
-      INSPECT_FLAKE
-      TRUE_FLAKE
-      FALSE_FLAKE
-      NIX_SYSTEMS
-      ;
-    OM_INIT_REGISTRY =
-      lib.cleanSourceWith {
-        name = "om-init-registry";
-        src = flake.inputs.self + /crates/omnix-init/registry;
-      };
   };
 }

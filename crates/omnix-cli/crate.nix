@@ -1,12 +1,9 @@
-{ flake
-, rust-project
-, pkgs
+{ pkgs
 , lib
 , ...
 }:
 
 let
-  inherit (flake) inputs;
   inherit (pkgs) stdenv pkgsStatic;
 in
 {
@@ -34,27 +31,6 @@ in
         ) ++ lib.optionals pkgs.stdenv.isLinux [
         pkgsStatic.openssl
       ];
-
-      inherit (rust-project.crates."nix_rs".crane.args)
-        DEFAULT_FLAKE_SCHEMAS
-        FLAKE_METADATA
-        FLAKE_ADDSTRINGCONTEXT
-        INSPECT_FLAKE
-        TRUE_FLAKE
-        FALSE_FLAKE
-        NIX_SYSTEMS
-        ;
-      inherit (rust-project.crates."omnix-ci".crane.args)
-        DEVOUR_FLAKE
-        ;
-      inherit (rust-project.crates."omnix-init".crane.args)
-        OM_INIT_REGISTRY
-        ;
-      inherit (rust-project.crates."omnix-health".crane.args)
-        CACHIX_BIN
-        ;
-
-      OMNIX_SOURCE = rust-project.src;
 
       # Disable tests due to sandboxing issues; we run them on CI
       # instead.
