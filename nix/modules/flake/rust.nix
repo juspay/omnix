@@ -45,7 +45,10 @@
             || lib.hasSuffix "metadata/flake.lock" path
           ;
         };
-      defaultCraneArgs = import "${inputs.self}/nix/envs" { inherit (config.rust-project) src; inherit (pkgs) cachix fetchFromGitHub lib; };
+      defaults.perCrate.crane.args = import "${inputs.self}/nix/envs" {
+        inherit (config.rust-project) src;
+        inherit (pkgs) cachix fetchFromGitHub lib;
+      };
     };
 
     packages =
