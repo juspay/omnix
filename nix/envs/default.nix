@@ -1,5 +1,5 @@
 { src, lib, cachix, fetchFromGitHub }:
-{
+lib.mapAttrs (_: v: builtins.toString v) {
   OMNIX_SOURCE = src;
   CACHIX_BIN = lib.getExe cachix;
   OM_INIT_REGISTRY = lib.cleanSourceWith {
