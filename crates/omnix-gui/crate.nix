@@ -34,8 +34,6 @@ in
         dioxus-cli
         # pkgs.nix # cargo tests need nix
       ];
-      inherit (rust-project.crates."omnix-cli".crane.args)
-        DEFAULT_FLAKE_SCHEMAS;
       meta.description = "Graphical user interface for Omnix";
     };
   };

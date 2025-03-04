@@ -31,6 +31,7 @@
   outputs = inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       systems = import inputs.systems;
+      debug = true;
 
       # See ./nix/modules/flake/*.nix for the modules that are imported here.
       imports = with builtins;

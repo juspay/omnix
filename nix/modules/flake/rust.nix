@@ -29,6 +29,7 @@
             || "${inputs.self}/flake.lock" == path
             || "${inputs.self}/rust-toolchain.toml" == path
             # Select *only* the non-Rust files necessary to build omnix package.
+            || lib.hasSuffix "envs/default.nix" path
             || lib.hasSuffix "flake/nixpkgs.nix" path
             || lib.hasSuffix "flake/rust.nix" path
             || lib.hasSuffix "tests/flake.nix" path
@@ -40,8 +41,14 @@
             || lib.hasSuffix "flake-schemas/flake.lock" path
             || lib.hasSuffix "addstringcontext/flake.nix" path
             || lib.hasSuffix "addstringcontext/flake.lock" path
+            || lib.hasSuffix "metadata/flake.nix" path
+            || lib.hasSuffix "metadata/flake.lock" path
           ;
         };
+      defaults.perCrate.crane.args = import "${inputs.self}/nix/envs" {
+        inherit (config.rust-project) src;
+        inherit (pkgs) cachix fetchFromGitHub lib;
+      };
     };
 
     packages =
@@ -68,7 +75,7 @@
       ];
       text = ''
         set -e
-        cd ${self'.packages.omnix-cli.OMNIX_SOURCE.outPath}
+        cd ${self'.packages.omnix-cli.OMNIX_SOURCE}
         # Make sure the drv evaluates (to test that no files are accidentally excluded)
         nix --accept-flake-config --extra-experimental-features "flakes nix-command" \
           derivation show "." | jq -r '.[].outputs.out.path'
