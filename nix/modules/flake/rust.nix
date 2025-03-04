@@ -72,7 +72,7 @@
       ];
       text = ''
         set -e
-        cd ${self'.packages.omnix-cli.OMNIX_SOURCE.outPath}
+        cd ${self'.packages.omnix-cli.OMNIX_SOURCE}
         # Make sure the drv evaluates (to test that no files are accidentally excluded)
         nix --accept-flake-config --extra-experimental-features "flakes nix-command" \
           derivation show "." | jq -r '.[].outputs.out.path'
