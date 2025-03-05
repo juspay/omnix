@@ -76,7 +76,6 @@ impl CustomStep {
             override_inputs: subflake.override_inputs.clone(),
             current_dir: Some(path.clone()),
             no_write_lock_file: false,
-            ..Default::default()
         };
 
         match self {

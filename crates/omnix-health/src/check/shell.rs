@@ -172,9 +172,9 @@ impl Shell {
                     OS::MacOS { .. } => "Library/Application Support/nushell",
                     _ => ".config/nushell",
                 };
-                vec!["env.nu", "config.nu", "login.nu"]
+                ["env.nu", "config.nu", "login.nu"]
                     .iter()
-                    .map(|f| format!("{}/{}", base, f).into())
+                    .map(|f| format!("{}/{}", base, f))
                     .collect()
             }
         }

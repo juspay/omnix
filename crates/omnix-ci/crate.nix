@@ -12,6 +12,7 @@
       ] ++ [
         libiconv
         pkg-config
+        nix
       ];
       buildInputs = lib.optionals pkgs.stdenv.isDarwin
         (
@@ -22,9 +23,10 @@
         ) ++ lib.optionals pkgs.stdenv.isLinux [
         pkgs.openssl
       ];
-      # Disable tests due to sandboxing issues; we run them on CI
-      # instead.
-      doCheck = false;
+      cargoTestExtraArgs = "-- " + (lib.concatStringsSep " " [
+        # requires networking
+        "--skip=config::core::tests::test_config_loading"
+      ]);
     };
   };
 }
