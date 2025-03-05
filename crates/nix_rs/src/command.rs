@@ -79,7 +79,7 @@ impl NixCmd {
     pub fn command(&self) -> Command {
         let mut cmd = Command::new("nix");
         cmd.kill_on_drop(true);
-        cmd.args(&self.args);
+        cmd.args(self.args.into_iter());
         cmd
     }
 
