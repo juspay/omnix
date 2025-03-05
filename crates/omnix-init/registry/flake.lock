@@ -48,11 +48,28 @@
         "type": "github"
       }
     },
+    "python-nix-template": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1740718061,
+        "narHash": "sha256-qtevtK4N4+FHl9n0ZK4Wy/xJMp1lHZEHsAdKDcY3ouk=",
+        "owner": "sciexp",
+        "repo": "python-nix-template",
+        "rev": "7d17d0dbffe756f1804aa86fe95bf61a1867d4d3",
+        "type": "github"
+      },
+      "original": {
+        "owner": "sciexp",
+        "repo": "python-nix-template",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "haskell-flake": "haskell-flake",
         "haskell-template": "haskell-template",
         "nixos-unified-template": "nixos-unified-template",
+        "python-nix-template": "python-nix-template",
         "rust-nix-template": "rust-nix-template"
       }
     },
