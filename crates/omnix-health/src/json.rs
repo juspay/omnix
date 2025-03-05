@@ -51,7 +51,7 @@ impl HealthEnvInfo {
             .context("Unable to gather nix info")?;
 
         Ok(Self {
-            nix_installer: nix_info.nix_env.installer.clone().into(),
+            nix_installer: nix_info.nix_env.installer.clone(),
             system: nix_info.nix_config.system.value.clone(),
             os: nix_info.nix_env.os.clone(),
             total_memory: nix_info.nix_env.total_memory,
