@@ -2,7 +2,6 @@
 use async_walkdir::WalkDir;
 use futures_lite::stream::StreamExt;
 use std::{
-    fs::Permissions,
     os::unix::fs::PermissionsExt,
     path::{Path, PathBuf},
 };
@@ -25,17 +24,25 @@ pub async fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> anyho
 
         if entry.file_type().await?.is_dir() {
             fs::create_dir_all(&target).await?;
-            fs::set_permissions(&target, Permissions::from_mode(0o755)).await?;
         } else {
             if let Some(parent) = target.parent() {
                 fs::create_dir_all(parent).await?;
-                fs::set_permissions(&parent, Permissions::from_mode(0o755)).await?;
             }
             fs::copy(path, &target).await?;
-            fs::set_permissions(&target, Permissions::from_mode(0o644)).await?;
+            // Because we are copying from the Nix store, the source paths will be read-only.
+            // So, make the target writeable by the owner.
+            make_owner_writeable(&target).await?;
         }
     }
 
+    Ok(())
+}
+
+async fn make_owner_writeable(path: impl AsRef<Path>) -> anyhow::Result<()> {
+    let path = path.as_ref();
+    let mut perms = fs::metadata(path).await?.permissions();
+    perms.set_mode(perms.mode() | 0o600); // Read/write for owner
+    fs::set_permissions(path, perms).await?;
     Ok(())
 }
 
