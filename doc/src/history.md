@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- `om init` now copies over permissions as is (e.g.: respects executable bits on files) (#434)
+
 ### Chores
 
 - Allow building on stable version of Rust (#427)
