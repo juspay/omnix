@@ -3,7 +3,7 @@ authors = ["Sridhar Ratnakumar <srid@srid.ca>"]
 edition = "2021"
 # If you change the name here, you must also do it in flake.nix (and run `cargo generate-lockfile` afterwards)
 name = "omnix-init"
-version = "1.0.0"
+version = "1.0.1"
 repository = "https://github.com/juspay/omnix"
 description = "Enriched Nix flake templates"
 license = "Apache-2.0"
