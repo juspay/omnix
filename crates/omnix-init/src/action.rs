@@ -63,7 +63,9 @@ impl Action {
                 if let Some(value) = value.as_ref() {
                     let files = omnix_common::fs::find_paths(out_dir).await?;
 
-                    for file in files.iter() {
+                    // Process files in reverse order, such that we replace in
+                    // files *before* their ancestor directories get renamed.
+                    for file in files.iter().sorted().rev() {
                         let file_path = &out_dir.join(file);
 
                         // Replace in content of files

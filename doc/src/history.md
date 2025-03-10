@@ -4,7 +4,9 @@
 
 ### Fixes
 
-- `om init` now copies over permissions as is (e.g.: respects executable bits on files) (#434)
+- `om init`
+  - now copies over permissions as is (e.g.: respects executable bits on files) (#434)
+  - applies replace in proper order so that directory rename doesn't skip content replace in its children  (#435)
 
 ### Chores
 
