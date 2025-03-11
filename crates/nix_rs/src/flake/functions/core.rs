@@ -10,7 +10,6 @@ use std::{
     path::{Path, PathBuf},
     process::Stdio,
 };
-use tokio::io::{AsyncBufReadExt, BufReader};
 
 lazy_static! {
     static ref TRUE_FLAKE: FlakeUrl = {
@@ -49,7 +48,6 @@ pub trait FlakeFn {
     /// - `input`: The input arguments to the flake function.
     fn call(
         nixcmd: &NixCmd,
-        verbose: bool,
         // FIXME: Don't do this; instead take dyn trait options
         impure: bool,
         pwd: Option<&Path>,
@@ -91,26 +89,7 @@ pub trait FlakeFn {
 
             crate::command::trace_cmd(&cmd);
 
-            let mut output_fut = cmd.stdout(Stdio::piped()).stderr(Stdio::piped()).spawn()?;
-            let stderr_handle = output_fut.stderr.take().unwrap();
-            tokio::spawn(async move {
-                // Suppress --override-input noise, since we expect these to be present.
-                let mut reader = BufReader::new(stderr_handle).lines();
-                while let Some(line) = reader.next_line().await.expect("read stderr") {
-                    if !verbose {
-                        if line.starts_with("• Added input") {
-                            // Consume the input logging itself
-                            reader.next_line().await.expect("read stderr");
-                            continue;
-                        } else if line
-                            .starts_with("warning: not writing modified lock file of flake")
-                        {
-                            continue;
-                        }
-                    }
-                    eprintln!("{}", line);
-                }
-            });
+            let output_fut = cmd.stdout(Stdio::piped()).spawn()?;
             let output = output_fut.wait_with_output().await?;
             if output.status.success() {
                 let store_path =

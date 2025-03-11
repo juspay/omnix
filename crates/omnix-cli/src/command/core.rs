@@ -1,5 +1,4 @@
 use clap::Subcommand;
-use clap_verbosity_flag::{InfoLevel, Verbosity};
 
 #[derive(Subcommand, Debug)]
 pub enum Command {
@@ -18,7 +17,7 @@ pub enum Command {
 }
 
 impl Command {
-    pub async fn run(&self, verbosity: Verbosity<InfoLevel>) -> anyhow::Result<()> {
+    pub async fn run(&self) -> anyhow::Result<()> {
         if !matches!(self, Command::Completion(_)) && !omnix_common::check::nix_installed() {
             tracing::error!("Nix is not installed: https://nixos.asia/en/install");
             std::process::exit(1);
@@ -28,7 +27,7 @@ impl Command {
             Command::Show(cmd) => cmd.run().await,
             Command::Init(cmd) => cmd.run().await,
             Command::Develop(cmd) => cmd.run().await,
-            Command::CI(cmd) => cmd.run(verbosity).await,
+            Command::CI(cmd) => cmd.run().await,
             Command::Health(cmd) => cmd.run().await,
             Command::Completion(cmd) => cmd.run(),
         }

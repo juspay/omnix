@@ -108,17 +108,17 @@ impl RunCommand {
     }
 
     /// Run the build command which decides whether to do ci run on current machine or a remote machine
-    pub async fn run(&self, verbose: bool, cfg: OmConfig) -> anyhow::Result<()> {
+    pub async fn run(&self, cfg: OmConfig) -> anyhow::Result<()> {
         match &self.on {
             Some(store_uri) => {
                 run_remote::run_on_remote_store(&self.nixcmd, self, &cfg, store_uri).await
             }
-            None => self.run_local(verbose, cfg).await,
+            None => self.run_local(cfg).await,
         }
     }
 
     /// Run [RunCommand] on local Nix store.
-    async fn run_local(&self, verbose: bool, cfg: OmConfig) -> anyhow::Result<()> {
+    async fn run_local(&self, cfg: OmConfig) -> anyhow::Result<()> {
         // TODO: We'll refactor this function to use steps
         // https://github.com/juspay/omnix/issues/216
 
@@ -144,7 +144,7 @@ impl RunCommand {
             "{}",
             format!("\n🤖 Running CI for {}", self.flake_ref).bold()
         );
-        let res = ci_run(&self.nixcmd, verbose, self, &cfg, &nix_info.nix_config).await?;
+        let res = ci_run(&self.nixcmd, self, &cfg, &nix_info.nix_config).await?;
 
         let msg = in_github_log_group::<anyhow::Result<String>, _, _>(
             "outlink",
@@ -243,7 +243,6 @@ pub async fn check_nix_version(cfg: &OmConfig, nix_info: &NixInfo) -> anyhow::Re
 /// Run CI for all subflakes
 pub async fn ci_run(
     cmd: &NixCmd,
-    verbose: bool,
     run_cmd: &RunCommand,
     cfg: &OmConfig,
     nix_config: &NixConfig,
@@ -283,7 +282,7 @@ pub async fn ci_run(
                 tracing::info!("\n🍎 {}", name);
                 subflake
                     .steps
-                    .run(cmd, verbose, run_cmd, &systems, &cfg.flake_url, subflake)
+                    .run(cmd, run_cmd, &systems, &cfg.flake_url, subflake)
                     .await
             },
         )

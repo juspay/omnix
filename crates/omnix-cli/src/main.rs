@@ -13,5 +13,5 @@ async fn main() -> anyhow::Result<()> {
     let verbose = args.verbosity.log_level() > Some(clap_verbosity_flag::Level::Info);
     omnix_common::logging::setup_logging(&args.verbosity, !verbose);
     tracing::debug!("Args: {:?}", args);
-    args.command.run(args.verbosity).await
+    args.command.run().await
 }
