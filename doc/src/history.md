@@ -1,5 +1,12 @@
 # Release history
 
+## 1.0.2 (2025-03-11) {#1.0.2}
+
+### Fixes
+
+- `om ci`
+  - Prevent bad UTF-8 in build logs from crashing `om ci run` (#437)
+
 ## 1.0.1 (2025-03-10) {#1.0.1}
 
 ### Fixes
