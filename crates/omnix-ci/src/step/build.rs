@@ -34,7 +34,6 @@ impl BuildStep {
     pub async fn run(
         &self,
         nixcmd: &NixCmd,
-        verbose: bool,
         run_cmd: &RunCommand,
         url: &FlakeUrl,
         subflake: &SubflakeConfig,
@@ -47,7 +46,6 @@ impl BuildStep {
         let nix_args = subflake_extra_args(subflake);
         let output = DevourFlake::call(
             nixcmd,
-            verbose,
             false,
             None,
             None,

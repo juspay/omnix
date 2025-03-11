@@ -59,7 +59,6 @@ pub async fn addstringcontext(
     };
     let (path_with_string_context, _json_value) = AddStringContextFn::call(
         cmd,
-        false,
         IMPURE,
         pwd,
         out_link_absolute.as_ref().map(PathBuf::as_ref),

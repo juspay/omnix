@@ -1,5 +1,4 @@
 use clap::Parser;
-use clap_verbosity_flag::{InfoLevel, Level, Verbosity};
 use omnix_ci::command::core::Command;
 
 /// Build all outputs of the flake
@@ -11,10 +10,8 @@ pub struct CICommand {
 
 impl CICommand {
     /// Run this sub-command
-    pub async fn run(&self, verbosity: Verbosity<InfoLevel>) -> anyhow::Result<()> {
-        self.command()
-            .run(verbosity.log_level() > Some(Level::Info))
-            .await?;
+    pub async fn run(&self) -> anyhow::Result<()> {
+        self.command().run().await?;
         Ok(())
     }
 

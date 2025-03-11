@@ -58,7 +58,6 @@ impl Steps {
     pub async fn run(
         &self,
         cmd: &NixCmd,
-        verbose: bool,
         run_cmd: &RunCommand,
         systems: &[System],
         url: &FlakeUrl,
@@ -71,10 +70,7 @@ impl Steps {
         }
 
         if self.build_step.enable {
-            let build_res = self
-                .build_step
-                .run(cmd, verbose, run_cmd, url, subflake)
-                .await?;
+            let build_res = self.build_step.run(cmd, run_cmd, url, subflake).await?;
             res.build_step = Some(build_res);
         }
 
