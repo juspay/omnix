@@ -95,12 +95,28 @@ pub trait FlakeFn {
             let stderr_handle = output_fut.stderr.take().unwrap();
             tokio::spawn(async move {
                 // Suppress --override-input noise, since we expect these to be present.
-                let mut reader = BufReader::new(stderr_handle).lines();
-                while let Some(line) = reader.next_line().await.expect("read stderr") {
+                let mut reader = BufReader::new(stderr_handle);
+                let mut buffer = Vec::new();
+                loop {
+                    buffer.clear();
+                    let bytes_read = reader
+                        .read_until(b'\n', &mut buffer)
+                        .await
+                        .expect("read stderr");
+                    if bytes_read == 0 {
+                        break;
+                    }
+                    let line = String::from_utf8_lossy(&buffer).into_owned();
+                    let line = line
+                        .trim_end_matches(|c| c == '\r' || c == '\n')
+                        .to_string();
                     if !verbose {
                         if line.starts_with("• Added input") {
                             // Consume the input logging itself
-                            reader.next_line().await.expect("read stderr");
+                            reader
+                                .read_until(b'\n', &mut buffer)
+                                .await
+                                .expect("read stderr");
                             continue;
                         } else if line
                             .starts_with("warning: not writing modified lock file of flake")
