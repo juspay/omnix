@@ -1,5 +1,12 @@
 # Release history
 
+## 1.0.3 (2025-03-??) {#1.0.3}
+
+### Fixes
+
+- `om ci`
+  - Allow `--override-input` to work again (#439)
+
 ## 1.0.2 (2025-03-11) {#1.0.2}
 
 ### Fixes

@@ -1,6 +1,6 @@
 [package]
 name = "omnix-cli"
-version = "1.0.2"
+version = "1.0.3"
 edition = "2021"
 default-run = "om"
 # NOTE: The 'description' here will be printed in `om` CLI banner (thanks to `clap` crate)
