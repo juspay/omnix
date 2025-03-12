@@ -79,6 +79,21 @@ async fn test_haskell_multi_nix_all_dependencies() -> anyhow::Result<()> {
 }
 
 #[tokio::test]
+/// Whether `--override-input` passes CI successfully
+async fn test_haskell_multi_nix_override_input() -> anyhow::Result<()> {
+    let _out = om_ci_run(&[
+        "github:srid/haskell-multi-nix/c85563721c388629fa9e538a1d97274861bc8321",
+        "--",
+        "--override-input",
+        "haskell-flake",
+        // haskell-flake 0.4 release
+        "github:srid/haskell-flake/c8622c8a259e18e0a1919462ce885380108a723c",
+    ])
+    .await?;
+    Ok(())
+}
+
+#[tokio::test]
 /// A test, with config
 async fn test_services_flake() -> anyhow::Result<()> {
     let out = om_ci_run(&[
