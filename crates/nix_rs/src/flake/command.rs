@@ -69,9 +69,6 @@ pub async fn lock(
     args: &[&str],
     url: &FlakeUrl,
 ) -> Result<(), NixCmdError> {
-    let mut cmd = cmd.clone();
-    // Remove --override-input x y arguments, since they don't make sense for flake.lock check
-    remove_override_inputs(&mut cmd.args.extra_nix_args);
     cmd.run_with(&["flake", "lock"], |c| {
         c.arg(url.to_string());
         opts.use_in_command(c);
@@ -79,18 +76,6 @@ pub async fn lock(
     })
     .await?;
     Ok(())
-}
-
-/// Remove `--override-input` from the Nix arguments list
-fn remove_override_inputs(vec: &mut Vec<String>) {
-    let mut i = 0;
-    while i < vec.len() {
-        if vec[i] == "--override-input" && i + 2 < vec.len() {
-            vec.drain(i..i + 3);
-        } else {
-            i += 1;
-        }
-    }
 }
 
 /// Run `nix flake check`
