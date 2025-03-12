@@ -11,7 +11,7 @@ Omnix aims to supplement the [Nix](https://nixos.asia/en/nix) CLI to improve dev
 
 ## Usage
 
-See https://omnix.page/
+See <https://omnix.page/>
 
 ## Developing
 
@@ -35,7 +35,7 @@ Inside the nix develop shell (activated by direnv) you can use any of the `cargo
 
 ```sh
 # Full nix build of CLI
-nix build .#default
+nix build
 
 # Build and run the CLI
 nix run
@@ -44,12 +44,12 @@ nix run
 ### Contributing
 
 >[!TIP]
-> Run `just fmt` to autoformat the source tree.
+> Run `just pca` to autoformat the source tree.
 
 - Run `just ci` to **run CI locally**.
 - Add **documentation** wherever useful.
     - Run `just doc run` to preview website docs; edit, and run `just doc check`
     - To preview Rust API docs, run `just doc cargo`.
-- Changes to library crates must accompany a corresponding `CHANGELOG.md` entry.[^cc]
+- Changes must accompany a corresponding `history.md` entry.[^cc]
 
 [^cc]: We don't use any automatic changelog generator for this repo.
