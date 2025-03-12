@@ -62,6 +62,8 @@ impl NixArgs {
     }
 }
 
+/// Certain options, like --rebuild, is not supported by all subcommands (e.g.
+/// `nix develop`). Remove them here.
 fn remove_nonsense_args_when_subcommand(subcommands: &[&str], args: &mut Vec<String>) {
     let unsupported = non_sense_options(subcommands);
     for (option, count) in unsupported {
@@ -73,6 +75,9 @@ fn non_sense_options<'a>(subcommands: &[&str]) -> HashMap<&'a str, usize> {
     match subcommands {
         ["eval"] => HashMap::from([("--rebuild", 0)]),
         ["flake", "lock"] => HashMap::from([("--rebuild", 0), ("--override-input", 2)]),
+        ["flake", "check"] => HashMap::from([("--rebuild", 0)]),
+        ["develop"] => HashMap::from([("--rebuild", 0)]),
+        ["run"] => HashMap::from([("--rebuild", 0)]),
         _ => HashMap::new(),
     }
 }
