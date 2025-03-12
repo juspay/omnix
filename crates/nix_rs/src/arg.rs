@@ -64,7 +64,6 @@ impl NixArgs {
 
 fn remove_nonsense_args_when_subcommand(subcommands: &[&str], args: &mut Vec<String>) {
     let unsupported = non_sense_options(subcommands);
-    println!("Unsupported options: {:?} / {:?} ", unsupported, args);
     for (option, count) in unsupported {
         remove_arguments(args, option, count);
     }
