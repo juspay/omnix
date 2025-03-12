@@ -1,5 +1,7 @@
 //! Nix command's arguments
 
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 
 /// All arguments you can pass to the `nix` command
@@ -18,11 +20,9 @@ pub struct NixArgs {
     #[cfg_attr(feature = "clap", arg(long))]
     pub extra_access_tokens: Vec<String>,
 
-    /// Consider all previously downloaded files out-of-date.
-    #[cfg_attr(feature = "clap", arg(long))]
-    pub refresh: bool,
-
     /// Additional arguments to pass through to `nix`
+    ///
+    /// NOTE: Arguments irrelevant to a nix subcommand will automatically be ignored.
     #[cfg_attr(feature = "clap", arg(last = true, default_values_t = vec![
     "-j".to_string(),
     "auto".to_string(),
@@ -30,19 +30,10 @@ pub struct NixArgs {
     pub extra_nix_args: Vec<String>,
 }
 
-impl IntoIterator for &NixArgs {
-    type Item = String;
-    type IntoIter = std::vec::IntoIter<Self::Item>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.to_args().into_iter()
-    }
-}
-
 impl NixArgs {
     /// Convert this [NixCmd] configuration into a list of arguments for
     /// [Command]
-    fn to_args(&self) -> Vec<String> {
+    pub fn to_args(&self, subcommands: &[&str]) -> Vec<String> {
         let mut args = vec![];
         if !self.extra_experimental_features.is_empty() {
             args.push("--extra-experimental-features".to_string());
@@ -52,10 +43,9 @@ impl NixArgs {
             args.push("--extra-access-tokens".to_string());
             args.push(self.extra_access_tokens.join(" "));
         }
-        if self.refresh {
-            args.push("--refresh".to_string());
-        }
-        args.extend(self.extra_nix_args.clone());
+        let mut extra_nix_args = self.extra_nix_args.clone();
+        remove_nonsense_args_when_subcommand(subcommands, &mut extra_nix_args);
+        args.extend(extra_nix_args);
         args
     }
 
@@ -69,5 +59,32 @@ impl NixArgs {
     pub fn with_nix_command(&mut self) {
         self.extra_experimental_features
             .append(vec!["nix-command".to_string()].as_mut());
+    }
+}
+
+fn remove_nonsense_args_when_subcommand(subcommands: &[&str], args: &mut Vec<String>) {
+    let unsupported = non_sense_options(subcommands);
+    println!("Unsupported options: {:?} / {:?} ", unsupported, args);
+    for (option, count) in unsupported {
+        remove_arguments(args, option, count);
+    }
+}
+
+fn non_sense_options<'a>(subcommands: &[&str]) -> HashMap<&'a str, usize> {
+    match subcommands {
+        &["eval"] => HashMap::from([("--rebuild", 0)]),
+        &["flake", "lock"] => HashMap::from([("--rebuild", 0), ("--override-input", 2)]),
+        _ => HashMap::new(),
+    }
+}
+
+fn remove_arguments(vec: &mut Vec<String>, arg: &str, next: usize) {
+    let mut i = 0;
+    while i < vec.len() {
+        if vec[i] == arg && i + next < vec.len() {
+            vec.drain(i..i + next + 1);
+        } else {
+            i += 1;
+        }
     }
 }
