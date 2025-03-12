@@ -46,12 +46,12 @@ where
     T: serde::de::DeserializeOwned,
 {
     let stdout = nixcmd
-        .run_with(|cmd| {
+        .run_with(&["eval"], |cmd| {
             cmd.stdout(Stdio::piped());
             if capture_stderr {
                 cmd.stderr(Stdio::piped());
             }
-            cmd.args(["eval", "--json"]);
+            cmd.args(["--json"]);
             opts.use_in_command(cmd);
             cmd.arg(url.to_string());
             // Avoid Nix from dumping logs related to `--override-input` use. Yes, this requires *double* use of `--quiet`.

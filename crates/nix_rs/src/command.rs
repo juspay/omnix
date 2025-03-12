@@ -76,20 +76,29 @@ impl NixCmd {
     }
 
     /// Return a [Command] for this [NixCmd] configuration
-    pub fn command(&self) -> Command {
+    ///
+    /// Arguments:
+    /// - `subcommands`: Optional subcommands to pass. Note that `NixArgs` will
+    ///    be passed *after* these subcommands.
+    pub fn command(&self, subcommands: &[&str]) -> Command {
         let mut cmd = Command::new("nix");
         cmd.kill_on_drop(true);
+        cmd.args(subcommands);
         cmd.args(&self.args);
         cmd
     }
 
     /// Run nix with given args, interpreting stdout as JSON, parsing into `T`
-    pub async fn run_with_args_expecting_json<T>(&self, args: &[&str]) -> Result<T, NixCmdError>
+    pub async fn run_with_args_expecting_json<T>(
+        &self,
+        subcommands: &[&str],
+        args: &[&str],
+    ) -> Result<T, NixCmdError>
     where
         T: serde::de::DeserializeOwned,
     {
         let stdout: Vec<u8> = self
-            .run_with_returning_stdout(|c| {
+            .run_with_returning_stdout(subcommands, |c| {
                 c.args(args);
             })
             .await?;
@@ -98,13 +107,17 @@ impl NixCmd {
     }
 
     /// Run nix with given args, interpreting parsing stdout, via [std::str::FromStr], into `T`
-    pub async fn run_with_args_expecting_fromstr<T>(&self, args: &[&str]) -> Result<T, NixCmdError>
+    pub async fn run_with_args_expecting_fromstr<T>(
+        &self,
+        subcommands: &[&str],
+        args: &[&str],
+    ) -> Result<T, NixCmdError>
     where
         T: std::str::FromStr,
         <T as std::str::FromStr>::Err: std::fmt::Display,
     {
         let stdout = self
-            .run_with_returning_stdout(|c| {
+            .run_with_returning_stdout(subcommands, |c| {
                 c.args(args);
             })
             .await?;
@@ -114,11 +127,15 @@ impl NixCmd {
     }
 
     /// Like [Self::run_with] but returns stdout as a [`Vec<u8>`]
-    pub async fn run_with_returning_stdout<F>(&self, f: F) -> Result<Vec<u8>, CommandError>
+    pub async fn run_with_returning_stdout<F>(
+        &self,
+        subcommands: &[&str],
+        f: F,
+    ) -> Result<Vec<u8>, CommandError>
     where
         F: FnOnce(&mut Command),
     {
-        let mut cmd = self.command();
+        let mut cmd = self.command(subcommands);
         f(&mut cmd);
         trace_cmd(&cmd);
 
@@ -141,11 +158,11 @@ impl NixCmd {
     /// Run Nix with given [Command] customizations, while also tracing the command being run.
     ///
     /// Return the stdout bytes returned by [tokio::process::Child::wait_with_output]. In order to capture stdout, you must call `cmd.stdout(Stdio::piped());` inside the handler.
-    pub async fn run_with<F>(&self, f: F) -> Result<Vec<u8>, CommandError>
+    pub async fn run_with<F>(&self, subcommands: &[&str], f: F) -> Result<Vec<u8>, CommandError>
     where
         F: FnOnce(&mut Command),
     {
-        let mut cmd = self.command();
+        let mut cmd = self.command(subcommands);
         f(&mut cmd);
         trace_cmd(&cmd);
         let out = cmd.spawn()?.wait_with_output().await?;

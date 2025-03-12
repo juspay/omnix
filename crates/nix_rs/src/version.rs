@@ -75,7 +75,9 @@ impl NixVersion {
     /// Get the output of `nix --version`
     #[instrument(name = "version")]
     pub async fn from_nix(cmd: &NixCmd) -> Result<NixVersion, super::command::NixCmdError> {
-        let v = cmd.run_with_args_expecting_fromstr(&["--version"]).await?;
+        let v = cmd
+            .run_with_args_expecting_fromstr(&[], &["--version"])
+            .await?;
         Ok(v)
     }
 }

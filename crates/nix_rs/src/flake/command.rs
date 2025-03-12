@@ -20,8 +20,7 @@ pub async fn run(
     args: Vec<String>,
 ) -> Result<(), CommandError> {
     nixcmd
-        .run_with(|cmd| {
-            cmd.args(["run".to_string()]);
+        .run_with(&["run"], |cmd| {
             opts.use_in_command(cmd);
             cmd.args([url.to_string(), "--".to_string()]);
             cmd.args(args);
@@ -38,9 +37,9 @@ pub async fn develop(
     command: NonEmpty<String>,
 ) -> Result<(), CommandError> {
     nixcmd
-        .run_with(|cmd| {
+        .run_with(&["develop"], |cmd| {
             opts.use_in_command(cmd);
-            cmd.args(["develop".to_string(), url.to_string(), "-c".to_string()]);
+            cmd.args([url.to_string(), "-c".to_string()]);
             cmd.args(command);
         })
         .await?;
@@ -54,9 +53,9 @@ pub async fn build(
     url: FlakeUrl,
 ) -> Result<Vec<OutPath>, NixCmdError> {
     let stdout: Vec<u8> = cmd
-        .run_with_returning_stdout(|c| {
+        .run_with_returning_stdout(&["build"], |c| {
             opts.use_in_command(c);
-            c.args(["build", "--no-link", "--json", &url]);
+            c.args(["--no-link", "--json", &url]);
         })
         .await?;
     let v = serde_json::from_slice::<Vec<OutPath>>(&stdout)?;
@@ -70,8 +69,11 @@ pub async fn lock(
     args: &[&str],
     url: &FlakeUrl,
 ) -> Result<(), NixCmdError> {
-    cmd.run_with(|c| {
-        c.args(["flake", "lock", url]);
+    let mut cmd = cmd.clone();
+    // Remove --override-input x y arguments, since they don't make sense for flake.lock check
+    remove_override_inputs(&mut cmd.args.extra_nix_args);
+    cmd.run_with(&["flake", "lock"], |c| {
+        c.arg(url.to_string());
         opts.use_in_command(c);
         c.args(args);
     })
@@ -79,10 +81,22 @@ pub async fn lock(
     Ok(())
 }
 
+/// Remove `--override-input` from the Nix arguments list
+fn remove_override_inputs(vec: &mut Vec<String>) {
+    let mut i = 0;
+    while i < vec.len() {
+        if vec[i] == "--override-input" && i + 2 < vec.len() {
+            vec.drain(i..i + 3);
+        } else {
+            i += 1;
+        }
+    }
+}
+
 /// Run `nix flake check`
 pub async fn check(cmd: &NixCmd, opts: &FlakeOptions, url: &FlakeUrl) -> Result<(), NixCmdError> {
-    cmd.run_with(|c| {
-        c.args(["flake", "check", url]);
+    cmd.run_with(&["flake", "check"], |c| {
+        c.arg(url.to_string());
         opts.use_in_command(c);
     })
     .await?;
