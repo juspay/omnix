@@ -23,10 +23,7 @@ pub struct NixArgs {
     /// Additional arguments to pass through to `nix`
     ///
     /// NOTE: Arguments irrelevant to a nix subcommand will automatically be ignored.
-    #[cfg_attr(feature = "clap", arg(last = true, default_values_t = vec![
-    "-j".to_string(),
-    "auto".to_string(),
-    ]))]
+    #[cfg_attr(feature = "clap", arg(last = true))]
     pub extra_nix_args: Vec<String>,
 }
 
@@ -63,7 +60,7 @@ impl NixArgs {
 }
 
 /// Certain options, like --rebuild, is not supported by all subcommands (e.g.
-/// `nix develop`). Remove them here.
+/// `nix develop`). We remove them here. Yes, this is a bit of HACK!
 fn remove_nonsense_args_when_subcommand(subcommands: &[&str], args: &mut Vec<String>) {
     let unsupported = non_sense_options(subcommands);
     for (option, count) in unsupported {
