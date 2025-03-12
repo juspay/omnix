@@ -32,8 +32,7 @@ where
     I: IntoIterator<Item = P>,
     P: AsRef<Path> + AsRef<OsStr>,
 {
-    cmd.run_with(|cmd| {
-        cmd.arg("copy");
+    cmd.run_with(&["copy"], |cmd| {
         cmd.arg("-v");
         if let Some(uri) = options.from {
             cmd.arg("--from").arg(uri.to_string());

@@ -85,7 +85,7 @@ where
     T: Default + serde::de::DeserializeOwned,
 {
     let v = cmd
-        .run_with_args_expecting_json::<T>(&["eval", "--impure", "--json", "--expr", &expr])
+        .run_with_args_expecting_json::<T>(&["eval"], &["--impure", "--json", "--expr", &expr])
         .await?;
     Ok(v)
 }

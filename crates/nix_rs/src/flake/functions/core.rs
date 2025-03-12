@@ -60,8 +60,8 @@ pub trait FlakeFn {
         Self::Output: Sync + for<'de> Deserialize<'de>,
     {
         async move {
-            let mut cmd = nixcmd.command();
-            cmd.args(["build", Self::flake(), "-L", "--print-out-paths"]);
+            let mut cmd = nixcmd.command(&["build"]);
+            cmd.args([Self::flake(), "-L", "--print-out-paths"]);
 
             if impure {
                 cmd.arg("--impure");
