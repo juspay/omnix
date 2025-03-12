@@ -72,12 +72,14 @@ fn remove_nonsense_args_when_subcommand(subcommands: &[&str], args: &mut Vec<Str
 }
 
 fn non_sense_options<'a>(subcommands: &[&str]) -> HashMap<&'a str, usize> {
+    let rebuild = ("--rebuild", 0);
+    let override_input = ("--override-input", 2);
     match subcommands {
-        ["eval"] => HashMap::from([("--rebuild", 0)]),
-        ["flake", "lock"] => HashMap::from([("--rebuild", 0), ("--override-input", 2)]),
-        ["flake", "check"] => HashMap::from([("--rebuild", 0)]),
-        ["develop"] => HashMap::from([("--rebuild", 0)]),
-        ["run"] => HashMap::from([("--rebuild", 0)]),
+        ["eval"] => HashMap::from([rebuild, override_input]),
+        ["flake", "lock"] => HashMap::from([rebuild, override_input]),
+        ["flake", "check"] => HashMap::from([rebuild]),
+        ["develop"] => HashMap::from([rebuild]),
+        ["run"] => HashMap::from([rebuild]),
         _ => HashMap::new(),
     }
 }
