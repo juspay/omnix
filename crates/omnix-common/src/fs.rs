@@ -36,11 +36,17 @@ async fn copy_entry(
         if let Some(parent) = target.parent() {
             fs::create_dir_all(parent).await?;
         }
-        // Handle regular files
-        fs::copy(path, &target).await?;
-        // Because we are copying from the Nix store, the source paths will be read-only.
-        // So, make the target writeable by the owner.
-        make_owner_writeable(&target).await?;
+        if file_type.is_symlink() {
+            // Handle symlinks *as is* (we expect relative symlink targets) without resolution.
+            let link_target = fs::read_link(path).await?;
+            fs::symlink(&link_target, &target).await?;
+        } else {
+            // Handle regular files
+            fs::copy(path, &target).await?;
+            // Because we are copying from the Nix store, the source paths will be read-only.
+            // So, make the target writeable by the owner.
+            make_owner_writeable(&target).await?;
+        }
     }
     Ok(())
 }

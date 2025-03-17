@@ -8,6 +8,8 @@
   - Extra nix handling
       - Allow `--override-input` to work again (#439)
       - Support `--rebuild` by disallowing it in irrelevant subcommands (`eval`, `develop`, `run`, `flake {lock,check}`) (#441)
+- `om init`
+  - Handle symlinks *as is* (we expect relative symlink targets) without resolution (#443)
 
 ## 1.0.2 (2025-03-11) {#1.0.2}
 
