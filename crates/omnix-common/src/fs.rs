@@ -1,5 +1,5 @@
 //! Filesystem utilities
-use async_walkdir::WalkDir;
+use async_walkdir::{DirEntry, WalkDir};
 use futures_lite::stream::StreamExt;
 use std::{
     os::unix::fs::PermissionsExt,
@@ -11,30 +11,37 @@ use tokio::fs;
 ///
 /// The target directory will always be user readable & writable.
 pub async fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> anyhow::Result<()> {
-    let src = src.as_ref();
-    let dst = dst.as_ref();
-
-    let mut walker = WalkDir::new(src);
+    let mut walker = WalkDir::new(&src);
 
     while let Some(entry) = walker.next().await {
-        let entry = entry?;
-        let path = &entry.path();
-        let relative = path.strip_prefix(src)?;
-        let target = dst.join(relative);
-
-        if entry.file_type().await?.is_dir() {
-            fs::create_dir_all(&target).await?;
-        } else {
-            if let Some(parent) = target.parent() {
-                fs::create_dir_all(parent).await?;
-            }
-            fs::copy(path, &target).await?;
-            // Because we are copying from the Nix store, the source paths will be read-only.
-            // So, make the target writeable by the owner.
-            make_owner_writeable(&target).await?;
-        }
+        copy_entry(&src, entry?, &dst).await?;
     }
+    Ok(())
+}
 
+async fn copy_entry(
+    src: impl AsRef<Path>,
+    entry: DirEntry,
+    dst: impl AsRef<Path>,
+) -> anyhow::Result<()> {
+    let path = &entry.path();
+    let relative = path.strip_prefix(src)?;
+    let target = dst.as_ref().join(relative);
+
+    let file_type = entry.file_type().await?;
+    if file_type.is_dir() {
+        // Handle directories
+        fs::create_dir_all(&target).await?;
+    } else {
+        if let Some(parent) = target.parent() {
+            fs::create_dir_all(parent).await?;
+        }
+        // Handle regular files
+        fs::copy(path, &target).await?;
+        // Because we are copying from the Nix store, the source paths will be read-only.
+        // So, make the target writeable by the owner.
+        make_owner_writeable(&target).await?;
+    }
     Ok(())
 }
 
