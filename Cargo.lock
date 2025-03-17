@@ -1797,7 +1797,7 @@ dependencies = [
 
 [[package]]
 name = "nix_rs"
-version = "1.2.0"
+version = "1.2.1"
 dependencies = [
  "bytesize",
  "cfg-if",
@@ -2007,7 +2007,7 @@ dependencies = [
 
 [[package]]
 name = "omnix-common"
-version = "1.0.1"
+version = "1.0.3"
 dependencies = [
  "anyhow",
  "async-walkdir",
