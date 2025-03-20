@@ -2,7 +2,7 @@ use serde::Deserialize;
 
 const DEFAULT: &str = r#"🍾 Welcome to the project
 
-*(Want to show custom instructions here? Add them to the `om.develop.default.readme` field in your `flake.nix` file)*
+*(Want to show custom instructions here? Add them to the `om.develop.default.readme` field in your `flake.nix` or `om.yaml` file)*
 "#;
 
 /// The README to display at the end.
