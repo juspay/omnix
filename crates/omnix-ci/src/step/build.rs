@@ -17,15 +17,23 @@ use crate::{
 /// Represents a build step in the CI pipeline
 ///
 /// It builds all flake outputs.
+///
+/// TODO: Should we use [`serde-bool`](https://docs.rs/serde-bool/latest/serde_bool/) to obviate that `Option` types in fields?
 #[derive(Debug, Clone, Deserialize)]
 pub struct BuildStep {
     /// Whether to enable this step
     pub enable: bool,
+    /// Whether to pass `--impure` to `nix build`
+    #[serde(default)]
+    pub impure: Option<bool>,
 }
 
 impl Default for BuildStep {
     fn default() -> Self {
-        BuildStep { enable: true }
+        BuildStep {
+            enable: true,
+            impure: None,
+        }
     }
 }
 
@@ -46,7 +54,7 @@ impl BuildStep {
         let nix_args = subflake_extra_args(subflake);
         let output = DevourFlake::call(
             nixcmd,
-            false,
+            self.impure.unwrap_or(false),
             None,
             None,
             nix_args,
