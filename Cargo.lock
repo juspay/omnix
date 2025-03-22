@@ -1950,7 +1950,7 @@ dependencies = [
 
 [[package]]
 name = "omnix-ci"
-version = "1.0.2"
+version = "1.0.3"
 dependencies = [
  "anyhow",
  "clap",
