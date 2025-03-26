@@ -133,7 +133,7 @@ impl From<PathBuf> for FlakeUrl {
 impl From<&Path> for FlakeUrl {
     fn from(path: &Path) -> Self {
         // We do not use `path:` here, because that will trigger copying to the Nix store.
-        FlakeUrl(format!("path:{}", path.display()))
+        FlakeUrl(format!("{}", path.display()))
     }
 }
 
@@ -252,7 +252,7 @@ mod tests {
         assert_eq!(url.sub_flake_url(".".to_string()), url.clone());
         assert_eq!(
             url.sub_flake_url("sub".to_string()),
-            FlakeUrl("path:./sub".to_string())
+            FlakeUrl("./sub".to_string())
         );
 
         // URI refs
