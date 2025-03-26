@@ -2,7 +2,10 @@
 lib.mapAttrs (_: v: builtins.toString v) {
   OMNIX_SOURCE = src;
   CACHIX_BIN = lib.getExe cachix;
-  OM_INIT_REGISTRY = src + /crates/omnix-init/registry;
+  OM_INIT_REGISTRY = "path:${src}/crates/omnix-init/registry";
+  DEFAULT_FLAKE_SCHEMAS = "path:${src}/nix/flake-schemas";
+  FLAKE_METADATA = "path:${src}/crates/nix_rs/src/flake/functions/metadata";
+  FLAKE_ADDSTRINGCONTEXT = "path:${src}/crates/nix_rs/src/flake/functions/addstringcontext";
   DEVOUR_FLAKE = fetchFromGitHub {
     owner = "srid";
     repo = "devour-flake";
@@ -57,7 +60,4 @@ lib.mapAttrs (_: v: builtins.toString v) {
     rev = "inventory-for-systems";
     hash = "sha256-GTxRovvYWYn2/LDvjA73YttGuqvtKaOFZfOR9YxtST0=";
   };
-  DEFAULT_FLAKE_SCHEMAS = src + /nix/flake-schemas;
-  FLAKE_METADATA = src + /crates/nix_rs/src/flake/functions/metadata;
-  FLAKE_ADDSTRINGCONTEXT = src + /crates/nix_rs/src/flake/functions/addstringcontext;
 }
