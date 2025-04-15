@@ -1,4 +1,4 @@
-[![project chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://nixos.zulipchat.com/#narrow/stream/415454-omnix)
+[![project chat](https://img.shields.io/github/discussions/juspay/omnix)](https://github.com/juspay/omnix/discussions)
 [![Naiveté Compass of Mood](https://img.shields.io/badge/naïve-FF10F0)](https://compass.naivete.me/ "This project follows the 'Naiveté Compass of Mood'")
 
 # omnix
