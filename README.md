@@ -5,7 +5,7 @@
 
 <img width="10%" src="./doc/src/favicon.svg">
 
-*Pronounced [`/ɒmˈnɪks/`](http://ipa-reader.xyz/?text=%C9%92m%CB%88n%C9%AAks&voice=Geraint)*
+*Pronounced [`/ɒmˈnɪks/`](https://ipa-reader.com/?text=%C9%92m%CB%88n%C9%AAks&voice=Geraint)*
 
 Omnix aims to supplement the [Nix](https://nixos.asia/en/nix) CLI to improve developer experience.
 
