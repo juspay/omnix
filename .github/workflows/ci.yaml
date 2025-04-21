@@ -78,13 +78,11 @@ jobs:
 
       # Login to the Attic with the token that allows pushing Nix store objects to the cache
       - name: Attic login
-        # if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main'
         run: attic login chutney https://cache.nixos.asia ${{ secrets.ATTIC_LOGIN_TOKEN }}
 
       # Push the Nix cache
       - name: Push to attic
-        # env:
-        #  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-        # if: env.BRANCH_NAME == 'main'
+        if: github.ref == 'refs/heads/main'
         run: attic push chutney:oss $HOME/omci.json
 
