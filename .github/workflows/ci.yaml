@@ -37,12 +37,6 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
-      - uses: cachix/cachix-action@v14
-        if: github.ref == 'refs/heads/main'
-        with:
-          name: om
-          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
-          skipPush: true
 
       # Build omnix first, so we can use it to build the rest of the flake outputs.
       # This also separates the CI log for both these obviously distinct steps.
@@ -82,15 +76,13 @@ jobs:
           path: ${{ steps.omci.outputs.OMCIJSON_PATH }}
           if-no-files-found: error
 
+      # Login to the Attic with the token that allows pushing Nix store objects to the cache
+      - name: Attic login
+        if: github.ref == 'refs/heads/main'
+        run: attic login chutney https://cache.nixos.asia ${{ secrets.ATTIC_LOGIN_TOKEN }}
+
       # Push the Nix cache
-      - name: Push to cachix
-        env:
-          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
-          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-        if: env.BRANCH_NAME == 'main'
-        run: |
-          nix run github:juspay/cachix-push -- \
-            --subflake omnix \
-            --prefix "${BRANCH_NAME}" \
-            --cache om \
-            < $HOME/omci.json
+      - name: Push to attic
+        if: github.ref == 'refs/heads/main'
+        run: attic push chutney:oss $HOME/omci.json
+
