@@ -18,8 +18,12 @@ impl Checkable for FlakeEnabled {
         let check = Check {
             title: "Flakes Enabled".to_string(),
             info: format!("experimental-features = {}", val.join(" ")),
-            result: if val.contains(&"flakes".to_string())
-                && val.contains(&"nix-command".to_string())
+            // determinate installer has flakes enabled by default
+            result: if matches!(
+                nix_info.nix_env.installer,
+                nix_rs::env::NixInstaller::DetSys(_)
+            ) || (val.contains(&"flakes".to_string())
+                && val.contains(&"nix-command".to_string()))
             {
                 CheckResult::Green
             } else {
