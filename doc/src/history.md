@@ -3,6 +3,7 @@
 ## 1.0.4 (UNRELEASED)
 
 - `om ci`: Allow impure builds through `impure = true;` setting in `om.yaml` (#445)
+- `om health`: Fix DetSys installer hijacking its own version into `nix --version` causing false Nix version detection. (#458)
 
 ## 1.0.3 (2025-03-17) {#1.0.3}
 
