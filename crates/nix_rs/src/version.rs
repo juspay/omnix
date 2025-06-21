@@ -114,4 +114,14 @@ async fn test_parse_nix_version() {
             patch: 0
         })
     );
+
+    // Parse Determinate Nix Version
+    assert_eq!(
+        NixVersion::from_str("nix (Determinate Nix 3.6.6) 2.29.0"),
+        Ok(NixVersion {
+            major: 2,
+            minor: 29,
+            patch: 0
+        })
+    );
 }
