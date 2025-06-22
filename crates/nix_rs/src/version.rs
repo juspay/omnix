@@ -43,7 +43,7 @@ impl FromStr for NixVersion {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         // NOTE: The parser is lenient in allowing pure nix version (produced
         // by [Display] instance), so as to work with serde_with instances.
-        let re = Regex::new(r"(?:nix \(Nix\) )?(\d+)\.(\d+)\.(\d+)")?;
+        let re = Regex::new(r"(?:nix \(Nix\) )?(\d+)\.(\d+)\.(\d+)$")?;
 
         let captures = re.captures(s).ok_or(BadNixVersion::Command)?;
         let major = captures[1].parse::<u32>()?;
@@ -111,6 +111,16 @@ async fn test_parse_nix_version() {
         Ok(NixVersion {
             major: 2,
             minor: 13,
+            patch: 0
+        })
+    );
+
+    // Parse Determinate Nix Version
+    assert_eq!(
+        NixVersion::from_str("nix (Determinate Nix 3.6.6) 2.29.0"),
+        Ok(NixVersion {
+            major: 2,
+            minor: 29,
             patch: 0
         })
     );
