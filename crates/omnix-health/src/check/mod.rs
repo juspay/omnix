@@ -2,6 +2,7 @@
 pub mod caches;
 pub mod direnv;
 pub mod flake_enabled;
+pub mod homebrew;
 pub mod max_jobs;
 pub mod nix_version;
 pub mod rosetta;
