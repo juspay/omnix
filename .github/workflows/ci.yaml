@@ -16,28 +16,32 @@ jobs:
     secrets: inherit
 
   main:
-    runs-on: ${{ matrix.system }}
+    runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
     outputs:
-      # It is important to match the matrix.system here
+      # It is important to match the matrix.runner here
       # With that of website.yaml
       OMWEBSITE: ${{ steps.omci.outputs.OMWEBSITE_x86_64-linux }}
     strategy:
       matrix:
-        system: [x86_64-linux, aarch64-linux, aarch64-darwin, x86_64-darwin]
-        isMain:
-          - ${{ contains(github.ref, 'main') }}
-        # Excluded emulated builds on PRs
-        exclude:
-          - system: aarch64-linux
-            isMain: false
-          - system: x86_64-darwin
-            isMain: false
+        include:
+          - runner: x86_64-linux
+            name: x86_64-linux
+          - runner: macos-latest
+            name: aarch64-darwin
       fail-fast: false
     steps:
-      - uses: actions/checkout@v4
+      # ⤵️ The steps are run only on GitHub runners
+      - name: "Install Nix"
+        if: matrix.runner == 'macos-latest'
+        uses: DeterminateSystems/nix-installer-action@main
+      - name: "Install attic"
+        if: matrix.runner == 'macos-latest'
+        run: |
+          nix profile install nixpkgs#attic-client
 
+      - uses: actions/checkout@v4
       # Build omnix first, so we can use it to build the rest of the flake outputs.
       # This also separates the CI log for both these obviously distinct steps.
       - name: Build Omnix package
@@ -49,7 +53,7 @@ jobs:
         run: |
           nix --accept-flake-config run . -- ci run \
             --extra-access-tokens ${{ secrets.GITHUB_TOKEN }} \
-            --systems "${{ matrix.system }}" \
+            --systems "${{ matrix.name }}" \
             --results=$HOME/omci.json \
             -- --accept-flake-config
 
@@ -67,12 +71,12 @@ jobs:
           echo "OMCIJSON_PATH=$HOME/omci.json" >> "$GITHUB_OUTPUT"
           echo "OMCIJSON=$(cat $HOME/omci.json)" >> "$GITHUB_OUTPUT"
           echo "OMPACKAGE=$(get_output omnix omnix-cli)" >> "$GITHUB_OUTPUT"
-          echo "OMWEBSITE_${{ matrix.system }}=$(get_output doc omnix-mdbook-site)" >> "$GITHUB_OUTPUT"
+          echo "OMWEBSITE_${{ matrix.name }}=$(get_output doc omnix-mdbook-site)" >> "$GITHUB_OUTPUT"
 
       - name: "Omnix: Upload results"
         uses: actions/upload-artifact@v4
         with:
-          name: omci-${{ matrix.system }}.json
+          name: omci-${{ matrix.runner }}.json
           path: ${{ steps.omci.outputs.OMCIJSON_PATH }}
           if-no-files-found: error
 
@@ -85,4 +89,3 @@ jobs:
       - name: Push to attic
         if: github.ref == 'refs/heads/main'
         run: attic push chutney:oss $HOME/omci.json
-
