@@ -1,9 +1,12 @@
 //! Prerequisite checks for the Omnix project.
 
-use which::which;
+use which::{which, Error};
 
 /// Check if Nix is installed.
 pub fn nix_installed() -> bool {
-    let out = which("nix");
-    out.is_ok()
+    match which("nix") {
+        Ok(_) => true,
+        Err(Error::CannotFindBinaryPath) => false,
+        Err(e) => panic!("Unexpected error while searching for Nix: {:?}", e),
+    }
 }
