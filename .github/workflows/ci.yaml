@@ -25,11 +25,14 @@ jobs:
       OMWEBSITE: ${{ steps.omci.outputs.OMWEBSITE_x86_64-linux }}
     strategy:
       matrix:
-        include:
-          - runner: x86_64-linux
-            name: x86_64-linux
-          - runner: macos-latest
-            name: aarch64-darwin
+        runner: [x86_64-linux, aarch64-linux, macos-latest, x86_64-darwin]
+        name: [x86_64-linux, aarch64-linux, aarch64-darwin, x86_64-darwin]
+        isMain: [true, false]
+        exclude:
+          - runner: aarch64-linux
+            isMain: false
+          - runner: x86_64-darwin
+            isMain: false
       fail-fast: false
     steps:
       # ⤵️ The steps are run only on GitHub runners
