@@ -20,8 +20,10 @@ The `om health` command checks the health of your Nix install. Furthermore, indi
 | Direnv: installed and activated        | Yes                          |
 | Dotfiles are managed by Nix            | Yes                          |
 | Min RAM / Disk space                   | Yes                          |
+| Homebrew install detection (disabled by default)[^macos] | Yes                |
 
 [^ros]: This check is only performed on macOS with Apple Silicon.
+[^macos]: This check is only performed on  macOS.
 
 Note that some checks are considered non-essential. For eg., the disk space check looks for 1TB+ disk space, but if the user is on a laptop with 256GB SSD, the check will report a warning instead of failing. This can also be configured in per-project basis from `flake.nix` (see below).
 
@@ -73,6 +75,9 @@ caches:
     - https://cache.nixos.org/
 direnv:
   enable: true
+  required: false
+homebrew:
+  enable: false
   required: false
 shell:
   enable: true
