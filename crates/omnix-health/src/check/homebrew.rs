@@ -19,20 +19,13 @@ impl Checkable for Homebrew {
         _flake_url: Option<&FlakeUrl>,
     ) -> Vec<(&'static str, Check)> {
         let mut checks = vec![];
-        if !self.enable {
-            return checks;
-        }
 
-        // Only check on macOS by default
-        if !matches!(nix_info.nix_env.os, nix_rs::env::OS::MacOS { .. }) {
-            return checks;
+        if self.enable && matches!(nix_info.nix_env.os, nix_rs::env::OS::MacOS { .. }) {
+            checks.push((
+                "homebrew-check",
+                installation_check(&HomebrewInstall::detect(), self.required),
+            ));
         }
-
-        let homebrew_install_result = HomebrewInstall::detect();
-        checks.push((
-            "homebrew-check",
-            installation_check(&homebrew_install_result, self.required),
-        ));
 
         checks
     }
