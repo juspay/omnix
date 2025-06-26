@@ -28,7 +28,7 @@ impl Checkable for Homebrew {
             return checks;
         }
 
-        let homebrew_install_result = detect_homebrew();
+        let homebrew_install_result = HomebrewInstall::detect();
         checks.push((
             "homebrew-check",
             installation_check(&homebrew_install_result, self.required),
@@ -44,9 +44,11 @@ pub struct HomebrewInstall {
     pub bin_path: std::path::PathBuf,
 }
 
-/// Detect if Homebrew is installed
-fn detect_homebrew() -> Option<HomebrewInstall> {
-    which_strict("brew").map(|bin_path| HomebrewInstall { bin_path })
+impl HomebrewInstall {
+    /// Detect if Homebrew is installed
+    pub fn detect() -> Option<Self> {
+        which_strict("brew").map(|bin_path| HomebrewInstall { bin_path })
+    }
 }
 
 /// A string containing step-by-step removal commands and migration advice.
