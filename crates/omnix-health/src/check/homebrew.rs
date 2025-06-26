@@ -1,6 +1,6 @@
 use nix_rs::{flake::url::FlakeUrl, info::NixInfo};
+use omnix_common::check::which_strict;
 use serde::{Deserialize, Serialize};
-use which::{which, Error};
 
 use crate::traits::{Check, CheckResult, Checkable};
 
@@ -53,13 +53,9 @@ pub enum HomebrewError {
 
 /// Detect if Homebrew is installed
 fn detect_homebrew() -> Result<HomebrewInstall, HomebrewError> {
-    match which("brew") {
-        Ok(brew_path) => Ok(HomebrewInstall {
-            bin_path: brew_path,
-        }),
-        Err(Error::CannotFindBinaryPath) => Err(HomebrewError::NotFound),
-        Err(e) => panic!("Unexpected error while searching for Homebrew: {:?}", e),
-    }
+    which_strict("brew")
+        .map(|bin_path| HomebrewInstall { bin_path })
+        .ok_or(HomebrewError::NotFound)
 }
 
 /// A string containing step-by-step removal commands and migration advice.
