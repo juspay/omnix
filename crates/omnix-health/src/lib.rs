@@ -10,6 +10,7 @@ use check::shell::ShellCheck;
 use colored::Colorize;
 
 use check::direnv::Direnv;
+use check::homebrew::Homebrew;
 use json::HealthOutput;
 use nix_rs::command::NixCmd;
 use nix_rs::env::OS;
@@ -39,6 +40,7 @@ pub struct NixHealth {
     pub trusted_users: TrustedUsers,
     pub caches: Caches,
     pub direnv: Direnv,
+    pub homebrew: Homebrew,
     pub shell: ShellCheck,
 }
 
@@ -57,6 +59,7 @@ impl<'a> IntoIterator for &'a NixHealth {
             &self.trusted_users,
             &self.caches,
             &self.direnv,
+            &self.homebrew,
             &self.shell,
         ];
         items.into_iter()
