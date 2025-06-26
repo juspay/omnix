@@ -50,14 +50,12 @@ fn detect_homebrew() -> Option<HomebrewInstall> {
 }
 
 /// A string containing step-by-step removal commands and migration advice.
-fn homebrew_removal_instructions() -> String {
-    r#"To completely remove Homebrew from your system:
+const HOMEBREW_REMOVAL_INSTRUCTIONS: &str = r#"To completely remove Homebrew from your system:
 
 - **Uninstall Homebrew and all packages:**
    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/uninstall.sh)"
 
-For a safer migration, consider using 'brew list' to inventory your packages before removal, then install equivalents via Nix."#.to_string()
-}
+For a safer migration, consider using 'brew list' to inventory your packages before removal, then install equivalents via Nix."#;
 
 /// Create a [Check] for Homebrew installation
 fn installation_check(homebrew_result: &Option<HomebrewInstall>, required: bool) -> Check {
@@ -81,7 +79,7 @@ fn installation_check(homebrew_result: &Option<HomebrewInstall>, required: bool)
                 suggestion: format!(
                     "While Homebrew works fine, managing packages with Nix provides better reproducibility and integration. See <{}>\n\n{}",
                     nix_setup_url,
-                    homebrew_removal_instructions()
+                    HOMEBREW_REMOVAL_INSTRUCTIONS
                 ),
             },
             None => CheckResult::Green,
