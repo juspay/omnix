@@ -44,18 +44,9 @@ pub struct HomebrewInstall {
     pub bin_path: std::path::PathBuf,
 }
 
-/// Error types for Homebrew detection
-#[derive(Debug, thiserror::Error)]
-pub enum HomebrewError {
-    #[error("Homebrew not found in PATH")]
-    NotFound,
-}
-
 /// Detect if Homebrew is installed
-fn detect_homebrew() -> Result<HomebrewInstall, HomebrewError> {
-    which_strict("brew")
-        .map(|bin_path| HomebrewInstall { bin_path })
-        .ok_or(HomebrewError::NotFound)
+fn detect_homebrew() -> Option<HomebrewInstall> {
+    which_strict("brew").map(|bin_path| HomebrewInstall { bin_path })
 }
 
 /// A string containing step-by-step removal commands and migration advice.
@@ -69,10 +60,7 @@ For a safer migration, consider using 'brew list' to inventory your packages bef
 }
 
 /// Create a [Check] for Homebrew installation
-fn installation_check(
-    homebrew_result: &Result<HomebrewInstall, HomebrewError>,
-    required: bool,
-) -> Check {
+fn installation_check(homebrew_result: &Option<HomebrewInstall>, required: bool) -> Check {
     let nix_setup_url = "https://github.com/juspay/nixos-unified-template";
 
     Check {
@@ -82,10 +70,10 @@ fn installation_check(
             homebrew_result
                 .as_ref()
                 .map(|h| format!("Found at {:?}", h.bin_path))
-                .unwrap_or_else(|e| format!("{}", e))
+                .unwrap_or_else(|| "Not found".to_string())
         ),
         result: match homebrew_result {
-            Ok(homebrew) => CheckResult::Red {
+            Some(homebrew) => CheckResult::Red {
                 msg: format!(
                     "Homebrew is installed at {:?}. Consider using Nix for better reproducibility",
                     homebrew.bin_path
@@ -96,7 +84,7 @@ fn installation_check(
                     homebrew_removal_instructions()
                 ),
             },
-            Err(HomebrewError::NotFound) => CheckResult::Green,
+            None => CheckResult::Green,
         },
         required,
     }
