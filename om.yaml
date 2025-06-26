@@ -65,6 +65,8 @@ health:
         - https://om.cachix.org
     direnv:
       required: true
+    homebrew:
+      enable: true
 develop:
   default:
     readme: |
