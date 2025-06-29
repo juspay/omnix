@@ -43,7 +43,30 @@ impl FromStr for NixVersion {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         // NOTE: The parser is lenient in allowing pure nix version (produced
         // by [Display] instance), so as to work with serde_with instances.
-        let re = Regex::new(r"(?:nix \(Nix\) )?(\d+)\.(\d+)\.(\d+)$")?;
+
+        // Two patterns to try:
+        // 1. If line starts with "nix (", find version after the closing ")"
+        // 2. Otherwise, match version at start of string
+        if s.starts_with("nix (") {
+            // Find the closing parenthesis and match version after it
+            if let Some(paren_pos) = s.find(") ") {
+                let after_paren = &s[paren_pos + 2..];
+                let re = Regex::new(r"^(\d+)\.(\d+)\.(\d+)")?;
+                if let Some(captures) = re.captures(after_paren) {
+                    let major = captures[1].parse::<u32>()?;
+                    let minor = captures[2].parse::<u32>()?;
+                    let patch = captures[3].parse::<u32>()?;
+                    return Ok(NixVersion {
+                        major,
+                        minor,
+                        patch,
+                    });
+                }
+            }
+        }
+
+        // Fallback: try to match simple version at start
+        let re = Regex::new(r"^(\d+)\.(\d+)\.(\d+)")?;
 
         let captures = re.captures(s).ok_or(BadNixVersion::Command)?;
         let major = captures[1].parse::<u32>()?;
@@ -121,6 +144,16 @@ async fn test_parse_nix_version() {
         Ok(NixVersion {
             major: 2,
             minor: 29,
+            patch: 0
+        })
+    );
+
+    // Parse Lix Version
+    assert_eq!(
+        NixVersion::from_str("nix (Lix, like Nix) 2.94.0-dev-pre20250622-cd12918"),
+        Ok(NixVersion {
+            major: 2,
+            minor: 94,
             patch: 0
         })
     );
