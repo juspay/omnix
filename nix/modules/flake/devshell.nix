@@ -35,8 +35,7 @@ in
         cargo-expand
         cargo-nextest
         cargo-audit
-        # For when we start using Tauri
-        cargo-tauri
+        cargo-workspaces
         trunk
         mdbook
         mdbook-alerts
