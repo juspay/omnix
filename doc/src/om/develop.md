@@ -7,7 +7,9 @@ The `om develop` command should be used indirectly in direnv, via the `use omnix
 1. Put this in your `.envrc` file:
 
     ```sh
-    source_url https://raw.githubusercontent.com/juspay/omnix/75ed48923835963e2f18baba08f54a8adc307ba2/omnixrc "sha256-8C2Jb5bHx/0cvm1+9gOlBEdWzbikCWT5UsJWewUAFt4="
+    source_url \
+      https://raw.githubusercontent.com/juspay/omnix/2c80a2b228a8c21434172d2b4f3b8d2ee873284f/omnixrc \
+      'sha256-WywFYSB50xlznsc/tkFAF18uI2pMNoTJJAJJUPs837Y='
     watch_file om.yaml
     use omnix
     ```
