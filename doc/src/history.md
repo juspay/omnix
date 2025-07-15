@@ -1,6 +1,6 @@
 # Release history
 
-## 1.0.4 (UNRELEASED)
+## 1.1.0 (2025-07-15) {#1.1.0}
 
 - `om ci`: Allow impure builds through `impure = true;` setting in `om.yaml` (#445)
 - `om health`
