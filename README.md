@@ -58,7 +58,6 @@ nix run
 
 Begin with a release PR:
 
-- Make sure that crates have updated version in their `Cargo.toml`
-    - TODO: Consider using [`cargo workspace version`](https://github.com/pksunkara/cargo-workspaces?tab=readme-ov-file#version) instead of manually doing this?
+- Pick a version
 - Update `history.md` to make sure new release header is present
-- Run [`cargo workspace publish`](https://github.com/pksunkara/cargo-workspaces?tab=readme-ov-file#publish) in devShell
+- Run [`cargo workspace publish`](https://github.com/pksunkara/cargo-workspaces?tab=readme-ov-file#publish) in devShell, using the picked version.
