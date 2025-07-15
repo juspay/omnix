@@ -1,11 +1,19 @@
 # -*- mode: sh -*-
 # shellcheck shell=bash
 
+# A flag to control whether to use omnix from latest github repo or from nixpkgs
+OMNIX_FROM_NIXPKGS="${OMNIX_FROM_NIXPKGS:-true}"
+
+# Define OMNIX_BIN based on the flag
+if [[ "${OMNIX_FROM_NIXPKGS}" == "true" ]]; then
+  OMNIX_BIN="${OMNIX_BIN:-"nix run nixpkgs#omnix --"}"
+else
+  # Fetch omnix only through binary cache from GitHub
+  # Hence `-j0`, as well as `--option builders ''` for when there are remote builders.
+  OMNIX_BIN="${OMNIX_BIN:-"nix --accept-flake-config --option builders '' -j0 run github:juspay/omnix --"}"
+fi
 
 use_omnix() {
-  # Fetch omnix only through binary cache
-  # Hence `-j0`, as well as `--option builders ''` for when there are remote builders.
-  : "${OMNIX_BIN:="nix --accept-flake-config --option builders '' -j0 run github:juspay/omnix --"}"
   echo "Invoking omnix using: ${OMNIX_BIN}"
 
   # Run pre-shell stage, which runs health checks and applies changes as necessary.
