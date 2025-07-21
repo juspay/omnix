@@ -32,9 +32,11 @@ in
         pkgsStatic.openssl
       ];
 
-      # Disable tests due to sandboxing issues; we run them on CI
-      # instead.
-      doCheck = false;
+      # Enable tests to run via Nix  
+      doCheck = true;
+      
+      # Disable sandbox for tests that require network access
+      __noChroot = true;
       meta = {
         description = "Command-line interface for Omnix";
         mainProgram = "om";

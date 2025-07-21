@@ -17,14 +17,7 @@ ci:
           omnix-source-is-buildable:
             type: app
             name: omnix-source-is-buildable
-          cargo-tests:
-            type: devshell
-            command:
-              - just
-              - cargo-test
-            systems:
-              - x86_64-linux
-              - aarch64-darwin
+
           cargo-clippy:
             type: devshell
             command:

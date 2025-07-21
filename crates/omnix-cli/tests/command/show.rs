@@ -16,7 +16,6 @@ fn om_show_local() -> anyhow::Result<()> {
 
 /// `om show` runs, and succeeds for a remote flake.
 #[test]
-#[ignore = "impure test - requires network access to external repositories"]
 fn om_show_remote() -> anyhow::Result<()> {
     om()?
         .arg("show")
@@ -32,7 +31,6 @@ fn om_show_remote() -> anyhow::Result<()> {
 /// `om show` displays `nixosConfigurations`
 /// Note: This is used to test `evalOnAllSystems` (see: https://github.com/juspay/omnix/pull/277#discussion_r1760164052).
 #[test]
-#[ignore = "impure test - requires network access to external repositories"]
 fn om_show_nixos_configurations() -> anyhow::Result<()> {
     om()?
         .arg("show")

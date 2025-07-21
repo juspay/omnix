@@ -22,9 +22,8 @@
         ) ++ lib.optionals pkgs.stdenv.isLinux [
         pkgs.openssl
       ];
-      # Disable tests due to sandboxing issues; we run them on CI
-      # instead.
-      doCheck = false;
+      # Enable tests to run via Nix  
+      doCheck = true;
     };
   };
 }
