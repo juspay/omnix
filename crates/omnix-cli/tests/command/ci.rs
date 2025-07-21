@@ -26,6 +26,7 @@ async fn om_ci_run(args: &[&str]) -> anyhow::Result<StorePath> {
 }
 
 #[tokio::test]
+#[ignore = "impure test - requires network access to external repositories"]
 /// Run `om ci build` and check if the stdout consists of only /nix/store/* paths
 async fn build_flake_output() -> anyhow::Result<()> {
     let out =
@@ -42,6 +43,7 @@ async fn build_flake_output() -> anyhow::Result<()> {
 }
 
 #[tokio::test]
+#[ignore = "impure test - requires network access to external repositories"]
 /// A simple test, without config
 async fn test_haskell_multi_nix() -> anyhow::Result<()> {
     let out =
@@ -63,6 +65,7 @@ async fn test_haskell_multi_nix() -> anyhow::Result<()> {
 }
 
 #[tokio::test]
+#[ignore = "impure test - requires network access to external repositories"]
 async fn test_haskell_multi_nix_all_dependencies() -> anyhow::Result<()> {
     let out = om_ci_run(&[
         "--include-all-dependencies",
@@ -79,6 +82,7 @@ async fn test_haskell_multi_nix_all_dependencies() -> anyhow::Result<()> {
 }
 
 #[tokio::test]
+#[ignore = "impure test - requires network access to external repositories"]
 /// Whether `--override-input` passes CI successfully
 async fn test_haskell_multi_nix_override_input() -> anyhow::Result<()> {
     let _out = om_ci_run(&[
@@ -94,6 +98,7 @@ async fn test_haskell_multi_nix_override_input() -> anyhow::Result<()> {
 }
 
 #[tokio::test]
+#[ignore = "impure test - requires network access to external repositories"]
 /// A test, with config
 async fn test_services_flake() -> anyhow::Result<()> {
     let out = om_ci_run(&[
