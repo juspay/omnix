@@ -46,3 +46,13 @@ cargo-doc:
 [group('ci-steps')]
 cargo-test:
     cargo test --release --all-features --workspace
+
+# Run impure tests that require network access (normally ignored in CI)
+[group('ci-steps')]
+cargo-test-impure:
+    cargo test --release --all-features --workspace -- --ignored
+
+# Run all tests including impure tests
+[group('ci-steps')]
+cargo-test-all:
+    cargo test --release --all-features --workspace -- --include-ignored
