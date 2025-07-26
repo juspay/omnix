@@ -37,8 +37,6 @@ in
         cargo-audit
         cargo-workspaces
         trunk
-        mdbook
-        mdbook-alerts
       ];
     };
   };
