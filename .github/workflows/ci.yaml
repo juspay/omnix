@@ -67,7 +67,7 @@ jobs:
           echo "OMCIJSON_PATH=$HOME/omci.json" >> "$GITHUB_OUTPUT"
           echo "OMCIJSON=$(cat $HOME/omci.json)" >> "$GITHUB_OUTPUT"
           echo "OMPACKAGE=$(get_output omnix omnix-cli)" >> "$GITHUB_OUTPUT"
-          echo "OMWEBSITE_${{ matrix.system }}=$(get_output doc omnix-mdbook-site)" >> "$GITHUB_OUTPUT"
+          echo "OMWEBSITE_${{ matrix.system }}=$(get_output doc emanote-static-website-default)" >> "$GITHUB_OUTPUT"
 
       - name: "Omnix: Upload results"
         uses: actions/upload-artifact@v4
