@@ -1,0 +1,32 @@
+# Emanote configuration for Omnix documentation
+# Ref: https://github.com/srid/emanote/blob/master/emanote/default/index.yaml
+
+template:
+
+  # https://tailwindcss.com/docs/customizing-colors#default-color-palette
+  theme: fuchsia
+
+  editBaseUrl: https://github.com/juspay/omnix/edit/main/doc
+  
+  sidebar:
+    collapsed: false
+
+  uptree: 
+    enable: true
+  sidebar: 
+    enable: false
+  breadcrumbs: 
+    enable: false
+  toc:
+    enable: false
+  base:
+    containerClass: container mx-auto max-w-prose
+  
+  # Use pretty URLs to maintain compatibility with mdBook structure
+  # urlStrategy: pretty
+
+page:
+  siteTitle: "Omnix documentation"
+  siteUrl: https://omnix.page
+  headHtml: |
+    <snippet var="js.highlightjs" />

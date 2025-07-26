@@ -1,15 +1,15 @@
-# Show
+# `om show`
 
 The `om show` command seeks to provide a better `nix flake show` experience.
 
 > [!WARNING]
-> Currently, `om show` is a wrapper on `nix flake show`, but with support for [flake schemas](https://github.com/NixOS/nix/pull/8892). More is planned for `om show`. See [issue #162](https://github.com/juspay/omnix/issues/162).
+> Currently, `om show` is a wrapper on `nix flake show`, but with support for [flake schemas](https://github.com/NixOS/nix/pull/8892). More is planned for `om show`. See [issue \#162](https://github.com/juspay/omnix/issues/162).
 
 ## Usage
 
 Run `om show` on any flake - via URL or local path.
 
-```
+```text
 $ om show github:srid/nixos-config
 [..]
 📦 Packages (nix build github:srid/nixos-config#<name>)
