@@ -1,9 +1,9 @@
 default:
   @just --list doc
 
-# Run mdbook live server
+# Run emanote live server
 run:
-  nix run .#serve
+  nix run
 
 # Do link checks on docs
 check:

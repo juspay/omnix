@@ -1,9 +1,4 @@
----
-page:
-  title: Omnix
----
-
-# Introduction
+# Omnix
 
 **Omnix** aims to supplement the [Nix](https://nixos.asia/en/nix) CLI to improve developer experience. The project is developed [on Github](https://github.com/juspay/omnix).
 
