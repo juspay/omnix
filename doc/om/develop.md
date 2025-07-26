@@ -1,4 +1,4 @@
-# Develop
+# `om develop`
 
 The `om develop` command should be used indirectly in direnv, via the `use omnix` directive in your `.envrc`.
 

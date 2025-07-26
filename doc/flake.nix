@@ -52,13 +52,6 @@
             '';
           };
         };
-
-        devShells.default = pkgs.mkShell {
-          buildInputs = [
-            pkgs.nixpkgs-fmt
-          ];
-        };
-        formatter = pkgs.nixpkgs-fmt;
       };
     };
 }

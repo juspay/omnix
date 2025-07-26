@@ -1,7 +1,4 @@
 # Emanote configuration for Omnix documentation
-page:
-  siteTitle: Omnix
-
 template:
   theme: red
   editBaseUrl: https://github.com/juspay/omnix/edit/main/doc
@@ -10,10 +7,10 @@ template:
     collapsed: false
   
   # Use pretty URLs to maintain compatibility with mdBook structure
-  urlStrategy: pretty
+  # urlStrategy: pretty
 
-# Site metadata
-site:
-  description: "Omnix documentation"
-  author: "Sridhar Ratnakumar"
-  lang: "en"
+page:
+  siteTitle: "Omnix documentation"
+  siteUrl: https://omnix.page
+  headHtml: |
+    <snippet var="js.highlightjs" />
