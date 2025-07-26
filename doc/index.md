@@ -1,3 +1,8 @@
+---
+page:
+  title: Omnix
+---
+
 # Introduction
 
 **Omnix** aims to supplement the [Nix](https://nixos.asia/en/nix) CLI to improve developer experience. The project is developed [on Github](https://github.com/juspay/omnix).
@@ -5,8 +10,6 @@
 <p style="text-align: center">
 <img src="favicon.svg" alt="Omnix Logo" width="32px" />
 </p>
-
-
 
 ## Install
 
@@ -20,9 +23,19 @@ nix --accept-flake-config profile install github:juspay/omnix
 om --help
 ```
 
-## Next Steps
+## Navigation
 
-Checkout the [CLI](om/index.md) commands available.
+### Reference
+- [[om]] - CLI Commands
+  - [[om/ci]] - CI
+  - [[om/health]] - Health
+  - [[om/develop]] - Develop  
+  - [[om/show]] - Show
+  - [[om/init]] - Init
+- [[config]] - Configuration
+
+### Meta
+- [[history]] - Release history
 
 ## Discussion
 

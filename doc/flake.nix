@@ -1,21 +1,27 @@
 {
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    flake-parts.url = "github:hercules-ci/flake-parts";
-    systems.url = "github:nix-systems/default";
+  nixConfig = {
+    extra-substituters = "https://cache.garnix.io";
+    extra-trusted-public-keys = "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=";
   };
-  outputs = inputs:
-    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = import inputs.systems;
-      perSystem = { self', pkgs, ... }: {
-        packages = rec {
-          default = pkgs.callPackage ./. { };
-          # The 404.html file has a bizare internal hash.
-          without404 = pkgs.runCommand "site-no404" { } ''
-            cp -r ${default} $out
-            chmod -R u+w $out
-            rm $out/404.html
-          '';
+
+  inputs = {
+    emanote.url = "github:srid/emanote";
+    emanote.inputs.emanote-template.follows = "";
+    nixpkgs.follows = "emanote/nixpkgs";
+    flake-parts.follows = "emanote/flake-parts";
+  };
+
+  outputs = inputs@{ self, flake-parts, nixpkgs, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = nixpkgs.lib.systems.flakeExposed;
+      imports = [ inputs.emanote.flakeModule ];
+      perSystem = { self', pkgs, system, ... }: {
+        emanote = {
+          sites."default" = {
+            layers = [{ path = ./.; pathString = "."; }];
+            baseUrl = "/"; # Keep URLs the same as mdBook
+            prettyUrls = true;
+          };
         };
 
         # Check that links are working
@@ -26,21 +32,12 @@
             } ''
             # Ensure that the htmlproofer is using the correct locale
             export LANG=en_US.UTF-8
-            # Run htmlproofer
-            htmlproofer --disable-external ${self'.packages.without404}
+            # Run htmlproofer on the generated site
+            htmlproofer --disable-external ${inputs.emanote.lib.${system}.mkEmanoteDerivation self'.emanote.sites.default}
             touch $out
           '';
 
         apps = {
-          serve.program = pkgs.writeShellApplication {
-            name = "serve";
-            runtimeInputs = [ pkgs.mdbook pkgs.mdbook-alerts ];
-            text = ''
-              set -x
-              mdbook serve --open
-            '';
-          };
-
           # This is like `checks.doc-linkCheck`, but also does external link checks
           # (which is something we can't do in Nix due to sandboxing)
           linkCheck.program = pkgs.writeShellApplication {
@@ -51,10 +48,17 @@
               # Allow Github's line hashes
               htmlproofer \
                 --no-check-external-hash \
-                ${self'.packages.without404}
+                ${inputs.emanote.lib.${system}.mkEmanoteDerivation self'.emanote.sites.default}
             '';
           };
         };
+
+        devShells.default = pkgs.mkShell {
+          buildInputs = [
+            pkgs.nixpkgs-fmt
+          ];
+        };
+        formatter = pkgs.nixpkgs-fmt;
       };
     };
 }
