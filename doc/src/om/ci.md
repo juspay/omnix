@@ -65,7 +65,7 @@ Add this to your workflow file (`.github/workflows/ci.yml`) to build all flake o
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@main
       - name: Install omnix
-        run: nix --accept-flake-config profile install "github:juspay/omnix"
+        run: nix profile install nixpkgs#omnix
       - run: om ci
 ```
 
