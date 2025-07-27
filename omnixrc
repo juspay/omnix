@@ -6,7 +6,7 @@ OMNIX_FROM_NIXPKGS="${OMNIX_FROM_NIXPKGS:-true}"
 
 # Define OMNIX_BIN based on the flag
 if [[ "${OMNIX_FROM_NIXPKGS}" == "true" ]]; then
-  OMNIX_BIN="${OMNIX_BIN:-"nix run nixpkgs#omnix --"}"
+  OMNIX_BIN="${OMNIX_BIN:-"nix run github:nixos/nixpkgs/4f3a8e6936bb8d3490057ed114738ccb7af6b73b#omnix --"}"
 else
   # Fetch omnix only through binary cache from GitHub
   # Hence `-j0`, as well as `--option builders ''` for when there are remote builders.
