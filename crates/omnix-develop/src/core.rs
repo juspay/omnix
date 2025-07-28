@@ -77,7 +77,7 @@ pub async fn develop_on_pre_shell(prj: &Project) -> anyhow::Result<()> {
             if !check.result.green() {
                 check.tracing_log().await?;
                 if !check.result.green() && check.required {
-                    anyhow::bail!("ERROR: Your Nix invironment is not properly setup. See suggestions above, or run `om health` for details.");
+                    anyhow::bail!("ERROR: Your Nix environment is not properly setup. See suggestions above, or run `om health` for details.");
                 };
             };
         }
