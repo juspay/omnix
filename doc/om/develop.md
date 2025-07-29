@@ -8,7 +8,7 @@ The `om develop` command should be used indirectly in direnv, via the `use omnix
 
     ```sh
     source_url \
-      https://omnix.page/om/develop/omnixrc/v4 \
+      https://omnix.page/om/develop/omnixrc/v1 \
       'sha256-FBAVRYkaexKeFKQGUxaPHqhBnqA7km7++O77dKiyD0I='
     watch_file om.yaml
     use omnix
