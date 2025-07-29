@@ -8,7 +8,7 @@ The `om develop` command should be used indirectly in direnv, via the `use omnix
 
     ```sh
     source_url \
-      https://raw.githubusercontent.com/juspay/omnix/6132d1054e824cc63c05c7b1344fddbd1f4ad472/omnixrc \
+      https://omnix.page/om/develop/omnixrc/v1 \
       'sha256-FBAVRYkaexKeFKQGUxaPHqhBnqA7km7++O77dKiyD0I='
     watch_file om.yaml
     use omnix
@@ -19,7 +19,6 @@ The `om develop` command should be used indirectly in direnv, via the `use omnix
     ```sh
     touch om.yaml
     ```
-
 
 ## What does it do? {#what}
 
@@ -51,3 +50,9 @@ develop:
 
       🍎🍎 Run 'just' to see more commands. See <https://nixos.asia/en/vscode> for IDE setup.
 ```
+
+## Revision History for `omnixrc` {#omnixrc-history}
+
+### v1
+
+- Initial release using pinned nixpkgs for omnix `1.3.0`.
