@@ -3,7 +3,7 @@
 
 # omnix
 
-<img width="10%" src="./doc/src/favicon.svg">
+<img width="10%" src="./doc/favicon.svg">
 
 *Pronounced [`/ɒmˈnɪks/`](https://ipa-reader.com/?text=%C9%92m%CB%88n%C9%AAks&voice=Geraint)*
 
