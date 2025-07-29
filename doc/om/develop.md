@@ -14,11 +14,13 @@ The `om develop` command should be used indirectly in direnv, via the `use omnix
     use omnix
     ```
 
-2. You should also create an empty (or fleshed out) [`om.yaml`](../config.md) file in your project to avoid Nix evaluation:
+2. You should also create a [`om.yaml`](../config.md) file in your project to avoid Nix evaluation:
 
     ```sh
-    touch om.yaml
+    touch om.yaml # Can be empty
     ```
+
+3. Optionally, add a welcome text (see below) to that `om.yaml`. See [this commit](https://github.com/srid/haskell-template/commit/128105dbeac47c515065ba377f4b1f976ec4f696) for a full example.
 
 ## What does it do? {#what}
 
