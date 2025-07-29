@@ -51,10 +51,8 @@ develop:
       🍎🍎 Run 'just' to see more commands. See <https://nixos.asia/en/vscode> for IDE setup.
 ```
 
-## Revision History {#omnixrc-history}
+## Revision History for `omnixrc` {#omnixrc-history}
 
 ### v1
-  - Initial release of `omnixrc`.
-    - Use nixpkgs by default
-    - Welcome message support via `om.yaml`
-    - Wraps `use flake` for simplified dev environment setup
+
+- Initial release using pinned nixpkgs for omnix `1.3.0`.
