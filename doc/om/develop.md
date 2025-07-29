@@ -20,7 +20,6 @@ The `om develop` command should be used indirectly in direnv, via the `use omnix
     touch om.yaml
     ```
 
-
 ## What does it do? {#what}
 
 `use omnix` wraps `use flake` (of [nix-direnv](https://nixos.asia/en/direnv)) providing additional capabilities:
@@ -51,3 +50,11 @@ develop:
 
       🍎🍎 Run 'just' to see more commands. See <https://nixos.asia/en/vscode> for IDE setup.
 ```
+
+## Revision History {#omnixrc-history}
+
+### v1
+  - Initial release of `omnixrc`.
+    - Use nixpkgs by default
+    - Welcome message support via `om.yaml`
+    - Wraps `use flake` for simplified dev environment setup
