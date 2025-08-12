@@ -9,6 +9,15 @@ use tracing::instrument;
 
 use crate::command::{NixCmd, NixCmdError};
 
+/// Nix installation type
+#[derive(Clone, Copy, PartialOrd, PartialEq, Eq, Debug)]
+pub enum NixInstallationType {
+    /// Official Nix installation
+    Official,
+    /// Determinate Systems Nix installation
+    DeterminateSystems,
+}
+
 /// Nix version as parsed from `nix --version`
 #[derive(Clone, Copy, PartialOrd, PartialEq, Eq, Debug, SerializeDisplay, DeserializeFromStr)]
 pub struct NixVersion {
@@ -18,8 +27,8 @@ pub struct NixVersion {
     pub minor: u32,
     /// Patch version
     pub patch: u32,
-    /// Whether this is a Determinate Systems Nix installation
-    pub is_detsys: bool,
+    /// Nix installation type
+    pub installation_type: NixInstallationType,
 }
 
 /// Error type for parsing `nix --version`
@@ -52,14 +61,18 @@ impl FromStr for NixVersion {
         let minor = captures[2].parse::<u32>()?;
         let patch = captures[3].parse::<u32>()?;
 
-        // Check if this is a Determinate Systems Nix installation
-        let is_detsys = s.contains("Determinate");
+        // Determine the installation type based on the version string
+        let installation_type = if s.contains("Determinate") {
+            NixInstallationType::DeterminateSystems
+        } else {
+            NixInstallationType::Official
+        };
 
         Ok(NixVersion {
             major,
             minor,
             patch,
-            is_detsys,
+            installation_type,
         })
     }
 }
@@ -108,7 +121,7 @@ async fn test_parse_nix_version() {
             major: 2,
             minor: 13,
             patch: 0,
-            is_detsys: false
+            installation_type: NixInstallationType::Official
         })
     );
 
@@ -119,7 +132,7 @@ async fn test_parse_nix_version() {
             major: 2,
             minor: 13,
             patch: 0,
-            is_detsys: false
+            installation_type: NixInstallationType::Official
         })
     );
 
@@ -130,7 +143,7 @@ async fn test_parse_nix_version() {
             major: 2,
             minor: 29,
             patch: 0,
-            is_detsys: true
+            installation_type: NixInstallationType::DeterminateSystems
         })
     );
 }

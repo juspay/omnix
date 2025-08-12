@@ -1,4 +1,4 @@
-use nix_rs::info;
+use nix_rs::{info, version::NixInstallationType};
 use serde::{Deserialize, Serialize};
 
 use crate::traits::*;
@@ -17,32 +17,38 @@ impl Checkable for FlakeEnabled {
         let val = &nix_info.nix_config.experimental_features.value;
 
         // Check if flakes are enabled either through config or DetSys installation
-        let flakes_enabled = if nix_info.nix_version.is_detsys {
-            // Determinate Systems Nix has flakes enabled by default
-            true
-        } else {
-            // Check experimental-features config for regular Nix
-            val.contains(&"flakes".to_string()) && val.contains(&"nix-command".to_string())
+        let flakes_enabled = match nix_info.nix_version.installation_type {
+            NixInstallationType::DeterminateSystems => {
+                // Determinate Systems Nix has flakes enabled by default
+                true
+            }
+            NixInstallationType::Official => {
+                // Check experimental-features config for regular Nix
+                val.contains(&"flakes".to_string()) && val.contains(&"nix-command".to_string())
+            }
         };
 
-        let (info_msg, result) = if nix_info.nix_version.is_detsys {
-            (
+        let (info_msg, result) = match nix_info.nix_version.installation_type {
+            NixInstallationType::DeterminateSystems => (
                 "Flakes enabled via Determinate Systems Nix".to_string(),
                 CheckResult::Green,
-            )
-        } else if flakes_enabled {
-            (
-                format!("experimental-features = {}", val.join(" ")),
-                CheckResult::Green,
-            )
-        } else {
-            (
-                format!("experimental-features = {}", val.join(" ")),
-                CheckResult::Red {
-                    msg: "Nix flakes are not enabled".into(),
-                    suggestion: "See https://nixos.wiki/wiki/Flakes#Enable_flakes".into(),
-                },
-            )
+            ),
+            NixInstallationType::Official => {
+                if flakes_enabled {
+                    (
+                        format!("experimental-features = {}", val.join(" ")),
+                        CheckResult::Green,
+                    )
+                } else {
+                    (
+                        format!("experimental-features = {}", val.join(" ")),
+                        CheckResult::Red {
+                            msg: "Nix flakes are not enabled".into(),
+                            suggestion: "See https://nixos.wiki/wiki/Flakes#Enable_flakes".into(),
+                        },
+                    )
+                }
+            }
         };
 
         let check = Check {
@@ -105,12 +111,15 @@ mod tests {
         }
     }
 
-    async fn mock_nix_info(is_detsys: bool, has_flakes_config: bool) -> NixInfo {
+    async fn mock_nix_info(
+        installation_type: NixInstallationType,
+        has_flakes_config: bool,
+    ) -> NixInfo {
         let version = NixVersion {
             major: 2,
             minor: 29,
             patch: 0,
-            is_detsys,
+            installation_type,
         };
         let config = if has_flakes_config {
             mock_nix_config_with_flakes()
@@ -123,7 +132,7 @@ mod tests {
     #[tokio::test]
     async fn test_flakes_enabled_with_detsys() {
         let checker = FlakeEnabled::default();
-        let nix_info = mock_nix_info(true, false).await;
+        let nix_info = mock_nix_info(NixInstallationType::DeterminateSystems, false).await;
         let results = checker.check(&nix_info, None);
 
         assert_eq!(results.len(), 1);
@@ -136,7 +145,7 @@ mod tests {
     #[tokio::test]
     async fn test_flakes_enabled_with_regular_nix_and_config() {
         let checker = FlakeEnabled::default();
-        let nix_info = mock_nix_info(false, true).await;
+        let nix_info = mock_nix_info(NixInstallationType::Official, true).await;
         let results = checker.check(&nix_info, None);
 
         assert_eq!(results.len(), 1);
@@ -149,7 +158,7 @@ mod tests {
     #[tokio::test]
     async fn test_flakes_disabled_with_regular_nix() {
         let checker = FlakeEnabled::default();
-        let nix_info = mock_nix_info(false, false).await;
+        let nix_info = mock_nix_info(NixInstallationType::Official, false).await;
         let results = checker.check(&nix_info, None);
 
         assert_eq!(results.len(), 1);

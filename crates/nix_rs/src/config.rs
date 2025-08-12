@@ -10,7 +10,7 @@ use url::Url;
 
 use crate::{
     command::{NixCmd, NixCmdError},
-    version::NixVersion,
+    version::{NixInstallationType, NixVersion},
 };
 
 use super::flake::system::System;
@@ -55,7 +55,7 @@ static NIX_2_20_0: NixVersion = NixVersion {
     major: 2,
     minor: 20,
     patch: 0,
-    is_detsys: false,
+    installation_type: NixInstallationType::Official,
 };
 
 impl NixConfig {

@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use serde_with::{DeserializeFromStr, SerializeDisplay};
 use thiserror::Error;
 
-use crate::version::NixVersion;
+use crate::version::{NixInstallationType, NixVersion};
 
 /// An individual component of [NixVersionReq]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -123,7 +123,7 @@ impl FromStr for NixVersionSpec {
             major,
             minor,
             patch,
-            is_detsys: false,
+            installation_type: NixInstallationType::Official,
         };
 
         match op {
@@ -175,7 +175,7 @@ mod tests {
                 major: 2,
                 minor: 8,
                 patch: 0,
-                is_detsys: false
+                installation_type: NixInstallationType::Official
             })
         );
         assert_eq!(
@@ -184,7 +184,7 @@ mod tests {
                 major: 2,
                 minor: 0,
                 patch: 0,
-                is_detsys: false
+                installation_type: NixInstallationType::Official
             })
         );
     }
