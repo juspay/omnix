@@ -55,6 +55,7 @@ static NIX_2_20_0: NixVersion = NixVersion {
     major: 2,
     minor: 20,
     patch: 0,
+    is_detsys: false,
 };
 
 impl NixConfig {

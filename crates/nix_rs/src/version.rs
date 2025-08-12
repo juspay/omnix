@@ -18,6 +18,8 @@ pub struct NixVersion {
     pub minor: u32,
     /// Patch version
     pub patch: u32,
+    /// Whether this is a Determinate Systems Nix installation
+    pub is_detsys: bool,
 }
 
 /// Error type for parsing `nix --version`
@@ -43,17 +45,21 @@ impl FromStr for NixVersion {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         // NOTE: The parser is lenient in allowing pure nix version (produced
         // by [Display] instance), so as to work with serde_with instances.
-        let re = Regex::new(r"(?:nix \(Nix\) )?(\d+)\.(\d+)\.(\d+)$")?;
+        let re = Regex::new(r"(?:nix \(.*?\) )?(\d+)\.(\d+)\.(\d+)$")?;
 
         let captures = re.captures(s).ok_or(BadNixVersion::Command)?;
         let major = captures[1].parse::<u32>()?;
         let minor = captures[2].parse::<u32>()?;
         let patch = captures[3].parse::<u32>()?;
 
+        // Check if this is a Determinate Systems Nix installation
+        let is_detsys = s.contains("Determinate");
+
         Ok(NixVersion {
             major,
             minor,
             patch,
+            is_detsys,
         })
     }
 }
@@ -101,7 +107,8 @@ async fn test_parse_nix_version() {
         Ok(NixVersion {
             major: 2,
             minor: 13,
-            patch: 0
+            patch: 0,
+            is_detsys: false
         })
     );
 
@@ -111,7 +118,8 @@ async fn test_parse_nix_version() {
         Ok(NixVersion {
             major: 2,
             minor: 13,
-            patch: 0
+            patch: 0,
+            is_detsys: false
         })
     );
 
@@ -121,7 +129,8 @@ async fn test_parse_nix_version() {
         Ok(NixVersion {
             major: 2,
             minor: 29,
-            patch: 0
+            patch: 0,
+            is_detsys: true
         })
     );
 }

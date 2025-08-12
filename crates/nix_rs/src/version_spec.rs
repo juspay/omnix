@@ -123,6 +123,7 @@ impl FromStr for NixVersionSpec {
             major,
             minor,
             patch,
+            is_detsys: false,
         };
 
         match op {
@@ -173,7 +174,8 @@ mod tests {
             NixVersionSpec::Gt(NixVersion {
                 major: 2,
                 minor: 8,
-                patch: 0
+                patch: 0,
+                is_detsys: false
             })
         );
         assert_eq!(
@@ -181,7 +183,8 @@ mod tests {
             NixVersionSpec::Gt(NixVersion {
                 major: 2,
                 minor: 0,
-                patch: 0
+                patch: 0,
+                is_detsys: false
             })
         );
     }
