@@ -9,6 +9,15 @@ use tracing::instrument;
 
 use crate::command::{NixCmd, NixCmdError};
 
+/// Nix installation type
+#[derive(Clone, Copy, PartialOrd, PartialEq, Eq, Debug)]
+pub enum NixInstallationType {
+    /// Official Nix installation
+    Official,
+    /// Determinate Systems Nix installation
+    DeterminateSystems,
+}
+
 /// Nix version as parsed from `nix --version`
 #[derive(Clone, Copy, PartialOrd, PartialEq, Eq, Debug, SerializeDisplay, DeserializeFromStr)]
 pub struct NixVersion {
@@ -18,6 +27,8 @@ pub struct NixVersion {
     pub minor: u32,
     /// Patch version
     pub patch: u32,
+    /// Nix installation type
+    pub installation_type: NixInstallationType,
 }
 
 /// Error type for parsing `nix --version`
@@ -43,18 +54,37 @@ impl FromStr for NixVersion {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         // NOTE: The parser is lenient in allowing pure nix version (produced
         // by [Display] instance), so as to work with serde_with instances.
-        let re = Regex::new(r"(?:nix \(Nix\) )?(\d+)\.(\d+)\.(\d+)$")?;
 
-        let captures = re.captures(s).ok_or(BadNixVersion::Command)?;
-        let major = captures[1].parse::<u32>()?;
-        let minor = captures[2].parse::<u32>()?;
-        let patch = captures[3].parse::<u32>()?;
+        // Define patterns and their corresponding installation types
+        let patterns = [
+            (
+                r"^nix \(Determinate Nix [\d.]+\) (\d+)\.(\d+)\.(\d+)$",
+                NixInstallationType::DeterminateSystems,
+            ),
+            (
+                r"^nix \(Nix\) (\d+)\.(\d+)\.(\d+)$",
+                NixInstallationType::Official,
+            ),
+            (r"^(\d+)\.(\d+)\.(\d+)$", NixInstallationType::Official),
+        ];
 
-        Ok(NixVersion {
-            major,
-            minor,
-            patch,
-        })
+        // Try each pattern until one matches
+        for (pattern, installation_type) in patterns {
+            if let Some(captures) = Regex::new(pattern)?.captures(s) {
+                let major = captures[1].parse::<u32>()?;
+                let minor = captures[2].parse::<u32>()?;
+                let patch = captures[3].parse::<u32>()?;
+                return Ok(NixVersion {
+                    major,
+                    minor,
+                    patch,
+                    installation_type,
+                });
+            }
+        }
+
+        // Fail for any unexpected string format
+        Err(BadNixVersion::Command)
     }
 }
 
@@ -101,7 +131,8 @@ async fn test_parse_nix_version() {
         Ok(NixVersion {
             major: 2,
             minor: 13,
-            patch: 0
+            patch: 0,
+            installation_type: NixInstallationType::Official
         })
     );
 
@@ -111,7 +142,8 @@ async fn test_parse_nix_version() {
         Ok(NixVersion {
             major: 2,
             minor: 13,
-            patch: 0
+            patch: 0,
+            installation_type: NixInstallationType::Official
         })
     );
 
@@ -121,7 +153,8 @@ async fn test_parse_nix_version() {
         Ok(NixVersion {
             major: 2,
             minor: 29,
-            patch: 0
+            patch: 0,
+            installation_type: NixInstallationType::DeterminateSystems
         })
     );
 }
