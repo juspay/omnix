@@ -1,7 +1,8 @@
-{ src, lib, cachix, fetchFromGitHub }:
+{ src, lib, cachix, attic-client, fetchFromGitHub }:
 lib.mapAttrs (_: v: builtins.toString v) {
   OMNIX_SOURCE = src;
   CACHIX_BIN = lib.getExe' cachix "cachix";
+  ATTIC_BIN = lib.getExe' attic-client "attic";
   OM_INIT_REGISTRY = "path:${src}/crates/omnix-init/registry";
   DEFAULT_FLAKE_SCHEMAS = "path:${src}/nix/flake-schemas";
   FLAKE_METADATA = "path:${src}/crates/nix_rs/src/flake/functions/metadata";

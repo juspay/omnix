@@ -50,7 +50,18 @@ health:
     caches:
       required:
         - "https://ourproject.cachix.org"
+        - "attic+servername+https://cache.example.com/mycache"
 ```
+
+### Cache Types
+
+omnix supports automatic configuration of different cache types:
+
+- **Cachix caches**: Use standard HTTPS URLs like `https://yourproject.cachix.org`. omnix will automatically run `cachix use yourproject` to configure the cache.
+
+- **Attic caches**: Use the format `attic+servername+https://cache.example.com/cachename`. omnix will automatically run `attic login servername https://cache.example.com/cachename $ATTIC_LOGIN_TOKEN` followed by `attic use servername:cachename`. The `ATTIC_LOGIN_TOKEN` environment variable should contain your authentication token (or can be empty for public caches).
+
+- **Other caches**: Standard HTTPS URLs that don't match the above patterns must be manually configured in your Nix configuration.
 
 To see all available configuration options, run `om health --dump-schema`. This will dump the schema of the configuration in JSON format. Convert that to YAML to see what can be added under the `om.health.default` key of your [`om.yaml`](../config.md).
 

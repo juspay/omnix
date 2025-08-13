@@ -28,6 +28,7 @@ The `om develop` command should be used indirectly in direnv, via the `use omnix
 
 - Run [`om health`](health.md) to check the health of the Nix environment.
   - Run `cachix use` automatically if the project uses cachix.
+  - Run `attic login` and `attic use` automatically if the project uses attic caches.
 - Print a welcome text after spawning the Nix devshell.
 
 The ideal goal here being that `cd`'ing to a project should do everything necessary to get you started immediately.

@@ -260,7 +260,7 @@ mod tests {
         let v: super::NixHealth = serde_json::from_str(json).unwrap();
         assert_eq!(
             v.caches.required,
-            vec![url::Url::parse("https://foo.cachix.org").unwrap()]
+            vec!["https://foo.cachix.org".to_string()]
         );
         assert_eq!(v.nix_version, NixVersionCheck::default());
     }

@@ -3,7 +3,11 @@ use std::{env::current_dir, path::PathBuf};
 
 use nix_rs::{flake::url::FlakeUrl, info::NixInfo};
 use omnix_common::{config::OmConfig, markdown::print_markdown};
-use omnix_health::{check::caches::CachixCache, traits::Checkable, NixHealth};
+use omnix_health::{
+    check::caches::{AtticCache, CachixCache},
+    traits::Checkable,
+    NixHealth,
+};
 
 use crate::config::DevelopConfig;
 
@@ -56,19 +60,35 @@ pub async fn develop_on_pre_shell(prj: &Project) -> anyhow::Result<()> {
         relevant_checks.push(&health.trusted_users);
     };
 
-    // Run cache related checks, and try to resolve it automatically using `cachix use` as appropriate
+    // Run cache related checks, and try to resolve it automatically using `cachix use` and `attic use` as appropriate
     if !health.caches.required.is_empty() {
         let missing = health.caches.get_missing_caches(nix_info);
-        let (missing_cachix, missing_other) = parse_many(&missing, CachixCache::from_url);
+        let (missing_cachix, remaining_after_cachix) =
+            parse_many(&missing, |url_str| CachixCache::from_url_string(url_str));
+        let (missing_attic, missing_other) = parse_many(&remaining_after_cachix, |url_str| {
+            AtticCache::from_url_string(url_str)
+        });
+
         for cachix_cache in &missing_cachix {
             tracing::info!("🐦 Running `cachix use` for {}", cachix_cache.0);
             cachix_cache.cachix_use().await?;
         }
+
+        for attic_cache in &missing_attic {
+            tracing::info!(
+                "🏺 Running `attic login {}` and `attic use {}:{}`",
+                attic_cache.server_name,
+                attic_cache.server_name,
+                attic_cache.cache_name
+            );
+            attic_cache.attic_use().await?;
+        }
+
         if !missing_other.is_empty() {
             // We cannot add these caches automatically, so defer to `om health`
             relevant_checks.push(&health.caches);
         };
-        // TODO: Re-calculate NixInfo since our nix.conf has changed (due to `cachix use`)
+        // TODO: Re-calculate NixInfo since our nix.conf has changed (due to `cachix use` and `attic use`)
         // To better implement this, we need a mutable database of NixInfo, NixConfig, etc. OnceCell is not sufficient
     };
 
