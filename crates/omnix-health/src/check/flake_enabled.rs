@@ -16,31 +16,24 @@ impl Checkable for FlakeEnabled {
     ) -> Vec<(&'static str, Check)> {
         let val = &nix_info.nix_config.experimental_features.value;
 
-        // Check if flakes are enabled either through config or DetSys installation
-        let flakes_enabled = match nix_info.nix_version.installation_type {
-            NixInstallationType::DeterminateSystems => {
-                // Determinate Systems Nix has flakes enabled by default
-                true
-            }
-            NixInstallationType::Official => {
-                // Check experimental-features config for regular Nix
-                val.contains(&"flakes".to_string()) && val.contains(&"nix-command".to_string())
-            }
-        };
-
-        let (info_msg, result) = match nix_info.nix_version.installation_type {
+        let (_flakes_enabled, info_msg, result) = match nix_info.nix_version.installation_type {
             NixInstallationType::DeterminateSystems => (
+                true, // Determinate Systems Nix has flakes enabled by default
                 "Flakes enabled via Determinate Systems Nix".to_string(),
                 CheckResult::Green,
             ),
             NixInstallationType::Official => {
+                let flakes_enabled =
+                    val.contains(&"flakes".to_string()) && val.contains(&"nix-command".to_string());
                 if flakes_enabled {
                     (
+                        flakes_enabled,
                         format!("experimental-features = {}", val.join(" ")),
                         CheckResult::Green,
                     )
                 } else {
                     (
+                        flakes_enabled,
                         format!("experimental-features = {}", val.join(" ")),
                         CheckResult::Red {
                             msg: "Nix flakes are not enabled".into(),
@@ -67,47 +60,55 @@ mod tests {
     use super::*;
     use crate::traits::CheckResult;
     use nix_rs::{
-        config::{ConfigVal, NixConfig, TrustedUserValue},
+        config::{ConfigVal, NixConfig},
         flake::system::{Arch, System},
         info::NixInfo,
         version::NixVersion,
     };
-    use url::Url;
 
-    fn mock_config_val<T: Clone>(value: T) -> ConfigVal<T> {
-        ConfigVal {
-            value: value.clone(),
-            default_value: value,
-            description: "Mock config value".to_string(),
-        }
-    }
-
-    fn mock_nix_config_without_flakes() -> NixConfig {
+    fn mock_nix_config(experimental_features: Vec<String>) -> NixConfig {
         NixConfig {
-            cores: mock_config_val(4),
-            experimental_features: mock_config_val(vec!["auto-allocate-uids".to_string()]),
-            extra_platforms: mock_config_val(vec![]),
-            flake_registry: mock_config_val("https://flake-registry.example.com".to_string()),
-            max_jobs: mock_config_val(8),
-            substituters: mock_config_val(vec![Url::parse("https://cache.nixos.org/").unwrap()]),
-            system: mock_config_val(System::Linux(Arch::X86_64)),
-            trusted_users: mock_config_val(vec![TrustedUserValue::User("root".to_string())]),
-        }
-    }
-
-    fn mock_nix_config_with_flakes() -> NixConfig {
-        NixConfig {
-            cores: mock_config_val(4),
-            experimental_features: mock_config_val(vec![
-                "flakes".to_string(),
-                "nix-command".to_string(),
-            ]),
-            extra_platforms: mock_config_val(vec![]),
-            flake_registry: mock_config_val("https://flake-registry.example.com".to_string()),
-            max_jobs: mock_config_val(8),
-            substituters: mock_config_val(vec![Url::parse("https://cache.nixos.org/").unwrap()]),
-            system: mock_config_val(System::Linux(Arch::X86_64)),
-            trusted_users: mock_config_val(vec![TrustedUserValue::User("root".to_string())]),
+            experimental_features: ConfigVal {
+                value: experimental_features.clone(),
+                default_value: experimental_features,
+                description: String::new(),
+            },
+            // Required fields - Rust doesn't allow partial struct construction
+            cores: ConfigVal {
+                value: 1,
+                default_value: 1,
+                description: String::new(),
+            },
+            extra_platforms: ConfigVal {
+                value: vec![],
+                default_value: vec![],
+                description: String::new(),
+            },
+            flake_registry: ConfigVal {
+                value: String::new(),
+                default_value: String::new(),
+                description: String::new(),
+            },
+            max_jobs: ConfigVal {
+                value: 1,
+                default_value: 1,
+                description: String::new(),
+            },
+            substituters: ConfigVal {
+                value: vec![],
+                default_value: vec![],
+                description: String::new(),
+            },
+            system: ConfigVal {
+                value: System::Linux(Arch::X86_64),
+                default_value: System::Linux(Arch::X86_64),
+                description: String::new(),
+            },
+            trusted_users: ConfigVal {
+                value: vec![],
+                default_value: vec![],
+                description: String::new(),
+            },
         }
     }
 
@@ -121,11 +122,12 @@ mod tests {
             patch: 0,
             installation_type,
         };
-        let config = if has_flakes_config {
-            mock_nix_config_with_flakes()
+        let experimental_features = if has_flakes_config {
+            vec!["flakes".to_string(), "nix-command".to_string()]
         } else {
-            mock_nix_config_without_flakes()
+            vec!["auto-allocate-uids".to_string()]
         };
+        let config = mock_nix_config(experimental_features);
         NixInfo::new(version, config).await.unwrap()
     }
 

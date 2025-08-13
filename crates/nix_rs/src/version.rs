@@ -54,26 +54,37 @@ impl FromStr for NixVersion {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         // NOTE: The parser is lenient in allowing pure nix version (produced
         // by [Display] instance), so as to work with serde_with instances.
-        let re = Regex::new(r"(?:nix \(.*?\) )?(\d+)\.(\d+)\.(\d+)$")?;
 
-        let captures = re.captures(s).ok_or(BadNixVersion::Command)?;
-        let major = captures[1].parse::<u32>()?;
-        let minor = captures[2].parse::<u32>()?;
-        let patch = captures[3].parse::<u32>()?;
+        // Define patterns and their corresponding installation types
+        let patterns = [
+            (
+                r"^nix \(Determinate Nix [\d.]+\) (\d+)\.(\d+)\.(\d+)$",
+                NixInstallationType::DeterminateSystems,
+            ),
+            (
+                r"^nix \(Nix\) (\d+)\.(\d+)\.(\d+)$",
+                NixInstallationType::Official,
+            ),
+            (r"^(\d+)\.(\d+)\.(\d+)$", NixInstallationType::Official),
+        ];
 
-        // Determine the installation type based on the version string
-        let installation_type = if s.contains("Determinate") {
-            NixInstallationType::DeterminateSystems
-        } else {
-            NixInstallationType::Official
-        };
+        // Try each pattern until one matches
+        for (pattern, installation_type) in patterns {
+            if let Some(captures) = Regex::new(pattern)?.captures(s) {
+                let major = captures[1].parse::<u32>()?;
+                let minor = captures[2].parse::<u32>()?;
+                let patch = captures[3].parse::<u32>()?;
+                return Ok(NixVersion {
+                    major,
+                    minor,
+                    patch,
+                    installation_type,
+                });
+            }
+        }
 
-        Ok(NixVersion {
-            major,
-            minor,
-            patch,
-            installation_type,
-        })
+        // Fail for any unexpected string format
+        Err(BadNixVersion::Command)
     }
 }
 
