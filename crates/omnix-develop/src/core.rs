@@ -64,9 +64,21 @@ pub async fn develop_on_pre_shell(prj: &Project) -> anyhow::Result<()> {
     if !health.caches.required.is_empty() {
         let missing = health.caches.get_missing_caches(nix_info);
         let (missing_cachix, remaining_after_cachix) =
-            parse_many(&missing, |url_str| CachixCache::from_url_string(url_str));
-        let (missing_attic, missing_other) = parse_many(&remaining_after_cachix, |url_str| {
-            AtticCache::from_url_string(url_str)
+            parse_many(&missing, |cache_spec| match cache_spec {
+                omnix_health::check::caches::CacheSpec::Cachix(name) => {
+                    Some(CachixCache(name.clone()))
+                }
+                _ => None,
+            });
+        let (missing_attic, missing_other) = parse_many(&remaining_after_cachix, |cache_spec| {
+            match cache_spec {
+                omnix_health::check::caches::CacheSpec::Attic { .. } => {
+                    // Convert back to URL string and use existing parsing logic
+                    let url_string = cache_spec.to_url_string();
+                    AtticCache::from_url_string(&url_string)
+                }
+                _ => None,
+            }
         });
 
         for cachix_cache in &missing_cachix {
@@ -76,8 +88,14 @@ pub async fn develop_on_pre_shell(prj: &Project) -> anyhow::Result<()> {
 
         for attic_cache in &missing_attic {
             tracing::info!(
-                "🏺 Running `attic login {}` and `attic use {}:{}`",
+                "🏺 Running `attic login {}` for server {}",
                 attic_cache.server_name,
+                attic_cache.cache_url
+            );
+            attic_cache.attic_login().await?;
+
+            tracing::info!(
+                "🏺 Running `attic use {}:{}`",
                 attic_cache.server_name,
                 attic_cache.cache_name
             );
@@ -88,7 +106,7 @@ pub async fn develop_on_pre_shell(prj: &Project) -> anyhow::Result<()> {
             // We cannot add these caches automatically, so defer to `om health`
             relevant_checks.push(&health.caches);
         };
-        // TODO: Re-calculate NixInfo since our nix.conf has changed (due to `cachix use` and `attic use`)
+        // TODO: Re-calculate NixInfo since our nix.conf has changed (due to `cachix use`, `attic login` and `attic use`)
         // To better implement this, we need a mutable database of NixInfo, NixConfig, etc. OnceCell is not sufficient
     };
 

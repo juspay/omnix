@@ -27,11 +27,35 @@ The `om develop` command should be used indirectly in direnv, via the `use omnix
 `use omnix` wraps `use flake` (of [nix-direnv](https://nixos.asia/en/direnv)) providing additional capabilities:
 
 - Run [`om health`](health.md) to check the health of the Nix environment.
-  - Run `cachix use` automatically if the project uses cachix.
-  - Run `attic login` and `attic use` automatically if the project uses attic caches.
+  - **Automatically setup missing caches** if they're configured in the project:
+    - Run `cachix use <name>` for Cachix caches (URLs like `https://name.cachix.org`)
+    - Run `attic login` and `attic use` for Attic caches (URLs like `attic+server+https://...`)
+    - Report other missing caches that must be manually configured
 - Print a welcome text after spawning the Nix devshell.
 
 The ideal goal here being that `cd`'ing to a project should do everything necessary to get you started immediately.
+
+## Automatic Cache Setup {#caches}
+
+Unlike `om health` which only *checks* for missing caches, `om develop` will automatically *setup* them:
+
+### Cachix Caches
+If your project's `om.yaml` includes Cachix URLs like `https://yourproject.cachix.org`, `om develop` will automatically run:
+```bash
+cachix use yourproject
+```
+
+### Attic Caches  
+If your project includes Attic URLs like `attic+server+https://cache.example.com/name`, `om develop` will automatically run:
+```bash
+attic login server https://cache.example.com/name $ATTIC_LOGIN_TOKEN
+attic use server:name
+```
+
+**Important**: For Attic caches, set the `ATTIC_LOGIN_TOKEN` environment variable (can be empty for public caches).
+
+### Manual Configuration Required
+Standard HTTPS cache URLs that don't match the above patterns cannot be automatically setup and must be manually added to your Nix configuration.
 
 ## Welcome text {#welcome}
 
