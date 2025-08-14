@@ -47,7 +47,7 @@
         };
       defaults.perCrate.crane.args = import "${inputs.self}/nix/envs" {
         inherit (config.rust-project) src;
-        inherit (pkgs) cachix fetchFromGitHub lib;
+        inherit (pkgs) cachix attic-client fetchFromGitHub lib;
       };
     };
 

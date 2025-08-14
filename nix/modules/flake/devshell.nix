@@ -26,6 +26,7 @@ in
         OMNIX_SOURCE
         OM_INIT_REGISTRY
         CACHIX_BIN
+        ATTIC_BIN
         ;
 
       packages = with pkgs; [

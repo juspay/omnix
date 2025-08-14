@@ -50,7 +50,18 @@ health:
     caches:
       required:
         - "https://ourproject.cachix.org"
+        - "attic+servername+https://cache.example.com/mycache"
 ```
+
+### Cache Types
+
+omnix supports checking different types of binary caches:
+
+- **Cachix caches**: Use standard HTTPS URLs like `https://yourproject.cachix.org`
+- **Attic caches**: Use the format `attic+servername+https://cache.example.com/cachename`  
+- **Other caches**: Standard HTTPS URLs that must be manually configured in your Nix configuration
+
+**Note**: `om health` only checks if these caches are configured. For automatic cache setup, use [`om develop`](develop.md#caches) with direnv.
 
 To see all available configuration options, run `om health --dump-schema`. This will dump the schema of the configuration in JSON format. Convert that to YAML to see what can be added under the `om.health.default` key of your [`om.yaml`](../config.md).
 

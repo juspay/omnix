@@ -62,7 +62,7 @@ health:
       supported: ">=2.16.0"
     caches:
       required:
-        - https://om.cachix.org
+        - attic+chutney+https://cache.nixos.asia/oss
     direnv:
       required: true
     homebrew:
