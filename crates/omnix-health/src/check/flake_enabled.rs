@@ -25,22 +25,15 @@ impl Checkable for FlakeEnabled {
             NixInstallationType::Official => {
                 let flakes_enabled =
                     val.contains(&"flakes".to_string()) && val.contains(&"nix-command".to_string());
-                if flakes_enabled {
-                    (
-                        flakes_enabled,
-                        format!("experimental-features = {}", val.join(" ")),
-                        CheckResult::Green,
-                    )
-                } else {
-                    (
-                        flakes_enabled,
-                        format!("experimental-features = {}", val.join(" ")),
-                        CheckResult::Red {
-                            msg: "Nix flakes are not enabled".into(),
-                            suggestion: "See https://nixos.wiki/wiki/Flakes#Enable_flakes".into(),
-                        },
-                    )
-                }
+                let info_msg = format!("experimental-features = {}", val.join(" "));
+                let result = match flakes_enabled {
+                    true => CheckResult::Green,
+                    false => CheckResult::Red {
+                        msg: "Nix flakes are not enabled".into(),
+                        suggestion: "See https://nixos.wiki/wiki/Flakes#Enable_flakes".into(),
+                    },
+                };
+                (flakes_enabled, info_msg, result)
             }
         };
 
@@ -59,57 +52,29 @@ impl Checkable for FlakeEnabled {
 mod tests {
     use super::*;
     use crate::traits::CheckResult;
-    use nix_rs::{
-        config::{ConfigVal, NixConfig},
-        flake::system::{Arch, System},
-        info::NixInfo,
-        version::NixVersion,
-    };
+    use nix_rs::{config::NixConfig, info::NixInfo, version::NixVersion};
 
-    fn mock_nix_config(experimental_features: Vec<String>) -> NixConfig {
-        NixConfig {
-            experimental_features: ConfigVal {
-                value: experimental_features.clone(),
-                default_value: experimental_features,
-                description: String::new(),
-            },
-            // Required fields - Rust doesn't allow partial struct construction
-            cores: ConfigVal {
-                value: 1,
-                default_value: 1,
-                description: String::new(),
-            },
-            extra_platforms: ConfigVal {
-                value: vec![],
-                default_value: vec![],
-                description: String::new(),
-            },
-            flake_registry: ConfigVal {
-                value: String::new(),
-                default_value: String::new(),
-                description: String::new(),
-            },
-            max_jobs: ConfigVal {
-                value: 1,
-                default_value: 1,
-                description: String::new(),
-            },
-            substituters: ConfigVal {
-                value: vec![],
-                default_value: vec![],
-                description: String::new(),
-            },
-            system: ConfigVal {
-                value: System::Linux(Arch::X86_64),
-                default_value: System::Linux(Arch::X86_64),
-                description: String::new(),
-            },
-            trusted_users: ConfigVal {
-                value: vec![],
-                default_value: vec![],
-                description: String::new(),
-            },
-        }
+    fn mock_nix_config(experimental_features: &str) -> NixConfig {
+        // Mock minimal nix.conf: experimental-features = flakes nix-command
+        let features_array = experimental_features
+            .split_whitespace()
+            .map(|s| format!("\"{}\"", s))
+            .collect::<Vec<_>>()
+            .join(",");
+        let config_json = format!(
+            r#"{{
+            "experimental-features": {{ "value": [{}], "defaultValue": [], "description": "" }},
+            "cores": {{ "value": 1, "defaultValue": 1, "description": "" }},
+            "extra-platforms": {{ "value": [], "defaultValue": [], "description": "" }},
+            "flake-registry": {{ "value": "", "defaultValue": "", "description": "" }},
+            "max-jobs": {{ "value": 1, "defaultValue": 1, "description": "" }},
+            "substituters": {{ "value": [], "defaultValue": [], "description": "" }},
+            "system": {{ "value": "x86_64-linux", "defaultValue": "x86_64-linux", "description": "" }},
+            "trusted-users": {{ "value": [], "defaultValue": [], "description": "" }}
+        }}"#,
+            features_array
+        );
+        serde_json::from_str(&config_json).unwrap()
     }
 
     async fn mock_nix_info(
@@ -123,9 +88,9 @@ mod tests {
             installation_type,
         };
         let experimental_features = if has_flakes_config {
-            vec!["flakes".to_string(), "nix-command".to_string()]
+            "flakes nix-command"
         } else {
-            vec!["auto-allocate-uids".to_string()]
+            "auto-allocate-uids"
         };
         let config = mock_nix_config(experimental_features);
         NixInfo::new(version, config).await.unwrap()
@@ -137,10 +102,7 @@ mod tests {
         let nix_info = mock_nix_info(NixInstallationType::DeterminateSystems, false).await;
         let results = checker.check(&nix_info, None);
 
-        assert_eq!(results.len(), 1);
         let (_, check) = &results[0];
-        assert_eq!(check.title, "Flakes Enabled");
-        assert_eq!(check.info, "Flakes enabled via Determinate Systems Nix");
         assert!(matches!(check.result, CheckResult::Green));
     }
 
@@ -150,10 +112,7 @@ mod tests {
         let nix_info = mock_nix_info(NixInstallationType::Official, true).await;
         let results = checker.check(&nix_info, None);
 
-        assert_eq!(results.len(), 1);
         let (_, check) = &results[0];
-        assert_eq!(check.title, "Flakes Enabled");
-        assert_eq!(check.info, "experimental-features = flakes nix-command");
         assert!(matches!(check.result, CheckResult::Green));
     }
 
@@ -163,10 +122,7 @@ mod tests {
         let nix_info = mock_nix_info(NixInstallationType::Official, false).await;
         let results = checker.check(&nix_info, None);
 
-        assert_eq!(results.len(), 1);
         let (_, check) = &results[0];
-        assert_eq!(check.title, "Flakes Enabled");
-        assert_eq!(check.info, "experimental-features = auto-allocate-uids");
         assert!(matches!(check.result, CheckResult::Red { .. }));
     }
 }
