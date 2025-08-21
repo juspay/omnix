@@ -1,13 +1,15 @@
 //! Information about the user's Nix installation
 use serde::{Deserialize, Serialize};
-use std::fmt;
+use std::{fmt, sync::OnceLock};
 use tokio::sync::OnceCell;
 
 use crate::{command::NixCmd, config::NixConfig, env::NixEnv, version::NixVersion};
 use regex::Regex;
 
+static INSTALLATION_TYPE_PATTERNS: OnceLock<Vec<(Regex, NixInstallationType)>> = OnceLock::new();
+
 /// Type of Nix installation
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum NixInstallationType {
     /// Official Nix installation
     Official,
@@ -25,6 +27,44 @@ impl fmt::Display for NixInstallationType {
 }
 
 impl NixInstallationType {
+    /// Get or initialize the compiled regex patterns
+    fn get_patterns() -> &'static Vec<(Regex, NixInstallationType)> {
+        INSTALLATION_TYPE_PATTERNS.get_or_init(|| {
+            let pattern_strings = [
+                (
+                    r"^nix \(Determinate Nix [\d.]+\) (\d+)\.(\d+)\.(\d+)$",
+                    NixInstallationType::DeterminateSystems,
+                ),
+                (
+                    r"^nix \(Nix\) (\d+)\.(\d+)\.(\d+)$",
+                    NixInstallationType::Official,
+                ),
+                (r"^(\d+)\.(\d+)\.(\d+)$", NixInstallationType::Official),
+            ];
+
+            let mut compiled_patterns = Vec::new();
+            for (pattern_str, installation_type) in pattern_strings {
+                // If regex compilation fails, we'll panic at startup which is acceptable
+                let regex = Regex::new(pattern_str).expect("Invalid regex pattern");
+                compiled_patterns.push((regex, installation_type));
+            }
+            compiled_patterns
+        })
+    }
+
+    /// Detect installation type from a version string
+    fn from_version_str(version_str: &str) -> Self {
+        let patterns = Self::get_patterns();
+        for (regex, installation_type) in patterns {
+            if regex.is_match(version_str) {
+                return *installation_type;
+            }
+        }
+
+        // Default to Official if no pattern matches
+        NixInstallationType::Official
+    }
+
     /// Detect the installation type by examining `nix --version` output
     async fn detect() -> Result<Self, NixInfoError> {
         let cmd = NixCmd::default();
@@ -33,31 +73,10 @@ impl NixInstallationType {
                 cmd.arg("--version");
             })
             .await
-            .map_err(|e| NixInfoError::NixCmdError(crate::command::NixCmdError::CmdError(e)))?;
+            .map_err(|_| NixInfoError::InstallationTypeDetectionError)?;
         let version_str = String::from_utf8_lossy(&output).trim().to_string();
 
-        let patterns = [
-            (
-                r"^nix \(Determinate Nix [\d.]+\) (\d+)\.(\d+)\.(\d+)$",
-                NixInstallationType::DeterminateSystems,
-            ),
-            (
-                r"^nix \(Nix\) (\d+)\.(\d+)\.(\d+)$",
-                NixInstallationType::Official,
-            ),
-            (r"^(\d+)\.(\d+)\.(\d+)$", NixInstallationType::Official),
-        ];
-
-        for (pattern, installation_type) in patterns {
-            let re =
-                Regex::new(pattern).map_err(|_| NixInfoError::InstallationTypeDetectionError)?;
-            if re.is_match(&version_str) {
-                return Ok(installation_type);
-            }
-        }
-
-        // Default to Official if no pattern matches
-        Ok(NixInstallationType::Official)
+        Ok(Self::from_version_str(&version_str))
     }
 }
 
@@ -77,27 +96,7 @@ mod tests {
         ];
 
         for (version_str, expected_type) in test_cases {
-            let patterns = [
-                (
-                    r"^nix \(Determinate Nix [\d.]+\) (\d+)\.(\d+)\.(\d+)$",
-                    NixInstallationType::DeterminateSystems,
-                ),
-                (
-                    r"^nix \(Nix\) (\d+)\.(\d+)\.(\d+)$",
-                    NixInstallationType::Official,
-                ),
-                (r"^(\d+)\.(\d+)\.(\d+)$", NixInstallationType::Official),
-            ];
-
-            let mut detected_type = NixInstallationType::Official; // default
-            for (pattern, installation_type) in patterns {
-                let re = Regex::new(pattern).unwrap();
-                if re.is_match(version_str) {
-                    detected_type = installation_type;
-                    break;
-                }
-            }
-
+            let detected_type = NixInstallationType::from_version_str(version_str);
             assert_eq!(
                 detected_type, expected_type,
                 "Failed for version string: '{}'",
