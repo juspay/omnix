@@ -1,4 +1,4 @@
-use nix_rs::info::{self, NixInstallationType};
+use nix_rs::{info, version::NixInstallationType};
 use serde::{Deserialize, Serialize};
 
 use crate::traits::*;
@@ -17,7 +17,7 @@ impl Checkable for FlakeEnabled {
         let val = &nix_info.nix_config.experimental_features.value;
 
         // Check if flakes are enabled either through configuration or installation type
-        let flakes_enabled = match nix_info.installation_type {
+        let flakes_enabled = match nix_info.installation_type() {
             NixInstallationType::DeterminateSystems => {
                 // Determinate Systems Nix has flakes enabled by default
                 true
@@ -28,7 +28,7 @@ impl Checkable for FlakeEnabled {
             }
         };
 
-        let info_msg = match nix_info.installation_type {
+        let info_msg = match nix_info.installation_type() {
             NixInstallationType::DeterminateSystems => {
                 "Determinate Systems Nix (flakes enabled by default)".to_string()
             }

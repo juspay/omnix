@@ -1,110 +1,12 @@
 //! Information about the user's Nix installation
 use serde::{Deserialize, Serialize};
-use std::{fmt, sync::OnceLock};
 use tokio::sync::OnceCell;
 
-use crate::{command::NixCmd, config::NixConfig, env::NixEnv, version::NixVersion};
-use regex::Regex;
-
-static INSTALLATION_TYPE_PATTERNS: OnceLock<Vec<(Regex, NixInstallationType)>> = OnceLock::new();
-
-/// Type of Nix installation
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-pub enum NixInstallationType {
-    /// Official Nix installation
-    Official,
-    /// Determinate Systems Nix
-    DeterminateSystems,
-}
-
-impl fmt::Display for NixInstallationType {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            NixInstallationType::Official => write!(f, "official"),
-            NixInstallationType::DeterminateSystems => write!(f, "determinate-systems"),
-        }
-    }
-}
-
-impl NixInstallationType {
-    /// Get or initialize the compiled regex patterns
-    fn get_patterns() -> &'static Vec<(Regex, NixInstallationType)> {
-        INSTALLATION_TYPE_PATTERNS.get_or_init(|| {
-            let pattern_strings = [
-                (
-                    r"^nix \(Determinate Nix [\d.]+\) (\d+)\.(\d+)\.(\d+)$",
-                    NixInstallationType::DeterminateSystems,
-                ),
-                (
-                    r"^nix \(Nix\) (\d+)\.(\d+)\.(\d+)$",
-                    NixInstallationType::Official,
-                ),
-                (r"^(\d+)\.(\d+)\.(\d+)$", NixInstallationType::Official),
-            ];
-
-            let mut compiled_patterns = Vec::new();
-            for (pattern_str, installation_type) in pattern_strings {
-                // If regex compilation fails, we'll panic at startup which is acceptable
-                let regex = Regex::new(pattern_str).expect("Invalid regex pattern");
-                compiled_patterns.push((regex, installation_type));
-            }
-            compiled_patterns
-        })
-    }
-
-    /// Detect installation type from a version string
-    fn from_version_str(version_str: &str) -> Self {
-        let patterns = Self::get_patterns();
-        for (regex, installation_type) in patterns {
-            if regex.is_match(version_str) {
-                return *installation_type;
-            }
-        }
-
-        // Default to Official if no pattern matches
-        NixInstallationType::Official
-    }
-
-    /// Detect the installation type by examining `nix --version` output
-    async fn detect() -> Result<Self, NixInfoError> {
-        let cmd = NixCmd::default();
-        let output = cmd
-            .run_with_returning_stdout(&[], |cmd| {
-                cmd.arg("--version");
-            })
-            .await
-            .map_err(|_| NixInfoError::InstallationTypeDetectionError)?;
-        let version_str = String::from_utf8_lossy(&output).trim().to_string();
-
-        Ok(Self::from_version_str(&version_str))
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_installation_type_detection() {
-        let test_cases = [
-            ("nix (Nix) 2.28.4", NixInstallationType::Official),
-            (
-                "nix (Determinate Nix 3.8.5) 2.30.2",
-                NixInstallationType::DeterminateSystems,
-            ),
-            ("2.28.4", NixInstallationType::Official),
-        ];
-
-        for (version_str, expected_type) in test_cases {
-            let detected_type = NixInstallationType::from_version_str(version_str);
-            assert_eq!(
-                detected_type, expected_type,
-                "Failed for version string: '{}'",
-                version_str
-            );
-        }
-    }
-}
+use crate::{
+    config::NixConfig,
+    env::NixEnv,
+    version::{NixInstallationType, NixVersion},
+};
 
 /// All the information about the user's Nix installation
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -115,8 +17,13 @@ pub struct NixInfo {
     pub nix_config: NixConfig,
     /// Environment in which Nix was installed
     pub nix_env: NixEnv,
-    /// Type of Nix installation
-    pub installation_type: NixInstallationType,
+}
+
+impl NixInfo {
+    /// Get the installation type (derived from nix_version)
+    pub fn installation_type(&self) -> NixInstallationType {
+        self.nix_version.installation_type()
+    }
 }
 
 static NIX_INFO: OnceCell<Result<NixInfo, NixInfoError>> = OnceCell::const_new();
@@ -140,12 +47,10 @@ impl NixInfo {
         nix_config: NixConfig,
     ) -> Result<NixInfo, NixInfoError> {
         let nix_env = NixEnv::detect().await?;
-        let installation_type = NixInstallationType::detect().await?;
         Ok(NixInfo {
             nix_version,
             nix_config,
             nix_env,
-            installation_type,
         })
     }
 }
@@ -168,8 +73,4 @@ pub enum NixInfoError {
     /// A [crate::config::NixConfigError]
     #[error("Nix config error: {0}")]
     NixConfigError(#[from] &'static crate::config::NixConfigError),
-
-    /// Installation type detection error
-    #[error("Failed to detect installation type")]
-    InstallationTypeDetectionError,
 }
