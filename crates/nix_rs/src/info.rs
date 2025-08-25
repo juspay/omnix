@@ -2,7 +2,11 @@
 use serde::{Deserialize, Serialize};
 use tokio::sync::OnceCell;
 
-use crate::{config::NixConfig, env::NixEnv, version::NixVersion};
+use crate::{
+    config::NixConfig,
+    env::NixEnv,
+    version::{NixInstallationType, NixVersion},
+};
 
 /// All the information about the user's Nix installation
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -13,6 +17,13 @@ pub struct NixInfo {
     pub nix_config: NixConfig,
     /// Environment in which Nix was installed
     pub nix_env: NixEnv,
+}
+
+impl NixInfo {
+    /// Get the installation type (derived from nix_version)
+    pub fn installation_type(&self) -> NixInstallationType {
+        self.nix_version.installation_type()
+    }
 }
 
 static NIX_INFO: OnceCell<Result<NixInfo, NixInfoError>> = OnceCell::const_new();
