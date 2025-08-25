@@ -105,24 +105,12 @@ pub trait FlakeFn {
     }
 }
 
-/// Transform `--override-input` arguments to use `flake/` prefix, which
-/// devour_flake expects.
-///
-/// NOTE: This assumes that Input struct contains a field named exactly "flake" referring to the flake. We should probably be smart about this.
+/// Pass through `--override-input` arguments without transformation.
+/// 
+/// The `flake/` prefix transformation was removed as of v1.0.0 since it's no longer necessary.
 fn transform_override_inputs(args: &[String]) -> Vec<String> {
-    let mut new_args = Vec::with_capacity(args.len());
-    let mut iter = args.iter().peekable();
-
-    while let Some(arg) = iter.next() {
-        new_args.push(arg.clone());
-        if arg == "--override-input" {
-            if let Some(next_arg) = iter.next() {
-                new_args.push(format!("flake/{}", next_arg));
-            }
-        }
-    }
-
-    new_args
+    // Simply return args as-is, no flake/ prefix transformation needed
+    args.to_vec()
 }
 
 /// Convert a struct of uniform value types (Option allowed, however) into a vector of fields. The value should be of String kind.
