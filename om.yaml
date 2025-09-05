@@ -60,9 +60,10 @@ health:
   default:
     nix-version:
       supported: ">=2.16.0"
-    caches:
-      required:
-        - https://om.cachix.org
+    # TODO: Use nixos.asia attic after https://github.com/juspay/omnix/issues/474
+    # caches:
+    #   required:
+    #     - https://om.cachix.org
     direnv:
       required: true
     homebrew:
