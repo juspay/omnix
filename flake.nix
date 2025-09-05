@@ -13,7 +13,6 @@
     rust-flake.inputs.nixpkgs.follows = "nixpkgs";
     git-hooks.url = "github:cachix/git-hooks.nix";
     git-hooks.flake = false;
-    cachix-push.url = "github:juspay/cachix-push";
 
     # We cache these inputs locally, and then have Omnix reference the catched inputs.
     devour-flake.url = "github:srid/devour-flake";
