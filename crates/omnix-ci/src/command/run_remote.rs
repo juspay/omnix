@@ -36,7 +36,7 @@ pub async fn run_on_remote_store(
         format!("\n🛜 Running CI remotely on {} ({:?})", ssh_uri, opts).bold()
     );
 
-    let (flake_closure, local_flake_url) = &cache_flake(nixcmd, cfg, opts.copy_inputs).await?;
+    let (flake_closure, _local_flake_url) = &cache_flake(nixcmd, cfg, opts.copy_inputs).await?;
     let omnix_source = PathBuf::from(OMNIX_SOURCE);
 
     let paths_to_push = vec![omnix_source, flake_closure.clone()];
@@ -59,9 +59,7 @@ pub async fn run_on_remote_store(
         // Then, SSH and run the same `om ci run` CLI but without the `--on` argument but with `--out-link` pointing to the temporary location.
         run_ssh(
             &ssh_uri.to_string(),
-            &om_cli_with(
-                run_cmd.local_with(local_flake_url.clone().into(), Some(om_json_path.clone())),
-            ),
+            &om_cli_with(run_cmd.local_with(Some(om_json_path.clone()))),
         )
         .await?;
 
@@ -93,11 +91,7 @@ pub async fn run_on_remote_store(
         );
     } else {
         // Then, SSH and run the same `om ci run` CLI but without the `--on` argument.
-        run_ssh(
-            &ssh_uri.to_string(),
-            &om_cli_with(run_cmd.local_with(local_flake_url.clone().into(), None)),
-        )
-        .await?;
+        run_ssh(&ssh_uri.to_string(), &om_cli_with(run_cmd.local_with(None))).await?;
     }
     Ok(())
 }

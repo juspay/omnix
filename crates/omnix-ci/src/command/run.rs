@@ -22,13 +22,13 @@ use omnix_health::{traits::Checkable, NixHealth};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    config::subflakes::SubflakesConfig, flake_ref::FlakeRef, github::actions::in_github_log_group,
+    config::subflakes::SubflakesConfig, github::actions::in_github_log_group,
     step::core::StepsResult,
 };
 
 use super::run_remote;
 
-/// Run all CI steps for all or given subflakes
+/// Run all CI steps for current directory flake
 /// Command to run all CI steps
 #[derive(Parser, Debug, Clone)]
 pub struct RunCommand {
@@ -61,16 +61,13 @@ pub struct RunCommand {
     #[arg(long)]
     no_link: bool,
 
-    /// Flake URL or github URL
-    ///
-    /// A specific configuration can be specified
-    /// using '#': e.g. `om ci run .#default.extra-tests`
-    #[arg(default_value = ".")]
-    pub flake_ref: FlakeRef,
-
     /// Print Github Actions log groups (enabled by default when run in Github Actions)
     #[clap(long, default_value_t = env::var("GITHUB_ACTION").is_ok())]
     pub github_output: bool,
+
+    /// CI configuration to use (e.g., "default.simple-example")
+    #[arg(help = "Specify which CI sub-configuration to run")]
+    pub config: Option<String>,
 
     /// Arguments for all steps
     #[command(flatten)]
@@ -97,11 +94,10 @@ impl RunCommand {
         }
     }
 
-    /// Override the `flake_ref` and `out_link`` for building locally.
-    pub fn local_with(&self, flake_ref: FlakeRef, out_link: Option<PathBuf>) -> Self {
+    /// Override the `out_link` for building locally.
+    pub fn local_with(&self, out_link: Option<PathBuf>) -> Self {
         let mut new = self.clone();
         new.on = None; // Disable remote building
-        new.flake_ref = flake_ref;
         new.no_link = out_link.is_none();
         new.out_link = out_link;
         new
@@ -140,10 +136,7 @@ impl RunCommand {
         .await?;
 
         // Then, do the CI steps
-        tracing::info!(
-            "{}",
-            format!("\n🤖 Running CI for {}", self.flake_ref).bold()
-        );
+        tracing::info!("{}", "\n🤖 Running CI for current directory".bold());
         let res = ci_run(&self.nixcmd, self, &cfg, &nix_info.nix_config).await?;
 
         let msg = in_github_log_group::<anyhow::Result<String>, _, _>(
@@ -218,7 +211,9 @@ impl RunCommand {
             args.push("--no-link".to_string());
         }
 
-        args.push(self.flake_ref.to_string());
+        if let Some(config) = self.config.as_ref() {
+            args.push(config.clone());
+        }
 
         args.extend(self.steps_args.to_cli_args());
 

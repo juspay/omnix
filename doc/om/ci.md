@@ -13,30 +13,20 @@ A `result` symlink is also produced, containing a JSON of all built paths. See [
 
 ## Basic Usage {#usage}
 
-`om ci run` accepts any valid [flake URL](https://nixos.asia/en/flake-url) or a Github PR URL.
+`om ci run` always operates on the current directory flake.
 
 ```sh
 # Run CI on current directory flake
-$ om ci # Or `om ci run` or `om ci run .`
-
-# Run CI on a local flake (default is $PWD)
-$ om ci run ~/code/myproject
+$ om ci # Or `om ci run`
 
 # Pass custom arguments to `nix` after '--'
-$ om ci run ~/code/myproject -- --accept-flake-config
+$ om ci run -- --accept-flake-config
 
-# Run CI on a github repo
-$ om ci run github:hercules-ci/hercules-ci-agent
-
-# Run CI on a github PR
-$ om ci run https://github.com/srid/emanote/pull/451
-
-# Run CI only the selected sub-flake
-$ git clone https://github.com/srid/haskell-flake && cd haskell-flake
-$ om ci run .#default.dev
+# Run CI with a specific sub-configuration
+$ om ci run default.simple-example
 
 # Run CI remotely over SSH
-$ om ci run --on ssh://myname@myserver ~/code/myproject
+$ om ci run --on ssh://myname@myserver
 ```
 
 ## Results JSON and closure {#out-link}
@@ -127,7 +117,7 @@ By default, `om ci` will build the top-level flake, but you can tell it to build
 }
 ```
 
-You can have more than one CI configuration. For eg., `om ci run .#foo` will run the configuration from `om.ci.foo` flake output.
+You can have more than one CI configuration. For eg., `om ci run foo` will run the configuration from `om.ci.foo` flake output.
 
 ### Custom CI actions {#custom}
 
@@ -173,7 +163,7 @@ For a real-world example of custom steps, checkout [Omnix's configuration](https
 Omnix can run CI over SSH.
 
 ```sh
-om ci run --on ssh://myname@myserver ~/code/myproject
+om ci run --on ssh://myname@myserver
 ```
 
 What this does:
@@ -183,7 +173,7 @@ What this does:
 
 ### Options
 
-- Pass `copy-inputs=true` if you wish to copy all flake inputs recursively. This is useful if you have private Git inputs. For example, `om ci run --on "ssh://myname@myserver?copy-inputs=true" ~/code/myproject`
+- Pass `copy-inputs=true` if you wish to copy all flake inputs recursively. This is useful if you have private Git inputs. For example, `om ci run --on "ssh://myname@myserver?copy-inputs=true"`
 - Omnix copies the results back to local store, unless `--no-link` was passed.
 
 ## Examples

@@ -26,7 +26,6 @@ omnix-health = { workspace = true }
 nix_rs = { workspace = true, features = ["clap"] }
 nonempty = { workspace = true }
 omnix-common = { workspace = true }
-reqwest = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 shell-words = { workspace = true }
@@ -35,6 +34,3 @@ thiserror = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
-try-guard = { workspace = true }
-url = { workspace = true }
-urlencoding = { workspace = true }
