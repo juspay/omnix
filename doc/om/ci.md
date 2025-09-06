@@ -22,8 +22,8 @@ $ om ci # Or `om ci run`
 # Pass custom arguments to `nix` after '--'
 $ om ci run -- --accept-flake-config
 
-# Run CI only the selected sub-flake configuration
-$ om ci run .#default.dev
+# Run CI with a specific sub-configuration
+$ om ci run default.simple-example
 
 # Run CI remotely over SSH
 $ om ci run --on ssh://myname@myserver
@@ -117,7 +117,7 @@ By default, `om ci` will build the top-level flake, but you can tell it to build
 }
 ```
 
-You can have more than one CI configuration. For eg., `om ci run .#foo` will run the configuration from `om.ci.foo` flake output.
+You can have more than one CI configuration. For eg., `om ci run foo` will run the configuration from `om.ci.foo` flake output.
 
 ### Custom CI actions {#custom}
 

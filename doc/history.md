@@ -8,7 +8,7 @@ order: 100
 
 ### Breaking changes
 
-- `om ci run`: Remove argument support for specifying directories, flake URLs, or GitHub PR URLs. The command now always operates on the current directory flake.
+- `om ci run`: Remove argument support for specifying directories, flake URLs, or GitHub PR URLs. The command now always operates on the current directory flake. Sub-configurations can be specified with an optional config argument (e.g., `om ci run default.simple-example`).
 
 ## 1.3.0 (2025-07-15) {#1.3.0}
 
