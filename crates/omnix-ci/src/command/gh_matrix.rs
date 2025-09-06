@@ -3,18 +3,11 @@ use clap::Parser;
 use nix_rs::{command::NixCmd, flake::system::System};
 use omnix_common::config::OmConfig;
 
-use crate::{config::subflakes::SubflakesConfig, flake_ref::FlakeRef, github};
+use crate::{config::subflakes::SubflakesConfig, github};
 
 /// Command to generate a Github Actions matrix
 #[derive(Parser, Debug, Clone)]
 pub struct GHMatrixCommand {
-    /// Flake URL or github URL
-    ///
-    /// A specific omnix-ci configuration can be specified
-    /// using '#': e.g. `om ci run .#extra-tests`
-    #[arg(default_value = ".")]
-    pub flake_ref: FlakeRef,
-
     /// Systems to include in the matrix
     #[arg(long, value_parser, value_delimiter = ',')]
     pub systems: Vec<System>,

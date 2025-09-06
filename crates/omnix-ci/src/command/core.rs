@@ -5,14 +5,14 @@ use nix_rs::command::NixCmd;
 use omnix_common::config::OmConfig;
 use tracing::instrument;
 
-use crate::flake_ref::FlakeRef;
+use nix_rs::flake::url::FlakeUrl;
 
 use super::{gh_matrix::GHMatrixCommand, run::RunCommand};
 
 /// Top-level commands for `om ci`
 #[derive(Debug, Subcommand, Clone)]
 pub enum Command {
-    /// Run all CI steps for all or given subflakes
+    /// Run all CI steps for current directory flake
     Run(RunCommand),
 
     /// Print the Github Actions matrix configuration as JSON
@@ -31,7 +31,7 @@ impl Command {
     #[instrument(name = "run", skip(self))]
     pub async fn run(self) -> anyhow::Result<()> {
         tracing::info!("{}", "\n👟 Reading om.ci config from flake".bold());
-        let url = self.get_flake_ref().to_flake_url().await?;
+        let url = self.get_flake_ref();
         let cfg = OmConfig::get(self.nixcmd(), &url).await?;
 
         tracing::debug!("OmConfig: {cfg:?}");
@@ -48,12 +48,10 @@ impl Command {
         }
     }
 
-    /// Get the [FlakeRef] associated with this subcommand
-    fn get_flake_ref(&self) -> &FlakeRef {
-        match self {
-            Command::Run(cmd) => &cmd.flake_ref,
-            Command::DumpGithubActionsMatrix(cmd) => &cmd.flake_ref,
-        }
+    /// Get the [FlakeUrl] associated with this subcommand
+    fn get_flake_ref(&self) -> FlakeUrl {
+        // Always use current directory
+        FlakeUrl(".".to_string())
     }
 
     /// Convert this type back to the user-facing command line arguments
