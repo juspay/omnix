@@ -44,3 +44,5 @@ assert_matches = "1.5"
 ctor = "0.2"
 predicates = "3"
 regex = "1.9"
+tempfile = { workspace = true }
+tokio = { workspace = true }
