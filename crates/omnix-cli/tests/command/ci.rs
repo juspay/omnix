@@ -5,7 +5,6 @@ use nix_rs::store::path::StorePath;
 use regex::Regex;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
-use tempfile;
 use tokio::process::Command;
 
 use super::core::om;
@@ -152,7 +151,7 @@ async fn test_services_flake() -> anyhow::Result<()> {
     let out = om_ci_run_in_cloned_repo(
         "https://github.com/juspay/services-flake.git",
         Some("23cf162387af041035072ee4a9de20f8408907cb"),
-        &[".#default.simple-example"],
+        &["default.simple-example"],
     )
     .await?;
     let v: Value = serde_json::from_reader(std::fs::File::open(&out)?)?;

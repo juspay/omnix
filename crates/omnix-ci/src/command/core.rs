@@ -50,8 +50,17 @@ impl Command {
 
     /// Get the [FlakeUrl] associated with this subcommand
     fn get_flake_ref(&self) -> FlakeUrl {
-        // Always use current directory
-        FlakeUrl(".".to_string())
+        let base_url = ".".to_string();
+        match self {
+            Command::Run(cmd) => {
+                if let Some(config) = &cmd.config {
+                    FlakeUrl(format!(".#{}", config))
+                } else {
+                    FlakeUrl(base_url)
+                }
+            }
+            Command::DumpGithubActionsMatrix(_) => FlakeUrl(base_url),
+        }
     }
 
     /// Convert this type back to the user-facing command line arguments

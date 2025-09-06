@@ -65,6 +65,10 @@ pub struct RunCommand {
     #[clap(long, default_value_t = env::var("GITHUB_ACTION").is_ok())]
     pub github_output: bool,
 
+    /// CI configuration to use (e.g., "default.simple-example")
+    #[arg(help = "Specify which CI sub-configuration to run")]
+    pub config: Option<String>,
+
     /// Arguments for all steps
     #[command(flatten)]
     pub steps_args: crate::step::core::StepsArgs,
@@ -205,6 +209,10 @@ impl RunCommand {
 
         if self.no_link {
             args.push("--no-link".to_string());
+        }
+
+        if let Some(config) = self.config.as_ref() {
+            args.push(config.clone());
         }
 
         args.extend(self.steps_args.to_cli_args());
