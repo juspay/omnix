@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use serde_with::{DeserializeFromStr, SerializeDisplay};
 use thiserror::Error;
 
-use crate::version::NixVersion;
+use crate::version::{NixVersion, VersionSpec};
 
 /// An individual component of [NixVersionReq]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -119,11 +119,11 @@ impl FromStr for NixVersionSpec {
             .name("patch")
             .map_or(Ok(0), |m| m.as_str().parse::<u32>())?;
 
-        let nix_version = NixVersion {
+        let nix_version = NixVersion::Official(VersionSpec {
             major,
             minor,
             patch,
-        };
+        });
 
         match op {
             ">=" => Ok(Gteq(nix_version)),
@@ -170,19 +170,19 @@ mod tests {
     fn test_parse() {
         assert_eq!(
             NixVersionSpec::from_str(">2.8").unwrap(),
-            NixVersionSpec::Gt(NixVersion {
+            NixVersionSpec::Gt(NixVersion::Official(VersionSpec {
                 major: 2,
                 minor: 8,
                 patch: 0
-            })
+            }))
         );
         assert_eq!(
             NixVersionSpec::from_str(">2").unwrap(),
-            NixVersionSpec::Gt(NixVersion {
+            NixVersionSpec::Gt(NixVersion::Official(VersionSpec {
                 major: 2,
                 minor: 0,
                 patch: 0
-            })
+            }))
         );
     }
 

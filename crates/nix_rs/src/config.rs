@@ -10,7 +10,7 @@ use url::Url;
 
 use crate::{
     command::{NixCmd, NixCmdError},
-    version::NixVersion,
+    version::{NixVersion, VersionSpec},
 };
 
 use super::flake::system::System;
@@ -51,11 +51,11 @@ pub struct ConfigVal<T> {
 
 static NIX_CONFIG: OnceCell<Result<NixConfig, NixConfigError>> = OnceCell::const_new();
 
-static NIX_2_20_0: NixVersion = NixVersion {
+static NIX_2_20_0: NixVersion = NixVersion::Official(VersionSpec {
     major: 2,
     minor: 20,
     patch: 0,
-};
+});
 
 impl NixConfig {
     /// Get the once version of `NixConfig`.
