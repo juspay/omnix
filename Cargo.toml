@@ -59,7 +59,7 @@ tabled = "0.15"
 tempfile = "3"
 termimad = "0.30.0"
 thiserror = "1.0"
-tokio = { version = "1.33.0", features = ["full"] }
+tokio = { version = "1.38.2", features = ["full"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 try-guard = "0.2.0"
