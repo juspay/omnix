@@ -1797,7 +1797,7 @@ dependencies = [
 
 [[package]]
 name = "nix_rs"
-version = "1.3.0"
+version = "1.3.1"
 dependencies = [
  "bytesize",
  "cfg-if",
@@ -2031,7 +2031,7 @@ dependencies = [
 
 [[package]]
 name = "omnix-develop"
-version = "1.3.0"
+version = "1.3.1"
 dependencies = [
  "anyhow",
  "lazy_static",
