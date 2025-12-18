@@ -4,7 +4,7 @@ order: 100
 
 # Release history
 
-## 1.3.1 (UNRELEASED)
+## 1.3.1 (2025-12-18) {#1.3.1}
 
 ### Fixes
 
