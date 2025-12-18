@@ -4,6 +4,12 @@ order: 100
 
 # Release history
 
+## 1.3.1 (UNRELEASED)
+
+### Fixes
+
+- `om health`: Support `major.minor.patch+patch_count` (ex: `2.31.2+1`) versioning scheme of nix from nixpkgs.
+
 ## 1.3.0 (2025-07-15) {#1.3.0}
 
 - `om ci`: Allow impure builds through `impure = true;` setting in `om.yaml` (#445)
