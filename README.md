@@ -60,4 +60,4 @@ Begin with a release PR:
 
 - Pick a version
 - Update `history.md` to make sure new release header is present
-- Run [`cargo workspace publish`](https://github.com/pksunkara/cargo-workspaces?tab=readme-ov-file#publish) in devShell, using the picked version.
+- Run [`cargo workspace publish --force omnix-cli`](https://github.com/pksunkara/cargo-workspaces?tab=readme-ov-file#publish) in devShell, using the picked version.
