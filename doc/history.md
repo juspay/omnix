@@ -4,7 +4,7 @@ order: 100
 
 # Release history
 
-## 1.3.2 (UNRELEASED)
+## 1.3.2 (2026-01-06) {#1.3.2}
 
 ### Bumps
 
