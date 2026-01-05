@@ -4,6 +4,12 @@ order: 100
 
 # Release history
 
+## 1.3.2 (UNRELEASED)
+
+### Bumps
+
+- `syntect`: `5.3.2` -> `5.3.3`
+
 ## 1.3.1 (2025-12-18) {#1.3.1}
 
 ### Fixes

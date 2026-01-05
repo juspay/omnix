@@ -10,10 +10,7 @@ in
   autoWire = [ ];
   crane = {
     args = {
-      nativeBuildInputs = with pkgs.apple_sdk_frameworks; lib.optionals stdenv.isDarwin [
-        Security
-        SystemConfiguration
-      ] ++ [
+      nativeBuildInputs = [
         # Packages from `pkgsStatic` require cross-compilation support for the target platform,
         # which is not yet available for `x86_64-apple-darwin` in nixpkgs. Upon trying to evaluate
         # a static package for `x86_64-apple-darwin`, you may see an error like:
@@ -22,13 +19,7 @@ in
         (if (stdenv.isDarwin && stdenv.isAarch64) then pkgsStatic.libiconv else pkgs.libiconv)
         pkgs.pkg-config
       ];
-      buildInputs = lib.optionals pkgs.stdenv.isDarwin
-        (
-          with pkgs.apple_sdk_frameworks; [
-            IOKit
-            CoreFoundation
-          ]
-        ) ++ lib.optionals pkgs.stdenv.isLinux [
+      buildInputs = lib.optionals pkgs.stdenv.isLinux [
         pkgsStatic.openssl
       ];
 
