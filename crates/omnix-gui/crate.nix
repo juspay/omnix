@@ -17,16 +17,7 @@ in
           webkitgtk_4_1
           xdotool
           pkg-config
-        ]) ++ lib.optionals pkgs.stdenv.isDarwin (
-        with pkgs.apple_sdk_frameworks; [
-          IOKit
-          Carbon
-          WebKit
-          Security
-          Cocoa
-          CoreFoundation
-        ]
-      );
+        ]);
       nativeBuildInputs = with pkgs;[
         pkg-config
         makeWrapper
