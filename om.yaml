@@ -9,14 +9,11 @@ ci:
             args:
               - show
               - .
-          # TODO: Enable after fixing the script
-          #   error: jq: error (at <stdin>:1): Cannot index object with number
-          #
-          # binary-size-is-small:
-          #   type: app
-          #   name: check-closure-size
-          #   systems:
-          #     - x86_64-linux
+          binary-size-is-small:
+            type: app
+            name: check-closure-size
+            systems:
+              - x86_64-linux
           omnix-source-is-buildable:
             type: app
             name: omnix-source-is-buildable

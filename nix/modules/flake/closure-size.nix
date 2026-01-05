@@ -20,7 +20,7 @@ in
         text = ''
           set -o pipefail
           MAX_CLOSURE_SIZE=${builtins.toString maxSize}
-          CLOSURE_SIZE=$(nix path-info --json -S .#default | jq '.[0]'.closureSize)
+          CLOSURE_SIZE=$(nix path-info --json -S .#default | jq '.[].closureSize')
           echo "Omnix closure size: $CLOSURE_SIZE"
           echo "    Max closure size: $MAX_CLOSURE_SIZE"
           if [ "$CLOSURE_SIZE" -gt "$MAX_CLOSURE_SIZE" ]; then
