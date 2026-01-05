@@ -79,7 +79,7 @@ impl NixCmd {
     ///
     /// Arguments:
     /// - `subcommands`: Optional subcommands to pass. Note that `NixArgs` will
-    ///    be passed *after* these subcommands.
+    ///   be passed *after* these subcommands.
     pub fn command(&self, subcommands: &[&str]) -> Command {
         let mut cmd = Command::new("nix");
         cmd.kill_on_drop(true);
