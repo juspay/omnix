@@ -10,9 +10,7 @@
         libiconv
         pkg-config
       ];
-      buildInputs = lib.optionals pkgs.stdenv.isDarwin
-        lib.optionals
-        pkgs.stdenv.isLinux [
+      buildInputs = lib.optionals pkgs.stdenv.isLinux [
         pkgs.openssl
       ];
       # Disable tests due to sandboxing issues; we run them on CI
