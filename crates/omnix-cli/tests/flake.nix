@@ -25,6 +25,9 @@
   outputs = inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       systems = import inputs.systems;
+      flake.homeConfigurations.fixture-home.activationPackage =
+        inputs.nixpkgs.legacyPackages.x86_64-linux.hello;
+
       perSystem = { system, ... }: {
         packages = {
           haskell-multi-nix = inputs.haskell-multi-nix.packages.${system}.default;
