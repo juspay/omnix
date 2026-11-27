@@ -40,3 +40,13 @@ fn om_show_nixos_configurations() -> anyhow::Result<()> {
         .stdout(contains("NixOS Configurations").and(contains("immediacy")));
     Ok(())
 }
+
+#[test]
+fn om_show_formatter() -> anyhow::Result<()> {
+    om()?
+        .args(["show", "tests"])
+        .assert()
+        .success()
+        .stdout(contains("Formatter").and(contains("nix fmt")));
+    Ok(())
+}
