@@ -26,6 +26,7 @@
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       systems = import inputs.systems;
       perSystem = { system, ... }: {
+        formatter = inputs.nixpkgs.legacyPackages.${system}.nixfmt;
         packages = {
           haskell-multi-nix = inputs.haskell-multi-nix.packages.${system}.default;
         };

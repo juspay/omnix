@@ -122,6 +122,28 @@ impl ShowCommand {
             &["devShells", system.as_ref()],
             Some(format!("nix develop {}#<name>", self.flake_url)),
         );
+        if let Some(formatter) = flake
+            .output
+            .get_by_path(&["formatter", system.as_ref()])
+            .and_then(FlakeOutputs::get_val)
+        {
+            FlakeOutputTable {
+                rows: vec![Row {
+                    name: formatter
+                        .derivation_name
+                        .clone()
+                        .unwrap_or_else(|| "formatter".to_string()),
+                    description: formatter
+                        .short_description
+                        .clone()
+                        .filter(|description| !description.is_empty())
+                        .unwrap_or_else(|| "N/A".to_string()),
+                }],
+                title: "🎨 Formatter".to_string(),
+                command: Some(format!("nix fmt {}", self.flake_url)),
+            }
+            .print();
+        }
         print_flake_output_table(
             "🚀 Apps",
             &["apps", system.as_ref()],
