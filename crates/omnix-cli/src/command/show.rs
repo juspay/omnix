@@ -149,6 +149,14 @@ impl ShowCommand {
                 self.flake_url
             )),
         );
+        print_flake_output_table(
+            "🏠 Home Manager Configurations",
+            &["homeConfigurations"],
+            Some(format!(
+                "home-manager switch --flake {}#<name>",
+                self.flake_url
+            )),
+        );
         print_flake_output_table("🔧 NixOS Modules", &["nixosModules"], None);
         print_flake_output_table(
             "🐳 Docker Images",
